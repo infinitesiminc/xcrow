@@ -53,7 +53,7 @@ import {
 import { calculateGrowth, type GrowthDimensions } from "@/lib/skill-growth";
 import { usePlayMode } from "@/hooks/use-play-mode";
 import FastTrackPanel from "@/components/territory/FastTrackPanel";
-
+import { useScoutMission } from "@/hooks/use-scout-mission";
 /** Aggregated growth data per canonical future skill */
 export interface CanonicalSkillGrowth {
   level1Xp: number;
@@ -128,6 +128,7 @@ const MapPage = () => {
   const { futureSkills } = useFutureSkills();
   const { mode: playMode } = usePlayMode();
   const isFastTrack = playMode === "fast_track";
+  const mission = useScoutMission();
 
   const taxonomy: TaxonomySkill[] = useMemo(() =>
     dbSkills.map(s => ({
@@ -735,7 +736,7 @@ const MapPage = () => {
                 level={activeSim.level || 1}
                 masteryTier={(activeSim as any).masteryTier}
                 inline
-                onCompleted={handleCloseSim}
+                onCompleted={() => { mission.conquerSkill(); handleCloseSim(); }}
                 onBackToFeed={handleCloseSim}
                 roleChallenge={activeSim.roleChallenge}
                 linkedSkillIds={activeSim.linkedSkillIds}

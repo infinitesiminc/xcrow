@@ -5,7 +5,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, Diamond, ArrowRight, X, PenTool } from "lucide-react";
+import { Zap, Diamond, ArrowRight, X, PenTool, Lock, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { type FutureSkill } from "@/hooks/use-future-skills";
 import { getTerritory } from "@/lib/territory-colors";
@@ -46,11 +46,16 @@ interface SkillLaunchCardProps {
   onClose: () => void;
   onLaunchSim?: (req: SimLaunchRequest) => void;
   onLaunchPromptLab?: (req: PromptLabRequest) => void;
+  /** Whether this skill has been scouted via NPC conversation */
+  isScouted?: boolean;
+  /** Current mission phase — gates tier access */
+  missionPhase?: "scout" | "battle" | "conquer";
 }
 
 export default function SkillLaunchCard({
   skill, x, y, containerWidth, containerHeight,
   level2Unlocked, growth, onClose, onLaunchSim, onLaunchPromptLab,
+  isScouted = true, missionPhase = "battle",
 }: SkillLaunchCardProps) {
   const navigate = useNavigate();
   const [firstRole, setFirstRole] = useState<{ title: string; company: string | null } | null>(null);
@@ -189,63 +194,82 @@ export default function SkillLaunchCard({
 
         {/* Launch buttons */}
         <div className="px-3 py-2.5 space-y-1.5">
-          {/* Level 1 */}
-          <button
-            onClick={() => launchLevel(1)}
-            disabled={loading || !firstRole}
-            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 disabled:opacity-40 group"
-            style={{
-              background: "hsl(var(--primary) / 0.1)",
-              border: "1px solid hsl(var(--primary) / 0.2)",
-            }}
-          >
-            <div
-              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-              style={{ background: "hsl(var(--primary) / 0.2)" }}
+          {!isScouted ? (
+            /* Locked — not yet scouted */
+            <div className="flex items-center gap-2 px-2.5 py-3 rounded-lg"
+              style={{ background: "hsl(var(--muted) / 0.3)", border: "1px dashed hsl(var(--border) / 0.3)" }}
             >
-              <Zap className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
+              <Lock className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                  Unscouted Skill
+                </p>
+                <p className="text-[9px] text-muted-foreground/60 flex items-center gap-1">
+                  <Eye className="h-2.5 w-2.5" /> Talk to a role NPC to unlock
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                Level 1 Quest
-              </p>
-              <p className="text-[9px] text-muted-foreground">
-                {l1Sims > 0 ? `${l1Xp} XP · ${l1Sims} completed` : "AI tools mastery"}
-              </p>
-            </div>
-            <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
-          </button>
+          ) : (
+            <>
+              {/* Level 1 */}
+              <button
+                onClick={() => launchLevel(1)}
+                disabled={loading || !firstRole}
+                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 disabled:opacity-40 group"
+                style={{
+                  background: "hsl(var(--primary) / 0.1)",
+                  border: "1px solid hsl(var(--primary) / 0.2)",
+                }}
+              >
+                <div
+                  className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                  style={{ background: "hsl(var(--primary) / 0.2)" }}
+                >
+                  <Zap className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                    Level 1 Quest
+                  </p>
+                  <p className="text-[9px] text-muted-foreground">
+                    {l1Sims > 0 ? `${l1Xp} XP · ${l1Sims} completed` : "AI tools mastery"}
+                  </p>
+                </div>
+                <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
+              </button>
 
-          {/* Level 2 removed — now a map boss event */}
-
-          {/* Prompt Lab */}
-          <button
-            onClick={() => {
-              if (onLaunchPromptLab) {
-                onLaunchPromptLab({ skillId: skill.id, skillName: skill.name, skillCategory: skill.category });
-                onClose();
-              }
-            }}
-            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
-            style={{
-              background: "hsl(var(--accent) / 0.15)",
-              border: "1px solid hsl(var(--accent) / 0.2)",
-            }}
-          >
-            <div
-              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-              style={{ background: "hsl(var(--accent) / 0.25)" }}
-            >
-              <PenTool className="h-3 w-3 text-accent-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                Prompt Lab
-              </p>
-              <p className="text-[9px] text-muted-foreground">Practice prompt engineering</p>
-            </div>
-            <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-accent-foreground shrink-0 transition-colors" />
-          </button>
+              {/* Prompt Lab — only in battle+ phase */}
+              {(missionPhase === "battle" || missionPhase === "conquer") && (
+                <button
+                  onClick={() => {
+                    if (onLaunchPromptLab) {
+                      onLaunchPromptLab({ skillId: skill.id, skillName: skill.name, skillCategory: skill.category });
+                      onClose();
+                    }
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+                  style={{
+                    background: "hsl(var(--accent) / 0.15)",
+                    border: "1px solid hsl(var(--accent) / 0.2)",
+                  }}
+                >
+                  <div
+                    className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                    style={{ background: "hsl(var(--accent) / 0.25)" }}
+                  >
+                    <PenTool className="h-3 w-3 text-accent-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                      Prompt Lab
+                    </p>
+                    <p className="text-[9px] text-muted-foreground">Practice prompt engineering</p>
+                  </div>
+                  <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-accent-foreground shrink-0 transition-colors" />
+                </button>
+              )}
+            </>
+          )}
         </div>
 
         {/* Role context */}

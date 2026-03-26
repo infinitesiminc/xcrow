@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map, Compass,
+  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map, Compass, Eye,
 } from "lucide-react";
 import {
   SKILL_TAXONOMY,
@@ -34,9 +34,15 @@ interface PlayerHUDProps {
   targetSkillNames: Set<string>;
   /** Kingdom tiers from MyRolesPanel for rank calculation */
   kingdomTiers?: KingdomTier[];
+  /** Scout mission state */
+  missionPhase?: "scout" | "battle" | "conquer";
+  missionProgress?: number;
+  territoriesScouted?: number;
+  scoutedSkillCount?: number;
+  skillsConquered?: number;
 }
 
-export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames, kingdomTiers = [] }: PlayerHUDProps) {
+export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames, kingdomTiers = [], missionPhase, missionProgress = 0, territoriesScouted = 0, scoutedSkillCount = 0, skillsConquered = 0 }: PlayerHUDProps) {
   const navigate = useNavigate();
 
   const activeSkills = useMemo(() => skills.filter(s => s.xp > 0), [skills]);
@@ -129,6 +135,35 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, t
           ))}
         </div>
       </div>
+
+      {/* Scout Mission Progress */}
+      {missionPhase && (
+        <div className="mx-4 mb-3 rounded-xl px-3 py-2.5" style={{ background: "hsla(45, 30%, 15%, 0.3)", border: "1px solid hsla(45, 40%, 40%, 0.15)" }}>
+          <div className="flex items-center gap-2 mb-1.5">
+            <Compass className="h-3.5 w-3.5" style={{ color: "hsl(45, 60%, 55%)" }} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: "hsl(45, 60%, 55%)" }}>
+              {missionPhase === "scout" ? "Scouting" : missionPhase === "battle" ? "Battling" : "Conquering"}
+            </span>
+            <span className="ml-auto text-[11px] font-mono font-bold" style={{ color: "hsl(45, 60%, 55%)" }}>
+              {missionProgress}%
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsla(0,0%,100%,0.06)" }}>
+            <motion.div
+              className="h-full rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${missionProgress}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              style={{ background: "linear-gradient(90deg, hsl(45, 60%, 50%), hsl(30, 70%, 55%))" }}
+            />
+          </div>
+          <div className="flex items-center gap-3 mt-1.5 text-[8px] text-white/35">
+            <span className="flex items-center gap-0.5"><Eye className="h-2.5 w-2.5" /> {territoriesScouted}/8</span>
+            <span className="flex items-center gap-0.5"><Star className="h-2.5 w-2.5" /> {scoutedSkillCount} scouted</span>
+            <span className="flex items-center gap-0.5"><Swords className="h-2.5 w-2.5" /> {skillsConquered} conquered</span>
+          </div>
+        </div>
+      )}
 
       {/* Territory Coverage (if target roles set) */}
       {coverage && (
