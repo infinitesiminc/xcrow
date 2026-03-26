@@ -123,6 +123,31 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
     })();
   }, []);
 
+  // Auto-pan to first Role NPC on initial load (first 30s hook)
+  const hasAutoPanned = useRef(false);
+  useEffect(() => {
+    if (hasAutoPanned.current || roleNPCs.length === 0 || focusSkillId) return;
+    hasAutoPanned.current = true;
+    const firstRole = roleNPCs[0];
+    const island = layout.find(i => i.category === firstRole.territory);
+    if (!island) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const svgScale = rect.width / FUTURE_MAP_WIDTH;
+    const angle = (Math.PI * 2 * 0) / Math.max(roleNPCs.length, 1) + Math.PI / 4;
+    const dist = island.radius * 0.7;
+    const rx = island.cx + Math.cos(angle) * dist;
+    const ry = island.cy + Math.sin(angle) * dist;
+    const zoomLevel = 1.8;
+    const targetX = rect.width / 2 - rx * svgScale * zoomLevel;
+    const targetY = rect.height / 2 - ry * svgScale * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (rect.height / rect.width) * zoomLevel;
+    setTimeout(() => {
+      setTransform({ x: targetX, y: targetY, scale: zoomLevel });
+      setFocusedIsland(firstRole.territory);
+    }, 800);
+  }, [roleNPCs, layout, focusSkillId]);
+
   const clampTransform = useCallback((x: number, y: number, scale: number) => {
     const container = containerRef.current;
     if (!container) return { x, y };
