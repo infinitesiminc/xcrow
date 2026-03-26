@@ -337,4 +337,11 @@ export const CATEGORY_CONFIG: Record<ToolCategory, { label: string; color: strin
   "networking-edge": { label: "Networking", color: "hsl(190, 60%, 50%)", description: "AI infrastructure networking and edge" },
   "hardware-compute": { label: "Hardware", color: "hsl(240, 40%, 50%)", description: "GPUs, accelerators, and compute systems" },
   "vertical-industry": { label: "Vertical Industry", color: "hsl(140, 60%, 45%)", description: "Domain-specific AI for healthcare, logistics, etc." },
+  "hr-talent": { label: "HR & Talent", color: "hsl(330, 65%, 55%)", description: "Recruiting, workforce planning, and people ops" },
+  "finance-ops": { label: "Finance & Ops", color: "hsl(45, 80%, 45%)", description: "FP&A, AP/AR automation, and spend management" },
+  "legal-compliance": { label: "Legal & Compliance", color: "hsl(15, 70%, 50%)", description: "Contract management, e-discovery, and regulatory AI" },
+  "customer-platforms": { label: "Customer Platforms", color: "hsl(170, 65%, 45%)", description: "Support, success, and CX automation" },
+  "marketing-revops": { label: "Marketing & RevOps", color: "hsl(290, 60%, 55%)", description: "Demand gen, revenue intelligence, and ABM" },
+  "productivity": { label: "Productivity", color: "hsl(55, 70%, 48%)", description: "Workplace collaboration and knowledge management" },
+  "bi-visualization": { label: "BI & Visualization", color: "hsl(195, 70%, 50%)", description: "Dashboards, reporting, and data visualization" },
 };
