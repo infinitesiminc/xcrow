@@ -83,6 +83,8 @@ interface SimulatorModalProps {
   roleChallenge?: boolean;
   /** Canonical skill IDs linked to this role challenge */
   linkedSkillIds?: string[];
+  /** Resume from a saved checkpoint */
+  resumeCheckpointId?: string;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
