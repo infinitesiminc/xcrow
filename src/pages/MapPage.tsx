@@ -185,6 +185,25 @@ const MapPage = () => {
   // Preload territory backdrop images on mount
   useEffect(() => { preloadTerritoryImages(); }, []);
 
+  // Wire events from SkillDetailDrawer
+  useEffect(() => {
+    const handleLaunchFromDrawer = (e: Event) => {
+      const { skillId, skillName, level } = (e as CustomEvent).detail;
+      handleLaunchSim({ jobTitle: skillName, taskName: skillName, skillId, level });
+    };
+    const handleOpenDrawer = (e: Event) => {
+      const { skillId } = (e as CustomEvent).detail;
+      const skill = futureSkills.find(s => s.id === skillId);
+      if (skill) { setDrawerSkill(skill); setDrawerOpen(true); }
+    };
+    window.addEventListener("launch_skill_sim", handleLaunchFromDrawer);
+    window.addEventListener("open_skill_drawer", handleOpenDrawer);
+    return () => {
+      window.removeEventListener("launch_skill_sim", handleLaunchFromDrawer);
+      window.removeEventListener("open_skill_drawer", handleOpenDrawer);
+    };
+  }, [futureSkills, handleLaunchSim]);
+
   useEffect(() => {
     onRoleSelectRef.current = (role: RoleResult) => { setSelectedRole(role); };
     return () => { onRoleSelectRef.current = null; };

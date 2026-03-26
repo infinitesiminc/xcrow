@@ -6,7 +6,7 @@
  *     <GuardianDialogue />
  *   </HeroScene>
  */
-import { useRef, useEffect, type ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { motion } from "framer-motion";
 
 export type HeroIntensity = "full" | "ambient" | "thumbnail";
@@ -42,7 +42,7 @@ const INTENSITY_OPACITY: Record<HeroIntensity, number> = {
   thumbnail: 0.3,
 };
 
-export default function HeroScene({
+const HeroScene = forwardRef<HTMLDivElement, HeroSceneProps>(function HeroScene({
   imageUrl,
   intensity = "full",
   camera = "ken-burns",
@@ -50,15 +50,15 @@ export default function HeroScene({
   hue = 220,
   children,
   className = "",
-}: HeroSceneProps) {
+}, ref) {
   if (!imageUrl) {
-    return <div className={`relative ${className}`}>{children}</div>;
+    return <div ref={ref} className={`relative ${className}`}>{children}</div>;
   }
 
   const opacity = INTENSITY_OPACITY[intensity];
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div ref={ref} className={`relative overflow-hidden ${className}`}>
       {/* Image layer */}
       <div className="absolute inset-0 z-0">
         <motion.img
@@ -139,4 +139,6 @@ export default function HeroScene({
       <div className="relative z-[2]">{children}</div>
     </div>
   );
-}
+});
+
+export default HeroScene;
