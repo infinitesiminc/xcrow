@@ -461,12 +461,17 @@ const MapPage = () => {
                   isFastTrack ? (
                     <FastTrackPanel />
                   ) : (
-                    <SkillProgressPanel
+                    <QuestJournal
                       skills={futureSkills}
                       skillGrowthMap={skillGrowthMap}
                       level2SkillIds={level2SkillIds}
                       focusSkillId={forgeFocusSkillId}
                       onLaunchSim={handleLaunchSim}
+                      missionPhase={mission.phase}
+                      missionProgress={mission.missionProgress}
+                      scoutedSkills={mission.scoutedSkills}
+                      territoriesScouted={mission.territoriesScouted}
+                      skillsConquered={mission.skillsConquered}
                       onSkillClick={(skill) => {
                         setMapFocusSkillId(skill.id);
                         setTimeout(() => setMapFocusSkillId(null), 100);
