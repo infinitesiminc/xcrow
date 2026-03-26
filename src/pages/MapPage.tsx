@@ -33,6 +33,7 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
+import QuestTrackerStrip from "@/components/territory/QuestTrackerStrip";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
@@ -422,8 +423,16 @@ const MapPage = () => {
           );
         })}
 
-        {/* Spacer + mini HUD in strip */}
+        {/* Spacer + quest tracker + mini HUD in strip */}
         <div className="flex-1" />
+        <QuestTrackerStrip
+          phase={mission.phase}
+          territoriesScouted={mission.territoriesScouted}
+          scoutedSkillCount={mission.scoutedSkills.length}
+          skillsConquered={mission.skillsConquered}
+          missionProgress={mission.missionProgress}
+        />
+        <div className="w-px h-4 opacity-30" style={{ background: "hsl(var(--filigree))" }} />
         {displaySkills.length > 0 && (
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
         )}
