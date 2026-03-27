@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { motion, AnimatePresence } from "framer-motion";
-import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Hammer, Megaphone, Building2, Lightbulb, Search } from "lucide-react";
+import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Hammer, Megaphone, Building2, Lightbulb, Search, MessageSquare } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,14 +24,8 @@ import { DisruptMoatDefense } from "@/components/disrupt/DisruptMoatDefense";
 import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
 import { DisruptMissionDebrief } from "@/components/disrupt/DisruptMissionDebrief";
 
-type GamePhase =
-  | "strategist" | "hub" | "cluster" | "simulation"
-  | "act2" | "act2-score"
-  | "act3" | "act3-score"
-  | "act4" | "act4-score"
-  | "act5" | "act5-score"
-  | "act6" | "act6-score"
-  | "act7";
+// Active view within the unified layout
+type ActiveView = "chat" | "hub" | "cluster" | "act2" | "act3" | "act4" | "act5" | "act6" | "act7";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
@@ -90,7 +84,7 @@ const ACTS = [
 export default function Disrupt() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const [phase, setPhase] = useState<GamePhase>("strategist");
+  const [activeView, setActiveView] = useState<ActiveView>("chat");
 
   // Current mission context
   const [selectedCluster, setSelectedCluster] = useState<IndustryCluster | null>(null);
@@ -98,7 +92,7 @@ export default function Disrupt() {
   // Act scores for current mission
   const [actScores, setActScores] = useState<Record<number, number>>({});
 
-  // Unified strategist state (replaces separate discovery + briefing)
+  // Unified strategist state
   const [strategistMessages, setStrategistMessages] = useState<ChatMsg[]>([
     { role: "assistant", content: `What kind of software would you love to rebuild with AI?\n\nTell me what frustrates you — or pick a target from the sidebar.` }
   ]);
@@ -123,7 +117,6 @@ export default function Disrupt() {
     setIsStrategistStreaming(true);
     setTimeout(() => strategistEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
 
-    // If a target is already selected, route to briefing action
     const action = selectedIncumbent ? "briefing" : "discovery";
     const payload = selectedIncumbent && selectedCluster
       ? { incumbent: selectedIncumbent, cluster: selectedCluster, messages: updated, allIncumbents: selectedCluster.incumbents.map(i => ({ name: i.name, id: i.id, vulnerability: i.vulnerability, vector: i.vector })) }
@@ -172,14 +165,13 @@ export default function Disrupt() {
           } catch { /* partial */ }
         }
       }
-      // If this was the initial briefing, store it and replace verbose chat with short summary
       if (action === "briefing" && !briefingData && assistantContent.length > 100) {
         setBriefingData(assistantContent);
         setStrategistMessages(prev => {
           const last = prev[prev.length - 1];
           if (last?.role === "assistant") {
             return prev.map((m, idx) => idx === prev.length - 1
-              ? { ...m, content: `✅ **Intel briefing loaded** — check the cards on the right for the full breakdown.\n\nAsk me anything about the company, technology, or market. When you're ready, hit **Launch Simulation**.` }
+              ? { ...m, content: `✅ **Intel briefing loaded** — check the cards on the right for the full breakdown.\n\nAsk me anything about the company, technology, or market. Or pick an act from the sidebar to start building.` }
               : m);
           }
           return prev;
@@ -196,13 +188,12 @@ export default function Disrupt() {
       setSelectedCluster(cluster);
       setSelectedIncumbent(incumbent);
       setBriefingData(null);
-      // Auto-send briefing request in the same chat
+      setActiveView("chat");
       const briefingReq = `I want to disrupt ${incumbent.name}. Brief me on everything I need to know.`;
       const userMsg: ChatMsg = { role: "user", content: briefingReq };
       const updated = [...strategistMessages, userMsg];
       setStrategistMessages(updated);
-      
-      // Trigger briefing stream
+
       setTimeout(() => {
         setIsStrategistStreaming(true);
         (async () => {
@@ -251,12 +242,11 @@ export default function Disrupt() {
             }
             if (assistantContent.length > 100) {
               setBriefingData(assistantContent);
-              // Replace verbose briefing in chat with a short summary — cards handle the detail
               setStrategistMessages(prev => {
                 const last = prev[prev.length - 1];
                 if (last?.role === "assistant") {
                   return prev.map((m, idx) => idx === prev.length - 1
-                    ? { ...m, content: `✅ **Intel briefing loaded** — check the cards on the right for the full breakdown.\n\nAsk me anything about the company, technology, or market. When you're ready, hit **Launch Simulation**.` }
+                    ? { ...m, content: `✅ **Intel briefing loaded** — check the cards on the right for the full breakdown.\n\nAsk me anything about the company, technology, or market. Or pick an act from the sidebar to start building.` }
                     : m);
                 }
                 return prev;
@@ -266,7 +256,7 @@ export default function Disrupt() {
           finally { setIsStrategistStreaming(false); }
         })();
       }, 50);
-      
+
       updateMissionProgress(incumbent.id, { status: "in-progress" });
     }
   };
@@ -282,30 +272,22 @@ export default function Disrupt() {
     setSelectedCluster(cluster);
     setSelectedIncumbent(incumbent);
     const progress = getMissionProgress(incumbent.id);
-
     if (progress.completedActs.length > 0) {
       setActScores({});
       progress.completedActs.forEach(actNum => {
         const key = `act${actNum}Score` as keyof MissionProgress;
         if (progress[key]) setActScores(prev => ({ ...prev, [actNum]: progress[key] as number }));
       });
-      setPhase("simulation");
-    } else {
-      setPhase("strategist");
-      setBriefingData(null);
-      selectTargetFromChat(incumbent.id);
     }
+    setActiveView("chat");
+    setBriefingData(null);
+    selectTargetFromChat(incumbent.id);
     updateMissionProgress(incumbent.id, { status: "in-progress" });
   };
 
   const launchAct = (actNum: number) => {
     if (!selectedIncumbent || !selectedCluster) return;
-    setPhase(actNum === 7 ? "act7" : `act${actNum}` as GamePhase);
-  };
-
-  const launchSimulation = () => {
-    if (!selectedCluster || !selectedIncumbent) return;
-    setPhase("simulation");
+    setActiveView(actNum === 7 ? "act7" : `act${actNum}` as ActiveView);
   };
 
   const completeAct = (actNum: number, actScore: number, extraData?: Partial<MissionProgress>) => {
@@ -318,7 +300,8 @@ export default function Disrupt() {
       completedActs: completed,
       ...extraData,
     });
-    setPhase("simulation");
+    setActiveView("chat"); // Return to chat after completing an act
+    toast.success(`${ACTS.find(a => a.num === actNum)?.name || "Act"} complete! Score: ${actScore}`);
   };
 
   // Build solo team/room objects for child components
@@ -345,18 +328,56 @@ export default function Disrupt() {
     }
   }
 
+  const completedActs = selectedIncumbent ? (getMissionProgress(selectedIncumbent.id).completedActs || []) : [];
+  const hasTarget = !!selectedIncumbent && !!selectedCluster;
+  const isActView = activeView.startsWith("act");
+
   return (
     <>
       <Helmet>
         <title>AI Venture Lab — Software Startup Simulation | Xcrow</title>
-        <meta name="description" content="Learn to launch AI-powered software startups. Analyze 46 incumbents across 15 verticals. 7-act simulation from idea to investor pitch." />
+        <meta name="description" content="Learn to launch AI-powered software startups. Analyze 46 incumbents across 15 verticals. 6-act simulation from idea to investor pitch." />
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
         <AnimatePresence mode="wait">
-          {phase === "strategist" && (
-            <motion.div key="strategist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <StrategistView
+          {activeView === "hub" && (
+            <motion.div key="hub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <MissionHub
+                onSelectCluster={(c) => { setSelectedCluster(c); setActiveView("cluster"); }}
+                progress={loadProgress()}
+                onStartDiscovery={() => { setSelectedIncumbent(null); setSelectedCluster(null); setBriefingData(null); setActiveView("chat"); }}
+              />
+            </motion.div>
+          )}
+
+          {activeView === "cluster" && selectedCluster && (
+            <motion.div key="cluster" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+              <ClusterDetail
+                cluster={selectedCluster}
+                onBack={() => setActiveView("hub")}
+                onStartMission={(inc) => startMission(selectedCluster, inc)}
+                progress={loadProgress()}
+              />
+            </motion.div>
+          )}
+
+          {(activeView === "chat" || isActView) && (
+            <motion.div key="main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <UnifiedLayout
+                /* Sidebar props */
+                hasTarget={hasTarget}
+                incumbent={selectedIncumbent}
+                cluster={selectedCluster}
+                acts={ACTS}
+                completedActs={completedActs}
+                actScores={actScores}
+                activeView={activeView}
+                onLaunchAct={launchAct}
+                onBackToChat={() => setActiveView("chat")}
+                onBrowseMap={() => setActiveView("hub")}
+                isMobile={isMobile}
+                /* Chat props */
                 messages={strategistMessages}
                 input={strategistInput}
                 setInput={setStrategistInput}
@@ -364,77 +385,329 @@ export default function Disrupt() {
                 onSendText={(t) => sendStrategistMessage(t)}
                 isStreaming={isStrategistStreaming}
                 chatEndRef={strategistEndRef}
-                onBrowseMap={() => setPhase("hub")}
                 onSelectTarget={selectTargetFromChat}
                 selectableTargets={selectableTargets}
-                selectedIncumbent={selectedIncumbent}
-                selectedCluster={selectedCluster}
                 briefingData={briefingData}
-                onLaunch={launchSimulation}
                 onSwitchTarget={switchTarget}
-                isMobile={isMobile}
+                /* Act content */
+                actContent={
+                  isActView && selectedIncumbent && selectedCluster ? (
+                    <>
+                      {activeView === "act2" && <DisruptCustomerDiscovery incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(2, s)} />}
+                      {activeView === "act3" && soloTeam && <DisruptVentureBuild room={soloRoom as any} team={soloTeam as any} onComplete={() => completeAct(3, 70)} />}
+                      {activeView === "act4" && <DisruptGTM incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(4, s)} />}
+                      {activeView === "act5" && <DisruptMoatDefense incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(5, s)} />}
+                      {activeView === "act6" && soloTeam && <DisruptPitchBattle room={soloRoom as any} team={soloTeam as any} teams={[]} members={[]} onComplete={() => completeAct(6, 70)} />}
+                      {activeView === "act7" && <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setActiveView("chat")} />}
+                    </>
+                  ) : null
+                }
               />
-            </motion.div>
-          )}
-
-          {phase === "hub" && (
-            <motion.div key="hub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <MissionHub
-                onSelectCluster={(c) => { setSelectedCluster(c); setPhase("cluster"); }}
-                progress={loadProgress()}
-                onStartDiscovery={() => { setSelectedIncumbent(null); setSelectedCluster(null); setBriefingData(null); setPhase("strategist"); }}
-              />
-            </motion.div>
-          )}
-
-          {phase === "cluster" && selectedCluster && (
-            <motion.div key="cluster" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <ClusterDetail
-                cluster={selectedCluster}
-                onBack={() => setPhase("hub")}
-                onStartMission={(inc) => startMission(selectedCluster, inc)}
-                progress={loadProgress()}
-              />
-            </motion.div>
-          )}
-
-          {(phase === "simulation" || phase.startsWith("act")) && selectedIncumbent && selectedCluster && (
-            <motion.div key="sim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <SimulationShell
-                incumbent={selectedIncumbent}
-                cluster={selectedCluster}
-                acts={ACTS}
-                completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
-                actScores={actScores}
-                activePhase={phase}
-                onLaunchAct={launchAct}
-                onBackToStrategist={() => setPhase("strategist")}
-                onBackToMap={() => setPhase("hub")}
-                isMobile={isMobile}
-              >
-                {phase === "simulation" && (
-                  <SimulationWelcome
-                    incumbent={selectedIncumbent}
-                    cluster={selectedCluster}
-                    acts={ACTS}
-                    completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
-                    actScores={actScores}
-                    onLaunchAct={launchAct}
-                  />
-                )}
-                {phase === "act2" && <DisruptCustomerDiscovery incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(2, s)} />}
-                {phase === "act3" && soloTeam && <DisruptVentureBuild room={soloRoom as any} team={soloTeam as any} onComplete={() => completeAct(3, 70)} />}
-                {phase === "act4" && <DisruptGTM incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(4, s)} />}
-                {phase === "act5" && <DisruptMoatDefense incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(5, s)} />}
-                {phase === "act6" && soloTeam && <DisruptPitchBattle room={soloRoom as any} team={soloTeam as any} teams={[]} members={[]} onComplete={() => completeAct(6, 70)} />}
-                {phase === "act7" && <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("simulation")} />}
-              </SimulationShell>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
       <Footer />
     </>
+  );
+}
+
+
+/* ── Unified Layout: Sidebar (if target) + Chat/Act + Context ── */
+function UnifiedLayout({
+  hasTarget, incumbent, cluster, acts, completedActs, actScores, activeView,
+  onLaunchAct, onBackToChat, onBrowseMap, isMobile,
+  messages, input, setInput, onSend, onSendText, isStreaming, chatEndRef,
+  onSelectTarget, selectableTargets, briefingData, onSwitchTarget,
+  actContent,
+}: {
+  hasTarget: boolean; incumbent: DisruptionIncumbent | null; cluster: IndustryCluster | null;
+  acts: typeof ACTS; completedActs: number[]; actScores: Record<number, number>;
+  activeView: ActiveView; onLaunchAct: (n: number) => void;
+  onBackToChat: () => void; onBrowseMap: () => void; isMobile: boolean;
+  messages: ChatMsg[]; input: string; setInput: (v: string) => void; onSend: () => void;
+  onSendText: (t: string) => void; isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
+  onSelectTarget: (id: number) => void; selectableTargets: { id: number; name: string }[];
+  briefingData: string | null; onSwitchTarget: (inc: DisruptionIncumbent) => void;
+  actContent: React.ReactNode;
+}) {
+  const isActView = activeView.startsWith("act");
+
+  // ── Mobile layout ──
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-5rem)]">
+        {/* Top nav pills when target selected */}
+        {hasTarget && (
+          <div className="flex items-center gap-1 px-3 py-2 border-b border-border/30 overflow-x-auto shrink-0">
+            <button
+              onClick={onBackToChat}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors shrink-0 ${
+                activeView === "chat" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+              }`}
+            >
+              <MessageSquare className="w-3 h-3" /> Chat
+            </button>
+            {acts.map((act, i) => {
+              const isActive = activeView === `act${act.num}`;
+              const isCompleted = completedActs.includes(act.num);
+              return (
+                <button
+                  key={act.num}
+                  onClick={() => onLaunchAct(act.num)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors shrink-0 ${
+                    isActive ? "bg-primary text-primary-foreground" : isCompleted ? "bg-success/10 text-success" : "bg-muted/50 text-muted-foreground"
+                  }`}
+                >
+                  {isCompleted ? "✓" : i + 1} {act.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {isActView ? actContent : (
+            <ChatPanel
+              messages={messages} input={input} setInput={setInput} onSend={onSend}
+              onSendText={onSendText} isStreaming={isStreaming} chatEndRef={chatEndRef}
+              onSelectTarget={onSelectTarget} selectableTargets={selectableTargets}
+              selectedIncumbent={incumbent} selectedCluster={cluster}
+              briefingData={briefingData} onBrowseMap={onBrowseMap}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Desktop layout ──
+  return (
+    <div className="flex h-[calc(100vh-5rem)]">
+      {/* Left sidebar — only when target selected */}
+      {hasTarget && incumbent && cluster && (
+        <div className="w-48 border-r border-border/50 bg-card/30 flex flex-col shrink-0">
+          <div className="p-3 border-b border-border/30">
+            <div className="flex items-center gap-2">
+              <span className="text-base">{cluster.emoji}</span>
+              <div className="min-w-0">
+                <p className="font-cinzel font-bold text-xs text-foreground truncate">{incumbent.name}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{cluster.name}</p>
+              </div>
+            </div>
+          </div>
+          <nav className="flex-1 overflow-y-auto py-1">
+            {/* Chat / Strategist link */}
+            <button
+              onClick={onBackToChat}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                activeView === "chat" ? "bg-primary/10 border-l-2 border-primary" : "hover:bg-muted/40 border-l-2 border-transparent"
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                activeView === "chat" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+              }`}>
+                <MessageSquare className="w-3 h-3" />
+              </div>
+              <div className="min-w-0">
+                <p className={`text-xs font-medium truncate ${activeView === "chat" ? "text-primary" : "text-foreground"}`}>Strategist</p>
+              </div>
+            </button>
+
+            <div className="h-px bg-border/20 mx-3 my-1" />
+
+            {/* Act links */}
+            {acts.map((act, i) => {
+              const isActive = activeView === `act${act.num}`;
+              const isCompleted = completedActs.includes(act.num);
+              const actScore = actScores[act.num];
+              return (
+                <button
+                  key={act.num}
+                  onClick={() => onLaunchAct(act.num)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                    isActive ? "bg-primary/10 border-l-2 border-primary" : "hover:bg-muted/40 border-l-2 border-transparent"
+                  }`}
+                >
+                  <div
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                      isCompleted ? "text-white" : isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                    }`}
+                    style={isCompleted ? { background: act.color } : undefined}
+                  >
+                    {isCompleted ? "✓" : i + 1}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1">
+                      <p className={`text-xs font-medium truncate ${isActive ? "text-primary" : "text-foreground"}`}>{act.name}</p>
+                      {isCompleted && actScore && (
+                        <span className="text-[9px] font-bold text-success">{actScore}</span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground truncate">{act.subtitle}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
+          <div className="p-2 border-t border-border/30">
+            <button onClick={onBrowseMap} className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted/40 transition-colors text-left">
+              <MapIcon className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">Market Map</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {isActView ? (
+          <div className="h-full overflow-y-auto">{actContent}</div>
+        ) : hasTarget ? (
+          /* Chat + Context side by side when target selected */
+          <ResizablePanelGroup direction="horizontal" className="h-full">
+            <ResizablePanel defaultSize={60} minSize={45}>
+              <ChatPanel
+                messages={messages} input={input} setInput={setInput} onSend={onSend}
+                onSendText={onSendText} isStreaming={isStreaming} chatEndRef={chatEndRef}
+                onSelectTarget={onSelectTarget} selectableTargets={selectableTargets}
+                selectedIncumbent={incumbent} selectedCluster={cluster}
+                briefingData={briefingData} onBrowseMap={onBrowseMap}
+              />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={40} minSize={25}>
+              <ScrollArea className="h-full">
+                <ContextPanel
+                  selectedIncumbent={incumbent} selectedCluster={cluster}
+                  briefingData={briefingData} onSelectTarget={onSelectTarget}
+                  onSwitchTarget={onSwitchTarget} onSendText={onSendText}
+                  onBrowseMap={onBrowseMap} hasConversation={messages.length > 1}
+                />
+              </ScrollArea>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          /* No target: full-width chat with quick picks */
+          <div className="max-w-[1200px] mx-auto h-full">
+            <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-border/40">
+              <ResizablePanel defaultSize={60} minSize={45}>
+                <ChatPanel
+                  messages={messages} input={input} setInput={setInput} onSend={onSend}
+                  onSendText={onSendText} isStreaming={isStreaming} chatEndRef={chatEndRef}
+                  onSelectTarget={onSelectTarget} selectableTargets={selectableTargets}
+                  selectedIncumbent={incumbent} selectedCluster={cluster}
+                  briefingData={briefingData} onBrowseMap={onBrowseMap}
+                />
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={40} minSize={25}>
+                <ScrollArea className="h-full">
+                  <ContextPanel
+                    selectedIncumbent={null} selectedCluster={null}
+                    briefingData={null} onSelectTarget={onSelectTarget}
+                    onSwitchTarget={onSwitchTarget} onSendText={onSendText}
+                    onBrowseMap={onBrowseMap} hasConversation={messages.length > 1}
+                  />
+                </ScrollArea>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+/* ── Chat Panel (extracted for reuse) ── */
+function ChatPanel({
+  messages, input, setInput, onSend, onSendText, isStreaming, chatEndRef,
+  onSelectTarget, selectableTargets, selectedIncumbent, selectedCluster,
+  briefingData, onBrowseMap,
+}: {
+  messages: ChatMsg[]; input: string; setInput: (v: string) => void; onSend: () => void;
+  onSendText: (t: string) => void; isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
+  onSelectTarget: (id: number) => void; selectableTargets: { id: number; name: string }[];
+  selectedIncumbent: DisruptionIncumbent | null; selectedCluster: IndustryCluster | null;
+  briefingData: string | null; onBrowseMap: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-3 px-5 py-3 border-b border-border/30 shrink-0">
+        <Rocket className="w-4 h-4 text-primary" />
+        <span className="font-cinzel font-bold text-sm text-foreground">AI Strategist</span>
+        {selectedIncumbent && (
+          <Badge variant="secondary" className="text-xs ml-auto">{selectedIncumbent.name}</Badge>
+        )}
+      </div>
+
+      <ScrollArea className="flex-1 px-5 py-4">
+        <div className="space-y-4 pb-4 max-w-2xl">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                msg.role === "user"
+                  ? "bg-primary text-primary-foreground rounded-br-md text-sm"
+                  : "bg-muted/40 text-foreground rounded-bl-md"
+              }`}>
+                <div className={msg.role === "user" ? "text-sm" : "disrupt-prose"}>
+                  <ReactMarkdown>{msg.content.replace(/\[SELECT:\d+:[^\]]+\]/g, "")}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          ))}
+          {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
+            <div className="flex justify-start">
+              <div className="bg-muted/40 rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce" />
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.1s]" />
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.2s]" />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+      </ScrollArea>
+
+      {selectableTargets.length > 0 && !isStreaming && (
+        <div className="px-5 pb-2 shrink-0">
+          <div className="flex flex-wrap gap-2">
+            {selectableTargets.map(t => (
+              <Button key={t.id} onClick={() => onSelectTarget(t.id)} className="text-xs" size="sm" variant="secondary">
+                <Target className="w-3 h-3 mr-1" /> {t.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {messages.length <= 1 && !isStreaming && !selectedIncumbent && (
+        <div className="flex gap-2 px-5 pb-2 shrink-0">
+          <Button variant="outline" size="sm" className="text-xs" onClick={() => onSendText("Show me overpriced enterprise software ripe for disruption")}>
+            Overpriced SaaS
+          </Button>
+          <Button variant="outline" size="sm" className="text-xs" onClick={() => onSendText("What B2B tools have the worst user experience?")}>
+            Worst UX tools
+          </Button>
+        </div>
+      )}
+
+      <div className="flex gap-2 shrink-0 px-5 pb-4 pt-2 border-t border-border/20">
+        <Textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={selectedIncumbent ? `Ask about ${selectedIncumbent.name}…` : "What software would you rebuild?"}
+          className="min-h-[44px] max-h-[100px] resize-none text-sm"
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
+          disabled={isStreaming}
+        />
+        <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end">
+          <Send className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -451,7 +724,6 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
 
   return (
     <div className="max-w-7xl mx-auto px-4">
-      {/* Hero */}
       <div className="text-center mb-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
@@ -463,8 +735,6 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
             15 software verticals. 46 incumbents. 6 acts per mission. Learn to build AI-powered startups that disrupt legacy SaaS.
           </p>
-
-          {/* Stats */}
           <div className="flex justify-center gap-6 mb-8">
             <div className="text-center">
               <p className="text-3xl font-bold text-foreground">{totalCompleted}</p>
@@ -479,7 +749,6 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
               <p className="text-xs text-muted-foreground">Total Targets</p>
             </div>
           </div>
-
           {onStartDiscovery && (
             <Button onClick={onStartDiscovery} variant="outline" size="lg" className="px-6">
               <Brain className="w-4 h-4 mr-2" /> Help me find software to disrupt
@@ -488,7 +757,6 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
         </motion.div>
       </div>
 
-      {/* 7-Act Journey Explainer */}
       <div className="mb-12">
         <h2 className="font-cinzel text-xl font-bold text-center mb-6 text-foreground">The 6-Act Founder Journey</h2>
         <div className="flex flex-wrap justify-center gap-2 md:gap-0">
@@ -509,7 +777,6 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
         </div>
       </div>
 
-      {/* Your Missions (if any in progress) */}
       {totalInProgress > 0 && (
         <div className="mb-12">
           <h2 className="font-cinzel text-xl font-bold mb-4 text-foreground">🎯 Active Missions</h2>
@@ -536,7 +803,6 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
         </div>
       )}
 
-      {/* Industry Map */}
       <h2 className="font-cinzel text-xl font-bold mb-4 text-foreground">🗺️ Software Market Map</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-12">
         {INDUSTRY_CLUSTERS.map((cluster) => {
@@ -560,9 +826,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
                     {cluster.incumbents.slice(0, 3).map(inc => (<Badge key={inc.id} variant="outline" className="text-[11px]">{inc.name}</Badge>))}
                     {cluster.incumbents.length > 3 && <Badge variant="outline" className="text-[11px]">+{cluster.incumbents.length - 3}</Badge>}
                   </div>
-                  {done > 0 && (
-                    <Progress value={(done / cluster.incumbents.length) * 100} className="h-1.5 mt-3" />
-                  )}
+                  {done > 0 && <Progress value={(done / cluster.incumbents.length) * 100} className="h-1.5 mt-3" />}
                   <div className="flex items-center gap-1 mt-3 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                     View Missions <ChevronRight className="w-3 h-3" />
                   </div>
@@ -573,7 +837,6 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
         })}
       </div>
 
-      {/* Disruption Framework */}
       <div className="max-w-4xl mx-auto mb-12">
         <h2 className="font-cinzel text-2xl font-bold text-center mb-8 text-foreground">The 6-Step AI Disruption Framework</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -656,8 +919,6 @@ function ClusterDetail({ cluster, onBack, onStartMission, progress }: {
                       <Badge className="text-[11px]" style={{ background: `hsl(${cluster.color})` }}>{inc.vector}</Badge>
                       {isCompleted && <Badge className="text-[11px] bg-success text-success-foreground">✓ Conquered</Badge>}
                     </div>
-
-                    {/* 7-Act Progress Rail */}
                     <div className="flex items-center gap-1 mb-3">
                       {ACTS.map((act, i) => (
                         <div key={act.num} className="flex items-center">
@@ -682,7 +943,6 @@ function ClusterDetail({ cluster, onBack, onStartMission, progress }: {
                         </div>
                       ))}
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <div><p className="text-xs text-muted-foreground font-medium mb-1">🔍 Vulnerability</p><p className="text-foreground/80 text-xs">{inc.vulnerability}</p></div>
                       <div><p className="text-xs text-muted-foreground font-medium mb-1">⚔️ Asymmetric Angle</p><p className="text-foreground/80 text-xs">{inc.asymmetricAngle}</p></div>
@@ -704,215 +964,6 @@ function ClusterDetail({ cluster, onBack, onStartMission, progress }: {
   );
 }
 
-
-/* ── Act Score Screen (generic) ── */
-function ActScoreScreen({ actNum, score, title, summary, dimensions, nextSteps, onContinue }: {
-  actNum: number; score: number; title: string; summary: string;
-  dimensions?: { name: string; score: number; feedback: string }[];
-  nextSteps?: string[]; onContinue: () => void;
-}) {
-  const act = ACTS[actNum - 1];
-  const nextAct = ACTS[actNum];
-  const getColor = (s: number) => s >= 80 ? "text-green-500" : s >= 60 ? "text-yellow-500" : "text-red-500";
-  const getGrade = (s: number) => s >= 90 ? "S" : s >= 80 ? "A" : s >= 70 ? "B" : s >= 60 ? "C" : "D";
-
-  return (
-    <div className="max-w-3xl mx-auto px-4 text-center py-8">
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}>
-        <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: act?.color }} />
-      </motion.div>
-      <Badge variant="outline" className="mb-2 text-xs">Act {actNum} Complete</Badge>
-      <h1 className="font-cinzel text-2xl font-bold text-foreground mb-2">{act?.name}: {act?.subtitle}</h1>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-        <div className="inline-flex items-center gap-4 bg-card border border-border rounded-2xl p-6 mb-6">
-          <div className={`text-5xl font-cinzel font-bold ${getColor(score)}`}>{getGrade(score)}</div>
-          <div className="text-left">
-            <p className="text-3xl font-bold text-foreground">{score}</p>
-            <p className="text-sm text-primary font-medium">{title}</p>
-          </div>
-        </div>
-      </motion.div>
-      <Card className="mb-6 text-left">
-        <CardContent className="pt-6">
-          <p className="text-sm text-foreground mb-4">{summary}</p>
-          {dimensions && (
-            <div className="space-y-3">
-              {dimensions.map((dim, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.1 }}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-foreground font-medium">{dim.name}</span>
-                    <span className={`font-bold ${getColor(dim.score)}`}>{dim.score}</span>
-                  </div>
-                  <Progress value={dim.score} className="h-2 mb-1" />
-                  <p className="text-xs text-muted-foreground">{dim.feedback}</p>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      {nextSteps && (
-        <Card className="mb-6 text-left">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-cinzel">⚔️ Key Insights</CardTitle></CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {nextSteps.map((step, i) => (<li key={i} className="text-sm text-foreground flex gap-2"><span className="text-primary shrink-0">→</span>{step}</li>))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-      <Button onClick={onContinue} size="lg" className="px-8" style={{ background: act?.color }}>
-        {actNum >= 6 ? "View Final Report" : <><MapIcon className="w-4 h-4 mr-2" /> Back to Mission Board</>}
-      </Button>
-    </div>
-  );
-}
-
-
-
-/* ── Strategist View (Two-Column: Chat + Context) ── */
-function StrategistView({
-  messages, input, setInput, onSend, onSendText, isStreaming, chatEndRef, onBrowseMap,
-  onSelectTarget, selectableTargets, selectedIncumbent, selectedCluster,
-  briefingData, onLaunch, onSwitchTarget, isMobile,
-}: {
-  messages: ChatMsg[]; input: string; setInput: (v: string) => void; onSend: () => void;
-  onSendText: (t: string) => void; isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
-  onBrowseMap: () => void; onSelectTarget: (id: number) => void;
-  selectableTargets: { id: number; name: string }[];
-  selectedIncumbent: DisruptionIncumbent | null; selectedCluster: IndustryCluster | null;
-  briefingData: string | null; onLaunch: () => void;
-  onSwitchTarget: (inc: DisruptionIncumbent) => void; isMobile: boolean;
-}) {
-  const hasConversation = messages.length > 1;
-
-  const chatPanel = (
-    <div className="flex flex-col h-full">
-      {/* Minimal header */}
-      <div className="flex items-center gap-3 px-5 py-3 border-b border-border/30 shrink-0">
-        <Rocket className="w-4 h-4 text-primary" />
-        <span className="font-cinzel font-bold text-sm text-foreground">AI Strategist</span>
-        {selectedIncumbent && (
-          <Badge variant="secondary" className="text-xs ml-auto">{selectedIncumbent.name}</Badge>
-        )}
-      </div>
-
-      {/* Messages */}
-      <ScrollArea className="flex-1 px-5 py-4">
-        <div className="space-y-4 pb-4 max-w-2xl">
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-md text-sm"
-                  : "bg-muted/40 text-foreground rounded-bl-md"
-              }`}>
-                <div className={msg.role === "user" ? "text-sm" : "disrupt-prose"}>
-                  <ReactMarkdown>{msg.content.replace(/\[SELECT:\d+:[^\]]+\]/g, "")}</ReactMarkdown>
-                </div>
-              </div>
-            </div>
-          ))}
-          {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
-            <div className="flex justify-start">
-              <div className="bg-muted/40 rounded-2xl rounded-bl-md px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce" />
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.1s]" />
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.2s]" />
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-      </ScrollArea>
-
-      {/* Selectable targets from AI response */}
-      {selectableTargets.length > 0 && !isStreaming && (
-        <div className="px-5 pb-2 shrink-0">
-          <div className="flex flex-wrap gap-2">
-            {selectableTargets.map(t => (
-              <Button key={t.id} onClick={() => onSelectTarget(t.id)} className="text-xs" size="sm" variant="secondary">
-                <Target className="w-3 h-3 mr-1" /> {t.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Suggestion chips — only on first message, max 2 */}
-      {messages.length <= 1 && !isStreaming && !selectedIncumbent && (
-        <div className="flex gap-2 px-5 pb-2 shrink-0">
-          <Button variant="outline" size="sm" className="text-xs" onClick={() => onSendText("Show me overpriced enterprise software ripe for disruption")}>
-            Overpriced SaaS
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs" onClick={() => onSendText("What B2B tools have the worst user experience?")}>
-            Worst UX tools
-          </Button>
-        </div>
-      )}
-
-      {/* Input */}
-      <div className="flex gap-2 shrink-0 px-5 pb-4 pt-2 border-t border-border/20">
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={selectedIncumbent ? `Ask about ${selectedIncumbent.name}…` : "What software would you rebuild?"}
-          className="min-h-[44px] max-h-[100px] resize-none text-sm"
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
-          disabled={isStreaming}
-        />
-        <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end">
-          <Send className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
-  );
-
-  const contextPanel = (
-    <ContextPanel
-      selectedIncumbent={selectedIncumbent}
-      selectedCluster={selectedCluster}
-      briefingData={briefingData}
-      onLaunch={onLaunch}
-      onSelectTarget={onSelectTarget}
-      onSwitchTarget={onSwitchTarget}
-      onSendText={onSendText}
-      onBrowseMap={onBrowseMap}
-      hasConversation={hasConversation}
-    />
-  );
-
-  if (isMobile) {
-    return (
-      <div className="flex flex-col" style={{ height: "calc(100vh - 6rem)" }}>
-        <div className="flex-1 min-h-0">{chatPanel}</div>
-        {selectedIncumbent && (
-          <div className="border-t border-border max-h-[35vh] overflow-y-auto">
-            {contextPanel}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-[1400px] mx-auto" style={{ height: "calc(100vh - 6rem)" }}>
-      <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-border/40">
-        <ResizablePanel defaultSize={60} minSize={45}>
-          {chatPanel}
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={40} minSize={25}>
-          <ScrollArea className="h-full">
-            {contextPanel}
-          </ScrollArea>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
-  );
-}
 
 /* ── Briefing section parser ── */
 const SECTION_ICONS: Record<number, { icon: typeof Building2; color: string; bg: string }> = {
@@ -945,14 +996,13 @@ function parseBriefingSections(md: string): { num: number; title: string; body: 
 
 /* ── Context Panel (Right Side) — Progressive Reveal ── */
 function ContextPanel({
-  selectedIncumbent, selectedCluster, briefingData, onLaunch, onSelectTarget, onSwitchTarget, onSendText, onBrowseMap, hasConversation,
+  selectedIncumbent, selectedCluster, briefingData, onSelectTarget, onSwitchTarget, onSendText, onBrowseMap, hasConversation,
 }: {
   selectedIncumbent: DisruptionIncumbent | null; selectedCluster: IndustryCluster | null;
-  briefingData: string | null; onLaunch: () => void;
+  briefingData: string | null;
   onSelectTarget: (id: number) => void; onSwitchTarget: (inc: DisruptionIncumbent) => void;
   onSendText: (t: string) => void; onBrowseMap: () => void; hasConversation: boolean;
 }) {
-  // ── State 2: Target selected → show intel
   if (selectedIncumbent && selectedCluster) {
     const otherTargets = selectedCluster.incumbents.filter(i => i.id !== selectedIncumbent.id);
     const briefingSections = briefingData ? parseBriefingSections(briefingData) : [];
@@ -960,7 +1010,6 @@ function ContextPanel({
 
     return (
       <div className="p-5 space-y-4">
-        {/* Compact target header */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
             <Target className="w-5 h-5 text-primary" />
@@ -971,7 +1020,6 @@ function ContextPanel({
           </div>
         </div>
 
-        {/* Quick stats — always visible */}
         <div className="flex gap-2 flex-wrap">
           <Badge variant="outline" className="text-xs">{selectedIncumbent.vector}</Badge>
           {selectedIncumbent.pricingModel && (
@@ -982,7 +1030,6 @@ function ContextPanel({
           )}
         </div>
 
-        {/* Briefing cards — progressive reveal */}
         {hasParsedSections ? (
           <div className="space-y-3">
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Intel Briefing</p>
@@ -1014,7 +1061,6 @@ function ContextPanel({
             })}
           </div>
         ) : !briefingData ? (
-          /* Static fallback while waiting for briefing */
           <Card className="border-border/40">
             <CardContent className="p-3.5 space-y-2">
               <p className="text-xs text-muted-foreground font-medium">🔍 Vulnerability</p>
@@ -1026,16 +1072,6 @@ function ContextPanel({
           </Card>
         ) : null}
 
-        {/* Launch CTA */}
-        {briefingData && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-            <Button onClick={onLaunch} size="lg" className="w-full">
-              <Rocket className="w-4 h-4 mr-2" /> Launch Simulation
-            </Button>
-          </motion.div>
-        )}
-
-        {/* Switch targets — collapsed */}
         {otherTargets.length > 0 && (
           <div>
             <p className="text-[11px] text-muted-foreground mb-1.5">Also in {selectedCluster.name}:</p>
@@ -1052,7 +1088,7 @@ function ContextPanel({
     );
   }
 
-  // ── State 1: No target → minimal quick-picks
+  // No target → quick picks
   const trendingTargets = INDUSTRY_CLUSTERS.slice(0, 5).flatMap(c => c.incumbents.slice(0, 1).map(inc => ({ inc, cluster: c })));
 
   return (
@@ -1089,179 +1125,3 @@ function ContextPanel({
     </div>
   );
 }
-
-/* ── Simulation Shell — Sidebar + Content ── */
-function SimulationShell({
-  incumbent, cluster, acts, completedActs, actScores, activePhase, onLaunchAct, onBackToStrategist, onBackToMap, isMobile, children,
-}: {
-  incumbent: DisruptionIncumbent; cluster: IndustryCluster;
-  acts: typeof ACTS; completedActs: number[]; actScores: Record<number, number>;
-  activePhase: GamePhase; onLaunchAct: (n: number) => void;
-  onBackToStrategist: () => void; onBackToMap: () => void; isMobile: boolean;
-  children: React.ReactNode;
-}) {
-  const sidebar = (
-    <div className="w-52 border-r border-border/50 bg-card/30 flex flex-col shrink-0 h-[calc(100vh-5rem)]">
-      <div className="p-3 border-b border-border/30">
-        <div className="flex items-center gap-2">
-          <span className="text-base">{cluster.emoji}</span>
-          <div className="min-w-0">
-            <p className="font-cinzel font-bold text-xs text-foreground truncate">{incumbent.name}</p>
-            <p className="text-[11px] text-muted-foreground truncate">{cluster.name}</p>
-          </div>
-        </div>
-      </div>
-      <nav className="flex-1 overflow-y-auto py-1.5">
-        {acts.map((act, i) => {
-          const isActive = activePhase === `act${act.num}` || activePhase === `act${act.num}-score`;
-          const isCompleted = completedActs.includes(act.num);
-          const actScore = actScores[act.num];
-          return (
-            <button
-              key={act.num}
-              onClick={() => onLaunchAct(act.num)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                isActive ? "bg-primary/10 border-l-2 border-primary" : "hover:bg-muted/40 border-l-2 border-transparent"
-              }`}
-            >
-              <div
-                className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0 ${
-                  isCompleted ? "text-white" : isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-                }`}
-                style={isCompleted ? { background: act.color } : undefined}
-              >
-                {isCompleted ? "✓" : i + 1}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1">
-                  <p className={`text-xs font-medium truncate ${isActive ? "text-primary" : "text-foreground"}`}>{act.name}</p>
-                  {isCompleted && actScore && (
-                    <span className="text-[10px] font-bold text-success">{actScore}</span>
-                  )}
-                </div>
-                <p className="text-[11px] text-muted-foreground truncate">{act.subtitle}</p>
-              </div>
-            </button>
-          );
-        })}
-      </nav>
-      <div className="p-2 border-t border-border/30 space-y-0.5">
-        <button onClick={onBackToStrategist} className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted/40 transition-colors text-left">
-          <Brain className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">AI Strategist</span>
-        </button>
-        <button onClick={onBackToMap} className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted/40 transition-colors text-left">
-          <MapIcon className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Market Map</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  if (isMobile) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-5rem)]">
-        <div className="flex items-center gap-1 px-3 py-2 border-b border-border/30 overflow-x-auto shrink-0">
-          {acts.map((act, i) => {
-            const isActive = activePhase === `act${act.num}`;
-            const isCompleted = completedActs.includes(act.num);
-            return (
-              <button
-                key={act.num}
-                onClick={() => onLaunchAct(act.num)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors shrink-0 ${
-                  isActive ? "bg-primary text-primary-foreground" : isCompleted ? "bg-success/10 text-success" : "bg-muted/50 text-muted-foreground"
-                }`}
-              >
-                {isCompleted ? "✓" : i + 1} {act.name}
-              </button>
-            );
-          })}
-          <button onClick={onBackToStrategist} className="flex items-center gap-1 px-2 py-1.5 rounded-full text-xs text-muted-foreground bg-muted/30 shrink-0">
-            <Brain className="w-3 h-3" /> Chat
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto">{children}</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-[calc(100vh-5rem)]">
-      {sidebar}
-      <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
-    </div>
-  );
-}
-
-/* ── Simulation Welcome / Overview ── */
-function SimulationWelcome({
-  incumbent, cluster, acts, completedActs, actScores, onLaunchAct,
-}: {
-  incumbent: DisruptionIncumbent; cluster: IndustryCluster;
-  acts: typeof ACTS; completedActs: number[]; actScores: Record<number, number>;
-  onLaunchAct: (n: number) => void;
-}) {
-  const recommendedAct = acts.find(a => a.num <= 6 && !completedActs.includes(a.num)) || acts[0];
-  const allDone = acts.filter(a => a.num <= 6).every(a => completedActs.includes(a.num));
-
-  return (
-    <div className="max-w-2xl mx-auto px-6 py-12">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
-            <Rocket className="w-3.5 h-3.5" /> Mission Active
-          </div>
-          <h1 className="font-cinzel text-2xl font-bold text-foreground mb-2">
-            Disrupting {incumbent.name}
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            {incumbent.vulnerability}
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <Badge variant="outline" className="text-xs">{cluster.emoji} {cluster.name}</Badge>
-            <Badge variant="secondary" className="text-xs">{completedActs.length}/{acts.length} complete</Badge>
-          </div>
-        </div>
-
-        {!allDone && recommendedAct && (
-          <Card className="border-primary/30 mb-6 cursor-pointer hover:shadow-lg transition-all" onClick={() => onLaunchAct(recommendedAct.num)}>
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ background: recommendedAct.color, color: "white" }}>
-                {recommendedAct.emoji}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-primary font-medium mb-0.5">✨ Start here</p>
-                <h3 className="font-cinzel font-bold text-foreground">{recommendedAct.name}: {recommendedAct.subtitle}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{recommendedAct.description}</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-primary shrink-0" />
-            </CardContent>
-          </Card>
-        )}
-
-        {allDone && (
-          <div className="text-center">
-            <Button onClick={() => onLaunchAct(7)} size="lg" className="px-8 bg-success text-success-foreground">
-              <Trophy className="w-4 h-4 mr-2" /> View Founder Report
-            </Button>
-          </div>
-        )}
-
-        {completedActs.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Completed</p>
-            {acts.filter(a => completedActs.includes(a.num)).map(act => (
-              <div key={act.num} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => onLaunchAct(act.num)}>
-                <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style={{ background: act.color }}>✓</div>
-                <span className="text-sm text-foreground">{act.name}</span>
-                {actScores[act.num] && <span className="text-xs font-bold text-success ml-auto">{actScores[act.num]}</span>}
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-}
-
