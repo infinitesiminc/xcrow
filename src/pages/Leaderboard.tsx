@@ -133,49 +133,6 @@ export default function Leaderboard() {
             </Button>
           </div>
 
-          {/* My rank banner */}
-          {myEntry && myRank > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-5 rounded-xl p-4 flex items-center justify-between"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--filigree-glow) / 0.08))",
-                border: "1px solid hsl(var(--filigree) / 0.3)",
-                boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 16px hsl(var(--emboss-shadow))",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{
-                    background: "hsl(var(--filigree-glow) / 0.15)",
-                    color: "hsl(var(--filigree-glow))",
-                    fontFamily: "'Cinzel', serif",
-                  }}
-                >
-                  #{myRank}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>Your Rank</p>
-                  <p className="text-xs text-muted-foreground">
-                    {myEntry.total_xp.toLocaleString()} XP · {myEntry.tasks_completed} quests completed
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <div className="text-center">
-                  <p className="font-bold text-foreground text-base" style={{ fontFamily: "'Cinzel', serif" }}>{myEntry.skills_unlocked}</p>
-                  <p>Skills</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bold text-foreground text-base" style={{ fontFamily: "'Cinzel', serif" }}>{myEntry.tasks_completed}</p>
-                  <p>Quests</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
           {/* Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2">
