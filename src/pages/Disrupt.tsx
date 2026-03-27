@@ -584,7 +584,7 @@ export default function Disrupt() {
 
           {phase === "act7" && selectedIncumbent && selectedCluster && (
             <motion.div key="act7" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("hub")} />
+              <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("mission-board")} />
             </motion.div>
           )}
         </AnimatePresence>
