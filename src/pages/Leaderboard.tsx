@@ -1,7 +1,5 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -17,11 +15,40 @@ type SortKey = "total_xp" | "skills_unlocked" | "tasks_completed";
 
 interface LeaderboardEntry {
   user_id: string;
-  display_name: string;
   total_xp: number;
   skills_unlocked: number;
   tasks_completed: number;
 }
+
+/* ── Seeded mock leaderboard ── */
+function seededRand(seed: number) {
+  let s = seed;
+  return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+const MOCK_ENTRIES: LeaderboardEntry[] = (() => {
+  const r = seededRand(7777);
+  const adjectives = ["Shadow","Iron","Storm","Crystal","Nova","Ember","Frost","Rune","Drift","Arc","Void","Blaze","Hex","Onyx","Aero","Neon","Volt","Apex","Echo","Rift"];
+  const nouns = ["Hawk","Wolf","Fox","Lynx","Raven","Bear","Viper","Crane","Otter","Drake","Eagle","Lion","Tiger","Falcon","Cobra","Shark","Owl","Panther","Stag","Crow"];
+  const entries: LeaderboardEntry[] = [];
+  const usedIds = new Set<string>();
+  for (let i = 0; i < 50; i++) {
+    let id: string;
+    do {
+      id = `${adjectives[Math.floor(r() * adjectives.length)]}${nouns[Math.floor(r() * nouns.length)]}${Math.floor(r() * 900 + 100)}`;
+    } while (usedIds.has(id));
+    usedIds.add(id);
+    const tier = r();
+    const xp = tier > 0.9 ? Math.floor(r() * 8000 + 12000) : tier > 0.5 ? Math.floor(r() * 5000 + 3000) : Math.floor(r() * 2500 + 200);
+    entries.push({
+      user_id: id,
+      total_xp: xp,
+      skills_unlocked: Math.floor(r() * 40 + 3),
+      tasks_completed: Math.floor(r() * 60 + 1),
+    });
+  }
+  return entries.sort((a, b) => b.total_xp - a.total_xp);
+})();
 
 const RANK_ICONS = [
   <Crown key="1" className="h-5 w-5" style={{ color: "hsl(var(--filigree-glow))" }} />,
@@ -30,42 +57,21 @@ const RANK_ICONS = [
 ];
 
 export default function Leaderboard() {
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [sortBy, setSortBy] = useState<SortKey>("total_xp");
   const [search, setSearch] = useState("");
 
-  const { data: entries = [], isLoading } = useQuery({
-    queryKey: ["leaderboard"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_leaderboard" as any);
-      if (error) throw error;
-      return (data as any[]).map((r: any) => ({
-        user_id: r.user_id,
-        display_name: r.display_name || "Anonymous",
-        total_xp: Number(r.total_xp) || 0,
-        skills_unlocked: Number(r.skills_unlocked) || 0,
-        tasks_completed: Number(r.tasks_completed) || 0,
-      })) as LeaderboardEntry[];
-    },
-    staleTime: 60_000,
-  });
+  const entries = MOCK_ENTRIES;
 
   const filtered = useMemo(() => {
     let data = [...entries];
     if (search) {
       const q = search.toLowerCase();
-      data = data.filter(e => e.display_name.toLowerCase().includes(q));
+      data = data.filter(e => e.user_id.toLowerCase().includes(q));
     }
     return data.sort((a, b) => (b[sortBy] as number) - (a[sortBy] as number));
   }, [entries, sortBy, search]);
-
-  const myEntry = user ? entries.find(e => e.user_id === user.id) : null;
-  const myRank = useMemo(() => {
-    if (!user) return 0;
-    const sorted = [...entries].sort((a, b) => b[sortBy] - a[sortBy]);
-    return sorted.findIndex(e => e.user_id === user.id) + 1;
-  }, [entries, sortBy, user]);
 
   const columns: { key: SortKey; label: string; icon: typeof Zap }[] = [
     { key: "total_xp", label: "XP", icon: Zap },
@@ -83,30 +89,7 @@ export default function Leaderboard() {
     toast({ title: "Link copied!", description: "Paste it anywhere to share" });
   }
 
-  if (!user) {
-    return (
-      <>
-        <Navbar />
-        <main
-          className="min-h-screen flex items-center justify-center"
-          style={{ background: "hsl(var(--background))" }}
-        >
-          <div className="text-center px-4">
-            <Trophy className="h-12 w-12 mx-auto mb-4" style={{ color: "hsl(var(--filigree) / 0.3)" }} />
-            <h2
-              className="text-xl font-bold text-foreground mb-2"
-              style={{ fontFamily: "'Cinzel', serif" }}
-            >
-              Sign in to view the Hall of Champions
-            </h2>
-            <p className="text-sm text-muted-foreground mb-4">Compete with warriors and track your conquest</p>
-            <Button onClick={openAuthModal} style={{ fontFamily: "'Cinzel', serif" }}>Enter Realm</Button>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  const isLoading = false;
 
   return (
     <>
@@ -149,49 +132,6 @@ export default function Leaderboard() {
               <Share2 className="h-3.5 w-3.5" /> Invite
             </Button>
           </div>
-
-          {/* My rank banner */}
-          {myEntry && myRank > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-5 rounded-xl p-4 flex items-center justify-between"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--filigree-glow) / 0.08))",
-                border: "1px solid hsl(var(--filigree) / 0.3)",
-                boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 16px hsl(var(--emboss-shadow))",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{
-                    background: "hsl(var(--filigree-glow) / 0.15)",
-                    color: "hsl(var(--filigree-glow))",
-                    fontFamily: "'Cinzel', serif",
-                  }}
-                >
-                  #{myRank}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>Your Rank</p>
-                  <p className="text-xs text-muted-foreground">
-                    {myEntry.total_xp.toLocaleString()} XP · {myEntry.tasks_completed} quests completed
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <div className="text-center">
-                  <p className="font-bold text-foreground text-base" style={{ fontFamily: "'Cinzel', serif" }}>{myEntry.skills_unlocked}</p>
-                  <p>Skills</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bold text-foreground text-base" style={{ fontFamily: "'Cinzel', serif" }}>{myEntry.tasks_completed}</p>
-                  <p>Quests</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
 
           {/* Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -286,11 +226,8 @@ export default function Leaderboard() {
                     </div>
 
                     <div className="min-w-0">
-                      <p className={`text-sm font-medium truncate ${isMe ? "" : "text-foreground"}`}
-                        style={isMe ? { color: "hsl(var(--filigree-glow))" } : undefined}
-                      >
-                        {entry.display_name}
-                        {isMe && <span className="ml-1 text-[10px]" style={{ color: "hsl(var(--filigree) / 0.6)" }}>(you)</span>}
+                      <p className="text-sm font-medium truncate text-foreground font-mono">
+                        @{entry.user_id}
                       </p>
                     </div>
 

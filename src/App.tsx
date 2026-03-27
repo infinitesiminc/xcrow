@@ -124,7 +124,7 @@ const App = () => (
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
-              <Route path="/leaderboard" element={<AuthGate><Navbar /><Leaderboard /></AuthGate>} />
+              <Route path="/leaderboard" element={<><Navbar /><Leaderboard /></>} />
               <Route path="/card-styles" element={<Navigate to="/" replace />} />
               <Route path="/l2-formats" element={<Navigate to="/" replace />} />
               <Route path="/journey" element={<Navigate to="/map" replace />} />
