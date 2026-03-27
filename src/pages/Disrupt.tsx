@@ -109,14 +109,19 @@ export default function Disrupt() {
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }, []);
 
+  // Briefing state
+  const [briefingMessages, setBriefingMessages] = useState<ChatMsg[]>([]);
+  const [briefingInput, setBriefingInput] = useState("");
+  const [isBriefingStreaming, setIsBriefingStreaming] = useState(false);
+  const briefingEndRef = useRef<HTMLDivElement>(null);
+
   const startMission = (cluster: IndustryCluster, incumbent: DisruptionIncumbent) => {
     setSelectedCluster(cluster);
     setSelectedIncumbent(incumbent);
     const progress = getMissionProgress(incumbent.id);
-    // Find first incomplete act
-    const firstIncomplete = ACTS.find(a => !progress.completedActs.includes(a.num));
-    if (firstIncomplete) {
-      // Restore any saved state
+
+    // If user has progress, skip briefing and resume
+    if (progress.completedActs.length > 0) {
       if (progress.scoreResult) setScore(progress.scoreResult);
       if (progress.battleTranscript) setMessages(progress.battleTranscript);
       setActScores({});
@@ -124,11 +129,128 @@ export default function Disrupt() {
         const key = `act${actNum}Score` as keyof MissionProgress;
         if (progress[key]) setActScores(prev => ({ ...prev, [actNum]: progress[key] as number }));
       });
-      setPhase(`act${firstIncomplete.num}-intro` as GamePhase);
+      const firstIncomplete = ACTS.find(a => !progress.completedActs.includes(a.num));
+      if (firstIncomplete) setPhase(`act${firstIncomplete.num}-intro` as GamePhase);
+      else setPhase("act7");
     } else {
-      setPhase("act7");
+      // New mission → go to briefing
+      setBriefingMessages([]);
+      setBriefingInput("");
+      startBriefingChat(cluster, incumbent);
     }
     updateMissionProgress(incumbent.id, { status: "in-progress" });
+  };
+
+  const startBriefingChat = async (cluster: IndustryCluster, incumbent: DisruptionIncumbent) => {
+    setPhase("briefing");
+    setIsBriefingStreaming(true);
+
+    const systemMessage: ChatMsg = {
+      role: "user",
+      content: "I just selected this company. Brief me on everything I need to know before I start the disruption simulation.",
+    };
+
+    let assistantContent = "";
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: "briefing", payload: { incumbent, cluster, messages: [systemMessage] } }),
+        },
+      );
+      if (!resp.ok || !resp.body) throw new Error("Briefing failed");
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setBriefingMessages([{ role: "assistant", content: assistantContent }]);
+            }
+          } catch { /* partial */ }
+        }
+      }
+    } catch { toast.error("Briefing failed. Try again."); }
+    finally { setIsBriefingStreaming(false); }
+  };
+
+  const sendBriefingMessage = async () => {
+    if (!briefingInput.trim() || isBriefingStreaming || !selectedIncumbent || !selectedCluster) return;
+    const userMsg: ChatMsg = { role: "user", content: briefingInput.trim() };
+    const updatedMessages = [...briefingMessages, userMsg];
+    setBriefingMessages(updatedMessages);
+    setBriefingInput("");
+    setIsBriefingStreaming(true);
+    setTimeout(() => briefingEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+
+    let assistantContent = "";
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: "briefing", payload: { incumbent: selectedIncumbent, cluster: selectedCluster, messages: updatedMessages, allIncumbents: selectedCluster.incumbents.map(i => ({ name: i.name, id: i.id, vulnerability: i.vulnerability, vector: i.vector })) } }),
+        },
+      );
+      if (!resp.ok || !resp.body) throw new Error("Briefing failed");
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setBriefingMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && prev.length === updatedMessages.length + 1) {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
+                }
+                return [...prev, { role: "assistant", content: assistantContent }];
+              });
+              setTimeout(() => briefingEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+            }
+          } catch { /* partial */ }
+        }
+      }
+    } catch { toast.error("Briefing failed. Try again."); }
+    finally { setIsBriefingStreaming(false); }
+  };
+
+  const handleSwitchTarget = (newIncumbent: DisruptionIncumbent) => {
+    if (!selectedCluster) return;
+    setSelectedIncumbent(newIncumbent);
+    setBriefingMessages([]);
+    startBriefingChat(selectedCluster, newIncumbent);
   };
 
   const startBattle = () => {
