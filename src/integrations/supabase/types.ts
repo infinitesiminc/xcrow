@@ -478,6 +478,136 @@ export type Database = {
         }
         Relationships: []
       }
+      disrupt_rooms: {
+        Row: {
+          created_at: string
+          created_by: string
+          duration_minutes: number
+          ends_at: string | null
+          id: string
+          max_team_size: number
+          max_teams: number
+          name: string
+          room_code: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          max_team_size?: number
+          max_teams?: number
+          name?: string
+          room_code: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          max_team_size?: number
+          max_teams?: number
+          name?: string
+          room_code?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      disrupt_team_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disrupt_team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "disrupt_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disrupt_teams: {
+        Row: {
+          battle_transcript: Json | null
+          cluster_id: string | null
+          color: string
+          completed_at: string | null
+          created_at: string
+          current_step: number
+          id: string
+          incumbent_id: string | null
+          name: string
+          room_id: string
+          score_result: Json | null
+          step_scores: Json | null
+          total_score: number
+        }
+        Insert: {
+          battle_transcript?: Json | null
+          cluster_id?: string | null
+          color?: string
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          incumbent_id?: string | null
+          name: string
+          room_id: string
+          score_result?: Json | null
+          step_scores?: Json | null
+          total_score?: number
+        }
+        Update: {
+          battle_transcript?: Json | null
+          cluster_id?: string | null
+          color?: string
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          incumbent_id?: string | null
+          name?: string
+          room_id?: string
+          score_result?: Json | null
+          step_scores?: Json | null
+          total_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disrupt_teams_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "disrupt_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
