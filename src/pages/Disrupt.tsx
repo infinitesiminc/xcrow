@@ -482,8 +482,8 @@ function MissionHub({ onSelectCluster, progress }: { onSelectCluster: (c: Indust
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg mb-1" style={{ background: act.color, color: "white" }}>
                   {act.emoji}
                 </div>
-                <p className="text-[10px] font-semibold text-foreground">{act.name}</p>
-                <p className="text-[8px] text-muted-foreground">{act.subtitle}</p>
+                <p className="text-[11px] font-semibold text-foreground">{act.name}</p>
+                <p className="text-[11px] text-muted-foreground">{act.subtitle}</p>
               </div>
               {i < ACTS.length - 1 && (
                 <ChevronRight className="w-3 h-3 text-muted-foreground/30 hidden md:block -mx-1" />
@@ -532,7 +532,7 @@ function MissionHub({ onSelectCluster, progress }: { onSelectCluster: (c: Indust
                   <div className="flex items-center justify-between">
                     <span className="text-2xl">{cluster.emoji}</span>
                     <div className="flex items-center gap-1">
-                      {done > 0 && <Badge className="text-[10px] bg-success/20 text-success border-0">{done}/{cluster.incumbents.length} ✓</Badge>}
+                      {done > 0 && <Badge className="text-[11px] bg-success/20 text-success border-0">{done}/{cluster.incumbents.length} ✓</Badge>}
                       <Badge variant="secondary" className="text-xs">{cluster.incumbents.length} targets</Badge>
                     </div>
                   </div>
@@ -541,8 +541,8 @@ function MissionHub({ onSelectCluster, progress }: { onSelectCluster: (c: Indust
                 <CardContent className="pt-0">
                   <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{cluster.timingCatalyst}</p>
                   <div className="flex flex-wrap gap-1">
-                    {cluster.incumbents.slice(0, 3).map(inc => (<Badge key={inc.id} variant="outline" className="text-[10px]">{inc.name}</Badge>))}
-                    {cluster.incumbents.length > 3 && <Badge variant="outline" className="text-[10px]">+{cluster.incumbents.length - 3}</Badge>}
+                    {cluster.incumbents.slice(0, 3).map(inc => (<Badge key={inc.id} variant="outline" className="text-[11px]">{inc.name}</Badge>))}
+                    {cluster.incumbents.length > 3 && <Badge variant="outline" className="text-[11px]">+{cluster.incumbents.length - 3}</Badge>}
                   </div>
                   {done > 0 && (
                     <Progress value={(done / cluster.incumbents.length) * 100} className="h-1.5 mt-3" />
@@ -567,7 +567,7 @@ function MissionHub({ onSelectCluster, progress }: { onSelectCluster: (c: Indust
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-2xl">{s.emoji}</span>
                   <div>
-                    <Badge variant="secondary" className="text-[10px] mb-1">Step {s.step}</Badge>
+                    <Badge variant="secondary" className="text-[11px] mb-1">Step {s.step}</Badge>
                     <p className="font-cinzel font-semibold text-sm text-foreground">{s.title}</p>
                   </div>
                 </div>
@@ -588,7 +588,7 @@ function MiniActRail({ completedActs }: { completedActs: number[] }) {
       {ACTS.map((act, i) => (
         <div key={act.num} className="flex items-center">
           <div
-            className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] ${
+            className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${
               completedActs.includes(act.num) ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"
             }`}
           >
@@ -636,9 +636,9 @@ function ClusterDetail({ cluster, onBack, onStartMission, progress }: {
                     <div className="flex items-center gap-3 mb-3">
                       <Shield className="w-5 h-5 text-destructive shrink-0" />
                       <h3 className="font-cinzel font-bold text-lg text-foreground">{inc.name}</h3>
-                      <Badge variant="outline" className="text-[10px]">{inc.age}</Badge>
-                      <Badge className="text-[10px]" style={{ background: `hsl(${cluster.color})` }}>{inc.vector}</Badge>
-                      {isCompleted && <Badge className="text-[10px] bg-success text-success-foreground">✓ Conquered</Badge>}
+                      <Badge variant="outline" className="text-[11px]">{inc.age}</Badge>
+                      <Badge className="text-[11px]" style={{ background: `hsl(${cluster.color})` }}>{inc.vector}</Badge>
+                      {isCompleted && <Badge className="text-[11px] bg-success text-success-foreground">✓ Conquered</Badge>}
                     </div>
 
                     {/* 7-Act Progress Rail */}
@@ -658,7 +658,7 @@ function ClusterDetail({ cluster, onBack, onStartMission, progress }: {
                             >
                               {completed.includes(act.num) ? "✓" : <Lock className="w-3 h-3" />}
                             </div>
-                            <span className="text-[8px] text-muted-foreground mt-0.5">{act.name}</span>
+                            <span className="text-[11px] text-muted-foreground mt-0.5">{act.name}</span>
                           </div>
                           {i < ACTS.length - 1 && (
                             <div className={`w-3 h-0.5 ${completed.includes(act.num) ? "bg-primary" : "bg-muted"} mb-3`} />
@@ -707,7 +707,7 @@ function MissionProgressBar({ incumbent, cluster, currentAct, actScores, complet
           {ACTS.map((act, i) => (
             <div key={act.num} className="flex items-center">
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold transition-all ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
                   completedActs.includes(act.num) ? "text-white" :
                   act.num === currentAct ? "bg-primary text-primary-foreground ring-2 ring-primary/30" :
                   "bg-muted text-muted-foreground"
@@ -724,7 +724,7 @@ function MissionProgressBar({ incumbent, cluster, currentAct, actScores, complet
           ))}
         </div>
         {actScores[currentAct] && (
-          <Badge variant="outline" className="text-[10px] shrink-0">Score: {actScores[currentAct]}</Badge>
+          <Badge variant="outline" className="text-[11px] shrink-0">Score: {actScores[currentAct]}</Badge>
         )}
       </div>
     </div>
@@ -848,7 +848,7 @@ function BattleArena({
           <Shield className="w-5 h-5 text-destructive shrink-0" />
           <div className="min-w-0">
             <h2 className="font-cinzel font-bold text-sm truncate">{incumbent.name}</h2>
-            <p className="text-[10px] text-muted-foreground truncate">{cluster.name}</p>
+            <p className="text-[11px] text-muted-foreground truncate">{cluster.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -864,7 +864,7 @@ function BattleArena({
             <div key={s.step} className="flex-1 h-2 rounded-full transition-all" style={{ background: s.step <= step ? `hsl(${cluster.color})` : "hsl(var(--muted))", opacity: s.step === step ? 1 : s.step < step ? 0.6 : 0.2 }} />
           ))}
         </div>
-        <p className="text-[10px] text-muted-foreground">{DISRUPTION_STEPS[step - 1]?.emoji} {DISRUPTION_STEPS[step - 1]?.title}</p>
+        <p className="text-[11px] text-muted-foreground">{DISRUPTION_STEPS[step - 1]?.emoji} {DISRUPTION_STEPS[step - 1]?.title}</p>
       </div>
       <ScrollArea className="flex-1 pr-4 mb-3">
         <div className="space-y-4 pb-4">

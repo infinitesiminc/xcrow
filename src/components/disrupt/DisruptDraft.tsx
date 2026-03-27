@@ -122,7 +122,7 @@ export function DisruptDraft({
                       <div className="flex items-center gap-2 mb-1">
                         <Shield className="w-4 h-4 text-destructive shrink-0" />
                         <span className="font-cinzel font-bold text-sm text-foreground truncate">{inc.name}</span>
-                        {taken && <Badge variant="secondary" className="text-[10px]">Taken</Badge>}
+                        {taken && <Badge variant="secondary" className="text-[11px]">Taken</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-1">{inc.vulnerability}</p>
                     </div>
@@ -150,8 +150,8 @@ export function DisruptDraft({
                   <p className="font-cinzel text-sm font-bold mt-1" style={{ color: `hsl(${cluster.color})` }}>
                     {cluster.name}
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{cluster.incumbents.length} targets</p>
-                  <div className="flex items-center gap-1 text-[10px] text-primary mt-2">
+                  <p className="text-[11px] text-muted-foreground mt-1">{cluster.incumbents.length} targets</p>
+                  <div className="flex items-center gap-1 text-[11px] text-primary mt-2">
                     Browse <ChevronRight className="w-3 h-3" />
                   </div>
                 </CardContent>

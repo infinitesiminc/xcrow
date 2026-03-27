@@ -124,7 +124,7 @@ export function DisruptGTM({ incumbent, cluster, onComplete }: {
       <div className="w-52 shrink-0 hidden md:block">
         <Badge variant="outline" className="text-xs mb-3">Act 4: Launch</Badge>
         <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">Go-to-Market</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Design your launch strategy.</p>
+        <p className="text-[11px] text-muted-foreground mb-4">Design your launch strategy.</p>
         <div className="space-y-2">
           {GTM_SECTIONS.map((s, i) => {
             const isDone = completedSections.has(i);
@@ -141,7 +141,7 @@ export function DisruptGTM({ incumbent, cluster, onComplete }: {
           })}
         </div>
         <div className="mt-4 text-center">
-          <p className="text-[10px] text-muted-foreground mb-2">{completedSections.size}/3 sections</p>
+          <p className="text-[11px] text-muted-foreground mb-2">{completedSections.size}/3 sections</p>
           {completedSections.has(currentSection) && currentSection < GTM_SECTIONS.length - 1 && (
             <Button size="sm" variant="outline" onClick={nextSection} className="w-full text-xs mb-2">Next Section</Button>
           )}

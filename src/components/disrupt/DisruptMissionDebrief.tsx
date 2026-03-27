@@ -119,7 +119,7 @@ export function DisruptMissionDebrief({ incumbent, cluster, actScores, onBackToH
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">{cluster.emoji}</span>
             <span className="font-cinzel font-bold text-sm text-foreground">{incumbent.name}</span>
-            <Badge variant="outline" className="text-[10px]">{cluster.name}</Badge>
+            <Badge variant="outline" className="text-[11px]">{cluster.name}</Badge>
           </div>
           <p className="text-xs text-muted-foreground">Disruption vector: {incumbent.vector} — {incumbent.vulnerability}</p>
         </CardContent>

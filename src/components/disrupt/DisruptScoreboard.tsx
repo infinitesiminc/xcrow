@@ -110,7 +110,7 @@ export function DisruptScoreboard({
                           {(scoreResult.dimensions as any[]).slice(0, 6).map((dim: any, i: number) => (
                             <div key={i} className="text-center">
                               <p className="text-lg font-bold text-foreground">{dim.score}</p>
-                              <p className="text-[10px] text-muted-foreground line-clamp-1">{dim.name}</p>
+                              <p className="text-[11px] text-muted-foreground line-clamp-1">{dim.name}</p>
                             </div>
                           ))}
                         </div>

@@ -175,7 +175,7 @@ export function DisruptVentureBuild({
         <div className="mb-4">
           <Badge variant="outline" className="text-xs mb-2">Act 2: Build</Badge>
           <h3 className="font-cinzel font-bold text-foreground text-sm">Venture Architecture</h3>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             Disrupting {incumbent.name}
           </p>
         </div>
@@ -204,7 +204,7 @@ export function DisruptVentureBuild({
         </div>
 
         <div className="mt-4 text-center">
-          <p className="text-[10px] text-muted-foreground mb-2">{completedCount}/5 canvases</p>
+          <p className="text-[11px] text-muted-foreground mb-2">{completedCount}/5 canvases</p>
           <Button
             size="sm"
             onClick={finishVenture}

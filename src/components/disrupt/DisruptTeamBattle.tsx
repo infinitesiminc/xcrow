@@ -187,7 +187,7 @@ export function DisruptTeamBattle({
           <Shield className="w-5 h-5 text-destructive shrink-0" />
           <div className="min-w-0">
             <h2 className="font-cinzel font-bold text-sm truncate">{team.name} vs {incumbent.name}</h2>
-            <p className="text-[10px] text-muted-foreground truncate">{cluster.name}</p>
+            <p className="text-[11px] text-muted-foreground truncate">{cluster.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ export function DisruptTeamBattle({
             />
           ))}
         </div>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground">
           {DISRUPTION_STEPS[currentStep - 1]?.emoji} {DISRUPTION_STEPS[currentStep - 1]?.title}
         </p>
       </div>
