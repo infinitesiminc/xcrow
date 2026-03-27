@@ -114,7 +114,7 @@ export default function Disrupt() {
 
   // Unified strategist state (replaces separate discovery + briefing)
   const [strategistMessages, setStrategistMessages] = useState<ChatMsg[]>([
-    { role: "assistant", content: `🚀 **Welcome to AI Venture Lab**\n\nThe software industry is being rebuilt from scratch. AI tools now let a solo founder ship in days what used to take a team of 20. I'll help you find YOUR opportunity.\n\n**Tell me about yourself:**\n- What software tools frustrate you? (CRM, project management, analytics…)\n- What SaaS products do you think are overpriced or outdated?\n- Are you interested in B2B or B2C software?\n- Any specific software companies you think are vulnerable?\n\nOr just tell me what problems you want to solve — I'll connect it to real disruption opportunities from our database of **46 software incumbents across 15 verticals**.\n\n*No wrong answers — let's explore together.*` }
+    { role: "assistant", content: `What kind of software would you love to rebuild with AI?\n\nTell me what frustrates you — or pick a target from the sidebar.` }
   ]);
   const [strategistInput, setStrategistInput] = useState("");
   const [isStrategistStreaming, setIsStrategistStreaming] = useState(false);
