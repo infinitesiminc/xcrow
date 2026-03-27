@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import {
   Cpu, Megaphone, GraduationCap, Building2, Users, AlertTriangle,
   Zap, Target, TrendingUp, DollarSign, Swords, Shield, Globe,
-  Clock, Flame, BookOpen, BarChart3, ArrowRight, Download,
+  Clock, Flame, BookOpen, BarChart3, ArrowRight, Download, Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import founderImg from "@/assets/founder-jackson.png";
 
 const fade = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
@@ -109,10 +111,11 @@ const DATA_MOAT = [
 
 /* ── 9. Team ── */
 const TEAM = {
-  name: "Jackson",
+  name: "Jackson Lam",
   title: "Founder & CEO",
   bio: "Built Xcrow from a simple question: why are we training students for jobs AI is already transforming? Combined deep product instinct with AI-native architecture to create the skill infrastructure the market is desperately missing.",
   location: "Los Angeles, CA",
+  linkedin: "https://www.linkedin.com/in/jacksonlam/",
 };
 
 /* ── 10. The Ask ── */
@@ -178,6 +181,7 @@ const Investors = () => (
 
     {/* ═══ 1. COVER ═══ */}
     <motion.section className="relative py-28 md:py-36 px-6 text-center overflow-hidden" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
+      <HeaderVibeImages seed={42} count={6} />
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, hsl(var(--destructive) / 0.08) 0%, transparent 60%)" }} />
       <div className="relative max-w-3xl mx-auto">
         <p className="text-xs uppercase tracking-[0.25em] mb-6 inline-block px-4 py-1.5 rounded-full" style={{ color: "hsl(var(--filigree))", background: "hsl(var(--filigree) / 0.08)", border: "1px solid hsl(var(--filigree) / 0.2)", ...cinzel }}>{HERO.badge}</p>
@@ -252,7 +256,8 @@ const Investors = () => (
     <Divider />
 
     {/* ═══ 4. SOLUTION — 4-Phase Mission ═══ */}
-    <Section>
+    <Section glow="radial-gradient(ellipse at 50% 50%, hsl(var(--territory-creative) / 0.05) 0%, transparent 60%)">
+      <HeaderVibeImages seed={99} count={5} />
       <SectionLabel>The Solution</SectionLabel>
       <SectionTitle sub="Xcrow is a gamified career intelligence platform built on a proprietary taxonomy of 183 AI-era skills. Students progress through four phases to build verified, portable competencies.">
         The AI Scouting Mission
@@ -387,11 +392,24 @@ const Investors = () => (
       <SectionLabel>Team</SectionLabel>
       <SectionTitle>Founder-Market Fit</SectionTitle>
 
-      <div className="rounded-lg p-8 max-w-2xl" style={stoneCard}>
-        <h3 className="text-xl font-bold mb-1" style={cinzel}>{TEAM.name}</h3>
-        <p className="text-sm text-primary mb-3">{TEAM.title}</p>
-        <p className="text-sm text-muted-foreground mb-4">{TEAM.bio}</p>
-        <p className="text-xs text-muted-foreground/60">{TEAM.location}</p>
+      <div className="rounded-lg p-8 max-w-2xl flex gap-6 items-start" style={stoneCard}>
+        <img
+          src={founderImg}
+          alt="Jackson Lam — Founder & CEO"
+          className="w-24 h-24 md:w-28 md:h-28 rounded-lg object-cover shrink-0"
+          style={{ border: "2px solid hsl(var(--filigree) / 0.3)" }}
+        />
+        <div>
+          <h3 className="text-xl font-bold mb-1" style={cinzel}>{TEAM.name}</h3>
+          <p className="text-sm text-primary mb-3">{TEAM.title}</p>
+          <p className="text-sm text-muted-foreground mb-4">{TEAM.bio}</p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-muted-foreground/60">{TEAM.location}</p>
+            <a href={TEAM.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline">
+              <Linkedin className="w-3.5 h-3.5" /> LinkedIn
+            </a>
+          </div>
+        </div>
       </div>
     </Section>
 
