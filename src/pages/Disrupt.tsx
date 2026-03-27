@@ -9,12 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { motion, AnimatePresence } from "framer-motion";
-import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Search, Hammer, Megaphone } from "lucide-react";
+import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Search, Hammer, Megaphone, Building2, TrendingUp, Crosshair, Lightbulb } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { DisruptCustomerDiscovery } from "@/components/disrupt/DisruptCustomerDiscovery";
 import { DisruptVentureBuild } from "@/components/disrupt/DisruptVentureBuild";
 import { DisruptGTM } from "@/components/disrupt/DisruptGTM";
@@ -23,7 +25,7 @@ import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
 import { DisruptMissionDebrief } from "@/components/disrupt/DisruptMissionDebrief";
 
 type GamePhase =
-  | "discovery" | "hub" | "cluster" | "briefing"
+  | "strategist" | "hub" | "cluster"
   | "act1-intro" | "act1" | "act1-score"
   | "act2-intro" | "act2" | "act2-score"
   | "act3-intro" | "act3" | "act3-score"
@@ -89,7 +91,8 @@ const ACTS = [
 
 export default function Disrupt() {
   const { user } = useAuth();
-  const [phase, setPhase] = useState<GamePhase>("discovery");
+  const isMobile = useIsMobile();
+  const [phase, setPhase] = useState<GamePhase>("strategist");
 
   // Current mission context
   const [selectedCluster, setSelectedCluster] = useState<IndustryCluster | null>(null);
@@ -109,19 +112,14 @@ export default function Disrupt() {
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }, []);
 
-  // Discovery state
-  const [discoveryMessages, setDiscoveryMessages] = useState<ChatMsg[]>([
+  // Unified strategist state (replaces separate discovery + briefing)
+  const [strategistMessages, setStrategistMessages] = useState<ChatMsg[]>([
     { role: "assistant", content: `🚀 **Welcome to the Disruption Arena**\n\nI'm your AI strategist. Together, we'll find the perfect company for you to disrupt and build a startup around.\n\n**Tell me about yourself:**\n- What industries excite you? (tech, healthcare, finance, education…)\n- What problems have you personally experienced that feel broken?\n- Are you drawn to B2B or B2C?\n- Any companies you think are ripe for disruption?\n\nOr just tell me what you're passionate about — I'll connect it to real disruption opportunities from our database of **100 incumbents across 22 industries**.\n\n*No wrong answers — let's explore together.*` }
   ]);
-  const [discoveryInput, setDiscoveryInput] = useState("");
-  const [isDiscoveryStreaming, setIsDiscoveryStreaming] = useState(false);
-  const discoveryEndRef = useRef<HTMLDivElement>(null);
-
-  // Briefing state
-  const [briefingMessages, setBriefingMessages] = useState<ChatMsg[]>([]);
-  const [briefingInput, setBriefingInput] = useState("");
-  const [isBriefingStreaming, setIsBriefingStreaming] = useState(false);
-  const briefingEndRef = useRef<HTMLDivElement>(null);
+  const [strategistInput, setStrategistInput] = useState("");
+  const [isStrategistStreaming, setIsStrategistStreaming] = useState(false);
+  const strategistEndRef = useRef<HTMLDivElement>(null);
+  const [briefingData, setBriefingData] = useState<string | null>(null);
 
   // Build a compact index of all incumbents for the discovery AI
   const allTargetsIndex = INDUSTRY_CLUSTERS.map(c => ({
@@ -129,14 +127,21 @@ export default function Disrupt() {
     incumbents: c.incumbents.map(i => ({ id: i.id, name: i.name, vulnerability: i.vulnerability, vector: i.vector, beachheadNiche: i.beachheadNiche }))
   }));
 
-  const sendDiscoveryMessage = async () => {
-    if (!discoveryInput.trim() || isDiscoveryStreaming) return;
-    const userMsg: ChatMsg = { role: "user", content: discoveryInput.trim() };
-    const updated = [...discoveryMessages, userMsg];
-    setDiscoveryMessages(updated);
-    setDiscoveryInput("");
-    setIsDiscoveryStreaming(true);
-    setTimeout(() => discoveryEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  const sendStrategistMessage = async (overrideInput?: string) => {
+    const text = overrideInput || strategistInput.trim();
+    if (!text || isStrategistStreaming) return;
+    const userMsg: ChatMsg = { role: "user", content: text };
+    const updated = [...strategistMessages, userMsg];
+    setStrategistMessages(updated);
+    setStrategistInput("");
+    setIsStrategistStreaming(true);
+    setTimeout(() => strategistEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+
+    // If a target is already selected, route to briefing action
+    const action = selectedIncumbent ? "briefing" : "discovery";
+    const payload = selectedIncumbent && selectedCluster
+      ? { incumbent: selectedIncumbent, cluster: selectedCluster, messages: updated, allIncumbents: selectedCluster.incumbents.map(i => ({ name: i.name, id: i.id, vulnerability: i.vulnerability, vector: i.vector })) }
+      : { messages: updated, targetsIndex: allTargetsIndex };
 
     let assistantContent = "";
     try {
@@ -145,10 +150,10 @@ export default function Disrupt() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "discovery", payload: { messages: updated, targetsIndex: allTargetsIndex } }),
+          body: JSON.stringify({ action, payload }),
         },
       );
-      if (!resp.ok || !resp.body) throw new Error("Discovery failed");
+      if (!resp.ok || !resp.body) throw new Error("Strategist failed");
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -169,28 +174,101 @@ export default function Disrupt() {
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
               assistantContent += content;
-              setDiscoveryMessages(prev => {
+              setStrategistMessages(prev => {
                 const last = prev[prev.length - 1];
                 if (last?.role === "assistant" && prev.length === updated.length + 1) {
                   return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
                 }
                 return [...prev, { role: "assistant", content: assistantContent }];
               });
-              setTimeout(() => discoveryEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+              setTimeout(() => strategistEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
             }
           } catch { /* partial */ }
         }
       }
-    } catch { toast.error("Discovery chat failed. Try again."); }
-    finally { setIsDiscoveryStreaming(false); }
+      // If this was the initial briefing, store it
+      if (action === "briefing" && !briefingData && assistantContent.length > 100) {
+        setBriefingData(assistantContent);
+      }
+    } catch { toast.error("Chat failed. Try again."); }
+    finally { setIsStrategistStreaming(false); }
   };
 
-  const selectTargetFromDiscovery = (incumbentId: number) => {
+  const selectTargetFromChat = (incumbentId: number) => {
     const cluster = INDUSTRY_CLUSTERS.find(c => c.incumbents.some(i => i.id === incumbentId));
     const incumbent = cluster?.incumbents.find(i => i.id === incumbentId);
     if (cluster && incumbent) {
-      startMission(cluster, incumbent);
+      setSelectedCluster(cluster);
+      setSelectedIncumbent(incumbent);
+      setBriefingData(null);
+      // Auto-send briefing request in the same chat
+      const briefingReq = `I want to disrupt ${incumbent.name}. Brief me on everything I need to know.`;
+      const userMsg: ChatMsg = { role: "user", content: briefingReq };
+      const updated = [...strategistMessages, userMsg];
+      setStrategistMessages(updated);
+      
+      // Trigger briefing stream
+      setTimeout(() => {
+        setIsStrategistStreaming(true);
+        (async () => {
+          let assistantContent = "";
+          try {
+            const resp = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+                body: JSON.stringify({ action: "briefing", payload: { incumbent, cluster, messages: [{ role: "user", content: "Brief me on this company." }] } }),
+              },
+            );
+            if (!resp.ok || !resp.body) throw new Error("Briefing failed");
+            const reader = resp.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              let newlineIndex: number;
+              while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+                let line = buffer.slice(0, newlineIndex);
+                buffer = buffer.slice(newlineIndex + 1);
+                if (line.endsWith("\r")) line = line.slice(0, -1);
+                if (!line.startsWith("data: ")) continue;
+                const jsonStr = line.slice(6).trim();
+                if (jsonStr === "[DONE]") break;
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const content = parsed.choices?.[0]?.delta?.content;
+                  if (content) {
+                    assistantContent += content;
+                    setStrategistMessages(prev => {
+                      const last = prev[prev.length - 1];
+                      if (last?.role === "assistant" && prev.length === updated.length + 1) {
+                        return prev.map((m, idx) => idx === prev.length - 1 ? { ...m, content: assistantContent } : m);
+                      }
+                      return [...prev, { role: "assistant", content: assistantContent }];
+                    });
+                    setTimeout(() => strategistEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+                  }
+                } catch { /* partial */ }
+              }
+            }
+            if (assistantContent.length > 100) setBriefingData(assistantContent);
+          } catch { toast.error("Briefing failed."); }
+          finally { setIsStrategistStreaming(false); }
+        })();
+      }, 50);
+      
+      updateMissionProgress(incumbent.id, { status: "in-progress" });
     }
+  };
+
+  const switchTarget = (newInc: DisruptionIncumbent) => {
+    if (!selectedCluster) return;
+    setSelectedIncumbent(newInc);
+    setBriefingData(null);
+    selectTargetFromChat(newInc.id);
   };
 
   const startMission = (cluster: IndustryCluster, incumbent: DisruptionIncumbent) => {
@@ -198,7 +276,6 @@ export default function Disrupt() {
     setSelectedIncumbent(incumbent);
     const progress = getMissionProgress(incumbent.id);
 
-    // If user has progress, skip briefing and resume
     if (progress.completedActs.length > 0) {
       if (progress.scoreResult) setScore(progress.scoreResult);
       if (progress.battleTranscript) setMessages(progress.battleTranscript);
@@ -211,124 +288,17 @@ export default function Disrupt() {
       if (firstIncomplete) setPhase(`act${firstIncomplete.num}-intro` as GamePhase);
       else setPhase("act7");
     } else {
-      // New mission → go to briefing
-      setBriefingMessages([]);
-      setBriefingInput("");
-      startBriefingChat(cluster, incumbent);
+      // New mission → go to strategist with this target selected
+      setPhase("strategist");
+      setBriefingData(null);
+      selectTargetFromChat(incumbent.id);
     }
     updateMissionProgress(incumbent.id, { status: "in-progress" });
   };
 
-  const startBriefingChat = async (cluster: IndustryCluster, incumbent: DisruptionIncumbent) => {
-    setPhase("briefing");
-    setIsBriefingStreaming(true);
-
-    const systemMessage: ChatMsg = {
-      role: "user",
-      content: "I just selected this company. Brief me on everything I need to know before I start the disruption simulation.",
-    };
-
-    let assistantContent = "";
-    try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "briefing", payload: { incumbent, cluster, messages: [systemMessage] } }),
-        },
-      );
-      if (!resp.ok || !resp.body) throw new Error("Briefing failed");
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              assistantContent += content;
-              setBriefingMessages([{ role: "assistant", content: assistantContent }]);
-            }
-          } catch { /* partial */ }
-        }
-      }
-    } catch { toast.error("Briefing failed. Try again."); }
-    finally { setIsBriefingStreaming(false); }
-  };
-
-  const sendBriefingMessage = async () => {
-    if (!briefingInput.trim() || isBriefingStreaming || !selectedIncumbent || !selectedCluster) return;
-    const userMsg: ChatMsg = { role: "user", content: briefingInput.trim() };
-    const updatedMessages = [...briefingMessages, userMsg];
-    setBriefingMessages(updatedMessages);
-    setBriefingInput("");
-    setIsBriefingStreaming(true);
-    setTimeout(() => briefingEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-
-    let assistantContent = "";
-    try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "briefing", payload: { incumbent: selectedIncumbent, cluster: selectedCluster, messages: updatedMessages, allIncumbents: selectedCluster.incumbents.map(i => ({ name: i.name, id: i.id, vulnerability: i.vulnerability, vector: i.vector })) } }),
-        },
-      );
-      if (!resp.ok || !resp.body) throw new Error("Briefing failed");
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              assistantContent += content;
-              setBriefingMessages(prev => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant" && prev.length === updatedMessages.length + 1) {
-                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
-                }
-                return [...prev, { role: "assistant", content: assistantContent }];
-              });
-              setTimeout(() => briefingEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-            }
-          } catch { /* partial */ }
-        }
-      }
-    } catch { toast.error("Briefing failed. Try again."); }
-    finally { setIsBriefingStreaming(false); }
-  };
-
-  const handleSwitchTarget = (newIncumbent: DisruptionIncumbent) => {
-    if (!selectedCluster) return;
-    setSelectedIncumbent(newIncumbent);
-    setBriefingMessages([]);
-    startBriefingChat(selectedCluster, newIncumbent);
+  const launchSimulation = () => {
+    if (!selectedCluster || !selectedIncumbent) return;
+    setPhase("act1-intro");
   };
 
   const startBattle = () => {
@@ -441,7 +411,6 @@ export default function Disrupt() {
       completedActs: completed,
       ...extraData,
     });
-    // Auto-advance to next act intro
     const nextAct = actNum + 1;
     if (nextAct <= 7) {
       setPhase(`act${nextAct}-intro` as GamePhase);
@@ -462,6 +431,16 @@ export default function Disrupt() {
     completed_at: null, venture_canvas: null, pitch_data: null, act: 2,
   } : null;
 
+  // Parse selectable targets from last AI message
+  const selectableTargets: { id: number; name: string }[] = [];
+  const lastAssistant = [...strategistMessages].reverse().find(m => m.role === "assistant");
+  if (lastAssistant && !selectedIncumbent) {
+    const matches = lastAssistant.content.matchAll(/\[SELECT:(\d+):([^\]]+)\]/g);
+    for (const match of matches) {
+      selectableTargets.push({ id: parseInt(match[1]), name: match[2] });
+    }
+  }
+
   return (
     <>
       <Helmet>
@@ -470,8 +449,8 @@ export default function Disrupt() {
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20 pb-12">
-        {/* Mission Progress Bar — visible during any act (not briefing) */}
-        {phase !== "discovery" && phase !== "hub" && phase !== "cluster" && phase !== "briefing" && selectedIncumbent && selectedCluster && (
+        {/* Mission Progress Bar — visible during any act */}
+        {phase !== "strategist" && phase !== "hub" && phase !== "cluster" && selectedIncumbent && selectedCluster && (
           <MissionProgressBar
             incumbent={selectedIncumbent}
             cluster={selectedCluster}
@@ -483,17 +462,26 @@ export default function Disrupt() {
         )}
 
         <AnimatePresence mode="wait">
-          {phase === "discovery" && (
-            <motion.div key="discovery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <DiscoveryChat
-                messages={discoveryMessages}
-                input={discoveryInput}
-                setInput={setDiscoveryInput}
-                onSend={sendDiscoveryMessage}
-                isStreaming={isDiscoveryStreaming}
-                chatEndRef={discoveryEndRef}
+          {/* Unified Strategist View (two-column) */}
+          {phase === "strategist" && (
+            <motion.div key="strategist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <StrategistView
+                messages={strategistMessages}
+                input={strategistInput}
+                setInput={setStrategistInput}
+                onSend={() => sendStrategistMessage()}
+                onSendText={(t) => sendStrategistMessage(t)}
+                isStreaming={isStrategistStreaming}
+                chatEndRef={strategistEndRef}
                 onBrowseMap={() => setPhase("hub")}
-                onSelectTarget={selectTargetFromDiscovery}
+                onSelectTarget={selectTargetFromChat}
+                selectableTargets={selectableTargets}
+                selectedIncumbent={selectedIncumbent}
+                selectedCluster={selectedCluster}
+                briefingData={briefingData}
+                onLaunch={launchSimulation}
+                onSwitchTarget={switchTarget}
+                isMobile={isMobile}
               />
             </motion.div>
           )}
@@ -503,7 +491,7 @@ export default function Disrupt() {
               <MissionHub
                 onSelectCluster={(c) => { setSelectedCluster(c); setPhase("cluster"); }}
                 progress={loadProgress()}
-                onStartDiscovery={() => setPhase("discovery")}
+                onStartDiscovery={() => { setSelectedIncumbent(null); setSelectedCluster(null); setBriefingData(null); setPhase("strategist"); }}
               />
             </motion.div>
           )}
@@ -518,26 +506,6 @@ export default function Disrupt() {
               />
             </motion.div>
           )}
-
-          {/* Briefing Phase */}
-          {phase === "briefing" && selectedIncumbent && selectedCluster && (
-            <motion.div key="briefing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <BriefingChat
-                incumbent={selectedIncumbent}
-                cluster={selectedCluster}
-                messages={briefingMessages}
-                input={briefingInput}
-                setInput={setBriefingInput}
-                onSend={sendBriefingMessage}
-                isStreaming={isBriefingStreaming}
-                chatEndRef={briefingEndRef}
-                onBack={() => setPhase("cluster")}
-                onLaunch={() => setPhase("act1-intro")}
-                onSwitchTarget={handleSwitchTarget}
-              />
-            </motion.div>
-          )}
-
 
           {phase.endsWith("-intro") && selectedIncumbent && (
             <motion.div key={phase} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
@@ -554,7 +522,6 @@ export default function Disrupt() {
             </motion.div>
           )}
 
-          {/* Act 1: Scout — Battle */}
           {phase === "act1" && selectedIncumbent && selectedCluster && (
             <motion.div key="act1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
               <BattleArena
@@ -570,86 +537,46 @@ export default function Disrupt() {
           {phase === "act1-score" && score && selectedIncumbent && (
             <motion.div key="act1-score" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <ActScoreScreen
-                actNum={1}
-                score={score.overall}
-                title={score.title}
-                summary={score.summary}
-                dimensions={score.dimensions}
-                nextSteps={score.nextSteps}
-                onContinue={() => setPhase("act2-intro")}
+                actNum={1} score={score.overall} title={score.title}
+                summary={score.summary} dimensions={score.dimensions}
+                nextSteps={score.nextSteps} onContinue={() => setPhase("act2-intro")}
               />
             </motion.div>
           )}
 
-          {/* Act 2: Customer Discovery */}
           {phase === "act2" && selectedIncumbent && selectedCluster && (
             <motion.div key="act2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptCustomerDiscovery
-                incumbent={selectedIncumbent}
-                cluster={selectedCluster}
-                onComplete={(actScore) => completeAct(2, actScore)}
-              />
+              <DisruptCustomerDiscovery incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(2, s)} />
             </motion.div>
           )}
 
-          {/* Act 3: Venture Architecture */}
           {phase === "act3" && soloTeam && (
             <motion.div key="act3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptVentureBuild
-                room={soloRoom as any}
-                team={soloTeam as any}
-                onComplete={() => {
-                  completeAct(3, 70);
-                }}
-              />
+              <DisruptVentureBuild room={soloRoom as any} team={soloTeam as any} onComplete={() => completeAct(3, 70)} />
             </motion.div>
           )}
 
-          {/* Act 4: GTM */}
           {phase === "act4" && selectedIncumbent && selectedCluster && (
             <motion.div key="act4" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptGTM
-                incumbent={selectedIncumbent}
-                cluster={selectedCluster}
-                onComplete={(actScore) => completeAct(4, actScore)}
-              />
+              <DisruptGTM incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(4, s)} />
             </motion.div>
           )}
 
-          {/* Act 5: Moat Defense */}
           {phase === "act5" && selectedIncumbent && selectedCluster && (
             <motion.div key="act5" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptMoatDefense
-                incumbent={selectedIncumbent}
-                cluster={selectedCluster}
-                onComplete={(actScore) => completeAct(5, actScore)}
-              />
+              <DisruptMoatDefense incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(5, s)} />
             </motion.div>
           )}
 
-          {/* Act 6: Pitch */}
           {phase === "act6" && soloTeam && (
             <motion.div key="act6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <DisruptPitchBattle
-                room={soloRoom as any}
-                team={soloTeam as any}
-                teams={[]} members={[]}
-                onComplete={() => {
-                  completeAct(6, 70);
-                }}
-              />
+              <DisruptPitchBattle room={soloRoom as any} team={soloTeam as any} teams={[]} members={[]} onComplete={() => completeAct(6, 70)} />
             </motion.div>
           )}
 
-          {/* Act 7: Mission Debrief */}
           {phase === "act7" && selectedIncumbent && selectedCluster && (
             <motion.div key="act7" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <DisruptMissionDebrief
-                incumbent={selectedIncumbent}
-                cluster={selectedCluster}
-                actScores={actScores}
-                onBackToHub={() => setPhase("hub")}
-              />
+              <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("hub")} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -1140,166 +1067,30 @@ function BattleArena({
   );
 }
 
-/* ── Briefing Chat (Pre-Simulation) ── */
-function BriefingChat({
-  incumbent, cluster, messages, input, setInput, onSend, isStreaming, chatEndRef, onBack, onLaunch, onSwitchTarget,
-}: {
-  incumbent: DisruptionIncumbent; cluster: IndustryCluster; messages: ChatMsg[];
-  input: string; setInput: (v: string) => void; onSend: () => void;
-  isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
-  onBack: () => void; onLaunch: () => void;
-  onSwitchTarget: (inc: DisruptionIncumbent) => void;
-}) {
-  const otherTargets = cluster.incumbents.filter(i => i.id !== incumbent.id);
-  const hasContent = messages.length > 0 && messages.some(m => m.role === "assistant" && m.content.length > 50);
-
-  return (
-    <div className="max-w-4xl mx-auto px-4 flex flex-col" style={{ height: "calc(100vh - 8rem)" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back
-          </Button>
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-lg">{cluster.emoji}</span>
-            <div className="min-w-0">
-              <h2 className="font-cinzel font-bold text-sm truncate">{incumbent.name}</h2>
-              <p className="text-[11px] text-muted-foreground">Mission Briefing — {cluster.name}</p>
-            </div>
-          </div>
-        </div>
-        <Button onClick={onLaunch} disabled={!hasContent} className="shrink-0 bg-primary">
-          <Rocket className="w-4 h-4 mr-1" /> Launch Simulation
-        </Button>
-      </div>
-
-      {/* Briefing badge */}
-      <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2 mb-3 shrink-0">
-        <p className="text-xs text-foreground">
-          <Brain className="w-3 h-3 inline mr-1 text-primary" />
-          <span className="font-medium">Pre-Mission Briefing</span> — Learn about the target before entering the simulation. Ask any questions about the company, industry, or strategy.
-        </p>
-      </div>
-
-      {/* Chat area */}
-      <ScrollArea className="flex-1 pr-4 mb-3">
-        <div className="space-y-4 pb-4">
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-muted text-foreground rounded-bl-md"
-              }`}>
-                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>blockquote]:border-l-primary/50">
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
-                </div>
-              </div>
-            </div>
-          ))}
-          {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
-            <div className="flex justify-start">
-              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce" />
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.1s]" />
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.2s]" />
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-      </ScrollArea>
-
-      {/* Quick action chips */}
-      {hasContent && messages.length <= 2 && !isStreaming && (
-        <div className="flex flex-wrap gap-2 mb-3 shrink-0">
-          {[
-            "What's their revenue model?",
-            "Who are their biggest competitors?",
-            "How big is this market?",
-            "Show me different targets",
-          ].map((q) => (
-            <Button
-              key={q}
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              onClick={() => { setInput(q); }}
-            >
-              {q}
-            </Button>
-          ))}
-        </div>
-      )}
-
-      {/* Alternative targets strip */}
-      {otherTargets.length > 0 && hasContent && messages.length <= 2 && !isStreaming && (
-        <div className="mb-3 shrink-0">
-          <p className="text-[11px] text-muted-foreground mb-1.5">Not interested? Try another target:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {otherTargets.slice(0, 4).map((alt) => (
-              <Button
-                key={alt.id}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => onSwitchTarget(alt)}
-              >
-                <Target className="w-3 h-3 mr-1" /> {alt.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Input */}
-      <div className="flex gap-2 shrink-0 pb-2">
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about the company, industry, strategy, or say 'switch target'..."
-          className="min-h-[48px] max-h-[120px] resize-none"
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
-          disabled={isStreaming}
-        />
-        <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end">
-          <Send className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-/* ── Discovery Chat (Entry Point) ── */
-function DiscoveryChat({
-  messages, input, setInput, onSend, isStreaming, chatEndRef, onBrowseMap, onSelectTarget,
+/* ── Strategist View (Two-Column: Chat + Context) ── */
+function StrategistView({
+  messages, input, setInput, onSend, onSendText, isStreaming, chatEndRef, onBrowseMap,
+  onSelectTarget, selectableTargets, selectedIncumbent, selectedCluster,
+  briefingData, onLaunch, onSwitchTarget, isMobile,
 }: {
   messages: ChatMsg[]; input: string; setInput: (v: string) => void; onSend: () => void;
-  isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
-  onBrowseMap: () => void; onSelectTarget: (incumbentId: number) => void;
+  onSendText: (t: string) => void; isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
+  onBrowseMap: () => void; onSelectTarget: (id: number) => void;
+  selectableTargets: { id: number; name: string }[];
+  selectedIncumbent: DisruptionIncumbent | null; selectedCluster: IndustryCluster | null;
+  briefingData: string | null; onLaunch: () => void;
+  onSwitchTarget: (inc: DisruptionIncumbent) => void; isMobile: boolean;
 }) {
-  // Parse incumbent IDs from AI responses that contain [SELECT:ID] markers
-  const selectableTargets: { id: number; name: string }[] = [];
-  const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
-  if (lastAssistant) {
-    const matches = lastAssistant.content.matchAll(/\[SELECT:(\d+):([^\]]+)\]/g);
-    for (const match of matches) {
-      selectableTargets.push({ id: parseInt(match[1]), name: match[2] });
-    }
-  }
-
-  return (
-    <div className="max-w-3xl mx-auto px-4 flex flex-col" style={{ height: "calc(100vh - 8rem)" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
+  const chatPanel = (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between gap-3 mb-3 shrink-0 px-4 pt-4">
         <div className="flex items-center gap-2">
           <Rocket className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="font-cinzel font-bold text-sm text-foreground">Disruption Arena</h2>
-            <p className="text-[11px] text-muted-foreground">Find your perfect disruption target</p>
+            <h2 className="font-cinzel font-bold text-sm text-foreground">AI Strategist</h2>
+            <p className="text-[11px] text-muted-foreground">
+              {selectedIncumbent ? `Briefing: ${selectedIncumbent.name}` : "Find your disruption target"}
+            </p>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={onBrowseMap} className="text-xs">
@@ -1307,8 +1098,7 @@ function DiscoveryChat({
         </Button>
       </div>
 
-      {/* Chat area */}
-      <ScrollArea className="flex-1 pr-4 mb-3">
+      <ScrollArea className="flex-1 px-4 mb-3">
         <div className="space-y-4 pb-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -1338,28 +1128,26 @@ function DiscoveryChat({
         </div>
       </ScrollArea>
 
-      {/* Target selection buttons */}
       {selectableTargets.length > 0 && !isStreaming && (
-        <div className="mb-3 shrink-0">
-          <p className="text-xs text-muted-foreground mb-2 font-medium">🎯 Select a target to start your mission:</p>
+        <div className="mb-3 px-4 shrink-0">
+          <p className="text-xs text-muted-foreground mb-2 font-medium">🎯 Select a target:</p>
           <div className="flex flex-wrap gap-2">
             {selectableTargets.map(t => (
               <Button key={t.id} onClick={() => onSelectTarget(t.id)} className="text-xs" size="sm">
-                <Swords className="w-3 h-3 mr-1" /> Disrupt {t.name}
+                <Swords className="w-3 h-3 mr-1" /> {t.name}
               </Button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Quick prompts for first message */}
-      {messages.length <= 1 && !isStreaming && (
-        <div className="flex flex-wrap gap-2 mb-3 shrink-0">
+      {messages.length <= 1 && !isStreaming && !selectedIncumbent && (
+        <div className="flex flex-wrap gap-2 mb-3 px-4 shrink-0">
           {[
-            "I'm interested in fintech and payments",
-            "What healthcare companies are ripe for disruption?",
-            "I want to build something in education",
-            "Show me the most vulnerable companies",
+            "I'm interested in fintech",
+            "Healthcare disruption opportunities?",
+            "I want to build in education",
+            "Most vulnerable companies",
           ].map(q => (
             <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setInput(q)}>
               {q}
@@ -1368,12 +1156,11 @@ function DiscoveryChat({
         </div>
       )}
 
-      {/* Input */}
-      <div className="flex gap-2 shrink-0 pb-2">
+      <div className="flex gap-2 shrink-0 px-4 pb-4">
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="What industries or problems interest you?"
+          placeholder={selectedIncumbent ? "Ask about the company, strategy, or say 'switch target'..." : "What industries or problems interest you?"}
           className="min-h-[48px] max-h-[120px] resize-none"
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
           disabled={isStreaming}
@@ -1381,6 +1168,211 @@ function DiscoveryChat({
         <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end">
           <Send className="w-4 h-4" />
         </Button>
+      </div>
+    </div>
+  );
+
+  const contextPanel = (
+    <ContextPanel
+      selectedIncumbent={selectedIncumbent}
+      selectedCluster={selectedCluster}
+      briefingData={briefingData}
+      onLaunch={onLaunch}
+      onSelectTarget={onSelectTarget}
+      onSwitchTarget={onSwitchTarget}
+      onSendText={onSendText}
+    />
+  );
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col" style={{ height: "calc(100vh - 6rem)" }}>
+        <div className="flex-1 min-h-0">{chatPanel}</div>
+        {selectedIncumbent && (
+          <div className="border-t border-border max-h-[40vh] overflow-y-auto">
+            {contextPanel}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-[1400px] mx-auto" style={{ height: "calc(100vh - 6rem)" }}>
+      <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-border">
+        <ResizablePanel defaultSize={55} minSize={40}>
+          {chatPanel}
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={45} minSize={30}>
+          <ScrollArea className="h-full">
+            {contextPanel}
+          </ScrollArea>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
+  );
+}
+
+/* ── Context Panel (Right Side) ── */
+function ContextPanel({
+  selectedIncumbent, selectedCluster, briefingData, onLaunch, onSelectTarget, onSwitchTarget, onSendText,
+}: {
+  selectedIncumbent: DisruptionIncumbent | null; selectedCluster: IndustryCluster | null;
+  briefingData: string | null; onLaunch: () => void;
+  onSelectTarget: (id: number) => void; onSwitchTarget: (inc: DisruptionIncumbent) => void;
+  onSendText: (t: string) => void;
+}) {
+  if (selectedIncumbent && selectedCluster) {
+    const otherTargets = selectedCluster.incumbents.filter(i => i.id !== selectedIncumbent.id);
+
+    return (
+      <div className="p-4 space-y-4">
+        <Card className="border-primary/30">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-primary" />
+              <CardTitle className="text-sm font-cinzel">Company Overview</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-cinzel font-bold text-lg text-foreground">{selectedIncumbent.name}</h3>
+              <Badge variant="outline" className="text-xs">{selectedIncumbent.age}</Badge>
+              <Badge className="text-xs" style={{ background: `hsl(${selectedCluster.color})` }}>{selectedIncumbent.vector}</Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">{selectedCluster.emoji} {selectedCluster.name}</p>
+            {selectedIncumbent.existingDisruptor && (
+              <p className="text-xs text-muted-foreground">⚡ Existing challenger: <span className="text-primary font-medium">{selectedIncumbent.existingDisruptor}</span></p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Crosshair className="w-4 h-4 text-destructive" />
+              <CardTitle className="text-sm font-cinzel">Vulnerability</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-foreground">{selectedIncumbent.vulnerability}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-warning" />
+              <CardTitle className="text-sm font-cinzel">Disruption Angle</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-foreground">{selectedIncumbent.asymmetricAngle}</p>
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground font-medium mb-1">🎯 Beachhead Niche</p>
+              <p className="text-sm text-foreground">{selectedIncumbent.beachheadNiche}</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground font-medium mb-1">🔧 Disruptor Model</p>
+              <p className="text-sm text-foreground">{selectedIncumbent.disruptorModel}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Rocket className="w-4 h-4 text-primary" />
+              <CardTitle className="text-sm font-cinzel">7-Act Journey</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1.5">
+              {ACTS.map((act) => (
+                <div key={act.num} className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0" style={{ background: act.color, color: "white" }}>
+                    {act.num}
+                  </div>
+                  <p className="text-xs font-medium text-foreground">{act.name}: {act.subtitle}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {briefingData && (
+          <Button onClick={onLaunch} size="lg" className="w-full bg-primary text-primary-foreground">
+            <Rocket className="w-4 h-4 mr-2" /> Launch Simulation
+          </Button>
+        )}
+
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground font-medium">Quick questions:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {["What's their revenue model?", "Who are their competitors?", "How big is this market?"].map(q => (
+              <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => onSendText(q)}>
+                {q}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {otherTargets.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground font-medium mb-2">Other targets in {selectedCluster.name}:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {otherTargets.slice(0, 4).map(alt => (
+                <Button key={alt.id} variant="outline" size="sm" className="text-xs" onClick={() => onSwitchTarget(alt)}>
+                  <Target className="w-3 h-3 mr-1" /> {alt.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="text-center mb-2">
+        <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">🗺️ Industry Map</h3>
+        <p className="text-xs text-muted-foreground">22 industries, 100 targets</p>
+      </div>
+
+      <Card className="border-primary/20">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <CardTitle className="text-sm font-cinzel">Trending Targets</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {INDUSTRY_CLUSTERS.slice(0, 4).flatMap(c => c.incumbents.slice(0, 1).map(inc => (
+              <Button key={inc.id} variant="ghost" className="w-full justify-start text-xs h-auto py-2" onClick={() => onSelectTarget(inc.id)}>
+                <span className="mr-2">{c.emoji}</span>
+                <span className="font-medium">{inc.name}</span>
+                <Badge variant="outline" className="ml-auto text-[11px]">{inc.vector}</Badge>
+              </Button>
+            )))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-2">
+        {INDUSTRY_CLUSTERS.map(cluster => (
+          <Card key={cluster.id} className="cursor-pointer hover:border-primary/40 transition-all" onClick={() => onSelectTarget(cluster.incumbents[0]?.id)}>
+            <CardContent className="p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-lg">{cluster.emoji}</span>
+                <span className="text-xs font-medium text-foreground truncate">{cluster.name}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">{cluster.incumbents.length} targets</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
