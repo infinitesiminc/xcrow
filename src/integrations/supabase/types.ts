@@ -554,6 +554,7 @@ export type Database = {
       }
       disrupt_teams: {
         Row: {
+          act: number
           battle_transcript: Json | null
           cluster_id: string | null
           color: string
@@ -563,12 +564,15 @@ export type Database = {
           id: string
           incumbent_id: string | null
           name: string
+          pitch_data: Json | null
           room_id: string
           score_result: Json | null
           step_scores: Json | null
           total_score: number
+          venture_canvas: Json | null
         }
         Insert: {
+          act?: number
           battle_transcript?: Json | null
           cluster_id?: string | null
           color?: string
@@ -578,12 +582,15 @@ export type Database = {
           id?: string
           incumbent_id?: string | null
           name: string
+          pitch_data?: Json | null
           room_id: string
           score_result?: Json | null
           step_scores?: Json | null
           total_score?: number
+          venture_canvas?: Json | null
         }
         Update: {
+          act?: number
           battle_transcript?: Json | null
           cluster_id?: string | null
           color?: string
@@ -593,10 +600,12 @@ export type Database = {
           id?: string
           incumbent_id?: string | null
           name?: string
+          pitch_data?: Json | null
           room_id?: string
           score_result?: Json | null
           step_scores?: Json | null
           total_score?: number
+          venture_canvas?: Json | null
         }
         Relationships: [
           {
@@ -604,6 +613,54 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "disrupt_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disrupt_votes: {
+        Row: {
+          clarity: number
+          created_at: string
+          defensibility: number
+          id: string
+          room_id: string
+          team_id: string
+          viability: number
+          voter_id: string
+        }
+        Insert: {
+          clarity: number
+          created_at?: string
+          defensibility: number
+          id?: string
+          room_id: string
+          team_id: string
+          viability: number
+          voter_id: string
+        }
+        Update: {
+          clarity?: number
+          created_at?: string
+          defensibility?: number
+          id?: string
+          room_id?: string
+          team_id?: string
+          viability?: number
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disrupt_votes_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "disrupt_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disrupt_votes_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "disrupt_teams"
             referencedColumns: ["id"]
           },
         ]
