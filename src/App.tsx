@@ -43,6 +43,7 @@ const Competition = lazy(() => import("./pages/Competition.tsx"));
 const Investors = lazy(() => import("./pages/Investors.tsx"));
 const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard.tsx"));
 const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
+const Disrupt = lazy(() => import("./pages/Disrupt.tsx"));
 
 
 // Admin (lazy)
@@ -151,7 +152,8 @@ const App = () => (
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/skills" element={<SkillsCodex />} />
               <Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />
-              <Route path="/investors" element={<Investors />} />
+               <Route path="/investors" element={<Investors />} />
+              <Route path="/disrupt" element={<><Disrupt /></>} />
               <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               <Route path="/tools" element={<Navigate to="/" replace />} />
               <Route path="/org-stack" element={<Navigate to="/" replace />} />
