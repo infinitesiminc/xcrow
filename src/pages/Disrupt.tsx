@@ -23,7 +23,7 @@ import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
 import { DisruptMissionDebrief } from "@/components/disrupt/DisruptMissionDebrief";
 
 type GamePhase =
-  | "hub" | "cluster"
+  | "hub" | "cluster" | "briefing"
   | "act1-intro" | "act1" | "act1-score"
   | "act2-intro" | "act2" | "act2-score"
   | "act3-intro" | "act3" | "act3-score"
