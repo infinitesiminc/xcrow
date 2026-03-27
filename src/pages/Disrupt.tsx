@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { motion, AnimatePresence } from "framer-motion";
-import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Hammer, Megaphone, Building2, Lightbulb } from "lucide-react";
+import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Hammer, Megaphone, Building2, Lightbulb, Search } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
