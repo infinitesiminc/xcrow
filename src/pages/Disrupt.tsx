@@ -298,7 +298,7 @@ export default function Disrupt() {
 
   const launchSimulation = () => {
     if (!selectedCluster || !selectedIncumbent) return;
-    setPhase("act1-intro");
+    setPhase("mission-board");
   };
 
   const startBattle = () => {
