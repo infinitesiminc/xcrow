@@ -284,9 +284,7 @@ export default function Disrupt() {
         const key = `act${actNum}Score` as keyof MissionProgress;
         if (progress[key]) setActScores(prev => ({ ...prev, [actNum]: progress[key] as number }));
       });
-      const firstIncomplete = ACTS.find(a => !progress.completedActs.includes(a.num));
-      if (firstIncomplete) setPhase(`act${firstIncomplete.num}-intro` as GamePhase);
-      else setPhase("act7");
+      setPhase("mission-board");
     } else {
       // New mission → go to strategist with this target selected
       setPhase("strategist");
@@ -294,6 +292,17 @@ export default function Disrupt() {
       selectTargetFromChat(incumbent.id);
     }
     updateMissionProgress(incumbent.id, { status: "in-progress" });
+  };
+
+  const launchAct = (actNum: number) => {
+    if (!selectedIncumbent || !selectedCluster) return;
+    if (actNum === 1) {
+      startBattle();
+    } else if (actNum === 7) {
+      setPhase("act7");
+    } else {
+      setPhase(`act${actNum}` as GamePhase);
+    }
   };
 
   const launchSimulation = () => {
