@@ -598,7 +598,12 @@ function ScoreScreen({ score, incumbent, onReplay, onContinue }: { score: ScoreR
           </CardContent>
         </Card>
       )}
-      <Button onClick={onReplay} size="lg"><MapIcon className="w-4 h-4 mr-2" /> Back to Battlefield</Button>
+      <div className="flex gap-3 justify-center">
+        <Button onClick={onReplay} size="lg" variant="outline"><MapIcon className="w-4 h-4 mr-2" /> Back to Battlefield</Button>
+        {onContinue && (
+          <Button onClick={onContinue} size="lg"><ChevronRight className="w-4 h-4 mr-2" /> Continue to Act 2: Build</Button>
+        )}
+      </div>
     </div>
   );
 }
