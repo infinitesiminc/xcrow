@@ -304,9 +304,37 @@ export default function Disrupt() {
             <motion.div key="team-battle" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
               <DisruptTeamBattle
                 room={room} team={myTeam}
-                onComplete={() => setPhase("team-venture")}
+                onComplete={async () => {
+                  await supabase.from("disrupt_teams").update({ act: 2 }).eq("id", myTeam.id);
+                  if (user && room.created_by === user.id) {
+                    await supabase.from("disrupt_rooms").update({ status: "venture" }).eq("id", room.id);
+                  }
+                  setPhase("team-venture");
+                }}
               />
             </motion.div>
+          )}
+
+          {/* Host Control Bar */}
+          {room && user && room.created_by === user.id && ["team-battle", "team-venture", "team-pitch"].includes(phase) && (
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border shadow-lg rounded-full px-4 py-2 flex items-center gap-3">
+              <Badge variant="outline" className="text-xs">Host Controls</Badge>
+              {phase === "team-battle" && (
+                <Button size="sm" onClick={async () => { await supabase.from("disrupt_rooms").update({ status: "venture" }).eq("id", room.id); }}>
+                  → Act 2: Build
+                </Button>
+              )}
+              {phase === "team-venture" && (
+                <Button size="sm" onClick={async () => { await supabase.from("disrupt_rooms").update({ status: "pitching" }).eq("id", room.id); }}>
+                  → Act 3: Pitch
+                </Button>
+              )}
+              {phase === "team-pitch" && (
+                <Button size="sm" onClick={async () => { await supabase.from("disrupt_rooms").update({ status: "completed" }).eq("id", room.id); }}>
+                  → Show Results
+                </Button>
+              )}
+            </div>
           )}
 
           {phase === "team-venture" && room && myTeam && (
