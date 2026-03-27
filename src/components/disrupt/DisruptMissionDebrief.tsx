@@ -134,6 +134,3 @@ export function DisruptMissionDebrief({ incumbent, cluster, actScores, onBackToH
   );
 }
 
-function BarChart3(props: any) {
-  return <Star {...props} />;
-}
