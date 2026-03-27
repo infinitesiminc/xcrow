@@ -461,7 +461,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
             Disrupt <span className="text-primary">Software</span> with AI
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
-            15 software verticals. 46 incumbents. 7 acts per mission. Learn to build AI-powered startups that disrupt legacy SaaS.
+            15 software verticals. 46 incumbents. 6 acts per mission. Learn to build AI-powered startups that disrupt legacy SaaS.
           </p>
 
           {/* Stats */}
