@@ -30,6 +30,9 @@ import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";
 import bossBattlePreview from "@/assets/boss-battle-preview.png";
+import showcaseRoleNpc from "@/assets/showcase-role-npc.png";
+import showcaseWanderingNpc from "@/assets/showcase-wandering-npc.png";
+import showcaseGuardian from "@/assets/showcase-guardian.png";
 
 import avatarCrow from "@/assets/avatars/crow.webp";
 import avatarDragon from "@/assets/avatars/dragon.webp";
@@ -393,43 +396,47 @@ const Index = () => {
           </div>
         </section>
 
-        {/* ═══ BOSS BATTLE SHOWCASE ═══ */}
+        {/* ═══ ENCOUNTER SHOWCASE ═══ */}
         <section className="py-20 px-4">
-          <div className="max-w-5xl mx-auto">
-            <motion.div {...fade()} className="text-center mb-10">
-              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Level 2 — Boss Battles</p>
+          <div className="max-w-6xl mx-auto">
+            <motion.div {...fade()} className="text-center mb-12">
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Meet the Characters</p>
               <h2 className="font-fantasy text-3xl md:text-4xl font-bold">
-                Face the Sentinel's Judgment
+                Every Encounter Shapes Your Journey
               </h2>
               <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
-                Can you spot the flaws in AI-generated analysis? Boss battles test your strategic oversight — 
-                the one skill AI can't replace.
+                Talk to Role NPCs, consult Wandering Guides, and face Territory Guardians — each with unique intel, lore, and challenges.
               </p>
             </motion.div>
 
-            <motion.div
-              {...fade(0.2)}
-              className="relative rounded-2xl overflow-hidden border border-border/50 mx-auto"
-              style={{
-                maxWidth: 900,
-                boxShadow: "0 8px 60px hsl(var(--primary) / 0.15), inset 0 1px 0 hsl(var(--emboss-light))",
-              }}
-            >
-              <img
-                src={bossBattlePreview}
-                alt="Level 2 Boss Battle — Sentinel Audit arena with AI Oracle claim evaluation"
-                className="w-full h-auto block"
-                loading="lazy"
-              />
-              <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-                style={{ background: "linear-gradient(to top, hsl(var(--secondary) / 0.4), transparent)" }} />
-            </motion.div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { src: showcaseRoleNpc, label: "Role NPC Encounter", desc: "Chat with real job roles to discover skills and scout intel" },
+                { src: showcaseWanderingNpc, label: "Wandering NPC", desc: "Meet guides like the Lorekeeper who share industry wisdom" },
+                { src: showcaseGuardian, label: "Territory Guardian", desc: "Face guardians who test your mastery with boss challenges" },
+              ].map((card, i) => (
+                <motion.div key={card.label} {...fade(i * 0.12)}
+                  className="rounded-xl overflow-hidden border border-border/50 group hover:border-primary/40 transition-colors"
+                  style={{ boxShadow: "0 4px 30px hsl(var(--primary) / 0.08), inset 0 1px 0 hsl(var(--emboss-light))" }}
+                >
+                  <div className="overflow-hidden">
+                    <img src={card.src} alt={card.label}
+                      className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-500"
+                      loading="lazy" />
+                  </div>
+                  <div className="p-4 bg-card/80 backdrop-blur-sm">
+                    <h3 className="font-fantasy text-sm font-bold">{card.label}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{card.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
 
             <motion.div {...fade(0.35)} className="text-center mt-8">
               <Button size="lg" variant="outline" onClick={() => navigate("/map")}
                 className="text-sm px-6 font-fantasy">
                 <Swords className="h-4 w-4 mr-2" />
-                Enter the Arena
+                Explore the Map
               </Button>
             </motion.div>
           </div>
