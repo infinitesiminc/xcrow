@@ -19,8 +19,11 @@ import { DisruptLobby, type DisruptRoom, type DisruptTeam, type DisruptMember } 
 import { DisruptDraft } from "@/components/disrupt/DisruptDraft";
 import { DisruptTeamBattle } from "@/components/disrupt/DisruptTeamBattle";
 import { DisruptScoreboard } from "@/components/disrupt/DisruptScoreboard";
+import { DisruptVentureBuild } from "@/components/disrupt/DisruptVentureBuild";
+import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
+import { DisruptFinalScoreboard } from "@/components/disrupt/DisruptFinalScoreboard";
 
-type GamePhase = "lobby" | "solo-map" | "solo-cluster" | "solo-battle" | "solo-score" | "team-draft" | "team-battle" | "team-scoreboard";
+type GamePhase = "lobby" | "solo-map" | "solo-cluster" | "solo-battle" | "solo-score" | "team-draft" | "team-battle" | "team-venture" | "team-pitch" | "team-scoreboard";
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 interface ScoreResult {
