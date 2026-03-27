@@ -25,7 +25,7 @@ export function DisruptDraft({
 }) {
   const { user } = useAuth();
   const [selectedCluster, setSelectedCluster] = useState<IndustryCluster | null>(null);
-  const [draftedIds, setDraftedIds] = useState<Set<string>>(new Set());
+  const [draftedIds, setDraftedIds] = useState<Set<number>>(new Set());
   const isHost = user && room.created_by === user.id;
   const myTeam = teams.find(t => t.id === myTeamId);
 
