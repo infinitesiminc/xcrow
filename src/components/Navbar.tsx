@@ -71,7 +71,6 @@ export default function Navbar() {
         { label: "How It Works", path: "/how-it-works", icon: BookOpen },
         { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
         { label: "Skills", path: "/skills", icon: Sparkles },
-        { label: "Pricing", path: "/pricing", icon: null },
       ];
 
   const handleNav = (path: string) => {
