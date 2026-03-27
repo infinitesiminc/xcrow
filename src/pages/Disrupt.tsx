@@ -25,13 +25,13 @@ import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
 import { DisruptMissionDebrief } from "@/components/disrupt/DisruptMissionDebrief";
 
 type GamePhase =
-  | "strategist" | "hub" | "cluster"
-  | "act1-intro" | "act1" | "act1-score"
-  | "act2-intro" | "act2" | "act2-score"
-  | "act3-intro" | "act3" | "act3-score"
-  | "act4-intro" | "act4" | "act4-score"
-  | "act5-intro" | "act5" | "act5-score"
-  | "act6-intro" | "act6" | "act6-score"
+  | "strategist" | "hub" | "cluster" | "mission-board"
+  | "act1" | "act1-score"
+  | "act2" | "act2-score"
+  | "act3" | "act3-score"
+  | "act4" | "act4-score"
+  | "act5" | "act5-score"
+  | "act6" | "act6-score"
   | "act7";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
