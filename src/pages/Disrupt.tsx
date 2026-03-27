@@ -23,7 +23,7 @@ import { DisruptVentureBuild } from "@/components/disrupt/DisruptVentureBuild";
 import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
 import { DisruptFinalScoreboard } from "@/components/disrupt/DisruptFinalScoreboard";
 
-type GamePhase = "lobby" | "solo-map" | "solo-cluster" | "solo-battle" | "solo-score" | "team-draft" | "team-battle" | "team-venture" | "team-pitch" | "team-scoreboard";
+type GamePhase = "lobby" | "solo-map" | "solo-cluster" | "solo-battle" | "solo-score" | "solo-venture" | "solo-pitch" | "solo-final" | "team-draft" | "team-battle" | "team-venture" | "team-pitch" | "team-scoreboard";
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 interface ScoreResult {
