@@ -91,6 +91,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [conquest, setConquest] = useState<{ guardianName: string; territory: string; hue: number } | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
   const [companyFilter, setCompanyFilter] = useState<Set<string>>(new Set());
+  const [batchSeed, setBatchSeed] = useState(0);
+  const [batchRotating, setBatchRotating] = useState(false);
   const mission = useScoutMission();
   const { user } = useAuth();
   const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
@@ -104,8 +106,10 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const isDragging = useRef(false);
 
   // Fetch role NPCs from the DB — sample diverse jobs across departments
+  // batchSeed changes on rotation to get a different shuffle
   useEffect(() => {
     (async () => {
+      setBatchRotating(true);
       const { data: jobs } = await supabase
         .from("jobs")
         .select("id, title, department, automation_risk_percent, augmented_percent, slug, companies(name)")
@@ -113,12 +117,19 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         .not("department", "is", null)
         .order("imported_at", { ascending: false })
         .limit(400);
-      if (!jobs?.length) return;
+      if (!jobs?.length) { setBatchRotating(false); return; }
+
+      // Deterministic shuffle based on batchSeed
+      const shuffled = [...jobs];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = ((batchSeed * 2654435761 + i * 2246822519) >>> 0) % (i + 1);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
 
       // Sample up to 5 per territory, max 2 roles per company, unique titles
       const perTerritory = new Map<string, RoleNPC[]>();
       const companyCount = new Map<string, number>();
-      for (const job of jobs) {
+      for (const job of shuffled) {
         const npc = jobToRoleNPC(job as any);
         const key = npc.territory;
         if (!perTerritory.has(key)) perTerritory.set(key, []);
@@ -130,8 +141,10 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         }
       }
       setRoleNPCs(Array.from(perTerritory.values()).flat());
+      setCompanyFilter(new Set());
+      setBatchRotating(false);
     })();
-  }, []);
+  }, [batchSeed]);
 
   // Auto-pan to first Role NPC on initial load (first 30s hook)
   const hasAutoPanned = useRef(false);
@@ -366,16 +379,31 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* Cinematic vignette */}
         <div className="absolute inset-0 map-vignette z-[1]" />
 
-        {/* Company filter pills */}
+        {/* Company filter pills + rotation button */}
         {companyNames.length > 0 && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex flex-wrap gap-1.5 max-w-[80%] justify-center">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex flex-wrap gap-1.5 max-w-[80%] justify-center items-center">
+            <button
+              onClick={() => setBatchSeed(s => s + 1)}
+              disabled={batchRotating}
+              className="px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md border border-primary/40 bg-primary/15 text-primary hover:bg-primary/25 transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50"
+              title="Shuffle to new companies"
+            >
+              <svg
+                viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                className={`${batchRotating ? "animate-spin" : ""}`}
+              >
+                <path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17M14.5 8a6.5 6.5 0 0 1-11.48 4.17" />
+                <path d="M13 1v3h-3M3 15v-3h3" />
+              </svg>
+              Shuffle
+            </button>
             {companyNames.slice(0, 12).map(name => {
               const active = companyFilter.has(name);
               return (
                 <button
                   key={name}
                   onClick={() => toggleCompanyFilter(name)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold backdrop-blur-md border transition-all duration-200 ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md border transition-all duration-200 ${
                     active
                       ? "bg-primary/90 text-primary-foreground border-primary shadow-md shadow-primary/25"
                       : "bg-card/70 text-muted-foreground border-border/50 hover:bg-card hover:text-foreground"
@@ -388,7 +416,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             {companyFilter.size > 0 && (
               <button
                 onClick={() => setCompanyFilter(new Set())}
-                className="px-2 py-1 rounded-full text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="px-2 py-1 rounded-full text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 ✕ Clear
               </button>
