@@ -454,9 +454,9 @@ function BattleArena({
                     : "bg-muted text-foreground rounded-bl-md"
                 }`}
               >
-                <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>blockquote]:border-l-primary/50">
-                  {msg.content}
-                </ReactMarkdown>
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>blockquote]:border-l-primary/50">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
               </div>
             </div>
           ))}
