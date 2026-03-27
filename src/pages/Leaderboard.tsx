@@ -89,30 +89,7 @@ export default function Leaderboard() {
     toast({ title: "Link copied!", description: "Paste it anywhere to share" });
   }
 
-  if (!user) {
-    return (
-      <>
-        <Navbar />
-        <main
-          className="min-h-screen flex items-center justify-center"
-          style={{ background: "hsl(var(--background))" }}
-        >
-          <div className="text-center px-4">
-            <Trophy className="h-12 w-12 mx-auto mb-4" style={{ color: "hsl(var(--filigree) / 0.3)" }} />
-            <h2
-              className="text-xl font-bold text-foreground mb-2"
-              style={{ fontFamily: "'Cinzel', serif" }}
-            >
-              Sign in to view the Hall of Champions
-            </h2>
-            <p className="text-sm text-muted-foreground mb-4">Compete with warriors and track your conquest</p>
-            <Button onClick={openAuthModal} style={{ fontFamily: "'Cinzel', serif" }}>Enter Realm</Button>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  const isLoading = false;
 
   return (
     <>
