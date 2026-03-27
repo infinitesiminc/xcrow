@@ -471,7 +471,7 @@ export default function Disrupt() {
       <Navbar />
       <div className="min-h-screen bg-background pt-20 pb-12">
         {/* Mission Progress Bar — visible during any act (not briefing) */}
-        {phase !== "hub" && phase !== "cluster" && phase !== "briefing" && selectedIncumbent && selectedCluster && (
+        {phase !== "discovery" && phase !== "hub" && phase !== "cluster" && phase !== "briefing" && selectedIncumbent && selectedCluster && (
           <MissionProgressBar
             incumbent={selectedIncumbent}
             cluster={selectedCluster}
