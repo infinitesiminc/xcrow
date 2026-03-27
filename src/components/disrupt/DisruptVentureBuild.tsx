@@ -135,8 +135,8 @@ export function DisruptVentureBuild({
         // Save to database
         await supabase.from("disrupt_teams").update({
           venture_canvas: updated as any,
-          act: 2,
-        }).eq("id", team.id);
+      act: 3,
+    }).eq("id", team.id);
 
         toast.success(`${CANVASES[currentCanvas].label} complete!`);
       }
