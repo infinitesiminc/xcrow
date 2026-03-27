@@ -413,7 +413,7 @@ export default function Disrupt() {
     });
     const nextAct = actNum + 1;
     if (nextAct <= 7) {
-      setPhase(`act${nextAct}-intro` as GamePhase);
+      setPhase("mission-board");
     }
   };
 
