@@ -30,13 +30,11 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
             >
               Product
             </span>
-            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Explore Roles</Link>
-            <Link to="/students" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Students</Link>
-            <Link to="/professionals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Professionals</Link>
-            <Link to="/schools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Schools</Link>
+            <Link to="/how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How It Works</Link>
+            <Link to="/skills" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Skills</Link>
             <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+            <Link to="/schools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Schools</Link>
             <Link to="/competition" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Competition</Link>
-            
           </div>
           <div className="flex flex-col gap-2">
             <span
@@ -46,9 +44,9 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
               Company
             </span>
             <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
-            <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
-            <Link to="/investors" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Investors</Link>
             <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
+            <Link to="/investors" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Investors</Link>
+            <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
           </div>
         </div>
       </div>
