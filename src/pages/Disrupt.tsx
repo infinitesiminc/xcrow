@@ -95,20 +95,8 @@ export default function Disrupt() {
   // Current mission context
   const [selectedCluster, setSelectedCluster] = useState<IndustryCluster | null>(null);
   const [selectedIncumbent, setSelectedIncumbent] = useState<DisruptionIncumbent | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [score, setScore] = useState<ScoreResult | null>(null);
-  const [isScoring, setIsScoring] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
   // Act scores for current mission
   const [actScores, setActScores] = useState<Record<number, number>>({});
-
-  const scrollToBottom = useCallback(() => {
-    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-  }, []);
 
   // Unified strategist state (replaces separate discovery + briefing)
   const [strategistMessages, setStrategistMessages] = useState<ChatMsg[]>([
