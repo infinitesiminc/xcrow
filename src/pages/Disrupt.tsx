@@ -1272,3 +1272,116 @@ function BriefingChat({
     </div>
   );
 }
+
+/* ── Discovery Chat (Entry Point) ── */
+function DiscoveryChat({
+  messages, input, setInput, onSend, isStreaming, chatEndRef, onBrowseMap, onSelectTarget,
+}: {
+  messages: ChatMsg[]; input: string; setInput: (v: string) => void; onSend: () => void;
+  isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
+  onBrowseMap: () => void; onSelectTarget: (incumbentId: number) => void;
+}) {
+  // Parse incumbent IDs from AI responses that contain [SELECT:ID] markers
+  const selectableTargets: { id: number; name: string }[] = [];
+  const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+  if (lastAssistant) {
+    const matches = lastAssistant.content.matchAll(/\[SELECT:(\d+):([^\]]+)\]/g);
+    for (const match of matches) {
+      selectableTargets.push({ id: parseInt(match[1]), name: match[2] });
+    }
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 flex flex-col" style={{ height: "calc(100vh - 8rem)" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
+        <div className="flex items-center gap-2">
+          <Rocket className="w-5 h-5 text-primary" />
+          <div>
+            <h2 className="font-cinzel font-bold text-sm text-foreground">Disruption Arena</h2>
+            <p className="text-[11px] text-muted-foreground">Find your perfect disruption target</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={onBrowseMap} className="text-xs">
+          <MapIcon className="w-3 h-3 mr-1" /> Browse Map
+        </Button>
+      </div>
+
+      {/* Chat area */}
+      <ScrollArea className="flex-1 pr-4 mb-3">
+        <div className="space-y-4 pb-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
+                msg.role === "user"
+                  ? "bg-primary text-primary-foreground rounded-br-md"
+                  : "bg-muted text-foreground rounded-bl-md"
+              }`}>
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0">
+                  <ReactMarkdown>{msg.content.replace(/\[SELECT:\d+:[^\]]+\]/g, "")}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          ))}
+          {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
+            <div className="flex justify-start">
+              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce" />
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.1s]" />
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.2s]" />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Target selection buttons */}
+      {selectableTargets.length > 0 && !isStreaming && (
+        <div className="mb-3 shrink-0">
+          <p className="text-xs text-muted-foreground mb-2 font-medium">🎯 Select a target to start your mission:</p>
+          <div className="flex flex-wrap gap-2">
+            {selectableTargets.map(t => (
+              <Button key={t.id} onClick={() => onSelectTarget(t.id)} className="text-xs" size="sm">
+                <Swords className="w-3 h-3 mr-1" /> Disrupt {t.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quick prompts for first message */}
+      {messages.length <= 1 && !isStreaming && (
+        <div className="flex flex-wrap gap-2 mb-3 shrink-0">
+          {[
+            "I'm interested in fintech and payments",
+            "What healthcare companies are ripe for disruption?",
+            "I want to build something in education",
+            "Show me the most vulnerable companies",
+          ].map(q => (
+            <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setInput(q)}>
+              {q}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="flex gap-2 shrink-0 pb-2">
+        <Textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="What industries or problems interest you?"
+          className="min-h-[48px] max-h-[120px] resize-none"
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
+          disabled={isStreaming}
+        />
+        <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end">
+          <Send className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
