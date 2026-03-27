@@ -110,7 +110,7 @@ const QUICK_QUESTIONS = [
   "How has your job changed?",
 ];
 
-export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExploreRole }: RoleNPCEncounterProps) {
+export default function RoleNPCEncounter({ role, avatarSrc: avatarSrcProp, onClose, onCollectSkills, onExploreRole }: RoleNPCEncounterProps) {
   const { user } = useAuth();
   const hue = TERRITORY_HUES[role.territory] ?? 220;
   const heroImage = getTerritoryHeroImage(role.territory);
