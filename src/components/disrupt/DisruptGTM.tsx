@@ -122,7 +122,7 @@ export function DisruptGTM({ incumbent, cluster, onComplete }: {
   return (
     <div className="max-w-5xl mx-auto px-4 flex gap-4" style={{ height: "calc(100vh - 12rem)" }}>
       <div className="w-52 shrink-0 hidden md:block">
-        <Badge variant="outline" className="text-xs mb-3">Act 4: Launch</Badge>
+        <Badge variant="outline" className="text-xs mb-3">Act 3: Launch</Badge>
         <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">Go-to-Market</h3>
         <p className="text-[11px] text-muted-foreground mb-4">Design your launch strategy.</p>
         <div className="space-y-2">

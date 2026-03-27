@@ -211,7 +211,7 @@ export function DisruptPitchBattle({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full" style={{ background: team.color }} />
-          <Badge variant="outline" className="text-xs">Act 3: Pitch</Badge>
+          <Badge variant="outline" className="text-xs">Act 5: Pitch</Badge>
           <span className="font-cinzel font-bold text-sm text-foreground">
             {pitchDeck?.startupName || "Your Startup"}
           </span>

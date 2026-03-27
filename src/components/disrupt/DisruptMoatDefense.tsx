@@ -108,7 +108,7 @@ export function DisruptMoatDefense({ incumbent, cluster, onComplete }: {
         <div className="flex items-center gap-2">
           <Castle className="w-5 h-5 text-warning" />
           <div>
-            <Badge variant="outline" className="text-xs">Act 5: Defend</Badge>
+            <Badge variant="outline" className="text-xs">Act 4: Defend</Badge>
             <h2 className="font-cinzel font-bold text-sm">{incumbent.name} Counter-Attack</h2>
           </div>
         </div>
