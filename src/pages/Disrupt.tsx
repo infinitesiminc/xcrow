@@ -1202,31 +1202,28 @@ function StrategistView({
   briefingData: string | null; onLaunch: () => void;
   onSwitchTarget: (inc: DisruptionIncumbent) => void; isMobile: boolean;
 }) {
+  const hasConversation = messages.length > 1;
+
   const chatPanel = (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between gap-3 mb-3 shrink-0 px-4 pt-4">
-        <div className="flex items-center gap-2">
-          <Rocket className="w-5 h-5 text-primary" />
-          <div>
-            <h2 className="font-cinzel font-bold text-sm text-foreground">AI Strategist</h2>
-            <p className="text-[11px] text-muted-foreground">
-              {selectedIncumbent ? `Briefing: ${selectedIncumbent.name}` : "Find your disruption target"}
-            </p>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={onBrowseMap} className="text-xs">
-          <MapIcon className="w-3 h-3 mr-1" /> Browse Map
-        </Button>
+      {/* Minimal header */}
+      <div className="flex items-center gap-3 px-5 py-3 border-b border-border/30 shrink-0">
+        <Rocket className="w-4 h-4 text-primary" />
+        <span className="font-cinzel font-bold text-sm text-foreground">AI Strategist</span>
+        {selectedIncumbent && (
+          <Badge variant="secondary" className="text-xs ml-auto">{selectedIncumbent.name}</Badge>
+        )}
       </div>
 
-      <ScrollArea className="flex-1 px-4 mb-3">
-        <div className="space-y-4 pb-4">
+      {/* Messages */}
+      <ScrollArea className="flex-1 px-5 py-4">
+        <div className="space-y-4 pb-4 max-w-2xl">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                 msg.role === "user"
                   ? "bg-primary text-primary-foreground rounded-br-md text-sm"
-                  : "bg-muted/60 text-foreground rounded-bl-md"
+                  : "bg-muted/40 text-foreground rounded-bl-md"
               }`}>
                 <div className={msg.role === "user" ? "text-sm" : "disrupt-prose"}>
                   <ReactMarkdown>{msg.content.replace(/\[SELECT:\d+:[^\]]+\]/g, "")}</ReactMarkdown>
@@ -1236,7 +1233,7 @@ function StrategistView({
           ))}
           {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
             <div className="flex justify-start">
-              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+              <div className="bg-muted/40 rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex gap-1">
                   <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce" />
                   <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.1s]" />
@@ -1249,40 +1246,38 @@ function StrategistView({
         </div>
       </ScrollArea>
 
+      {/* Selectable targets from AI response */}
       {selectableTargets.length > 0 && !isStreaming && (
-        <div className="mb-3 px-4 shrink-0">
-          <p className="text-xs text-muted-foreground mb-2 font-medium">🎯 Select a target:</p>
+        <div className="px-5 pb-2 shrink-0">
           <div className="flex flex-wrap gap-2">
             {selectableTargets.map(t => (
-              <Button key={t.id} onClick={() => onSelectTarget(t.id)} className="text-xs" size="sm">
-                <Swords className="w-3 h-3 mr-1" /> {t.name}
+              <Button key={t.id} onClick={() => onSelectTarget(t.id)} className="text-xs" size="sm" variant="secondary">
+                <Target className="w-3 h-3 mr-1" /> {t.name}
               </Button>
             ))}
           </div>
         </div>
       )}
 
+      {/* Suggestion chips — only on first message, max 2 */}
       {messages.length <= 1 && !isStreaming && !selectedIncumbent && (
-        <div className="flex flex-wrap gap-2 mb-3 px-4 shrink-0">
-          {[
-            "I want to build a better CRM",
-            "What SaaS tools have the worst UX?",
-            "Show me overpriced enterprise software",
-            "B2B tools ripe for AI disruption",
-          ].map(q => (
-            <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setInput(q)}>
-              {q}
-            </Button>
-          ))}
+        <div className="flex gap-2 px-5 pb-2 shrink-0">
+          <Button variant="outline" size="sm" className="text-xs" onClick={() => onSendText("Show me overpriced enterprise software ripe for disruption")}>
+            Overpriced SaaS
+          </Button>
+          <Button variant="outline" size="sm" className="text-xs" onClick={() => onSendText("What B2B tools have the worst user experience?")}>
+            Worst UX tools
+          </Button>
         </div>
       )}
 
-      <div className="flex gap-2 shrink-0 px-4 pb-4">
+      {/* Input */}
+      <div className="flex gap-2 shrink-0 px-5 pb-4 pt-2 border-t border-border/20">
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={selectedIncumbent ? "Ask about the company, strategy, or say 'switch target'..." : "What industries or problems interest you?"}
-          className="min-h-[48px] max-h-[120px] resize-none"
+          placeholder={selectedIncumbent ? `Ask about ${selectedIncumbent.name}…` : "What software would you rebuild?"}
+          className="min-h-[44px] max-h-[100px] resize-none text-sm"
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
           disabled={isStreaming}
         />
@@ -1302,6 +1297,8 @@ function StrategistView({
       onSelectTarget={onSelectTarget}
       onSwitchTarget={onSwitchTarget}
       onSendText={onSendText}
+      onBrowseMap={onBrowseMap}
+      hasConversation={hasConversation}
     />
   );
 
@@ -1310,7 +1307,7 @@ function StrategistView({
       <div className="flex flex-col" style={{ height: "calc(100vh - 6rem)" }}>
         <div className="flex-1 min-h-0">{chatPanel}</div>
         {selectedIncumbent && (
-          <div className="border-t border-border max-h-[40vh] overflow-y-auto">
+          <div className="border-t border-border max-h-[35vh] overflow-y-auto">
             {contextPanel}
           </div>
         )}
@@ -1320,12 +1317,12 @@ function StrategistView({
 
   return (
     <div className="max-w-[1400px] mx-auto" style={{ height: "calc(100vh - 6rem)" }}>
-      <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-border">
-        <ResizablePanel defaultSize={55} minSize={40}>
+      <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-border/40">
+        <ResizablePanel defaultSize={60} minSize={45}>
           {chatPanel}
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={45} minSize={30}>
+        <ResizablePanel defaultSize={40} minSize={25}>
           <ScrollArea className="h-full">
             {contextPanel}
           </ScrollArea>
@@ -1346,11 +1343,8 @@ const SECTION_ICONS: Record<number, { icon: typeof Building2; color: string; bg:
 
 function parseBriefingSections(md: string): { num: number; title: string; body: string }[] {
   const sections: { num: number; title: string; body: string }[] = [];
-  // Match patterns like "1. Title" or "**1. Title**" or "## 1. Title"
   const parts = md.split(/(?=(?:^|\n)(?:#{1,3}\s*)?(?:\*\*)?(\d+)\.\s)/);
-  
   let current: { num: number; title: string; body: string } | null = null;
-  
   for (const part of parts) {
     const headerMatch = part.match(/^(?:\n)?(?:#{1,3}\s*)?(?:\*\*)?(\d+)\.\s*(.+?)(?:\*\*)?(?:\n|$)/);
     if (headerMatch) {
@@ -1367,74 +1361,67 @@ function parseBriefingSections(md: string): { num: number; title: string; body: 
   return sections;
 }
 
-/* ── Context Panel (Right Side) ── */
+/* ── Context Panel (Right Side) — Progressive Reveal ── */
 function ContextPanel({
-  selectedIncumbent, selectedCluster, briefingData, onLaunch, onSelectTarget, onSwitchTarget, onSendText,
+  selectedIncumbent, selectedCluster, briefingData, onLaunch, onSelectTarget, onSwitchTarget, onSendText, onBrowseMap, hasConversation,
 }: {
   selectedIncumbent: DisruptionIncumbent | null; selectedCluster: IndustryCluster | null;
   briefingData: string | null; onLaunch: () => void;
   onSelectTarget: (id: number) => void; onSwitchTarget: (inc: DisruptionIncumbent) => void;
-  onSendText: (t: string) => void;
+  onSendText: (t: string) => void; onBrowseMap: () => void; hasConversation: boolean;
 }) {
+  // ── State 2: Target selected → show intel
   if (selectedIncumbent && selectedCluster) {
     const otherTargets = selectedCluster.incumbents.filter(i => i.id !== selectedIncumbent.id);
     const briefingSections = briefingData ? parseBriefingSections(briefingData) : [];
     const hasParsedSections = briefingSections.length >= 2;
 
     return (
-      <div className="p-4 space-y-4">
-        {/* Hero header card */}
-        <Card className="border-primary/30 overflow-hidden">
-          <div className="h-2 w-full bg-gradient-to-r from-primary via-accent to-destructive" />
-          <CardContent className="pt-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Target className="w-6 h-6 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-cinzel font-bold text-lg text-foreground leading-tight">{selectedIncumbent.name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{selectedCluster.emoji} {selectedCluster.name}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline" className="text-xs">{selectedIncumbent.age}</Badge>
-              <Badge className="text-xs" style={{ background: `hsl(${selectedCluster.color})` }}>{selectedIncumbent.vector}</Badge>
-              {selectedIncumbent.pricingModel && (
-                <Badge variant="secondary" className="text-xs">{selectedIncumbent.pricingModel}</Badge>
-              )}
-            </div>
-            {selectedIncumbent.existingDisruptor && (
-              <p className="text-xs text-muted-foreground">⚡ Existing challenger: <span className="text-primary font-medium">{selectedIncumbent.existingDisruptor}</span></p>
-            )}
-          </CardContent>
-        </Card>
+      <div className="p-5 space-y-4">
+        {/* Compact target header */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Target className="w-5 h-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-cinzel font-bold text-base text-foreground leading-tight">{selectedIncumbent.name}</h3>
+            <p className="text-xs text-muted-foreground">{selectedCluster.emoji} {selectedCluster.name} · {selectedIncumbent.age}</p>
+          </div>
+        </div>
 
-        {/* Parsed briefing sections as cards */}
+        {/* Quick stats — always visible */}
+        <div className="flex gap-2 flex-wrap">
+          <Badge variant="outline" className="text-xs">{selectedIncumbent.vector}</Badge>
+          {selectedIncumbent.pricingModel && (
+            <Badge variant="secondary" className="text-xs">{selectedIncumbent.pricingModel}</Badge>
+          )}
+          {selectedIncumbent.existingDisruptor && (
+            <Badge variant="outline" className="text-xs text-primary border-primary/30">⚡ {selectedIncumbent.existingDisruptor}</Badge>
+          )}
+        </div>
+
+        {/* Briefing cards — progressive reveal */}
         {hasParsedSections ? (
           <div className="space-y-3">
-            <div className="flex items-center gap-2 px-1">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Intel Briefing</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Intel Briefing</p>
             {briefingSections.map((section, i) => {
               const iconCfg = SECTION_ICONS[section.num] || SECTION_ICONS[1];
               const IconComp = iconCfg?.icon || Lightbulb;
               return (
                 <motion.div
                   key={section.num}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08, duration: 0.3 }}
+                  transition={{ delay: i * 0.06 }}
                 >
-                  <Card className="overflow-hidden">
-                    <div className="flex items-start gap-3 p-4">
-                      <div className={`w-9 h-9 rounded-lg ${iconCfg?.bg || "bg-muted"} flex items-center justify-center shrink-0 mt-0.5`}>
-                        <IconComp className={`w-4 h-4 ${iconCfg?.color || "text-foreground"}`} />
+                  <Card className="border-border/40">
+                    <div className="flex items-start gap-3 p-3.5">
+                      <div className={`w-8 h-8 rounded-lg ${iconCfg?.bg || "bg-muted"} flex items-center justify-center shrink-0 mt-0.5`}>
+                        <IconComp className={`w-3.5 h-3.5 ${iconCfg?.color || "text-foreground"}`} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="font-cinzel font-bold text-sm text-foreground mb-2">{section.title}</h4>
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed [&>p]:mb-2.5 [&>p:last-child]:mb-0 [&>ul]:space-y-1 [&>ul]:pl-4 [&_strong]:text-foreground [&_strong]:font-semibold">
+                        <h4 className="font-cinzel font-bold text-xs text-foreground mb-1.5">{section.title}</h4>
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:space-y-0.5 [&>ul]:pl-3 [&_strong]:text-foreground">
                           <ReactMarkdown>{section.body.trim()}</ReactMarkdown>
                         </div>
                       </div>
@@ -1444,89 +1431,36 @@ function ContextPanel({
               );
             })}
           </div>
-        ) : (
-          <>
-            {/* Fallback: static cards when no briefing yet */}
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <Crosshair className="w-4 h-4 text-destructive" />
-                  <CardTitle className="text-sm font-cinzel">Vulnerability</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-foreground">{selectedIncumbent.vulnerability}</p>
-              </CardContent>
-            </Card>
+        ) : !briefingData ? (
+          /* Static fallback while waiting for briefing */
+          <Card className="border-border/40">
+            <CardContent className="p-3.5 space-y-2">
+              <p className="text-xs text-muted-foreground font-medium">🔍 Vulnerability</p>
+              <p className="text-sm text-foreground">{selectedIncumbent.vulnerability}</p>
+              <div className="h-px bg-border/30" />
+              <p className="text-xs text-muted-foreground font-medium">💡 Angle</p>
+              <p className="text-sm text-foreground">{selectedIncumbent.asymmetricAngle}</p>
+            </CardContent>
+          </Card>
+        ) : null}
 
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-warning" />
-                  <CardTitle className="text-sm font-cinzel">Disruption Angle</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm text-foreground">{selectedIncumbent.asymmetricAngle}</p>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground font-medium mb-1">🎯 Beachhead Niche</p>
-                  <p className="text-sm text-foreground">{selectedIncumbent.beachheadNiche}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground font-medium mb-1">🔧 Disruptor Model</p>
-                  <p className="text-sm text-foreground">{selectedIncumbent.disruptorModel}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
-
-        {/* 7-Act journey */}
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Rocket className="w-4 h-4 text-primary" />
-              <CardTitle className="text-sm font-cinzel">7-Act Simulation Journey</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1.5">
-              {ACTS.map((act) => (
-                <div key={act.num} className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: act.color, color: "white" }}>
-                    {act.num}
-                  </div>
-                  <p className="text-xs font-medium text-foreground">{act.name}: {act.subtitle}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
+        {/* Launch CTA */}
         {briefingData && (
-          <Button onClick={onLaunch} size="lg" className="w-full bg-primary text-primary-foreground">
-            <Rocket className="w-4 h-4 mr-2" /> Launch Simulation
-          </Button>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            <Button onClick={onLaunch} size="lg" className="w-full">
+              <Rocket className="w-4 h-4 mr-2" /> Launch Simulation
+            </Button>
+          </motion.div>
         )}
 
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Quick questions:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {["What's their revenue model?", "Who are their competitors?", "How big is this market?"].map(q => (
-              <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => onSendText(q)}>
-                {q}
-              </Button>
-            ))}
-          </div>
-        </div>
-
+        {/* Switch targets — collapsed */}
         {otherTargets.length > 0 && (
           <div>
-            <p className="text-xs text-muted-foreground font-medium mb-2">Other targets in {selectedCluster.name}:</p>
+            <p className="text-[11px] text-muted-foreground mb-1.5">Also in {selectedCluster.name}:</p>
             <div className="flex flex-wrap gap-1.5">
-              {otherTargets.slice(0, 4).map(alt => (
-                <Button key={alt.id} variant="outline" size="sm" className="text-xs" onClick={() => onSwitchTarget(alt)}>
-                  <Target className="w-3 h-3 mr-1" /> {alt.name}
+              {otherTargets.slice(0, 3).map(alt => (
+                <Button key={alt.id} variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => onSwitchTarget(alt)}>
+                  {alt.name}
                 </Button>
               ))}
             </div>
@@ -1536,46 +1470,40 @@ function ContextPanel({
     );
   }
 
+  // ── State 1: No target → minimal quick-picks
+  const trendingTargets = INDUSTRY_CLUSTERS.slice(0, 5).flatMap(c => c.incumbents.slice(0, 1).map(inc => ({ inc, cluster: c })));
+
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-center mb-2">
-        <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">🗺️ Software Market Map</h3>
-        <p className="text-xs text-muted-foreground">15 verticals, 46 targets</p>
+    <div className="p-5 space-y-5">
+      <div>
+        <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">Quick Picks</h3>
+        <p className="text-xs text-muted-foreground">Popular disruption targets</p>
       </div>
 
-      <Card className="border-primary/20">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <CardTitle className="text-sm font-cinzel">Trending Targets</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {INDUSTRY_CLUSTERS.slice(0, 4).flatMap(c => c.incumbents.slice(0, 1).map(inc => (
-              <Button key={inc.id} variant="ghost" className="w-full justify-start text-xs h-auto py-2" onClick={() => onSelectTarget(inc.id)}>
-                <span className="mr-2">{c.emoji}</span>
-                <span className="font-medium">{inc.name}</span>
-                <Badge variant="outline" className="ml-auto text-[11px]">{inc.vector}</Badge>
-              </Button>
-            )))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-2 gap-2">
-        {INDUSTRY_CLUSTERS.map(cluster => (
-          <Card key={cluster.id} className="cursor-pointer hover:border-primary/40 transition-all" onClick={() => onSelectTarget(cluster.incumbents[0]?.id)}>
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-lg">{cluster.emoji}</span>
-                <span className="text-xs font-medium text-foreground truncate">{cluster.name}</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">{cluster.incumbents.length} targets</p>
-            </CardContent>
-          </Card>
+      <div className="space-y-1">
+        {trendingTargets.map(({ inc, cluster }) => (
+          <button
+            key={inc.id}
+            onClick={() => onSelectTarget(inc.id)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors text-left group"
+          >
+            <span className="text-base">{cluster.emoji}</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground">{inc.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{cluster.name}</p>
+            </div>
+            <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
         ))}
       </div>
+
+      <button
+        onClick={onBrowseMap}
+        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-border/40 hover:border-primary/40 transition-colors text-left text-xs text-muted-foreground hover:text-foreground"
+      >
+        <MapIcon className="w-3.5 h-3.5" />
+        Browse all 46 targets across 15 verticals
+      </button>
     </div>
   );
 }
