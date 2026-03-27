@@ -79,10 +79,10 @@ export default function StickyTicker() {
           >
             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
               <Zap className="h-2.5 w-2.5 text-destructive shrink-0" />
-              <span className="text-[10px] font-semibold tracking-wide text-destructive/90 uppercase">
+              <span className="text-[11px] font-semibold tracking-wide text-destructive/90 uppercase">
                 {FRONTIER_RELEASES[m.index].model}
               </span>
-              <span className="text-[9px] text-muted-foreground/50">released</span>
+              <span className="text-[11px] text-muted-foreground/50">released</span>
             </span>
           </div>
         ))}
@@ -96,7 +96,7 @@ export default function StickyTicker() {
           {[...WORKFORCE_ITEMS, ...WORKFORCE_ITEMS].map((item, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 px-4 text-[10px] shrink-0 text-muted-foreground/50"
+              className="inline-flex items-center gap-1 px-4 text-[11px] shrink-0 text-muted-foreground/50"
             >
               <Users className="h-2 w-2 shrink-0 opacity-40" />
               <span>{item}</span>

@@ -82,7 +82,7 @@ export function DisruptFinalScoreboard({
         </motion.div>
         <h1 className="font-cinzel text-3xl font-bold text-foreground mb-1">Final Standings</h1>
         <p className="text-sm text-muted-foreground">{room.name} — 3-Act Simulation Complete</p>
-        <div className="flex justify-center gap-4 mt-4 text-[10px] text-muted-foreground">
+        <div className="flex justify-center gap-4 mt-4 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1"><Swords className="w-3 h-3" /> Act 1: 40%</span>
           <span className="flex items-center gap-1"><Lightbulb className="w-3 h-3" /> Act 2: 30%</span>
           <span className="flex items-center gap-1"><Presentation className="w-3 h-3" /> Act 3: 30%</span>
@@ -118,17 +118,17 @@ export function DisruptFinalScoreboard({
                   <div className="text-center p-2 bg-muted/50 rounded-lg">
                     <Swords className="w-4 h-4 mx-auto text-destructive mb-1" />
                     <p className="text-lg font-bold text-foreground">{team.act1}</p>
-                    <p className="text-[10px] text-muted-foreground">Scout</p>
+                    <p className="text-[11px] text-muted-foreground">Scout</p>
                   </div>
                   <div className="text-center p-2 bg-muted/50 rounded-lg">
                     <Lightbulb className="w-4 h-4 mx-auto text-primary mb-1" />
                     <p className="text-lg font-bold text-foreground">{team.act2}</p>
-                    <p className="text-[10px] text-muted-foreground">Build</p>
+                    <p className="text-[11px] text-muted-foreground">Build</p>
                   </div>
                   <div className="text-center p-2 bg-muted/50 rounded-lg">
                     <Presentation className="w-4 h-4 mx-auto text-yellow-500 mb-1" />
                     <p className="text-lg font-bold text-foreground">{team.act3}</p>
-                    <p className="text-[10px] text-muted-foreground">Pitch</p>
+                    <p className="text-[11px] text-muted-foreground">Pitch</p>
                   </div>
                 </div>
 

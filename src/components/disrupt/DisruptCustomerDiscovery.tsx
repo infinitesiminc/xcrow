@@ -139,7 +139,7 @@ export function DisruptCustomerDiscovery({ incumbent, cluster, onComplete }: {
       <div className="w-52 shrink-0 hidden md:block">
         <Badge variant="outline" className="text-xs mb-3">Act 2: Discover</Badge>
         <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">Customer Discovery</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Interview 3 customer personas to validate your startup idea.</p>
+        <p className="text-[11px] text-muted-foreground mb-4">Interview 3 customer personas to validate your startup idea.</p>
 
         <div className="space-y-2">
           {PERSONAS.map((p, i) => {
@@ -159,14 +159,14 @@ export function DisruptCustomerDiscovery({ incumbent, cluster, onComplete }: {
                     <span className="text-sm">{p.emoji}</span>}
                   <span className="truncate">{p.label}</span>
                 </div>
-                <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{p.description}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{p.description}</p>
               </button>
             );
           })}
         </div>
 
         <div className="mt-4 text-center">
-          <p className="text-[10px] text-muted-foreground mb-2">{completedPersonas.size}/3 interviews</p>
+          <p className="text-[11px] text-muted-foreground mb-2">{completedPersonas.size}/3 interviews</p>
           <Button
             size="sm" onClick={finishDiscovery}
             disabled={completedPersonas.size < 2}
@@ -182,7 +182,7 @@ export function DisruptCustomerDiscovery({ incumbent, cluster, onComplete }: {
         <div className="flex items-center gap-2 mb-3 shrink-0">
           <Users className="w-4 h-4 text-primary" />
           <span className="font-cinzel font-bold text-sm">{persona.emoji} {persona.label}</span>
-          {completedPersonas.has(currentPersona) && <Badge className="text-[10px] bg-success text-success-foreground">✓ Done</Badge>}
+          {completedPersonas.has(currentPersona) && <Badge className="text-[11px] bg-success text-success-foreground">✓ Done</Badge>}
         </div>
 
         <ScrollArea className="flex-1 pr-4 mb-3">

@@ -357,7 +357,7 @@ export function DisruptLobby({
                           <div className="w-3 h-3 rounded-full" style={{ background: team.color }} />
                           <h3 className="font-cinzel font-bold text-foreground text-sm">{team.name}</h3>
                         </div>
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-[11px]">
                           {teamMembers.length}/{room.max_team_size}
                         </Badge>
                       </div>
