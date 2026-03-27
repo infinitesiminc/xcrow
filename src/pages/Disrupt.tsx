@@ -399,8 +399,8 @@ export default function Disrupt() {
                 room={soloRoom as any}
                 team={soloTeam as any}
                 teams={[]} members={[]}
-                onComplete={(actScore) => {
-                  completeAct(6, actScore || 70);
+                onComplete={() => {
+                  completeAct(6, 70);
                 }}
               />
             </motion.div>
