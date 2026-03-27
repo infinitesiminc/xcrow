@@ -392,8 +392,8 @@ export default function Disrupt() {
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20 pb-12">
-        {/* Mission Progress Bar — visible during any act */}
-        {phase !== "hub" && phase !== "cluster" && selectedIncumbent && selectedCluster && (
+        {/* Mission Progress Bar — visible during any act (not briefing) */}
+        {phase !== "hub" && phase !== "cluster" && phase !== "briefing" && selectedIncumbent && selectedCluster && (
           <MissionProgressBar
             incumbent={selectedIncumbent}
             cluster={selectedCluster}
