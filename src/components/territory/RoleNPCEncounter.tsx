@@ -123,7 +123,7 @@ export default function RoleNPCEncounter({ role, avatarSrc: avatarSrcProp, onClo
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // intentionally empty — avatarSrc comes from props now
+  const avatarSrc = avatarSrcProp || (role.territory ? ROLE_NPC_AVATARS[role.territory] : null);
 
   // Fetch future skills
   useEffect(() => {
