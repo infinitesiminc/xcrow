@@ -459,14 +459,14 @@ export default function Disrupt() {
       <Navbar />
       <div className="min-h-screen bg-background pt-20 pb-12">
         {/* Mission Progress Bar — visible during any act */}
-        {phase !== "strategist" && phase !== "hub" && phase !== "cluster" && selectedIncumbent && selectedCluster && (
+        {phase !== "strategist" && phase !== "hub" && phase !== "cluster" && phase !== "mission-board" && selectedIncumbent && selectedCluster && (
           <MissionProgressBar
             incumbent={selectedIncumbent}
             cluster={selectedCluster}
             currentAct={getCurrentActNum(phase)}
             actScores={actScores}
             completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
-            onBack={() => setPhase("hub")}
+            onBack={() => setPhase("mission-board")}
           />
         )}
 
