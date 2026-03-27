@@ -528,7 +528,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const avatarSrc = getRoleNPCAvatar(role.territory, idx);
             return (
               <g key={`role-${role.jobId}`} className="cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC(role); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC({ role, avatarSrc }); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
                 onMouseEnter={() => setHoverPreview({ type: "role", id: role.jobId, name: role.title, title: role.company || role.department, src: avatarSrc, x: rx, y: ry, hue: 0 })}
                 onMouseLeave={() => setHoverPreview(p => p?.id === role.jobId ? null : p)}
               >
