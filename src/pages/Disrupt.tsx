@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { motion, AnimatePresence } from "framer-motion";
-import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Search, Hammer, Megaphone, Building2, TrendingUp, Crosshair, Lightbulb } from "lucide-react";
+import { Swords, Shield, Target, ArrowLeft, Send, Trophy, Zap, Map as MapIcon, ChevronRight, Lock, CheckCircle2, Rocket, Users, BarChart3, Castle, Presentation, Brain, Hammer, Megaphone, Building2, Lightbulb } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,8 +25,7 @@ import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
 import { DisruptMissionDebrief } from "@/components/disrupt/DisruptMissionDebrief";
 
 type GamePhase =
-  | "strategist" | "hub" | "cluster" | "mission-board"
-  | "act1" | "act1-score"
+  | "strategist" | "hub" | "cluster" | "simulation"
   | "act2" | "act2-score"
   | "act3" | "act3-score"
   | "act4" | "act4-score"
@@ -80,7 +79,6 @@ function updateMissionProgress(incumbentId: number, update: Partial<MissionProgr
 }
 
 const ACTS = [
-  { num: 1, name: "Scout", subtitle: "Analyze the Software", icon: Search, emoji: "🔍", skill: "SaaS Market Analysis & Competitive Intelligence", description: "Analyze the software incumbent — pricing model, feature gaps, user reviews, and churn signals.", color: "hsl(var(--destructive))" },
   { num: 2, name: "Discover", subtitle: "Interview Users", icon: Users, emoji: "🗣️", skill: "Customer Development & User Research", description: "Interview frustrated users of the incumbent software. Find the feature gap and pain points.", color: "hsl(var(--neon-cyan))" },
   { num: 3, name: "Architect", subtitle: "Design Your SaaS", icon: Hammer, emoji: "📋", skill: "SaaS Business Model & AI-First Architecture", description: "Design your SaaS model — pricing tiers, AI features, tech stack, and build timeline.", color: "hsl(var(--neon-purple))" },
   { num: 4, name: "Launch", subtitle: "Ship & Grow", icon: Megaphone, emoji: "🚀", skill: "PLG, Content Marketing & Growth Hacking", description: "Launch playbook — Product Hunt, Reddit, cold outreach, content strategy, and first 100 users.", color: "hsl(var(--neon-lime))" },
@@ -97,20 +95,8 @@ export default function Disrupt() {
   // Current mission context
   const [selectedCluster, setSelectedCluster] = useState<IndustryCluster | null>(null);
   const [selectedIncumbent, setSelectedIncumbent] = useState<DisruptionIncumbent | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [score, setScore] = useState<ScoreResult | null>(null);
-  const [isScoring, setIsScoring] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
   // Act scores for current mission
   const [actScores, setActScores] = useState<Record<number, number>>({});
-
-  const scrollToBottom = useCallback(() => {
-    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-  }, []);
 
   // Unified strategist state (replaces separate discovery + briefing)
   const [strategistMessages, setStrategistMessages] = useState<ChatMsg[]>([
@@ -298,16 +284,13 @@ export default function Disrupt() {
     const progress = getMissionProgress(incumbent.id);
 
     if (progress.completedActs.length > 0) {
-      if (progress.scoreResult) setScore(progress.scoreResult);
-      if (progress.battleTranscript) setMessages(progress.battleTranscript);
       setActScores({});
       progress.completedActs.forEach(actNum => {
         const key = `act${actNum}Score` as keyof MissionProgress;
         if (progress[key]) setActScores(prev => ({ ...prev, [actNum]: progress[key] as number }));
       });
-      setPhase("mission-board");
+      setPhase("simulation");
     } else {
-      // New mission → go to strategist with this target selected
       setPhase("strategist");
       setBriefingData(null);
       selectTargetFromChat(incumbent.id);
@@ -317,118 +300,12 @@ export default function Disrupt() {
 
   const launchAct = (actNum: number) => {
     if (!selectedIncumbent || !selectedCluster) return;
-    if (actNum === 1) {
-      startBattle();
-    } else if (actNum === 7) {
-      setPhase("act7");
-    } else {
-      setPhase(`act${actNum}` as GamePhase);
-    }
+    setPhase(actNum === 7 ? "act7" : `act${actNum}` as GamePhase);
   };
 
   const launchSimulation = () => {
     if (!selectedCluster || !selectedIncumbent) return;
-    setPhase("mission-board");
-  };
-
-  const startBattle = () => {
-    if (!selectedCluster || !selectedIncumbent) return;
-    setCurrentStep(1);
-    setMessages([]);
-    setScore(null);
-    const opening: ChatMsg = {
-      role: "assistant",
-      content: `📋 **Mission Briefing: Disrupting ${selectedIncumbent.name}**\n\n**🏢 About the Target**\n**${selectedIncumbent.name}** is a ${selectedCluster.name} incumbent (${selectedIncumbent.age}). Their key vulnerability:\n> *"${selectedIncumbent.vulnerability}"*\n\nA potential disruption angle: **${selectedIncumbent.asymmetricAngle}**\nBeachhead niche to consider: *${selectedIncumbent.beachheadNiche}*\nDisruptor model: *${selectedIncumbent.disruptorModel}*\n${selectedIncumbent.existingDisruptor ? `Existing challenger: ${selectedIncumbent.existingDisruptor}\n` : ""}\n**📖 The 6-Step Disruption Framework**\nYou'll work through these steps to build a complete disruption strategy:\n1. 🔍 **Find the Vulnerable Incumbent** — Identify 3+ weakness signals\n2. ⚔️ **Identify the Asymmetric Angle** — What *can't* they do?\n3. ✅ **Validate Before Building** — Market >$1B? CAC <$10?\n4. 🏰 **The Beachhead Strategy** — Pick smallest defensible niche\n5. 🔄 **The Disruption Loop** — Monitor → Build → Price below\n6. 🛡️ **The Incumbent's Dilemma** — Why they *can't* respond\n\n---\n\n⚔️ **Let's begin Step 1: Find the Vulnerable Incumbent**\n\nUsing the intel above, what vulnerability signals do you see? What makes ${selectedIncumbent.name} ripe for disruption?\n\n*Don't worry if you're new to this — I'll guide you through the reasoning. Just share your initial thoughts and I'll help you build a sharper analysis.*`,
-    };
-    setMessages([opening]);
-    setPhase("act1");
-  };
-
-  const sendMessage = async () => {
-    if (!input.trim() || isStreaming || !selectedIncumbent || !selectedCluster) return;
-    const userMsg: ChatMsg = { role: "user", content: input.trim() };
-    const updatedMessages = [...messages, userMsg];
-    setMessages(updatedMessages);
-    setInput("");
-    setIsStreaming(true);
-    scrollToBottom();
-    let assistantContent = "";
-    try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "battle", payload: { incumbent: selectedIncumbent, cluster: selectedCluster, messages: updatedMessages, step: currentStep } }),
-        },
-      );
-      if (!resp.ok || !resp.body) {
-        if (resp.status === 429) { toast.error("Rate limited. Wait a moment."); return; }
-        throw new Error("Battle failed");
-      }
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              assistantContent += content;
-              setMessages(prev => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant" && prev.length === updatedMessages.length + 1) {
-                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
-                }
-                return [...prev, { role: "assistant", content: assistantContent }];
-              });
-              scrollToBottom();
-            }
-          } catch { /* partial */ }
-        }
-      }
-      if (assistantContent.includes("STEP") && assistantContent.includes("CONQUERED")) {
-        setCurrentStep(s => Math.min(s + 1, 6));
-      }
-    } catch { toast.error("Battle failed. Try again."); } finally { setIsStreaming(false); }
-  };
-
-  const finishBattle = async () => {
-    if (!selectedIncumbent || !selectedCluster || isScoring) return;
-    setIsScoring(true);
-    try {
-      const transcript = messages.map(m => `${m.role === "user" ? "STUDENT" : "CEO"}: ${m.content}`).join("\n\n");
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "score", payload: { incumbent: selectedIncumbent, cluster: selectedCluster, transcript } }),
-        },
-      );
-      if (!resp.ok) throw new Error("Scoring failed");
-      const result = await resp.json();
-      setScore(result);
-      setActScores(prev => ({ ...prev, 1: result.overall }));
-      updateMissionProgress(selectedIncumbent.id, {
-        act1Score: result.overall,
-        completedActs: [...(getMissionProgress(selectedIncumbent.id).completedActs || []), 1],
-        scoreResult: result,
-        battleTranscript: messages,
-      });
-      setPhase("act1-score");
-    } catch { toast.error("Could not score."); } finally { setIsScoring(false); }
+    setPhase("simulation");
   };
 
   const completeAct = (actNum: number, actScore: number, extraData?: Partial<MissionProgress>) => {
@@ -441,10 +318,7 @@ export default function Disrupt() {
       completedActs: completed,
       ...extraData,
     });
-    const nextAct = actNum + 1;
-    if (nextAct <= 7) {
-      setPhase("mission-board");
-    }
+    setPhase("simulation");
   };
 
   // Build solo team/room objects for child components
@@ -456,8 +330,8 @@ export default function Disrupt() {
   const soloTeam = selectedIncumbent && selectedCluster ? {
     id: "solo", room_id: "solo", name: "Solo", color: "#8B5CF6",
     incumbent_id: String(selectedIncumbent.id), cluster_id: String(selectedCluster.id),
-    current_step: 6, total_score: score?.overall || 0, step_scores: null,
-    battle_transcript: messages, score_result: score,
+    current_step: 6, total_score: 0, step_scores: null,
+    battle_transcript: null, score_result: null,
     completed_at: null, venture_canvas: null, pitch_data: null, act: 2,
   } : null;
 
@@ -478,21 +352,8 @@ export default function Disrupt() {
         <meta name="description" content="Learn to launch AI-powered software startups. Analyze 46 incumbents across 15 verticals. 7-act simulation from idea to investor pitch." />
       </Helmet>
       <Navbar />
-      <div className="min-h-screen bg-background pt-20 pb-12">
-        {/* Mission Progress Bar — visible during any act */}
-        {phase !== "strategist" && phase !== "hub" && phase !== "cluster" && phase !== "mission-board" && selectedIncumbent && selectedCluster && (
-          <MissionProgressBar
-            incumbent={selectedIncumbent}
-            cluster={selectedCluster}
-            currentAct={getCurrentActNum(phase)}
-            actScores={actScores}
-            completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
-            onBack={() => setPhase("mission-board")}
-          />
-        )}
-
+      <div className="min-h-screen bg-background pt-20">
         <AnimatePresence mode="wait">
-          {/* Unified Strategist View (two-column) */}
           {phase === "strategist" && (
             <motion.div key="strategist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <StrategistView
@@ -537,75 +398,37 @@ export default function Disrupt() {
             </motion.div>
           )}
 
-          {phase === "mission-board" && selectedIncumbent && selectedCluster && (
-            <motion.div key="mission-board" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <MissionBoard
+          {(phase === "simulation" || phase.startsWith("act")) && selectedIncumbent && selectedCluster && (
+            <motion.div key="sim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <SimulationShell
                 incumbent={selectedIncumbent}
                 cluster={selectedCluster}
+                acts={ACTS}
                 completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
                 actScores={actScores}
+                activePhase={phase}
                 onLaunchAct={launchAct}
-                onBack={() => setPhase("hub")}
                 onBackToStrategist={() => setPhase("strategist")}
-              />
-            </motion.div>
-          )}
-
-          {phase === "act1" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <BattleArena
-                incumbent={selectedIncumbent} cluster={selectedCluster} step={currentStep}
-                messages={messages} input={input} setInput={setInput}
-                onSend={sendMessage} onFinish={finishBattle} isStreaming={isStreaming}
-                isScoring={isScoring} chatEndRef={chatEndRef}
-                onBack={() => setPhase("mission-board")}
-              />
-            </motion.div>
-          )}
-
-          {phase === "act1-score" && score && selectedIncumbent && (
-            <motion.div key="act1-score" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <ActScoreScreen
-                actNum={1} score={score.overall} title={score.title}
-                summary={score.summary} dimensions={score.dimensions}
-                nextSteps={score.nextSteps} onContinue={() => setPhase("mission-board")}
-              />
-            </motion.div>
-          )}
-
-          {phase === "act2" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptCustomerDiscovery incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(2, s)} />
-            </motion.div>
-          )}
-
-          {phase === "act3" && soloTeam && (
-            <motion.div key="act3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptVentureBuild room={soloRoom as any} team={soloTeam as any} onComplete={() => completeAct(3, 70)} />
-            </motion.div>
-          )}
-
-          {phase === "act4" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act4" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptGTM incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(4, s)} />
-            </motion.div>
-          )}
-
-          {phase === "act5" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act5" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptMoatDefense incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(5, s)} />
-            </motion.div>
-          )}
-
-          {phase === "act6" && soloTeam && (
-            <motion.div key="act6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <DisruptPitchBattle room={soloRoom as any} team={soloTeam as any} teams={[]} members={[]} onComplete={() => completeAct(6, 70)} />
-            </motion.div>
-          )}
-
-          {phase === "act7" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act7" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("mission-board")} />
+                onBackToMap={() => setPhase("hub")}
+                isMobile={isMobile}
+              >
+                {phase === "simulation" && (
+                  <SimulationWelcome
+                    incumbent={selectedIncumbent}
+                    cluster={selectedCluster}
+                    acts={ACTS}
+                    completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
+                    actScores={actScores}
+                    onLaunchAct={launchAct}
+                  />
+                )}
+                {phase === "act2" && <DisruptCustomerDiscovery incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(2, s)} />}
+                {phase === "act3" && soloTeam && <DisruptVentureBuild room={soloRoom as any} team={soloTeam as any} onComplete={() => completeAct(3, 70)} />}
+                {phase === "act4" && <DisruptGTM incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(4, s)} />}
+                {phase === "act5" && <DisruptMoatDefense incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(5, s)} />}
+                {phase === "act6" && soloTeam && <DisruptPitchBattle room={soloRoom as any} team={soloTeam as any} teams={[]} members={[]} onComplete={() => completeAct(6, 70)} />}
+                {phase === "act7" && <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("simulation")} />}
+              </SimulationShell>
             </motion.div>
           )}
         </AnimatePresence>
@@ -615,10 +438,6 @@ export default function Disrupt() {
   );
 }
 
-function getCurrentActNum(phase: GamePhase): number {
-  const match = phase.match(/act(\d)/);
-  return match ? parseInt(match[1]) : 1;
-}
 
 /* ── Mission Hub ── */
 function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectCluster: (c: IndustryCluster) => void; progress: Record<string, MissionProgress>; onStartDiscovery?: () => void }) {
@@ -642,7 +461,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
             Disrupt <span className="text-primary">Software</span> with AI
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
-            15 software verticals. 46 incumbents. 7 acts per mission. Learn to build AI-powered startups that disrupt legacy SaaS.
+            15 software verticals. 46 incumbents. 6 acts per mission. Learn to build AI-powered startups that disrupt legacy SaaS.
           </p>
 
           {/* Stats */}
@@ -671,7 +490,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
 
       {/* 7-Act Journey Explainer */}
       <div className="mb-12">
-        <h2 className="font-cinzel text-xl font-bold text-center mb-6 text-foreground">The 7-Act Founder Journey</h2>
+        <h2 className="font-cinzel text-xl font-bold text-center mb-6 text-foreground">The 6-Act Founder Journey</h2>
         <div className="flex flex-wrap justify-center gap-2 md:gap-0">
           {ACTS.map((act, i) => (
             <div key={act.num} className="flex items-center">
@@ -708,7 +527,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
                         <span className="font-cinzel font-bold text-sm text-foreground">{inc.name}</span>
                       </div>
                       <MiniActRail completedActs={p.completedActs || []} />
-                      <p className="text-xs text-muted-foreground mt-2">{p.completedActs?.length || 0}/7 acts completed</p>
+                      <p className="text-xs text-muted-foreground mt-2">{p.completedActs?.length || 0}/6 acts completed</p>
                     </CardContent>
                   </Card>
                 );
@@ -885,87 +704,6 @@ function ClusterDetail({ cluster, onBack, onStartMission, progress }: {
   );
 }
 
-/* ── Mission Progress Bar (Sticky) ── */
-function MissionProgressBar({ incumbent, cluster, currentAct, actScores, completedActs, onBack }: {
-  incumbent: DisruptionIncumbent; cluster: IndustryCluster; currentAct: number;
-  actScores: Record<number, number>; completedActs: number[]; onBack: () => void;
-}) {
-  return (
-    <div className="sticky top-16 z-40 bg-card/95 backdrop-blur border-b border-border px-4 py-2 mb-4">
-      <div className="max-w-5xl mx-auto flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={onBack} className="shrink-0 text-xs">
-          <MapIcon className="w-3 h-3 mr-1" /> Hub
-        </Button>
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm">{cluster.emoji}</span>
-          <span className="font-cinzel font-bold text-xs text-foreground truncate">{incumbent.name}</span>
-        </div>
-        <div className="flex items-center gap-0.5 flex-1 justify-center">
-          {ACTS.map((act, i) => (
-            <div key={act.num} className="flex items-center">
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
-                  completedActs.includes(act.num) ? "text-white" :
-                  act.num === currentAct ? "bg-primary text-primary-foreground ring-2 ring-primary/30" :
-                  "bg-muted text-muted-foreground"
-                }`}
-                style={completedActs.includes(act.num) ? { background: act.color } : undefined}
-                title={`${act.name}: ${act.subtitle}`}
-              >
-                {completedActs.includes(act.num) ? "✓" : act.num}
-              </div>
-              {i < ACTS.length - 1 && (
-                <div className={`w-3 h-0.5 ${completedActs.includes(act.num) ? "bg-primary" : "bg-muted"}`} />
-              )}
-            </div>
-          ))}
-        </div>
-        {actScores[currentAct] && (
-          <Badge variant="outline" className="text-[11px] shrink-0">Score: {actScores[currentAct]}</Badge>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ── Act Intro Screen ── */
-function ActIntro({ actNum, incumbent, cluster, onBegin }: {
-  actNum: number; incumbent: DisruptionIncumbent; cluster: IndustryCluster; onBegin: () => void;
-}) {
-  const act = ACTS[actNum - 1];
-  if (!act) return null;
-  const Icon = act.icon;
-
-  return (
-    <div className="max-w-xl mx-auto px-4 text-center py-12">
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.1 }}>
-        <div className="w-20 h-20 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-6" style={{ background: act.color }}>
-          {act.emoji}
-        </div>
-      </motion.div>
-      <Badge variant="outline" className="mb-4 text-xs">Act {actNum} of 7</Badge>
-      <h1 className="font-cinzel text-3xl font-bold text-foreground mb-2">{act.name}: {act.subtitle}</h1>
-      <p className="text-muted-foreground mb-6 max-w-md mx-auto">{act.description}</p>
-      <Card className="mb-8 text-left">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Icon className="w-4 h-4 text-primary" />
-            <span className="text-xs font-medium text-foreground">Skill You'll Develop</span>
-          </div>
-          <p className="text-sm text-muted-foreground">{act.skill}</p>
-          <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">Target:</span> {incumbent.name} — {cluster.name}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-      <Button onClick={onBegin} size="lg" className="px-8" style={{ background: act.color }}>
-        Begin Act {actNum} <ChevronRight className="w-4 h-4 ml-1" />
-      </Button>
-    </div>
-  );
-}
 
 /* ── Act Score Screen (generic) ── */
 function ActScoreScreen({ actNum, score, title, summary, dimensions, nextSteps, onContinue }: {
@@ -1030,184 +768,7 @@ function ActScoreScreen({ actNum, score, title, summary, dimensions, nextSteps, 
   );
 }
 
-/* ── Mission Board — All Acts as Cards ── */
-function MissionBoard({ incumbent, cluster, completedActs, actScores, onLaunchAct, onBack, onBackToStrategist }: {
-  incumbent: DisruptionIncumbent; cluster: IndustryCluster;
-  completedActs: number[]; actScores: Record<number, number>;
-  onLaunchAct: (actNum: number) => void; onBack: () => void; onBackToStrategist: () => void;
-}) {
-  // Recommend: first incomplete act, or debrief if all 1-6 done
-  const recommendedAct = ACTS.find(a => a.num <= 6 && !completedActs.includes(a.num))?.num
-    || (completedActs.length >= 6 ? 7 : 1);
-  const allActsDone = ACTS.filter(a => a.num <= 6).every(a => completedActs.includes(a.num));
-  const getColor = (s: number) => s >= 80 ? "text-success" : s >= 60 ? "text-warning" : "text-destructive";
 
-  return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4 mr-1" /> Map</Button>
-        <Button variant="outline" size="sm" onClick={onBackToStrategist}><Brain className="w-4 h-4 mr-1" /> AI Strategist</Button>
-      </div>
-
-      {/* Target header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <span className="text-2xl">{cluster.emoji}</span>
-          <h1 className="font-cinzel text-2xl md:text-3xl font-bold text-foreground">{incumbent.name}</h1>
-        </div>
-        <p className="text-sm text-muted-foreground max-w-lg mx-auto">{incumbent.vulnerability}</p>
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <Badge variant="outline" className="text-xs">{incumbent.age}</Badge>
-          <Badge className="text-xs" style={{ background: `hsl(${cluster.color})` }}>{incumbent.vector}</Badge>
-          <Badge variant="secondary" className="text-xs">{completedActs.length}/7 acts</Badge>
-        </div>
-      </div>
-
-      {/* Act cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {ACTS.map((act, i) => {
-          const isCompleted = completedActs.includes(act.num);
-          const isRecommended = act.num === recommendedAct;
-          const actScore = actScores[act.num];
-          const Icon = act.icon;
-
-          return (
-            <motion.div
-              key={act.num}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-            >
-              <Card
-                className={`cursor-pointer transition-all hover:shadow-lg group relative ${
-                  isCompleted ? "border-success/40 bg-success/5" :
-                  isRecommended ? "border-primary/50 ring-2 ring-primary/20" :
-                  "hover:border-primary/30"
-                }`}
-                onClick={() => onLaunchAct(act.num)}
-              >
-                {isRecommended && !isCompleted && (
-                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10">
-                    <Badge className="bg-primary text-primary-foreground text-[11px] shadow-md">
-                      ✨ Recommended Next
-                    </Badge>
-                  </div>
-                )}
-                <CardContent className="pt-5 pb-4">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0 ${
-                        isCompleted ? "opacity-80" : ""
-                      }`}
-                      style={{ background: act.color, color: "white" }}
-                    >
-                      {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : act.emoji}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-muted-foreground font-medium">Act {act.num}</span>
-                        {isCompleted && actScore && (
-                          <span className={`text-xs font-bold ${getColor(actScore)}`}>{actScore}</span>
-                        )}
-                      </div>
-                      <h3 className="font-cinzel font-bold text-sm text-foreground leading-tight">{act.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">{act.subtitle}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3 line-clamp-2">{act.description}</p>
-                  <div className="flex items-center gap-1 mt-3">
-                    <Icon className="w-3 h-3 text-muted-foreground" />
-                    <p className="text-[11px] text-muted-foreground italic truncate">{act.skill}</p>
-                  </div>
-                  {isCompleted && (
-                    <div className="mt-3 pt-2 border-t border-border">
-                      <p className="text-[11px] text-success font-medium">✓ Completed — click to replay</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Final debrief CTA */}
-      {allActsDone && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <Button onClick={() => onLaunchAct(7)} size="lg" className="px-8 bg-success text-success-foreground">
-            <Trophy className="w-4 h-4 mr-2" /> View Founder Report
-          </Button>
-        </motion.div>
-      )}
-    </div>
-  );
-}
-
-/* ── Battle Arena (Act 1) ── */
-function BattleArena({
-  incumbent, cluster, step, messages, input, setInput, onSend, onFinish, isStreaming, isScoring, chatEndRef, onBack,
-}: {
-  incumbent: DisruptionIncumbent; cluster: IndustryCluster; step: number; messages: ChatMsg[];
-  input: string; setInput: (v: string) => void; onSend: () => void; onFinish: () => void;
-  isStreaming: boolean; isScoring: boolean; chatEndRef: React.RefObject<HTMLDivElement>; onBack: () => void;
-}) {
-  return (
-    <div className="max-w-4xl mx-auto px-4 flex flex-col" style={{ height: "calc(100vh - 12rem)" }}>
-      <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <Shield className="w-5 h-5 text-destructive shrink-0" />
-          <div className="min-w-0">
-            <h2 className="font-cinzel font-bold text-sm truncate">{incumbent.name}</h2>
-            <p className="text-[11px] text-muted-foreground truncate">{cluster.name}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs shrink-0">Step {step}/6</Badge>
-          <Button size="sm" variant="secondary" onClick={onFinish} disabled={isScoring || messages.length < 4}>
-            {isScoring ? "Scoring..." : "End Battle"}<Trophy className="w-3 h-3 ml-1" />
-          </Button>
-        </div>
-      </div>
-      <div className="mb-3 shrink-0">
-        <div className="flex gap-1 mb-1">
-          {DISRUPTION_STEPS.map((s) => (
-            <div key={s.step} className="flex-1 h-2 rounded-full transition-all" style={{ background: s.step <= step ? `hsl(${cluster.color})` : "hsl(var(--muted))", opacity: s.step === step ? 1 : s.step < step ? 0.6 : 0.2 }} />
-          ))}
-        </div>
-        <p className="text-[11px] text-muted-foreground">{DISRUPTION_STEPS[step - 1]?.emoji} {DISRUPTION_STEPS[step - 1]?.title}</p>
-      </div>
-      <ScrollArea className="flex-1 pr-4 mb-3">
-        <div className="space-y-4 pb-4">
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-primary text-primary-foreground rounded-br-md text-sm" : "bg-muted/60 text-foreground rounded-bl-md"}`}>
-                <div className={msg.role === "user" ? "text-sm" : "disrupt-prose"}>
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
-                </div>
-              </div>
-            </div>
-          ))}
-          {isStreaming && messages[messages.length - 1]?.role === "user" && (
-            <div className="flex justify-start">
-              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce" />
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.1s]" />
-                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.2s]" />
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-      </ScrollArea>
-      <div className="flex gap-2 shrink-0 pb-2">
-        <Textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Your disruption strategy for Step ${step}...`} className="min-h-[48px] max-h-[120px] resize-none" onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }} disabled={isStreaming} />
-        <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end"><Send className="w-4 h-4" /></Button>
-      </div>
-    </div>
-  );
-}
 
 /* ── Strategist View (Two-Column: Chat + Context) ── */
 function StrategistView({
@@ -1525,6 +1086,181 @@ function ContextPanel({
         <MapIcon className="w-3.5 h-3.5" />
         Browse all 46 targets across 15 verticals
       </button>
+    </div>
+  );
+}
+
+/* ── Simulation Shell — Sidebar + Content ── */
+function SimulationShell({
+  incumbent, cluster, acts, completedActs, actScores, activePhase, onLaunchAct, onBackToStrategist, onBackToMap, isMobile, children,
+}: {
+  incumbent: DisruptionIncumbent; cluster: IndustryCluster;
+  acts: typeof ACTS; completedActs: number[]; actScores: Record<number, number>;
+  activePhase: GamePhase; onLaunchAct: (n: number) => void;
+  onBackToStrategist: () => void; onBackToMap: () => void; isMobile: boolean;
+  children: React.ReactNode;
+}) {
+  const sidebar = (
+    <div className="w-52 border-r border-border/50 bg-card/30 flex flex-col shrink-0 h-[calc(100vh-5rem)]">
+      <div className="p-3 border-b border-border/30">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{cluster.emoji}</span>
+          <div className="min-w-0">
+            <p className="font-cinzel font-bold text-xs text-foreground truncate">{incumbent.name}</p>
+            <p className="text-[11px] text-muted-foreground truncate">{incumbent.vector}</p>
+          </div>
+        </div>
+      </div>
+      <nav className="flex-1 overflow-y-auto py-1.5">
+        {acts.map((act, i) => {
+          const isActive = activePhase === `act${act.num}` || activePhase === `act${act.num}-score`;
+          const isCompleted = completedActs.includes(act.num);
+          const actScore = actScores[act.num];
+          return (
+            <button
+              key={act.num}
+              onClick={() => onLaunchAct(act.num)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                isActive ? "bg-primary/10 border-l-2 border-primary" : "hover:bg-muted/40 border-l-2 border-transparent"
+              }`}
+            >
+              <div
+                className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                  isCompleted ? "text-white" : isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                }`}
+                style={isCompleted ? { background: act.color } : undefined}
+              >
+                {isCompleted ? "✓" : i + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1">
+                  <p className={`text-xs font-medium truncate ${isActive ? "text-primary" : "text-foreground"}`}>{act.name}</p>
+                  {isCompleted && actScore && (
+                    <span className="text-[10px] font-bold text-success">{actScore}</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground truncate">{act.subtitle}</p>
+              </div>
+            </button>
+          );
+        })}
+      </nav>
+      <div className="p-2 border-t border-border/30 space-y-0.5">
+        <button onClick={onBackToStrategist} className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted/40 transition-colors text-left">
+          <Brain className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">AI Strategist</span>
+        </button>
+        <button onClick={onBackToMap} className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted/40 transition-colors text-left">
+          <MapIcon className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Market Map</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-5rem)]">
+        <div className="flex items-center gap-1 px-3 py-2 border-b border-border/30 overflow-x-auto shrink-0">
+          {acts.map((act, i) => {
+            const isActive = activePhase === `act${act.num}`;
+            const isCompleted = completedActs.includes(act.num);
+            return (
+              <button
+                key={act.num}
+                onClick={() => onLaunchAct(act.num)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors shrink-0 ${
+                  isActive ? "bg-primary text-primary-foreground" : isCompleted ? "bg-success/10 text-success" : "bg-muted/50 text-muted-foreground"
+                }`}
+              >
+                {isCompleted ? "✓" : i + 1} {act.name}
+              </button>
+            );
+          })}
+          <button onClick={onBackToStrategist} className="flex items-center gap-1 px-2 py-1.5 rounded-full text-xs text-muted-foreground bg-muted/30 shrink-0">
+            <Brain className="w-3 h-3" /> Chat
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-[calc(100vh-5rem)]">
+      {sidebar}
+      <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
+    </div>
+  );
+}
+
+/* ── Simulation Welcome / Overview ── */
+function SimulationWelcome({
+  incumbent, cluster, acts, completedActs, actScores, onLaunchAct,
+}: {
+  incumbent: DisruptionIncumbent; cluster: IndustryCluster;
+  acts: typeof ACTS; completedActs: number[]; actScores: Record<number, number>;
+  onLaunchAct: (n: number) => void;
+}) {
+  const recommendedAct = acts.find(a => a.num <= 6 && !completedActs.includes(a.num)) || acts[0];
+  const allDone = acts.filter(a => a.num <= 6).every(a => completedActs.includes(a.num));
+
+  return (
+    <div className="max-w-2xl mx-auto px-6 py-12">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
+            <Rocket className="w-3.5 h-3.5" /> Mission Active
+          </div>
+          <h1 className="font-cinzel text-2xl font-bold text-foreground mb-2">
+            Disrupting {incumbent.name}
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            {incumbent.vulnerability}
+          </p>
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <Badge variant="outline" className="text-xs">{cluster.emoji} {cluster.name}</Badge>
+            <Badge variant="secondary" className="text-xs">{completedActs.length}/{acts.length} complete</Badge>
+          </div>
+        </div>
+
+        {!allDone && recommendedAct && (
+          <Card className="border-primary/30 mb-6 cursor-pointer hover:shadow-lg transition-all" onClick={() => onLaunchAct(recommendedAct.num)}>
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ background: recommendedAct.color, color: "white" }}>
+                {recommendedAct.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-primary font-medium mb-0.5">✨ Start here</p>
+                <h3 className="font-cinzel font-bold text-foreground">{recommendedAct.name}: {recommendedAct.subtitle}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{recommendedAct.description}</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-primary shrink-0" />
+            </CardContent>
+          </Card>
+        )}
+
+        {allDone && (
+          <div className="text-center">
+            <Button onClick={() => onLaunchAct(7)} size="lg" className="px-8 bg-success text-success-foreground">
+              <Trophy className="w-4 h-4 mr-2" /> View Founder Report
+            </Button>
+          </div>
+        )}
+
+        {completedActs.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">Completed</p>
+            {acts.filter(a => completedActs.includes(a.num)).map(act => (
+              <div key={act.num} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => onLaunchAct(act.num)}>
+                <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style={{ background: act.color }}>✓</div>
+                <span className="text-sm text-foreground">{act.name}</span>
+                {actScores[act.num] && <span className="text-xs font-bold text-success ml-auto">{actScores[act.num]}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }
