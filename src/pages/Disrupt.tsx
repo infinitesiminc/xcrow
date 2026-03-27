@@ -109,11 +109,89 @@ export default function Disrupt() {
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }, []);
 
+  // Discovery state
+  const [discoveryMessages, setDiscoveryMessages] = useState<ChatMsg[]>([
+    { role: "assistant", content: `🚀 **Welcome to the Disruption Arena**\n\nI'm your AI strategist. Together, we'll find the perfect company for you to disrupt and build a startup around.\n\n**Tell me about yourself:**\n- What industries excite you? (tech, healthcare, finance, education…)\n- What problems have you personally experienced that feel broken?\n- Are you drawn to B2B or B2C?\n- Any companies you think are ripe for disruption?\n\nOr just tell me what you're passionate about — I'll connect it to real disruption opportunities from our database of **100 incumbents across 22 industries**.\n\n*No wrong answers — let's explore together.*` }
+  ]);
+  const [discoveryInput, setDiscoveryInput] = useState("");
+  const [isDiscoveryStreaming, setIsDiscoveryStreaming] = useState(false);
+  const discoveryEndRef = useRef<HTMLDivElement>(null);
+
   // Briefing state
   const [briefingMessages, setBriefingMessages] = useState<ChatMsg[]>([]);
   const [briefingInput, setBriefingInput] = useState("");
   const [isBriefingStreaming, setIsBriefingStreaming] = useState(false);
   const briefingEndRef = useRef<HTMLDivElement>(null);
+
+  // Build a compact index of all incumbents for the discovery AI
+  const allTargetsIndex = INDUSTRY_CLUSTERS.map(c => ({
+    clusterId: c.id, name: c.name, emoji: c.emoji, catalyst: c.timingCatalyst,
+    incumbents: c.incumbents.map(i => ({ id: i.id, name: i.name, vulnerability: i.vulnerability, vector: i.vector, beachheadNiche: i.beachheadNiche }))
+  }));
+
+  const sendDiscoveryMessage = async () => {
+    if (!discoveryInput.trim() || isDiscoveryStreaming) return;
+    const userMsg: ChatMsg = { role: "user", content: discoveryInput.trim() };
+    const updated = [...discoveryMessages, userMsg];
+    setDiscoveryMessages(updated);
+    setDiscoveryInput("");
+    setIsDiscoveryStreaming(true);
+    setTimeout(() => discoveryEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+
+    let assistantContent = "";
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: "discovery", payload: { messages: updated, targetsIndex: allTargetsIndex } }),
+        },
+      );
+      if (!resp.ok || !resp.body) throw new Error("Discovery failed");
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setDiscoveryMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && prev.length === updated.length + 1) {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
+                }
+                return [...prev, { role: "assistant", content: assistantContent }];
+              });
+              setTimeout(() => discoveryEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+            }
+          } catch { /* partial */ }
+        }
+      }
+    } catch { toast.error("Discovery chat failed. Try again."); }
+    finally { setIsDiscoveryStreaming(false); }
+  };
+
+  const selectTargetFromDiscovery = (incumbentId: number) => {
+    const cluster = INDUSTRY_CLUSTERS.find(c => c.incumbents.some(i => i.id === incumbentId));
+    const incumbent = cluster?.incumbents.find(i => i.id === incumbentId);
+    if (cluster && incumbent) {
+      startMission(cluster, incumbent);
+    }
+  };
 
   const startMission = (cluster: IndustryCluster, incumbent: DisruptionIncumbent) => {
     setSelectedCluster(cluster);
