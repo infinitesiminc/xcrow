@@ -1214,6 +1214,38 @@ function StrategistView({
   );
 }
 
+/* ── Briefing section parser ── */
+const SECTION_ICONS: Record<number, { icon: typeof Building2; color: string; bg: string }> = {
+  1: { icon: Building2, color: "text-primary", bg: "bg-primary/10" },
+  2: { icon: BarChart3, color: "text-warning", bg: "bg-warning/10" },
+  3: { icon: Zap, color: "text-destructive", bg: "bg-destructive/10" },
+  4: { icon: Rocket, color: "text-success", bg: "bg-success/10" },
+  5: { icon: Swords, color: "text-neon-purple", bg: "bg-accent/10" },
+};
+
+function parseBriefingSections(md: string): { num: number; title: string; body: string }[] {
+  const sections: { num: number; title: string; body: string }[] = [];
+  // Match patterns like "1. Title" or "**1. Title**" or "## 1. Title"
+  const parts = md.split(/(?=(?:^|\n)(?:#{1,3}\s*)?(?:\*\*)?(\d+)\.\s)/);
+  
+  let current: { num: number; title: string; body: string } | null = null;
+  
+  for (const part of parts) {
+    const headerMatch = part.match(/^(?:\n)?(?:#{1,3}\s*)?(?:\*\*)?(\d+)\.\s*(.+?)(?:\*\*)?(?:\n|$)/);
+    if (headerMatch) {
+      if (current) sections.push(current);
+      const num = parseInt(headerMatch[1]);
+      const title = headerMatch[2].replace(/\*\*/g, "").trim();
+      const body = part.slice(headerMatch[0].length).trim();
+      current = { num, title, body };
+    } else if (current) {
+      current.body += "\n" + part;
+    }
+  }
+  if (current) sections.push(current);
+  return sections;
+}
+
 /* ── Context Panel (Right Side) ── */
 function ContextPanel({
   selectedIncumbent, selectedCluster, briefingData, onLaunch, onSelectTarget, onSwitchTarget, onSendText,
@@ -1225,73 +1257,122 @@ function ContextPanel({
 }) {
   if (selectedIncumbent && selectedCluster) {
     const otherTargets = selectedCluster.incumbents.filter(i => i.id !== selectedIncumbent.id);
+    const briefingSections = briefingData ? parseBriefingSections(briefingData) : [];
+    const hasParsedSections = briefingSections.length >= 2;
 
     return (
       <div className="p-4 space-y-4">
-        <Card className="border-primary/30">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-primary" />
-              <CardTitle className="text-sm font-cinzel">Company Overview</CardTitle>
+        {/* Hero header card */}
+        <Card className="border-primary/30 overflow-hidden">
+          <div className="h-2 w-full bg-gradient-to-r from-primary via-accent to-destructive" />
+          <CardContent className="pt-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Target className="w-6 h-6 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-cinzel font-bold text-lg text-foreground leading-tight">{selectedIncumbent.name}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{selectedCluster.emoji} {selectedCluster.name}</p>
+              </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-cinzel font-bold text-lg text-foreground">{selectedIncumbent.name}</h3>
               <Badge variant="outline" className="text-xs">{selectedIncumbent.age}</Badge>
               <Badge className="text-xs" style={{ background: `hsl(${selectedCluster.color})` }}>{selectedIncumbent.vector}</Badge>
+              {selectedIncumbent.pricingModel && (
+                <Badge variant="secondary" className="text-xs">{selectedIncumbent.pricingModel}</Badge>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">{selectedCluster.emoji} {selectedCluster.name}</p>
             {selectedIncumbent.existingDisruptor && (
               <p className="text-xs text-muted-foreground">⚡ Existing challenger: <span className="text-primary font-medium">{selectedIncumbent.existingDisruptor}</span></p>
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-destructive" />
-              <CardTitle className="text-sm font-cinzel">Vulnerability</CardTitle>
+        {/* Parsed briefing sections as cards */}
+        {hasParsedSections ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 px-1">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Intel Briefing</span>
+              <div className="h-px flex-1 bg-border" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-foreground">{selectedIncumbent.vulnerability}</p>
-          </CardContent>
-        </Card>
+            {briefingSections.map((section, i) => {
+              const iconCfg = SECTION_ICONS[section.num] || SECTION_ICONS[1];
+              const IconComp = iconCfg?.icon || Lightbulb;
+              return (
+                <motion.div
+                  key={section.num}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08, duration: 0.3 }}
+                >
+                  <Card className="overflow-hidden">
+                    <div className="flex items-start gap-3 p-4">
+                      <div className={`w-9 h-9 rounded-lg ${iconCfg?.bg || "bg-muted"} flex items-center justify-center shrink-0 mt-0.5`}>
+                        <IconComp className={`w-4 h-4 ${iconCfg?.color || "text-foreground"}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-cinzel font-bold text-sm text-foreground mb-2">{section.title}</h4>
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed [&>p]:mb-2.5 [&>p:last-child]:mb-0 [&>ul]:space-y-1 [&>ul]:pl-4 [&_strong]:text-foreground [&_strong]:font-semibold">
+                          <ReactMarkdown>{section.body.trim()}</ReactMarkdown>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <>
+            {/* Fallback: static cards when no briefing yet */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <Crosshair className="w-4 h-4 text-destructive" />
+                  <CardTitle className="text-sm font-cinzel">Vulnerability</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-foreground">{selectedIncumbent.vulnerability}</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-warning" />
-              <CardTitle className="text-sm font-cinzel">Disruption Angle</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm text-foreground">{selectedIncumbent.asymmetricAngle}</p>
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground font-medium mb-1">🎯 Beachhead Niche</p>
-              <p className="text-sm text-foreground">{selectedIncumbent.beachheadNiche}</p>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground font-medium mb-1">🔧 Disruptor Model</p>
-              <p className="text-sm text-foreground">{selectedIncumbent.disruptorModel}</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-warning" />
+                  <CardTitle className="text-sm font-cinzel">Disruption Angle</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm text-foreground">{selectedIncumbent.asymmetricAngle}</p>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground font-medium mb-1">🎯 Beachhead Niche</p>
+                  <p className="text-sm text-foreground">{selectedIncumbent.beachheadNiche}</p>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground font-medium mb-1">🔧 Disruptor Model</p>
+                  <p className="text-sm text-foreground">{selectedIncumbent.disruptorModel}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
+        {/* 7-Act journey */}
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Rocket className="w-4 h-4 text-primary" />
-              <CardTitle className="text-sm font-cinzel">7-Act Journey</CardTitle>
+              <CardTitle className="text-sm font-cinzel">7-Act Simulation Journey</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-1.5">
               {ACTS.map((act) => (
                 <div key={act.num} className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0" style={{ background: act.color, color: "white" }}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: act.color, color: "white" }}>
                     {act.num}
                   </div>
                   <p className="text-xs font-medium text-foreground">{act.name}: {act.subtitle}</p>
