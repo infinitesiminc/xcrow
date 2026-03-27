@@ -16,12 +16,11 @@ const FOUNDER_PROFILES = [
 ];
 
 const ACT_LABELS = [
-  { num: 1, label: "Scout", weight: 0.2, emoji: "🔍" },
-  { num: 2, label: "Discover", weight: 0.15, emoji: "🗣️" },
-  { num: 3, label: "Architect", weight: 0.2, emoji: "📋" },
-  { num: 4, label: "Launch", weight: 0.15, emoji: "🚀" },
-  { num: 5, label: "Defend", weight: 0.15, emoji: "🏰" },
-  { num: 6, label: "Pitch", weight: 0.15, emoji: "💼" },
+  { num: 2, label: "Pain Mining", weight: 0.2, emoji: "🔍" },
+  { num: 3, label: "SaaS Model", weight: 0.2, emoji: "📋" },
+  { num: 4, label: "Launch Plan", weight: 0.2, emoji: "🚀" },
+  { num: 5, label: "War Game", weight: 0.15, emoji: "🏰" },
+  { num: 6, label: "Pitch Deck", weight: 0.15, emoji: "💼" },
 ];
 
 export function DisruptMissionDebrief({ incumbent, cluster, actScores, onBackToHub }: {
