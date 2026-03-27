@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { Trophy, MapIcon, Brain, Star } from "lucide-react";
+import { Trophy, Map as MapIcon, Brain, Star, BarChart3 } from "lucide-react";
 import type { IndustryCluster, DisruptionIncumbent } from "@/data/disruption-incumbents";
 
 const FOUNDER_PROFILES = [
