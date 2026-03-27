@@ -89,7 +89,7 @@ const ACTS = [
 
 export default function Disrupt() {
   const { user } = useAuth();
-  const [phase, setPhase] = useState<GamePhase>("hub");
+  const [phase, setPhase] = useState<GamePhase>("discovery");
 
   // Current mission context
   const [selectedCluster, setSelectedCluster] = useState<IndustryCluster | null>(null);
