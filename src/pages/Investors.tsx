@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import {
   Cpu, Megaphone, GraduationCap, Building2, Users, AlertTriangle,
   Zap, Target, TrendingUp, DollarSign, Swords, Shield, Globe,
-  Clock, Flame, BookOpen, BarChart3, ArrowRight, Download,
+  Clock, Flame, BookOpen, BarChart3, ArrowRight, Download, Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import founderImg from "@/assets/founder-jackson.png";
 
 const fade = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
