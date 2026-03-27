@@ -1107,7 +1107,7 @@ function SimulationShell({
           <span className="text-base">{cluster.emoji}</span>
           <div className="min-w-0">
             <p className="font-cinzel font-bold text-xs text-foreground truncate">{incumbent.name}</p>
-            <p className="text-[11px] text-muted-foreground truncate">{incumbent.vector}</p>
+            <p className="text-[11px] text-muted-foreground truncate">{cluster.name}</p>
           </div>
         </div>
       </div>
