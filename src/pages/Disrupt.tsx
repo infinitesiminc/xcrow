@@ -438,10 +438,6 @@ export default function Disrupt() {
   );
 }
 
-function getCurrentActNum(phase: GamePhase): number {
-  const match = phase.match(/act(\d)/);
-  return match ? parseInt(match[1]) : 1;
-}
 
 /* ── Mission Hub ── */
 function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectCluster: (c: IndustryCluster) => void; progress: Record<string, MissionProgress>; onStartDiscovery?: () => void }) {
