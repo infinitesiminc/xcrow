@@ -308,106 +308,6 @@ export default function Disrupt() {
     setPhase("simulation");
   };
 
-  const startBattle = () => {
-    if (!selectedCluster || !selectedIncumbent) return;
-    setCurrentStep(1);
-    setMessages([]);
-    setScore(null);
-    const opening: ChatMsg = {
-      role: "assistant",
-      content: `📋 **Mission Briefing: Disrupting ${selectedIncumbent.name}**\n\n**🏢 About the Target**\n**${selectedIncumbent.name}** is a ${selectedCluster.name} incumbent (${selectedIncumbent.age}). Their key vulnerability:\n> *"${selectedIncumbent.vulnerability}"*\n\nA potential disruption angle: **${selectedIncumbent.asymmetricAngle}**\nBeachhead niche to consider: *${selectedIncumbent.beachheadNiche}*\nDisruptor model: *${selectedIncumbent.disruptorModel}*\n${selectedIncumbent.existingDisruptor ? `Existing challenger: ${selectedIncumbent.existingDisruptor}\n` : ""}\n**📖 The 6-Step Disruption Framework**\nYou'll work through these steps to build a complete disruption strategy:\n1. 🔍 **Find the Vulnerable Incumbent** — Identify 3+ weakness signals\n2. ⚔️ **Identify the Asymmetric Angle** — What *can't* they do?\n3. ✅ **Validate Before Building** — Market >$1B? CAC <$10?\n4. 🏰 **The Beachhead Strategy** — Pick smallest defensible niche\n5. 🔄 **The Disruption Loop** — Monitor → Build → Price below\n6. 🛡️ **The Incumbent's Dilemma** — Why they *can't* respond\n\n---\n\n⚔️ **Let's begin Step 1: Find the Vulnerable Incumbent**\n\nUsing the intel above, what vulnerability signals do you see? What makes ${selectedIncumbent.name} ripe for disruption?\n\n*Don't worry if you're new to this — I'll guide you through the reasoning. Just share your initial thoughts and I'll help you build a sharper analysis.*`,
-    };
-    setMessages([opening]);
-    setPhase("act1");
-  };
-
-  const sendMessage = async () => {
-    if (!input.trim() || isStreaming || !selectedIncumbent || !selectedCluster) return;
-    const userMsg: ChatMsg = { role: "user", content: input.trim() };
-    const updatedMessages = [...messages, userMsg];
-    setMessages(updatedMessages);
-    setInput("");
-    setIsStreaming(true);
-    scrollToBottom();
-    let assistantContent = "";
-    try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "battle", payload: { incumbent: selectedIncumbent, cluster: selectedCluster, messages: updatedMessages, step: currentStep } }),
-        },
-      );
-      if (!resp.ok || !resp.body) {
-        if (resp.status === 429) { toast.error("Rate limited. Wait a moment."); return; }
-        throw new Error("Battle failed");
-      }
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              assistantContent += content;
-              setMessages(prev => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant" && prev.length === updatedMessages.length + 1) {
-                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
-                }
-                return [...prev, { role: "assistant", content: assistantContent }];
-              });
-              scrollToBottom();
-            }
-          } catch { /* partial */ }
-        }
-      }
-      if (assistantContent.includes("STEP") && assistantContent.includes("CONQUERED")) {
-        setCurrentStep(s => Math.min(s + 1, 6));
-      }
-    } catch { toast.error("Battle failed. Try again."); } finally { setIsStreaming(false); }
-  };
-
-  const finishBattle = async () => {
-    if (!selectedIncumbent || !selectedCluster || isScoring) return;
-    setIsScoring(true);
-    try {
-      const transcript = messages.map(m => `${m.role === "user" ? "STUDENT" : "CEO"}: ${m.content}`).join("\n\n");
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "score", payload: { incumbent: selectedIncumbent, cluster: selectedCluster, transcript } }),
-        },
-      );
-      if (!resp.ok) throw new Error("Scoring failed");
-      const result = await resp.json();
-      setScore(result);
-      setActScores(prev => ({ ...prev, 1: result.overall }));
-      updateMissionProgress(selectedIncumbent.id, {
-        act1Score: result.overall,
-        completedActs: [...(getMissionProgress(selectedIncumbent.id).completedActs || []), 1],
-        scoreResult: result,
-        battleTranscript: messages,
-      });
-      setPhase("act1-score");
-    } catch { toast.error("Could not score."); } finally { setIsScoring(false); }
-  };
-
   const completeAct = (actNum: number, actScore: number, extraData?: Partial<MissionProgress>) => {
     if (!selectedIncumbent) return;
     const progress = getMissionProgress(selectedIncumbent.id);
@@ -418,10 +318,7 @@ export default function Disrupt() {
       completedActs: completed,
       ...extraData,
     });
-    const nextAct = actNum + 1;
-    if (nextAct <= 7) {
-      setPhase("mission-board");
-    }
+    setPhase("simulation");
   };
 
   // Build solo team/room objects for child components
@@ -433,8 +330,8 @@ export default function Disrupt() {
   const soloTeam = selectedIncumbent && selectedCluster ? {
     id: "solo", room_id: "solo", name: "Solo", color: "#8B5CF6",
     incumbent_id: String(selectedIncumbent.id), cluster_id: String(selectedCluster.id),
-    current_step: 6, total_score: score?.overall || 0, step_scores: null,
-    battle_transcript: messages, score_result: score,
+    current_step: 6, total_score: 0, step_scores: null,
+    battle_transcript: null, score_result: null,
     completed_at: null, venture_canvas: null, pitch_data: null, act: 2,
   } : null;
 
