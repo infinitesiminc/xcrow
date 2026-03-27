@@ -87,7 +87,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [trialGuardian, setTrialGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
   const [npcMechanics, setNpcMechanics] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
-  const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
+  const [activeRoleNPC, setActiveRoleNPC] = useState<{ role: RoleNPC; avatarSrc: string } | null>(null);
   const [conquest, setConquest] = useState<{ guardianName: string; territory: string; hue: number } | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
   const [companyFilter, setCompanyFilter] = useState<Set<string>>(new Set());
@@ -528,7 +528,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const avatarSrc = getRoleNPCAvatar(role.territory, idx);
             return (
               <g key={`role-${role.jobId}`} className="cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC(role); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC({ role, avatarSrc }); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
                 onMouseEnter={() => setHoverPreview({ type: "role", id: role.jobId, name: role.title, title: role.company || role.department, src: avatarSrc, x: rx, y: ry, hue: 0 })}
                 onMouseLeave={() => setHoverPreview(p => p?.id === role.jobId ? null : p)}
               >
@@ -696,15 +696,16 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* Role NPC Encounter */}
         {activeRoleNPC && (
           <RoleNPCEncounter
-            role={activeRoleNPC}
+            role={activeRoleNPC.role}
+            avatarSrc={activeRoleNPC.avatarSrc}
             onClose={() => {
               setActiveRoleNPC(null);
             }}
             onCollectSkills={(ids) => {
               mission.scoutRole(
-                activeRoleNPC.jobId,
-                activeRoleNPC.territory,
-                ids.map(id => ({ id, name: id, category: activeRoleNPC.territory }))
+                activeRoleNPC.role.jobId,
+                activeRoleNPC.role.territory,
+                ids.map(id => ({ id, name: id, category: activeRoleNPC.role.territory }))
               );
             }}
           />

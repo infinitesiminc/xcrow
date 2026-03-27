@@ -18,6 +18,7 @@ import ReactMarkdown from "react-markdown";
 
 interface RoleNPCEncounterProps {
   role: RoleNPC;
+  avatarSrc?: string;
   onClose: () => void;
   onCollectSkills?: (skillIds: string[]) => void;
   onExploreRole?: (role: RoleNPC) => void;
@@ -109,7 +110,7 @@ const QUICK_QUESTIONS = [
   "How has your job changed?",
 ];
 
-export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExploreRole }: RoleNPCEncounterProps) {
+export default function RoleNPCEncounter({ role, avatarSrc: avatarSrcProp, onClose, onCollectSkills, onExploreRole }: RoleNPCEncounterProps) {
   const { user } = useAuth();
   const hue = TERRITORY_HUES[role.territory] ?? 220;
   const heroImage = getTerritoryHeroImage(role.territory);
@@ -122,7 +123,7 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const avatarSrc = role.territory ? ROLE_NPC_AVATARS[role.territory] : null;
+  const avatarSrc = avatarSrcProp || (role.territory ? ROLE_NPC_AVATARS[role.territory] : null);
 
   // Fetch future skills
   useEffect(() => {
