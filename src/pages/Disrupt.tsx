@@ -268,6 +268,24 @@ export default function Disrupt() {
             <motion.div key="team-battle" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
               <DisruptTeamBattle
                 room={room} team={myTeam}
+                onComplete={() => setPhase("team-venture")}
+              />
+            </motion.div>
+          )}
+
+          {phase === "team-venture" && room && myTeam && (
+            <motion.div key="team-venture" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+              <DisruptVentureBuild
+                room={room} team={myTeam}
+                onComplete={() => setPhase("team-pitch")}
+              />
+            </motion.div>
+          )}
+
+          {phase === "team-pitch" && room && myTeam && (
+            <motion.div key="team-pitch" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+              <DisruptPitchBattle
+                room={room} team={myTeam} teams={teams} members={members}
                 onComplete={() => setPhase("team-scoreboard")}
               />
             </motion.div>
@@ -275,7 +293,7 @@ export default function Disrupt() {
 
           {phase === "team-scoreboard" && room && (
             <motion.div key="team-scoreboard" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <DisruptScoreboard
+              <DisruptFinalScoreboard
                 room={room} teams={teams} members={members}
                 onBack={() => { setRoom(null); setPhase("lobby"); }}
               />
