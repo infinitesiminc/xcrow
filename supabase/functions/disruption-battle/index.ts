@@ -13,6 +13,88 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    if (action === "factory") {
+      const { idea, targetName } = payload;
+
+      const systemPrompt = `You are an AI Software Factory — an autonomous startup blueprint generator. Given a startup idea, produce a COMPLETE startup framework across 6 stages.
+
+THE IDEA: ${idea}
+${targetName ? `TARGET INCUMBENT: ${targetName}` : ""}
+
+OUTPUT FORMAT — You MUST use these EXACT markers to delimit each stage. Output them in order:
+
+[STAGE:market-intel:START]
+Write a detailed market analysis:
+- 4-6 specific customer pain points with the incumbent (or market gap)
+- Evidence from G2 reviews, Reddit threads, Twitter complaints (based on your knowledge)
+- Market size estimate (TAM/SAM/SOM)
+- Key competitors and their weaknesses
+- Timing catalyst — why NOW is the right moment
+[STAGE:market-intel:COMPLETE]
+
+[STAGE:business-model:START]
+Create a Lean Canvas:
+- **Problem**: Top 3 problems
+- **Solution**: Your AI-powered solution
+- **Key Metrics**: What to track (MRR, DAU, churn, NPS)
+- **Unique Value Prop**: One sentence that nails it
+- **Unfair Advantage**: AI data flywheel, speed, cost
+- **Channels**: Top 3 acquisition channels
+- **Customer Segments**: Primary beachhead + expansion
+- **Revenue Streams**: Pricing tiers (Free/Pro/Enterprise with specific prices)
+- **Cost Structure**: Monthly burn estimate
+[STAGE:business-model:COMPLETE]
+
+[STAGE:tech-blueprint:START]
+Recommend a complete tech stack:
+- **Frontend**: Framework, UI library, hosting
+- **Backend**: Database, auth, API layer
+- **AI Layer**: Which models, how integrated, what they automate
+- **Key Integrations**: APIs, webhooks, data sources
+- **MVP Scope**: What to build in Week 1 vs Week 4
+- **Architecture Diagram** (text): Show the data flow
+[STAGE:tech-blueprint:COMPLETE]
+
+[STAGE:landing-page:START]
+Write complete landing page copy:
+- **Hero Headline**: Bold, benefit-driven (under 10 words)
+- **Hero Subheadline**: One sentence expanding on the promise
+- **3 Feature Blocks**: Each with emoji icon, title, 2-sentence description
+- **Social Proof Section**: What kind of testimonials/logos to get
+- **CTA**: Primary button text + supporting text
+- **FAQ**: 4 common objections with answers
+[STAGE:landing-page:COMPLETE]
+
+[STAGE:launch-plan:START]
+Create a concrete 30-day launch plan:
+- **Week 1**: Build MVP, set up landing page, start waitlist
+- **Week 2**: Beta users, feedback loops, iterate
+- **Week 3**: Product Hunt launch, Reddit/HN posts, content marketing
+- **Week 4**: Paid acquisition test, partnership outreach, PR
+Include specific tactics, not generic advice. Name exact subreddits, communities, influencers to target.
+[STAGE:launch-plan:COMPLETE]
+
+[STAGE:pitch-summary:START]
+Create a 5-slide investor pitch outline:
+1. **The Problem** — What's broken, who suffers, how big
+2. **The Solution** — Your AI-native approach, demo moment
+3. **Market & Traction** — TAM, early signals, waitlist numbers to target
+4. **Business Model** — Unit economics, pricing, LTV/CAC targets
+5. **The Ask** — How much to raise, what milestones it funds
+Include specific numbers and metrics, not placeholders.
+[STAGE:pitch-summary:COMPLETE]
+
+RULES:
+- Be SPECIFIC and ACTIONABLE — no generic startup advice
+- Use real company names, real tools, real communities
+- Include actual pricing numbers, not ranges
+- Write as if briefing a founder who will execute TODAY
+- Each stage should be 200-400 words
+- Do NOT add any text outside the stage markers`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, [{ role: "user", content: `Generate a complete startup blueprint for: ${idea}` }]);
+    }
+
     if (action === "discovery") {
       const { messages, targetsIndex } = payload;
 
