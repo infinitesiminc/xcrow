@@ -689,7 +689,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
       )}
 
       {/* Industry Map */}
-      <h2 className="font-cinzel text-xl font-bold mb-4 text-foreground">🗺️ Industry Map</h2>
+      <h2 className="font-cinzel text-xl font-bold mb-4 text-foreground">🗺️ Software Market Map</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-12">
         {INDUSTRY_CLUSTERS.map((cluster) => {
           const done = getClusterProgress(cluster);
