@@ -551,7 +551,7 @@ function BattleArena({
   );
 }
 
-function ScoreScreen({ score, incumbent, onReplay }: { score: ScoreResult; incumbent: DisruptionIncumbent; onReplay: () => void }) {
+function ScoreScreen({ score, incumbent, onReplay, onContinue }: { score: ScoreResult; incumbent: DisruptionIncumbent; onReplay: () => void; onContinue?: () => void }) {
   const getGrade = (s: number) => s >= 90 ? "S" : s >= 80 ? "A" : s >= 70 ? "B" : s >= 60 ? "C" : "D";
   const getColor = (s: number) => s >= 80 ? "text-green-500" : s >= 60 ? "text-yellow-500" : "text-red-500";
 
