@@ -607,13 +607,13 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
       <div className="text-center mb-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Rocket className="w-4 h-4" /> Startup Simulation
+            <Rocket className="w-4 h-4" /> AI Venture Lab
           </div>
           <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Build Your <span className="text-primary">Startup Portfolio</span>
+            Disrupt <span className="text-primary">Software</span> with AI
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
-            22 industries. 100 incumbents. 7 acts per mission. Master the full founder journey from opportunity scout to investor pitch.
+            15 software verticals. 46 incumbents. 7 acts per mission. Learn to build AI-powered startups that disrupt legacy SaaS.
           </p>
 
           {/* Stats */}
