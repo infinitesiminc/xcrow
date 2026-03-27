@@ -173,7 +173,6 @@ const Investors = () => (
     <SEOHead
       title="Xcrow.ai — Investor Deck | $1M Seed Round"
       description="Xcrow is building the skill infrastructure for the AI economy. 183 skills, 100K+ roles analyzed, gamified simulations. Raising $1M seed."
-      canonical="https://xcrow.ai/investors"
     />
     <Navbar />
 
