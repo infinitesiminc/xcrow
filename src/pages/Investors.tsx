@@ -28,7 +28,7 @@ const cinzel = { fontFamily: "'Cinzel', serif" };
 const HERO = {
   badge: "Seed Round · $1M",
   headline: "The AI Job Market Is Collapsing.\nWe're Building the Skill Bridge.",
-  sub: "183 skills. 4 phases. 1 mission. Xcrow is the career intelligence platform that maps, simulates, and verifies the competencies separating humans who use AI from humans replaced by it.",
+  sub: "Gamified AI Upskill Platform",
 };
 
 /* ── 2. The Crisis ── */
