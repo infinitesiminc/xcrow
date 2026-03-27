@@ -527,7 +527,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
                         <span className="font-cinzel font-bold text-sm text-foreground">{inc.name}</span>
                       </div>
                       <MiniActRail completedActs={p.completedActs || []} />
-                      <p className="text-xs text-muted-foreground mt-2">{p.completedActs?.length || 0}/7 acts completed</p>
+                      <p className="text-xs text-muted-foreground mt-2">{p.completedActs?.length || 0}/6 acts completed</p>
                     </CardContent>
                   </Card>
                 );
