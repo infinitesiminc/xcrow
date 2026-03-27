@@ -105,21 +105,33 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
 
-  // Fetch role NPCs from the DB — sample diverse jobs across departments
-  // batchSeed changes on rotation to get a different shuffle
+  // Fetch role NPCs from the DB — batchSeed rotates to a different page of jobs
   useEffect(() => {
     (async () => {
       setBatchRotating(true);
+
+      // First get total count to know our range
+      const { count: totalCount } = await supabase
+        .from("jobs")
+        .select("id", { count: "exact", head: true })
+        .not("automation_risk_percent", "is", null)
+        .not("department", "is", null);
+
+      const total = totalCount || 400;
+      const pageSize = 400;
+      // Each seed picks a different offset into the full job pool
+      const offset = (batchSeed * 397) % Math.max(total - pageSize, 1);
+
       const { data: jobs } = await supabase
         .from("jobs")
         .select("id, title, department, automation_risk_percent, augmented_percent, slug, companies(name)")
         .not("automation_risk_percent", "is", null)
         .not("department", "is", null)
         .order("imported_at", { ascending: false })
-        .limit(400);
+        .range(offset, offset + pageSize - 1);
       if (!jobs?.length) { setBatchRotating(false); return; }
 
-      // Deterministic shuffle based on batchSeed
+      // Deterministic shuffle based on batchSeed for variety within the page
       const shuffled = [...jobs];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = ((batchSeed * 2654435761 + i * 2246822519) >>> 0) % (i + 1);
