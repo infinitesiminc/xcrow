@@ -79,7 +79,6 @@ function updateMissionProgress(incumbentId: number, update: Partial<MissionProgr
 }
 
 const ACTS = [
-  { num: 1, name: "Scout", subtitle: "Analyze the Software", icon: Search, emoji: "🔍", skill: "SaaS Market Analysis & Competitive Intelligence", description: "Analyze the software incumbent — pricing model, feature gaps, user reviews, and churn signals.", color: "hsl(var(--destructive))" },
   { num: 2, name: "Discover", subtitle: "Interview Users", icon: Users, emoji: "🗣️", skill: "Customer Development & User Research", description: "Interview frustrated users of the incumbent software. Find the feature gap and pain points.", color: "hsl(var(--neon-cyan))" },
   { num: 3, name: "Architect", subtitle: "Design Your SaaS", icon: Hammer, emoji: "📋", skill: "SaaS Business Model & AI-First Architecture", description: "Design your SaaS model — pricing tiers, AI features, tech stack, and build timeline.", color: "hsl(var(--neon-purple))" },
   { num: 4, name: "Launch", subtitle: "Ship & Grow", icon: Megaphone, emoji: "🚀", skill: "PLG, Content Marketing & Growth Hacking", description: "Launch playbook — Product Hunt, Reddit, cold outreach, content strategy, and first 100 users.", color: "hsl(var(--neon-lime))" },
