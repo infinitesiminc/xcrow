@@ -537,7 +537,7 @@ export default function Disrupt() {
                 messages={messages} input={input} setInput={setInput}
                 onSend={sendMessage} onFinish={finishBattle} isStreaming={isStreaming}
                 isScoring={isScoring} chatEndRef={chatEndRef}
-                onBack={() => setPhase("hub")}
+                onBack={() => setPhase("mission-board")}
               />
             </motion.div>
           )}
