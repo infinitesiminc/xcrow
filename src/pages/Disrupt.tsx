@@ -19,8 +19,11 @@ import { DisruptLobby, type DisruptRoom, type DisruptTeam, type DisruptMember } 
 import { DisruptDraft } from "@/components/disrupt/DisruptDraft";
 import { DisruptTeamBattle } from "@/components/disrupt/DisruptTeamBattle";
 import { DisruptScoreboard } from "@/components/disrupt/DisruptScoreboard";
+import { DisruptVentureBuild } from "@/components/disrupt/DisruptVentureBuild";
+import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
+import { DisruptFinalScoreboard } from "@/components/disrupt/DisruptFinalScoreboard";
 
-type GamePhase = "lobby" | "solo-map" | "solo-cluster" | "solo-battle" | "solo-score" | "team-draft" | "team-battle" | "team-scoreboard";
+type GamePhase = "lobby" | "solo-map" | "solo-cluster" | "solo-battle" | "solo-score" | "team-draft" | "team-battle" | "team-venture" | "team-pitch" | "team-scoreboard";
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 interface ScoreResult {
@@ -54,7 +57,7 @@ export default function Disrupt() {
 
   // Realtime subscription for team game
   useEffect(() => {
-    if (!room || (phase !== "team-draft" && phase !== "team-battle" && phase !== "team-scoreboard")) return;
+    if (!room || !["team-draft", "team-battle", "team-venture", "team-pitch", "team-scoreboard"].includes(phase)) return;
 
     const ch = supabase
       .channel(`game-${room.id}`)
@@ -63,6 +66,8 @@ export default function Disrupt() {
           const updated = payload.new as DisruptRoom;
           setRoom(updated);
           if (updated.status === "battling" && phase === "team-draft") setPhase("team-battle");
+          if (updated.status === "venture") setPhase("team-venture");
+          if (updated.status === "pitching" || updated.status === "voting") setPhase("team-pitch");
           if (updated.status === "completed") setPhase("team-scoreboard");
         }
       })
@@ -209,7 +214,11 @@ export default function Disrupt() {
                   setTeams(t);
                   setMembers(m);
                   setMyTeamId(tid);
-                  setPhase(r.status === "battling" ? "team-battle" : "team-draft");
+                  const statusPhaseMap: Record<string, GamePhase> = {
+                    battling: "team-battle", venture: "team-venture",
+                    pitching: "team-pitch", voting: "team-pitch", completed: "team-scoreboard",
+                  };
+                  setPhase(statusPhaseMap[r.status] || "team-draft");
                 }}
               />
             </motion.div>
@@ -263,6 +272,24 @@ export default function Disrupt() {
             <motion.div key="team-battle" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
               <DisruptTeamBattle
                 room={room} team={myTeam}
+                onComplete={() => setPhase("team-venture")}
+              />
+            </motion.div>
+          )}
+
+          {phase === "team-venture" && room && myTeam && (
+            <motion.div key="team-venture" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+              <DisruptVentureBuild
+                room={room} team={myTeam}
+                onComplete={() => setPhase("team-pitch")}
+              />
+            </motion.div>
+          )}
+
+          {phase === "team-pitch" && room && myTeam && (
+            <motion.div key="team-pitch" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+              <DisruptPitchBattle
+                room={room} team={myTeam} teams={teams} members={members}
                 onComplete={() => setPhase("team-scoreboard")}
               />
             </motion.div>
@@ -270,7 +297,7 @@ export default function Disrupt() {
 
           {phase === "team-scoreboard" && room && (
             <motion.div key="team-scoreboard" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <DisruptScoreboard
+              <DisruptFinalScoreboard
                 room={room} teams={teams} members={members}
                 onBack={() => { setRoom(null); setPhase("lobby"); }}
               />

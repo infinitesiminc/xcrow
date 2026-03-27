@@ -35,6 +35,9 @@ export interface DisruptTeam {
   battle_transcript: any;
   score_result: any;
   completed_at: string | null;
+  venture_canvas: any;
+  pitch_data: any;
+  act: number;
 }
 
 export interface DisruptMember {
