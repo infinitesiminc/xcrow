@@ -62,12 +62,14 @@ export default function Navbar() {
   const navItems = user
     ? [
         { label: "Home", path: "/map", icon: Map },
+        { label: "Disrupt", path: "/disrupt", icon: Swords },
         { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
         ...(isSchoolAdmin ? [{ label: "School", path: "/school", icon: GraduationCap }] : []),
         ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
       ]
     : [
         { label: "Explore", path: "/", icon: Compass },
+        { label: "Disrupt", path: "/disrupt", icon: Swords },
         { label: "How It Works", path: "/how-it-works", icon: BookOpen },
         { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
         { label: "Skills", path: "/skills", icon: Sparkles },
