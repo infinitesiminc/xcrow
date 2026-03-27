@@ -1377,8 +1377,6 @@ function ContextPanel({
     </div>
   );
 }
-}: {
-  incumbent: DisruptionIncumbent; cluster: IndustryCluster; messages: ChatMsg[];
   input: string; setInput: (v: string) => void; onSend: () => void;
   isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
   onBack: () => void; onLaunch: () => void;
