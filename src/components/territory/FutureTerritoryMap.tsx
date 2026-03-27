@@ -106,8 +106,10 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const isDragging = useRef(false);
 
   // Fetch role NPCs from the DB — sample diverse jobs across departments
+  // batchSeed changes on rotation to get a different shuffle
   useEffect(() => {
     (async () => {
+      setBatchRotating(true);
       const { data: jobs } = await supabase
         .from("jobs")
         .select("id, title, department, automation_risk_percent, augmented_percent, slug, companies(name)")
@@ -115,12 +117,19 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         .not("department", "is", null)
         .order("imported_at", { ascending: false })
         .limit(400);
-      if (!jobs?.length) return;
+      if (!jobs?.length) { setBatchRotating(false); return; }
+
+      // Deterministic shuffle based on batchSeed
+      const shuffled = [...jobs];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = ((batchSeed * 2654435761 + i * 2246822519) >>> 0) % (i + 1);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
 
       // Sample up to 5 per territory, max 2 roles per company, unique titles
       const perTerritory = new Map<string, RoleNPC[]>();
       const companyCount = new Map<string, number>();
-      for (const job of jobs) {
+      for (const job of shuffled) {
         const npc = jobToRoleNPC(job as any);
         const key = npc.territory;
         if (!perTerritory.has(key)) perTerritory.set(key, []);
@@ -132,8 +141,10 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         }
       }
       setRoleNPCs(Array.from(perTerritory.values()).flat());
+      setCompanyFilter(new Set());
+      setBatchRotating(false);
     })();
-  }, []);
+  }, [batchSeed]);
 
   // Auto-pan to first Role NPC on initial load (first 30s hook)
   const hasAutoPanned = useRef(false);
