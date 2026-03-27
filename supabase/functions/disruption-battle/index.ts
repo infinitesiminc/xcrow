@@ -54,6 +54,83 @@ When they've proven their case for the current step, say "⚔️ STEP ${step} CO
       return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
     }
 
+    if (action === "customer-discovery") {
+      const { incumbent, cluster, persona, personaDescription, messages } = payload;
+
+      const systemPrompt = `You are a potential customer being interviewed by a startup founder. You are role-playing a CUSTOMER DISCOVERY interview.
+
+CONTEXT:
+- The founder is building a startup to disrupt: ${incumbent.name} in ${cluster.name}
+- Their beachhead niche: ${incumbent.beachheadNiche}
+- Their disruption model: ${incumbent.disruptorModel}
+
+YOUR PERSONA: ${persona} — ${personaDescription}
+- You currently use ${incumbent.name} or similar solutions
+- You work in the ${cluster.name} industry
+
+YOUR ROLE:
+- Answer questions honestly as this customer persona would
+- Share realistic frustrations, workflows, and concerns
+- Don't volunteer information — make the founder ASK good questions
+- React naturally: some questions you'll answer eagerly, others you'll deflect
+- If they ask about willingness to pay, be realistic — don't say yes too easily
+- If they ask bad questions (leading, vague), give unhelpful answers
+- After 4-5 good exchanges where the founder extracts real insights, say "📋 INTERVIEW COMPLETE — KEY INSIGHTS: [summarize the 3 most important things they learned]"
+- Keep responses under 150 words — customers don't monologue
+- Be conversational and authentic`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
+    }
+
+    if (action === "gtm-challenge") {
+      const { incumbent, cluster, section, sectionDescription, messages } = payload;
+
+      const systemPrompt = `You are a seasoned growth advisor challenging a startup founder's Go-to-Market strategy.
+
+CONTEXT:
+- They are disrupting: ${incumbent.name} in ${cluster.name}
+- Beachhead niche: ${incumbent.beachheadNiche}
+- Their model: ${incumbent.disruptorModel}
+
+CURRENT SECTION: ${section} — ${sectionDescription}
+
+YOUR ROLE:
+- Challenge vague or unrealistic GTM claims
+- Ask "How specifically?" and "What's the unit economics of that channel?"
+- Push for concrete numbers: CAC targets, conversion rates, timeline
+- Share frameworks: content marketing vs outbound vs PLG vs partnerships
+- When they give a STRONG, specific answer, acknowledge with "✅ SECTION COMPLETE" and summarize their strategy
+- Keep responses under 200 words
+- Use markdown formatting
+- Be supportive but rigorous — no hand-waving allowed`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
+    }
+
+    if (action === "moat-counterattack") {
+      const { incumbent, cluster, messages } = payload;
+
+      const systemPrompt = `You are the CEO of "${incumbent.name}" — and you've just seen a startup try to disrupt you. You're FIGHTING BACK.
+
+CONTEXT:
+- Your company: ${incumbent.name} (${incumbent.age})
+- Industry: ${cluster.name}
+- The startup's angle: ${incumbent.asymmetricAngle}
+- Their beachhead: ${incumbent.beachheadNiche}
+
+YOUR ROLE:
+- You've announced you're building the same thing as the startup
+- Challenge every moat claim: "We have more data", "We can outspend you", "Our brand is trusted"
+- Push back HARD but fairly — if they make a genuinely strong argument about why you CAN'T respond (innovator's dilemma, cannibalization risk, org structure), acknowledge it
+- Use specific corporate tactics: "We'll acquire you", "We'll bundle it free", "We'll lobby regulators"
+- After 4-5 exchanges where the founder proves strong moat arguments, say "🏰 MOAT PROVEN — DEFENSE COMPLETE"
+- Keep responses under 200 words
+- Be aggressive but educational — this is a learning exercise`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
+    }
+
+
     if (action === "venture") {
       const { incumbent, cluster, canvas, canvasData, messages } = payload;
       const canvasDescriptions: Record<string, string> = {
