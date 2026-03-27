@@ -253,9 +253,41 @@ export default function Disrupt() {
             </motion.div>
           )}
 
-          {phase === "solo-score" && score && selectedIncumbent && (
+          {phase === "solo-score" && score && selectedIncumbent && selectedCluster && (
             <motion.div key="solo-score" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <ScoreScreen score={score} incumbent={selectedIncumbent} onReplay={() => setPhase("solo-map")} />
+              <ScoreScreen score={score} incumbent={selectedIncumbent} onReplay={() => setPhase("solo-map")} onContinue={() => setPhase("solo-venture")} />
+            </motion.div>
+          )}
+
+          {phase === "solo-venture" && selectedIncumbent && selectedCluster && (
+            <motion.div key="solo-venture" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+              <DisruptVentureBuild
+                room={{ id: "solo", room_code: "", name: "Solo", created_by: user?.id || "", status: "venture", duration_minutes: 60, max_teams: 1, max_team_size: 1, started_at: null, ends_at: null, created_at: "" }}
+                team={{ id: "solo", room_id: "solo", name: "Solo", color: "#8B5CF6", incumbent_id: String(selectedIncumbent.id), cluster_id: String(selectedCluster.id), current_step: 6, total_score: score?.overall || 0, step_scores: null, battle_transcript: messages, score_result: score, completed_at: null, venture_canvas: null, pitch_data: null, act: 2 }}
+                onComplete={() => setPhase("solo-pitch")}
+              />
+            </motion.div>
+          )}
+
+          {phase === "solo-pitch" && selectedIncumbent && selectedCluster && (
+            <motion.div key="solo-pitch" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+              <DisruptPitchBattle
+                room={{ id: "solo", room_code: "", name: "Solo", created_by: user?.id || "", status: "pitching", duration_minutes: 60, max_teams: 1, max_team_size: 1, started_at: null, ends_at: null, created_at: "" }}
+                team={{ id: "solo", room_id: "solo", name: "Solo", color: "#8B5CF6", incumbent_id: String(selectedIncumbent.id), cluster_id: String(selectedCluster.id), current_step: 6, total_score: score?.overall || 0, step_scores: null, battle_transcript: messages, score_result: score, completed_at: null, venture_canvas: null, pitch_data: null, act: 3 }}
+                teams={[]} members={[]}
+                onComplete={() => setPhase("solo-final")}
+              />
+            </motion.div>
+          )}
+
+          {phase === "solo-final" && score && selectedIncumbent && (
+            <motion.div key="solo-final" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div className="max-w-3xl mx-auto px-4 text-center">
+                <Trophy className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
+                <h1 className="font-cinzel text-3xl font-bold text-foreground mb-2">3-Act Simulation Complete!</h1>
+                <p className="text-muted-foreground mb-6">You completed all 3 acts against {selectedIncumbent.name}</p>
+                <Button onClick={() => setPhase("solo-map")} size="lg"><MapIcon className="w-4 h-4 mr-2" /> Back to Battlefield</Button>
+              </div>
             </motion.div>
           )}
 
