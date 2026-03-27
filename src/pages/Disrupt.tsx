@@ -634,7 +634,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
 
           {onStartDiscovery && (
             <Button onClick={onStartDiscovery} variant="outline" size="lg" className="px-6">
-              <Brain className="w-4 h-4 mr-2" /> Help me find a target to disrupt
+              <Brain className="w-4 h-4 mr-2" /> Help me find software to disrupt
             </Button>
           )}
         </motion.div>
