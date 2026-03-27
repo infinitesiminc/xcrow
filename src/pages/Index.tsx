@@ -8,13 +8,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   Map, Sword, Shield, Star, Crown, Sparkles, ArrowRight,
   Compass, Target, Zap, Trophy, ChevronDown, Users, Swords, BookOpen,
+  Search, TestTube, Scroll,
 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import OnboardingQuest from "@/components/OnboardingQuest";
 import CompanyMarquee from "@/components/CompanyMarquee";
-import SkillSuggestionCards from "@/components/SkillSuggestionCards";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
 
 import { TERRITORIES } from "@/lib/territory-colors";
@@ -66,31 +66,17 @@ const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
   heroImg: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${TERRITORY_HERO_SKILLS[t.cssVar] || "complex-threat-modeling"}.png`,
 }));
 
-/**
- * Irregular polygon borders for 8 territories in a 960×540 viewBox.
- * Arranged as a 2×4 political map with shared edges — no gaps, no overlaps.
- * Order: Technical, Analytical, Strategic, Communication, Leadership, Creative, Ethics, Human Edge
- */
 const TERRITORY_BORDERS: string[] = [
-  // Row 1: Top-left (Technical)
   "0,0 240,0 260,120 220,270 0,270",
-  // Row 1: Top-center-left (Analytical)
   "240,0 500,0 520,100 480,270 220,270 260,120",
-  // Row 1: Top-center-right (Strategic)
   "500,0 720,0 740,130 700,270 480,270 520,100",
-  // Row 1: Top-right (Communication)
   "720,0 960,0 960,270 700,270 740,130",
-  // Row 2: Bottom-left (Leadership)
   "0,270 220,270 240,400 200,540 0,540",
-  // Row 2: Bottom-center-left (Creative)
   "220,270 480,270 500,390 460,540 200,540 240,400",
-  // Row 2: Bottom-center-right (Ethics & Compliance)
   "480,270 700,270 720,410 680,540 460,540 500,390",
-  // Row 2: Bottom-right (Human Edge)
   "700,270 960,270 960,540 680,540 720,410",
 ];
 
-/** Visual centers for labels & emblems inside each polygon */
 const TERRITORY_CENTERS: [number, number][] = [
   [120, 140], [370, 130], [610, 135], [840, 140],
   [115, 400], [350, 400], [590, 405], [820, 400],
@@ -112,12 +98,63 @@ const AVATARS = [
   { img: avatarLion, name: "Lion" },
 ];
 
-const RANK_LADDER = [
-  { rank: "Recruit", emoji: "⚔️", color: "hsl(215, 20%, 55%)" },
-  { rank: "Explorer", emoji: "🧭", color: "hsl(180, 45%, 50%)" },
-  { rank: "Strategist", emoji: "⭐", color: "hsl(45, 70%, 55%)" },
-  { rank: "Commander", emoji: "👑", color: "hsl(270, 50%, 60%)" },
-  { rank: "Legend", emoji: "🏆", color: "hsl(340, 60%, 55%)" },
+const MISSION_PHASES = [
+  {
+    step: "01",
+    title: "Discover",
+    subtitle: "Scout the Frontier",
+    desc: "Talk to Role NPCs on the world map. Scout territories, collect skill intel, and identify which AI skills your target roles demand.",
+    Icon: Search,
+    color: "var(--territory-analytical)",
+    img: simBriefing,
+    metric: "3+ NPCs scouted",
+  },
+  {
+    step: "02",
+    title: "Experiment",
+    subtitle: "Enter the Simulation",
+    desc: "Jump into AI-powered quests built from real job tasks. Earn Bronze and Silver tiers, build castle foundations, and develop hands-on skill mastery.",
+    Icon: TestTube,
+    color: "var(--territory-creative)",
+    img: simVictory,
+    metric: "5+ skills practiced",
+  },
+  {
+    step: "03",
+    title: "Challenge",
+    subtitle: "Face the Guardians",
+    desc: "Unlock Guardian Trials and Boss Battles that test your strategic oversight. Reach Gold tier and prove you can spot what AI gets wrong.",
+    Icon: Swords,
+    color: "var(--territory-strategic)",
+    img: bossBattlePreview,
+    metric: "Guardian Trials unlocked",
+  },
+  {
+    step: "04",
+    title: "Master",
+    subtitle: "Conquer Your Territory",
+    desc: "Conquer 10+ skills to Platinum, build Citadels across territories, and forge a verified profile that proves you're future-ready.",
+    Icon: Trophy,
+    color: "var(--territory-leadership)",
+    img: heroConquer,
+    metric: "10+ skills conquered",
+  },
+];
+
+const GAMEPLAY_FEATURES = [
+  { emoji: "🗺️", title: "World Map", desc: "Explore 8 territories with 183 skills" },
+  { emoji: "🗣️", title: "NPC Encounters", desc: "Talk to role NPCs to scout skill intel" },
+  { emoji: "⚔️", title: "Quest Simulations", desc: "AI-powered tasks from real job data" },
+  { emoji: "🏰", title: "Castle Progression", desc: "Evolve castles from Ruins to Citadel" },
+  { emoji: "👹", title: "Guardian Trials", desc: "Boss battles that test strategic oversight" },
+  { emoji: "📜", title: "Quest Journal", desc: "Track missions, intel, and battle record" },
+];
+
+const SOCIAL_STATS = [
+  { value: "100,000+", label: "Real Jobs Analyzed" },
+  { value: "183", label: "Skill Territories" },
+  { value: "10", label: "Boss Monsters" },
+  { value: "21,000+", label: "Roles to Scout" },
 ];
 
 const Index = () => {
@@ -139,18 +176,15 @@ const Index = () => {
 
         {/* ═══ HERO ═══ */}
         <section className="relative pt-24 md:pt-32 pb-0 px-4 overflow-hidden">
-
           <motion.div {...fade()} className="text-center max-w-3xl mx-auto relative z-10">
-
             <h1 className="font-fantasy text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              183 new skills. 1 game.
+              183 skills. 4 phases. 1 mission.
               <br />
-              <span style={{ color: "hsl(var(--filigree-glow))" }}>Get ready for AI agent economy.</span>
+              <span style={{ color: "hsl(var(--filigree-glow))" }}>Master the AI frontier.</span>
             </h1>
 
             <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-8">
-              Conquer skill territories, battle AI bosses, and forge a career that's future-proof — 
-              all through quests designed around real job market data.
+              Discover roles, experiment with quests, challenge guardians, and master your territory — built from 100,000+ real jobs.
             </p>
 
             {/* Floating avatars */}
@@ -181,16 +215,16 @@ const Index = () => {
                 className="text-base px-8"
                 style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.25)" }}>
                 <Sword className="h-5 w-5 mr-2" />
-                Start Your Quest
+                Begin Your Mission
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/how-it-works")}
                 className="text-base px-8">
-                How It Works
+                See How It Works
               </Button>
             </div>
           </motion.div>
 
-          {/* Cinematic hero image — stacked below text */}
+          {/* Cinematic hero image */}
           <motion.div
             {...fade(0.3)}
             className="relative max-w-5xl mx-auto mt-12 rounded-xl overflow-hidden border border-border/50"
@@ -200,22 +234,30 @@ const Index = () => {
             }}
           >
             <CinematicHeroSlideshow />
-            {/* Bottom fade into page background */}
             <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
               style={{ background: "linear-gradient(to top, hsl(var(--background)), transparent)" }} />
           </motion.div>
         </section>
 
-        {/* ═══ LIVE JOB CONTEXT — Company Logo Strip ═══ */}
+        {/* ═══ SOCIAL PROOF + COMPANY MARQUEE (merged) ═══ */}
         <section className="py-12 px-4 overflow-hidden">
           <div className="max-w-5xl mx-auto">
-            <motion.div {...fade()} className="text-center mb-6">
+            {/* Stats row */}
+            <motion.div {...fade()} className="flex flex-wrap justify-center gap-8 md:gap-14 mb-8">
+              {SOCIAL_STATS.map((s) => (
+                <div key={s.label} className="text-center">
+                  <p className="text-2xl md:text-3xl font-fantasy font-bold" style={{ color: "hsl(var(--filigree-glow))" }}>
+                    {s.value}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div {...fade(0.1)} className="text-center mb-6">
               <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-1">Live Job Intelligence</p>
-              <h2 className="font-fantasy text-xl md:text-2xl font-bold">
-                Built from <span style={{ color: "hsl(var(--filigree-glow))" }}>100,000+</span> Real Roles
-              </h2>
-              <p className="text-muted-foreground text-sm mt-2 max-w-lg mx-auto">
-                Every skill, quest, and simulation is generated from live job postings at companies like these — not textbooks.
+              <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+                Every skill, quest, and simulation is generated from live job postings at companies like these.
               </p>
             </motion.div>
             <motion.div {...fade(0.15)}>
@@ -229,67 +271,122 @@ const Index = () => {
           </div>
         </section>
 
-        {/* ═══ HOW IT WORKS — 3-Step Loop ═══ */}
+        {/* ═══ THE MISSION — 4-Phase Journey ═══ */}
         <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto">
             <motion.div {...fade()} className="text-center mb-16">
-              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">The Quest Loop</p>
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">The AI Scouting Mission</p>
               <h2 className="font-fantasy text-3xl md:text-4xl font-bold">
-                Scout. Battle. Conquer.
+                Discover → Experiment → Challenge → Master
+              </h2>
+              <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+                A guided 4-phase journey from your first NPC encounter to territory mastery.
+              </p>
+            </motion.div>
+
+            {/* Vertical timeline */}
+            <div className="relative">
+              {/* Connecting line */}
+              <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px hidden md:block"
+                style={{ background: "linear-gradient(to bottom, hsl(var(--border)), hsl(var(--filigree-glow) / 0.3), hsl(var(--border)))" }} />
+
+              <div className="space-y-8 md:space-y-12">
+                {MISSION_PHASES.map((phase, i) => {
+                  const isEven = i % 2 === 0;
+                  return (
+                    <motion.div
+                      key={phase.step}
+                      {...fade(i * 0.12)}
+                      className={`relative flex flex-col md:flex-row items-stretch gap-4 md:gap-8 ${!isEven ? "md:flex-row-reverse" : ""}`}
+                    >
+                      {/* Timeline dot (desktop) */}
+                      <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 top-6 z-10">
+                        <div className="h-10 w-10 rounded-full flex items-center justify-center border-2"
+                          style={{
+                            background: `hsl(${phase.color} / 0.15)`,
+                            borderColor: `hsl(${phase.color} / 0.4)`,
+                            boxShadow: `0 0 12px hsl(${phase.color} / 0.2)`,
+                          }}>
+                          <span className="text-xs font-mono font-bold" style={{ color: `hsl(${phase.color})` }}>{phase.step}</span>
+                        </div>
+                      </div>
+
+                      {/* Image card */}
+                      <div className="md:w-[calc(50%-2rem)] rounded-xl overflow-hidden border border-border/50"
+                        style={{ boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))` }}>
+                        <div className="h-44 md:h-52 overflow-hidden relative">
+                          <img src={phase.img} alt={phase.title} className="w-full h-full object-cover opacity-80" loading="lazy" />
+                          <div className="absolute inset-0" style={{ background: `linear-gradient(to top, hsl(var(--card)), transparent 60%)` }} />
+                        </div>
+                      </div>
+
+                      {/* Text card */}
+                      <div className="md:w-[calc(50%-2rem)] rounded-xl p-6 border border-border/50 flex flex-col justify-center"
+                        style={{
+                          background: "hsl(var(--card))",
+                          boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))`,
+                        }}>
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="h-10 w-10 rounded-xl flex items-center justify-center md:hidden"
+                            style={{ background: `hsl(${phase.color} / 0.15)`, border: `1px solid hsl(${phase.color} / 0.25)` }}>
+                            <phase.Icon className="h-5 w-5" style={{ color: `hsl(${phase.color})` }} />
+                          </div>
+                          <div className="hidden md:flex h-10 w-10 rounded-xl items-center justify-center"
+                            style={{ background: `hsl(${phase.color} / 0.15)`, border: `1px solid hsl(${phase.color} / 0.25)` }}>
+                            <phase.Icon className="h-5 w-5" style={{ color: `hsl(${phase.color})` }} />
+                          </div>
+                          <div>
+                            <span className="text-xs font-mono text-muted-foreground">Phase {phase.step}</span>
+                            <h3 className="font-fantasy text-xl font-bold" style={{ color: `hsl(${phase.color})` }}>{phase.title}</h3>
+                          </div>
+                        </div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">{phase.subtitle}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-3">{phase.desc}</p>
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-full bg-muted text-muted-foreground w-fit">
+                          <Target className="h-3 w-3" /> {phase.metric}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <motion.div {...fade(0.5)} className="text-center mt-12">
+              <Button size="lg" onClick={() => navigate("/map")}
+                className="text-base px-8 font-fantasy"
+                style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.2)" }}>
+                <Compass className="h-5 w-5 mr-2" />
+                Start Phase 1: Discover
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══ KEY GAMEPLAY FEATURES ═══ */}
+        <section className="py-16 px-4" style={{ background: "hsl(var(--secondary) / 0.3)" }}>
+          <div className="max-w-5xl mx-auto">
+            <motion.div {...fade()} className="text-center mb-10">
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Key Gameplay</p>
+              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">
+                Everything You Need to Conquer
               </h2>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: Compass,
-                  step: "01",
-                  title: "Scout Kingdoms",
-                  desc: "Explore 100,000+ real roles across every industry. See which skills each kingdom demands and where AI is reshaping the battlefield.",
-                  color: "var(--territory-analytical)",
-                  img: simBriefing,
-                },
-                {
-                  icon: Sword,
-                  step: "02",
-                  title: "Battle & Learn",
-                  desc: "Enter AI-powered simulations built from real job tasks. Face boss monsters that test your judgment, strategy, and human edge.",
-                  color: "var(--territory-creative)",
-                  img: simVictory,
-                },
-                {
-                  icon: Crown,
-                  step: "03",
-                  title: "Conquer Territories",
-                  desc: "Earn XP, upgrade castles, and climb the rank ladder. Build a verified skill portfolio that proves you're future-ready.",
-                  color: "var(--territory-strategic)",
-                  img: heroConquer,
-                },
-              ].map((s, i) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {GAMEPLAY_FEATURES.map((f, i) => (
                 <motion.div
-                  key={s.step}
-                  {...fade(i * 0.15)}
-                  className="rounded-2xl overflow-hidden border border-border/50 group"
+                  key={f.title}
+                  {...fade(i * 0.08)}
+                  className="rounded-xl p-5 border border-border/50 text-center hover:border-primary/30 transition-colors"
                   style={{
                     background: "hsl(var(--card))",
-                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))`,
+                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 12px hsl(var(--emboss-shadow))`,
                   }}
                 >
-                  <div className="h-40 overflow-hidden relative">
-                    <img src={s.img} alt={s.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to top, hsl(var(--card)), transparent)` }} />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-xl flex items-center justify-center"
-                        style={{ background: `hsl(${s.color} / 0.15)`, border: `1px solid hsl(${s.color} / 0.25)` }}>
-                        <s.icon className="h-5 w-5" style={{ color: `hsl(${s.color})` }} />
-                      </div>
-                      <span className="text-xs font-mono text-muted-foreground">{s.step}</span>
-                    </div>
-                    <h3 className="font-fantasy text-xl font-bold mb-2">{s.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
-                  </div>
+                  <span className="text-3xl block mb-3">{f.emoji}</span>
+                  <h4 className="font-fantasy text-sm md:text-base font-bold mb-1">{f.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -324,7 +421,6 @@ const Index = () => {
                 className="w-full h-auto block"
                 loading="lazy"
               />
-              {/* Bottom fade */}
               <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
                 style={{ background: "linear-gradient(to top, hsl(var(--secondary) / 0.4), transparent)" }} />
             </motion.div>
@@ -388,7 +484,6 @@ const Index = () => {
               </p>
             </motion.div>
 
-            {/* SVG Territory Map — political-style with shared borders */}
             <motion.div {...fade(0.1)} className="relative w-full" style={{ aspectRatio: "16/9" }}>
               <svg viewBox="0 0 960 540" className="w-full h-full" style={{ filter: "drop-shadow(0 0 40px hsl(var(--primary) / 0.08))" }}>
                 <defs>
@@ -400,7 +495,6 @@ const Index = () => {
                   ))}
                 </defs>
 
-                {/* Territory border polygons */}
                 {TERRITORY_DOMAINS.map((t, i) => {
                   const borders = TERRITORY_BORDERS[i];
                   const center = TERRITORY_CENTERS[i];
@@ -413,7 +507,6 @@ const Index = () => {
                         strokeWidth="1.5"
                         strokeLinejoin="round"
                       />
-                      {/* Inner highlight stroke */}
                       <polygon
                         points={borders}
                         fill="none"
@@ -422,7 +515,6 @@ const Index = () => {
                         strokeLinejoin="round"
                       />
 
-                      {/* Floating emblem */}
                       <foreignObject
                         x={center[0] - 26} y={center[1] - 50} width={52} height={52}
                         className="animate-territory-float"
@@ -433,7 +525,6 @@ const Index = () => {
                         </div>
                       </foreignObject>
 
-                      {/* Territory name */}
                       <text x={center[0]} y={center[1] + 16} textAnchor="middle"
                         className="fill-foreground text-[11px] font-bold" style={{ fontFamily: "'Cinzel', serif" }}>
                         {t.name}
@@ -455,115 +546,6 @@ const Index = () => {
                 Browse All 183 Skills
               </Button>
             </motion.div>
-          </div>
-        </section>
-
-        {/* ═══ RANK LADDER ═══ */}
-        <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
-          <div className="max-w-3xl mx-auto">
-            <motion.div {...fade()} className="text-center mb-14">
-              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Player Rank</p>
-              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">
-                Climb the Rank Ladder
-              </h2>
-              <p className="text-muted-foreground mt-3 max-w-md mx-auto">
-                Your rank reflects your breadth of mastery — not just one skill, but your entire career arsenal.
-              </p>
-            </motion.div>
-
-            <div className="flex items-end justify-center gap-3 md:gap-6">
-              {RANK_LADDER.map((r, i) => (
-                <motion.div key={r.rank} {...fade(i * 0.1)} className="flex flex-col items-center">
-                  <div
-                    className="rounded-xl flex items-center justify-center mb-2 transition-all"
-                    style={{
-                      width: 48 + i * 8,
-                      height: 48 + i * 8,
-                      background: `linear-gradient(135deg, ${r.color}22, ${r.color}44)`,
-                      border: `2px solid ${r.color}`,
-                      boxShadow: `0 0 ${8 + i * 4}px ${r.color}33`,
-                    }}
-                  >
-                    <span className="text-xl md:text-2xl">{r.emoji}</span>
-                  </div>
-                  <span className="text-xs font-fantasy font-bold" style={{ color: r.color }}>
-                    {r.rank}
-                  </span>
-                  <div className="w-full rounded-full mt-1" style={{ height: 3, background: r.color, opacity: 0.5 }} />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ WHO IS THIS FOR ═══ */}
-        <section className="py-20 px-4">
-          <div className="max-w-5xl mx-auto">
-            <motion.div {...fade()} className="text-center mb-14">
-              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">
-                Built for Every Adventurer
-              </h2>
-            </motion.div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: "🎓",
-                  title: "Students",
-                  desc: "Your degree is the foundation. Xcrow is the edge. Discover which skills employers actually demand and prove you have them — before graduation.",
-                  cta: "Start as a Recruit",
-                },
-                {
-                  icon: "💼",
-                  title: "Professionals",
-                  desc: "AI is rewriting your job description. Stay ahead by identifying which of your tasks are at risk and building the skills that keep you irreplaceable.",
-                  cta: "Scout Your Role",
-                },
-                {
-                  icon: "🔄",
-                  title: "Career Changers",
-                  desc: "Transitioning to a new field? Map the skill gap between where you are and where you want to be, then close it through targeted quests.",
-                  cta: "Explore Kingdoms",
-                },
-              ].map((p, i) => (
-                <motion.div
-                  key={p.title}
-                  {...fade(i * 0.12)}
-                  className="rounded-2xl p-6 border border-border/50"
-                  style={{
-                    background: "hsl(var(--card))",
-                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))`,
-                  }}
-                >
-                  <span className="text-4xl block mb-4">{p.icon}</span>
-                  <h3 className="font-fantasy text-xl font-bold mb-2">{p.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{p.desc}</p>
-                  <Button variant="ghost" size="sm" onClick={() => navigate("/map")}
-                    className="text-xs font-medium group">
-                    {p.cta} <ArrowRight className="h-3.5 w-3.5 ml-1 group-hover:translate-x-0.5 transition-transform" />
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ SOCIAL PROOF STRIP ═══ */}
-        <section className="py-12 px-4 border-y border-border/50" style={{ background: "hsl(var(--secondary) / 0.3)" }}>
-          <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-8 md:gap-16">
-            {[
-              { value: "21,000+", label: "Kingdoms to Scout" },
-              { value: "34,000+", label: "Quests Available" },
-              { value: "183", label: "Skill Territories" },
-              { value: "10", label: "Boss Monsters" },
-            ].map((s) => (
-              <motion.div key={s.label} {...fade()} className="text-center">
-                <p className="text-2xl md:text-3xl font-fantasy font-bold" style={{ color: "hsl(var(--filigree-glow))" }}>
-                  {s.value}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-              </motion.div>
-            ))}
           </div>
         </section>
 
