@@ -483,11 +483,27 @@ export default function Disrupt() {
         )}
 
         <AnimatePresence mode="wait">
+          {phase === "discovery" && (
+            <motion.div key="discovery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <DiscoveryChat
+                messages={discoveryMessages}
+                input={discoveryInput}
+                setInput={setDiscoveryInput}
+                onSend={sendDiscoveryMessage}
+                isStreaming={isDiscoveryStreaming}
+                chatEndRef={discoveryEndRef}
+                onBrowseMap={() => setPhase("hub")}
+                onSelectTarget={selectTargetFromDiscovery}
+              />
+            </motion.div>
+          )}
+
           {phase === "hub" && (
             <motion.div key="hub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <MissionHub
                 onSelectCluster={(c) => { setSelectedCluster(c); setPhase("cluster"); }}
                 progress={loadProgress()}
+                onStartDiscovery={() => setPhase("discovery")}
               />
             </motion.div>
           )}
