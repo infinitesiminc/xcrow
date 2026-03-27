@@ -135,8 +135,8 @@ export function DisruptVentureBuild({
         // Save to database
         await supabase.from("disrupt_teams").update({
           venture_canvas: updated as any,
-          act: 2,
-        }).eq("id", team.id);
+      act: 3,
+    }).eq("id", team.id);
 
         toast.success(`${CANVASES[currentCanvas].label} complete!`);
       }
@@ -154,10 +154,12 @@ export function DisruptVentureBuild({
   };
 
   const finishVenture = async () => {
-    await supabase.from("disrupt_teams").update({
-      venture_canvas: completedCanvases as any,
-      act: 2,
-    }).eq("id", team.id);
+    if (team.id !== "solo") {
+      await supabase.from("disrupt_teams").update({
+        venture_canvas: completedCanvases as any,
+        act: 3,
+      }).eq("id", team.id);
+    }
     onComplete();
   };
 

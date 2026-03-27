@@ -90,10 +90,12 @@ export function DisruptPitchBattle({
       setPitchDeck(data);
 
       // Save pitch data
-      await supabase.from("disrupt_teams").update({
-        pitch_data: data as any,
-        act: 3,
-      }).eq("id", team.id);
+      if (team.id !== "solo") {
+        await supabase.from("disrupt_teams").update({
+          pitch_data: data as any,
+          act: 3,
+        }).eq("id", team.id);
+      }
     } catch {
       toast.error("Pitch generation failed");
     } finally {
@@ -192,10 +194,12 @@ export function DisruptPitchBattle({
   };
 
   const finishPitch = async () => {
-    await supabase.from("disrupt_teams").update({
-      pitch_data: pitchDeck as any,
-      act: 3,
-    }).eq("id", team.id);
+    if (team.id !== "solo") {
+      await supabase.from("disrupt_teams").update({
+        pitch_data: pitchDeck as any,
+        act: 3,
+      }).eq("id", team.id);
+    }
     onComplete();
   };
 
