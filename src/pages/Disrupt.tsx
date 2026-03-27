@@ -539,7 +539,7 @@ export default function Disrupt() {
               <ActScoreScreen
                 actNum={1} score={score.overall} title={score.title}
                 summary={score.summary} dimensions={score.dimensions}
-                nextSteps={score.nextSteps} onContinue={() => setPhase("act2-intro")}
+                nextSteps={score.nextSteps} onContinue={() => setPhase("mission-board")}
               />
             </motion.div>
           )}
