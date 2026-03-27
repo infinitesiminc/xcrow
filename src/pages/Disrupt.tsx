@@ -1377,7 +1377,6 @@ function ContextPanel({
     </div>
   );
 }
-  input: string; setInput: (v: string) => void; onSend: () => void;
   isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
   onBack: () => void; onLaunch: () => void;
   onSwitchTarget: (inc: DisruptionIncumbent) => void;
