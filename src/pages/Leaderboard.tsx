@@ -1,7 +1,5 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -17,11 +15,40 @@ type SortKey = "total_xp" | "skills_unlocked" | "tasks_completed";
 
 interface LeaderboardEntry {
   user_id: string;
-  display_name: string;
   total_xp: number;
   skills_unlocked: number;
   tasks_completed: number;
 }
+
+/* ── Seeded mock leaderboard ── */
+function seededRand(seed: number) {
+  let s = seed;
+  return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+const MOCK_ENTRIES: LeaderboardEntry[] = (() => {
+  const r = seededRand(7777);
+  const adjectives = ["Shadow","Iron","Storm","Crystal","Nova","Ember","Frost","Rune","Drift","Arc","Void","Blaze","Hex","Onyx","Aero","Neon","Volt","Apex","Echo","Rift"];
+  const nouns = ["Hawk","Wolf","Fox","Lynx","Raven","Bear","Viper","Crane","Otter","Drake","Eagle","Lion","Tiger","Falcon","Cobra","Shark","Owl","Panther","Stag","Crow"];
+  const entries: LeaderboardEntry[] = [];
+  const usedIds = new Set<string>();
+  for (let i = 0; i < 50; i++) {
+    let id: string;
+    do {
+      id = `${adjectives[Math.floor(r() * adjectives.length)]}${nouns[Math.floor(r() * nouns.length)]}${Math.floor(r() * 900 + 100)}`;
+    } while (usedIds.has(id));
+    usedIds.add(id);
+    const tier = r();
+    const xp = tier > 0.9 ? Math.floor(r() * 8000 + 12000) : tier > 0.5 ? Math.floor(r() * 5000 + 3000) : Math.floor(r() * 2500 + 200);
+    entries.push({
+      user_id: id,
+      total_xp: xp,
+      skills_unlocked: Math.floor(r() * 40 + 3),
+      tasks_completed: Math.floor(r() * 60 + 1),
+    });
+  }
+  return entries.sort((a, b) => b.total_xp - a.total_xp);
+})();
 
 const RANK_ICONS = [
   <Crown key="1" className="h-5 w-5" style={{ color: "hsl(var(--filigree-glow))" }} />,
