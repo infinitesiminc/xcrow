@@ -90,8 +90,8 @@ const ACTS = [
 ];
 
 export default function Disrupt() {
-  const { user } = useAuth();
-  const [phase, setPhase] = useState<GamePhase>("discovery");
+  const isMobile = useIsMobile();
+  const [phase, setPhase] = useState<GamePhase>("strategist");
 
   // Current mission context
   const [selectedCluster, setSelectedCluster] = useState<IndustryCluster | null>(null);
