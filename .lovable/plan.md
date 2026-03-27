@@ -1,70 +1,71 @@
 
 
-# Homepage Refresh — Showcase the AI Scouting Mission
+# Disruption Arena — Full 3-Act MBA Simulation
 
-## Problem
-The current homepage uses a generic "Scout. Battle. Conquer." 3-step loop that doesn't reflect the actual 4-phase mission system (Discover → Experiment → Challenge → Master) or the key gameplay components users engage with in-app: NPC encounters, Guardian Trials, castle upgrades, territory conquest, and the quest journal.
+## Overview
 
-## Proposed Changes
-
-### 1. Replace "How It Works" 3-step with the 4-Phase Mission Journey
-Replace the current Scout/Battle/Conquer cards (lines 232–297) with a **4-phase vertical timeline** matching the real mission architecture:
-
-| Phase | Gameplay shown | Visual |
-|---|---|---|
-| **Discover** | Talk to Role NPCs on the world map, scout territories, collect skill intel | NPC encounter screenshot/illustration |
-| **Experiment** | Enter AI-powered simulations, earn Bronze/Silver on skills, build castle foundations | Simulation briefing screenshot |
-| **Challenge** | Face Guardian Trials, reach Gold tier, unlock boss battles | Boss battle preview image |
-| **Master** | Conquer 10+ skills, reach Platinum, build Citadels, claim territories | Territory conquest/celebration visual |
-
-Each phase card shows: phase number, icon, title, description, and a relevant screenshot. A connecting vertical line with milestone dots ties them together.
-
-### 2. Add "Key Gameplay" showcase section (new, after mission phases)
-A horizontal scrolling strip or 2×3 grid of gameplay feature cards:
-
-- **🗺️ World Map** — "Explore 8 territories with 183 skills"
-- **🗣️ NPC Encounters** — "Talk to role NPCs to scout skill intel"
-- **⚔️ Quest Simulations** — "AI-powered tasks from real job data"
-- **🏰 Castle Progression** — "Evolve castles from Ruins to Citadel"
-- **👹 Guardian Trials** — "Boss battles that test strategic oversight"
-- **📜 Quest Journal** — "Track missions, intel, and battle record"
-
-Each card: icon, title, one-line description. Keeps it scannable.
-
-### 3. Streamline existing sections
-- **Remove** "Who Is This For" (lines 499–548) — the game speaks for itself; focus on student-first positioning already in hero
-- **Remove** standalone "Rank Ladder" (lines 461–497) — detail players discover in-game
-- **Merge** Social Proof stats into the Company Marquee section header
-- **Keep** Castle Progression, Territory Map, Boss Battle, Social Arena, Final CTA
-
-### 4. Update Hero copy
-- Headline: "183 skills. 4 phases. 1 mission." → "Master the AI frontier."
-- Subline: "Discover roles, experiment with quests, challenge guardians, and master your territory — built from 100,000+ real jobs."
-- CTA buttons: "Begin Your Mission" (primary) + "See How It Works" (secondary)
-
-### 5. Final section order (10 → 9 sections)
+Transform the current single-phase disruption battle into a complete **3-act startup simulation** that teaches MBA students the full journey from opportunity identification to investor pitch.
 
 ```text
-1. Hero (updated copy + mission framing)
-2. Social Proof stats + Company Marquee (merged)
-3. The Mission — 4-Phase Journey (NEW, replaces 3-step)
-4. Key Gameplay Features (NEW, compact grid)
-5. Boss Battle Showcase (keep)
-6. Castle Progression (keep)
-7. Territory Map (keep)
-8. Social Arena (keep)
-9. Final CTA (keep)
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   ACT 1: SCOUT  │ ──▶ │  ACT 2: BUILD   │ ──▶ │  ACT 3: PITCH   │
+│  (Current game)  │     │ Venture Architect│     │  Pitch Battle   │
+│  6-step disrupt  │     │ Lean Canvas, GTM │     │ VC Q&A + Vote   │
+│  framework       │     │ Unit Economics   │     │ Class ranking   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
-### Technical Details
+## Act 2: Venture Architecture (New)
 
-**File**: `src/pages/Index.tsx`
-- Remove `RANK_LADDER` constant and its section (~lines 115–497)
-- Remove "Who Is This For" section (~lines 499–548)
-- Move social proof stats into company marquee section header
-- Add `MISSION_PHASES` constant array with 4 phases (icon, title, desc, color)
-- Add `GAMEPLAY_FEATURES` constant array with 6 feature cards
-- New section components rendered inline (no new files needed)
-- Reuse existing assets: `simBriefing`, `simVictory`, `heroConquer`, `bossBattlePreview`
-- Phase colors map to territory CSS variables for visual consistency
+After conquering the 6 disruption steps, teams enter a structured startup-building phase. AI acts as a **co-founder advisor** (not adversary) through 5 sequential canvases:
+
+1. **Lean Canvas** — AI helps draft; team must challenge and refine each section (Problem, Solution, Metrics, Unfair Advantage, Channels, Cost/Revenue)
+2. **Market Sizing** — TAM/SAM/SOM estimation with AI data assistance; team defends methodology
+3. **Go-to-Market Playbook** — AI proposes 3 GTM strategies; team picks one and justifies
+4. **Unit Economics** — CAC, LTV, burn rate modeling; AI stress-tests assumptions
+5. **Moat Defense** — Team articulates why their startup survives the incumbent's counter-attack
+
+Each canvas produces a structured JSON output stored on the team record. AI provides streaming feedback like Act 1.
+
+## Act 3: Pitch Battle (New)
+
+Teams present their startup to the class:
+
+1. **Auto-generated Pitch Deck** — AI compiles a 5-slide summary from Acts 1+2 data (Problem, Solution, Market, Traction Plan, Ask)
+2. **VC Q&A Mode** — AI plays "VC panel" asking tough questions; other teams can also submit questions via a live question queue
+3. **Class Vote** — All non-presenting teams rate each pitch (1-5 stars) on Viability, Clarity, and Defensibility
+4. **Final Scoring** — Weighted: 40% AI battle score (Act 1) + 30% venture architecture quality (Act 2) + 30% pitch vote (Act 3)
+
+## Technical Plan
+
+### Database Changes
+- Add columns to `disrupt_teams`: `venture_canvas` (jsonb), `pitch_data` (jsonb), `class_votes` (jsonb), `act` (int default 1)
+- New table `disrupt_votes` for class voting: `id`, `room_id`, `voter_id`, `team_id`, `viability`, `clarity`, `defensibility`, `created_at`
+
+### Edge Function Updates
+- Extend `disruption-battle` with new actions:
+  - `"venture"` — AI co-founder advisor for Act 2 canvases (streaming)
+  - `"generate-pitch"` — Compiles pitch deck data from Acts 1+2
+  - `"vc-qa"` — AI VC panel Q&A (streaming)
+  - `"final-score"` — Combines all 3 act scores
+
+### New Components
+- `DisruptVentureBuild.tsx` — 5-canvas venture architecture interface with progress sidebar
+- `DisruptPitchBattle.tsx` — Pitch presentation view with auto-deck, VC Q&A chat, and class voting
+- `DisruptFinalScoreboard.tsx` — Enhanced scoreboard showing 3-act breakdown
+
+### Game Flow Changes
+- `disrupt_rooms.status` gets new values: `"venture"`, `"pitching"`, `"voting"`
+- Host controls act transitions (Start Battle → Start Building → Start Pitching → Show Results)
+- Timer resets per act (configurable by host)
+- Real-time sync continues via Supabase Realtime for all new phases
+
+### Phase Transitions (Host-controlled)
+```text
+lobby → drafting → battling → venture → pitching → voting → completed
+```
+
+## Scope
+
+~6 files modified/created. Reuses existing streaming infrastructure and RPG styling. The venture and pitch phases follow the same chat-with-AI pattern as Act 1, keeping the UX consistent.
 
