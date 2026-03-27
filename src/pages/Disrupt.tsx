@@ -444,8 +444,8 @@ export default function Disrupt() {
   return (
     <>
       <Helmet>
-        <title>Disruption Arena — AI Startup Simulation | Xcrow</title>
-        <meta name="description" content="Build your startup portfolio by disrupting 100 real incumbents. 7-act simulation teaching the full founder journey." />
+        <title>AI Venture Lab — Software Startup Simulation | Xcrow</title>
+        <meta name="description" content="Learn to launch AI-powered software startups. Analyze 46 incumbents across 15 verticals. 7-act simulation from idea to investor pitch." />
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20 pb-12">
