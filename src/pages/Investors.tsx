@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import founderImg from "@/assets/founder-jackson.png";
+import investorHero from "@/assets/investor-hero.png";
 
 const fade = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
@@ -181,8 +182,11 @@ const Investors = () => (
 
     {/* ═══ 1. COVER ═══ */}
     <motion.section className="relative py-28 md:py-36 px-6 text-center overflow-hidden" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
-      <HeaderVibeImages seed={42} count={6} />
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, hsl(var(--destructive) / 0.08) 0%, transparent 60%)" }} />
+      {/* Hero background image */}
+      <div className="absolute inset-0 z-0">
+        <img src={investorHero} alt="" className="w-full h-full object-cover" loading="eager" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, hsl(var(--background) / 0.55) 0%, hsl(var(--background) / 0.85) 60%, hsl(var(--background)) 100%)" }} />
+      </div>
       <div className="relative max-w-3xl mx-auto">
         <p className="text-xs uppercase tracking-[0.25em] mb-6 inline-block px-4 py-1.5 rounded-full" style={{ color: "hsl(var(--filigree))", background: "hsl(var(--filigree) / 0.08)", border: "1px solid hsl(var(--filigree) / 0.2)", ...cinzel }}>{HERO.badge}</p>
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 whitespace-pre-line leading-tight" style={cinzel}>{HERO.headline}</h1>
