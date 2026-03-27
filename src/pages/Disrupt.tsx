@@ -352,21 +352,8 @@ export default function Disrupt() {
         <meta name="description" content="Learn to launch AI-powered software startups. Analyze 46 incumbents across 15 verticals. 7-act simulation from idea to investor pitch." />
       </Helmet>
       <Navbar />
-      <div className="min-h-screen bg-background pt-20 pb-12">
-        {/* Mission Progress Bar — visible during any act */}
-        {phase !== "strategist" && phase !== "hub" && phase !== "cluster" && phase !== "mission-board" && selectedIncumbent && selectedCluster && (
-          <MissionProgressBar
-            incumbent={selectedIncumbent}
-            cluster={selectedCluster}
-            currentAct={getCurrentActNum(phase)}
-            actScores={actScores}
-            completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
-            onBack={() => setPhase("mission-board")}
-          />
-        )}
-
+      <div className="min-h-screen bg-background pt-20">
         <AnimatePresence mode="wait">
-          {/* Unified Strategist View (two-column) */}
           {phase === "strategist" && (
             <motion.div key="strategist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <StrategistView
@@ -411,75 +398,37 @@ export default function Disrupt() {
             </motion.div>
           )}
 
-          {phase === "mission-board" && selectedIncumbent && selectedCluster && (
-            <motion.div key="mission-board" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <MissionBoard
+          {(phase === "simulation" || phase.startsWith("act")) && selectedIncumbent && selectedCluster && (
+            <motion.div key="sim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <SimulationShell
                 incumbent={selectedIncumbent}
                 cluster={selectedCluster}
+                acts={ACTS}
                 completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
                 actScores={actScores}
+                activePhase={phase}
                 onLaunchAct={launchAct}
-                onBack={() => setPhase("hub")}
                 onBackToStrategist={() => setPhase("strategist")}
-              />
-            </motion.div>
-          )}
-
-          {phase === "act1" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <BattleArena
-                incumbent={selectedIncumbent} cluster={selectedCluster} step={currentStep}
-                messages={messages} input={input} setInput={setInput}
-                onSend={sendMessage} onFinish={finishBattle} isStreaming={isStreaming}
-                isScoring={isScoring} chatEndRef={chatEndRef}
-                onBack={() => setPhase("mission-board")}
-              />
-            </motion.div>
-          )}
-
-          {phase === "act1-score" && score && selectedIncumbent && (
-            <motion.div key="act1-score" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <ActScoreScreen
-                actNum={1} score={score.overall} title={score.title}
-                summary={score.summary} dimensions={score.dimensions}
-                nextSteps={score.nextSteps} onContinue={() => setPhase("mission-board")}
-              />
-            </motion.div>
-          )}
-
-          {phase === "act2" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptCustomerDiscovery incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(2, s)} />
-            </motion.div>
-          )}
-
-          {phase === "act3" && soloTeam && (
-            <motion.div key="act3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptVentureBuild room={soloRoom as any} team={soloTeam as any} onComplete={() => completeAct(3, 70)} />
-            </motion.div>
-          )}
-
-          {phase === "act4" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act4" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptGTM incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(4, s)} />
-            </motion.div>
-          )}
-
-          {phase === "act5" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act5" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <DisruptMoatDefense incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(5, s)} />
-            </motion.div>
-          )}
-
-          {phase === "act6" && soloTeam && (
-            <motion.div key="act6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <DisruptPitchBattle room={soloRoom as any} team={soloTeam as any} teams={[]} members={[]} onComplete={() => completeAct(6, 70)} />
-            </motion.div>
-          )}
-
-          {phase === "act7" && selectedIncumbent && selectedCluster && (
-            <motion.div key="act7" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("mission-board")} />
+                onBackToMap={() => setPhase("hub")}
+                isMobile={isMobile}
+              >
+                {phase === "simulation" && (
+                  <SimulationWelcome
+                    incumbent={selectedIncumbent}
+                    cluster={selectedCluster}
+                    acts={ACTS}
+                    completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
+                    actScores={actScores}
+                    onLaunchAct={launchAct}
+                  />
+                )}
+                {phase === "act2" && <DisruptCustomerDiscovery incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(2, s)} />}
+                {phase === "act3" && soloTeam && <DisruptVentureBuild room={soloRoom as any} team={soloTeam as any} onComplete={() => completeAct(3, 70)} />}
+                {phase === "act4" && <DisruptGTM incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(4, s)} />}
+                {phase === "act5" && <DisruptMoatDefense incumbent={selectedIncumbent} cluster={selectedCluster} onComplete={(s) => completeAct(5, s)} />}
+                {phase === "act6" && soloTeam && <DisruptPitchBattle room={soloRoom as any} team={soloTeam as any} teams={[]} members={[]} onComplete={() => completeAct(6, 70)} />}
+                {phase === "act7" && <DisruptMissionDebrief incumbent={selectedIncumbent} cluster={selectedCluster} actScores={actScores} onBackToHub={() => setPhase("simulation")} />}
+              </SimulationShell>
             </motion.div>
           )}
         </AnimatePresence>
