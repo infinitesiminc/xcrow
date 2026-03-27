@@ -1,91 +1,81 @@
 
 
-# Reframe /disrupt — AI Software Startup Incubator
+# Make /disrupt 100% Practical — Real Data, Real Tools, Real Customers
 
-## New Positioning
+## Problem
 
-From "Disruption Arena" (generic 22-industry battle game) to **"AI Venture Lab"** — a guided startup simulation product that university incubators give students to learn how to identify software opportunities and launch AI-powered startups.
+The current 6-act journey has two major issues:
+1. **Act 1 (Discover)** uses fake AI-generated "customer personas" — interviewing imaginary people teaches nothing practical
+2. Several acts are chat-based exercises that feel academic rather than actionable
 
-**Core thesis**: AI has collapsed the cost and time to build software from months/$100K+ to days/$100. Anyone can now disrupt incumbent software companies. This product teaches students HOW.
+A real founder doesn't interview AI customers. They read G2 reviews, check Reddit complaints, analyze pricing pages, and talk to real people on LinkedIn/Twitter.
 
-## What Changes
+## Redesign Philosophy
 
-### 1. Reframe the narrative and data
+Every act should produce a **real artifact** the founder could use in their actual startup. No roleplay with fake personas. Instead: AI helps you find, analyze, and synthesize real-world data.
 
-**Current**: 22 industry clusters with 100 generic incumbents (Legal, Healthcare, FinTech, etc.)
-**New**: Focus exclusively on **software companies** ripe for AI disruption. The 22 clusters become software verticals (SaaS CRM, Project Management, Design Tools, Analytics, HR Tech, MarTech, DevTools, etc.)
+## Updated 6-Act Journey
 
-Update `src/data/disruption-incumbents.ts`:
-- Rename clusters to software verticals (e.g., "CRM & Sales" → Salesforce, HubSpot; "Design Tools" → Adobe, Figma; "Project Management" → Asana, Monday; "Accounting" → QuickBooks, Xero)
-- Each incumbent gets software-specific fields: pricing model, tech stack age, API openness, AI integration status, annual revenue, market cap
-- Add new field `aiDisruptionThesis` — specifically why AI makes this company vulnerable NOW
-- Keep the same interface shape so all downstream components work
+| Act | Current | New (Practical) | Real Output |
+|-----|---------|-----------------|-------------|
+| 1 Discover | Interview 3 fake AI personas | **Customer Pain Mining** — AI helps you find and analyze real G2 reviews, Reddit threads, Twitter complaints, and app store reviews about the incumbent | Pain Point Report with real quotes and sources |
+| 2 Architect | Chat about Lean Canvas | **SaaS Model Workshop** — Guided canvas builder with AI challenging each section, producing an exportable one-pager | Lean Canvas PDF |
+| 3 Launch | Chat about GTM channels | **Launch Checklist Builder** — Concrete, timed 30-day launch plan with specific channels, copy templates, and milestone targets | 30-Day Launch Plan |
+| 4 Defend | Roleplay as CEO fighting back | **Competitive War Game** — AI analyzes the incumbent's likely responses using real acquisition history, product roadmap signals, and pricing moves | Competitive Response Matrix |
+| 5 Pitch | Generate fake pitch deck + VC Q&A | **Pitch Deck Builder** — Step-by-step pitch construction with AI coaching on each slide, producing a real exportable deck summary | 5-Slide Pitch Summary |
+| 6 Debrief | Score card | **Founder Readiness Report** — Comprehensive assessment with specific next steps, resource links, and a shareable startup brief | Startup One-Pager |
 
-### 2. Rebrand the page and welcome experience
+## Key Change: Act 1 (Discover) → Customer Pain Mining
 
-**Current welcome**: "Welcome to the Disruption Arena... find a company to disrupt"
-**New welcome**: "Welcome to AI Venture Lab — the software industry is being rebuilt from scratch. AI tools now let a solo founder ship in days what used to take a team of 20. Let's find YOUR opportunity."
+This is the biggest rewrite. Replace `DisruptCustomerDiscovery.tsx` entirely.
 
-Update `src/pages/Disrupt.tsx`:
-- Page title: "AI Venture Lab" (SEO + Helmet)
-- Strategist opening message reframed around software + AI opportunity
-- Quick prompt chips: "I want to build a better CRM", "What SaaS tools have the worst UX?", "Show me overpriced enterprise software", "B2B tools ripe for unbundling"
-- Context panel header: "Software Market Map" instead of "Industry Map"
-- Cards reframed: "Pricing Model" card, "AI Vulnerability" card, "Build Cost Estimate" card (how fast/cheap you could build an MVP with AI)
+**New flow:**
+1. AI automatically searches for real customer complaints about the incumbent (using its knowledge of G2 reviews, Reddit threads, common pain points)
+2. Presents findings as structured cards: each card = one pain point with real-world evidence
+3. User rates/ranks pain points by severity and opportunity size
+4. AI helps synthesize top pain points into a "Customer Pain Report"
+5. User can ask follow-up questions to dig deeper into any pain point
 
-### 3. Update the 7-Act journey for software startups
+**No fake persona interviews.** Instead: AI acts as a research analyst who has already done the homework and presents findings for the founder to evaluate and prioritize.
 
-The acts stay the same structure but descriptions become software-specific:
-
-| Act | Current | New (Software-Focused) |
-|-----|---------|----------------------|
-| 1 Scout | "Battle incumbent CEO" | "Analyze the software incumbent — pricing, features, reviews, churn signals" |
-| 2 Discover | "Interview AI customers" | "Interview frustrated users of the incumbent software — find the feature gap" |
-| 3 Architect | "Lean Canvas" | "Design your SaaS model — pricing tiers, tech stack, AI features, build timeline" |
-| 4 Launch | "GTM strategy" | "Launch playbook — Product Hunt, Reddit, cold outreach, content strategy" |
-| 5 Defend | "Moat defense" | "Why can't the incumbent just add AI? Defend your speed and focus advantage" |
-| 6 Pitch | "Face VCs" | "Pitch to investors — ARR projections, unit economics, AI leverage story" |
-| 7 Debrief | "Founder report" | "Startup readiness score — idea viability, founder-market fit, execution plan" |
-
-### 4. Update edge function prompts
-
-`supabase/functions/disruption-battle/index.ts`:
-- `discovery` action system prompt: Reframe as software market advisor. Reference specific SaaS metrics (ARR, churn, NPS, G2 reviews, pricing)
-- `briefing` action: Focus on software business model analysis, pricing structure, feature gaps, AI integration status
-- `battle` action: CEO now defends their software moat — platform lock-in, enterprise contracts, data gravity
-- All other actions get minor prompt tweaks to reference "software startup" instead of generic "startup"
-
-### 5. Incubator-friendly packaging
-
-Add to the welcome/context panel:
-- "Built for university startup incubators" badge
-- "What you'll learn" card: Customer discovery, SaaS business modeling, GTM for software, AI-first product design, investor pitching
-- Completion generates a "Venture Summary" PDF-ready output (reuses existing debrief data)
+**UI structure:** Same two-column layout used elsewhere — chat on left for Q&A, pain point cards on right that populate progressively.
 
 ## Files Modified
 
-1. **`src/data/disruption-incumbents.ts`** — Replace 22 generic clusters with ~15 software verticals, ~60-80 software incumbents. Add `aiDisruptionThesis` and `pricingModel` fields to interface. Keep same interface shape.
+### 1. `src/components/disrupt/DisruptCustomerDiscovery.tsx` — Full rewrite
+- Remove PERSONAS array and fake interview flow
+- New component: `CustomerPainMining`
+- Left: AI research chat (ask questions, dig deeper)
+- Right: Pain Point cards that populate as AI discovers them
+- Each card: pain point title, severity badge, evidence quotes, source type (G2/Reddit/Twitter)
+- Bottom: "Generate Pain Report" button when 3+ pain points identified
+- Completion: score based on number of pain points found and quality of synthesis
 
-2. **`src/pages/Disrupt.tsx`** — Rebrand copy (title, welcome message, prompt chips, card labels). Update ACTS descriptions. Update SEO metadata.
+### 2. `supabase/functions/disruption-battle/index.ts` — Update `customer-discovery` action
+- Rename to `customer-pain-mining` (keep old name as alias for backward compat)
+- New system prompt: AI acts as a market research analyst, not a fake customer
+- Prompt instructs AI to surface real complaints, pricing frustrations, feature gaps, and churn signals
+- AI outputs structured pain points using markers like `[PAIN:severity:title]` for the frontend to parse into cards
+- Follow-up messages let user drill into specific pain points
 
-3. **`supabase/functions/disruption-battle/index.ts`** — Update system prompts for `discovery`, `briefing`, `battle`, and other actions to reference software industry and AI building tools.
+### 3. `src/pages/Disrupt.tsx` — Minor updates
+- Update ACTS array: Act 2 subtitle from "Interview Users" to "Find Real Pain Points", description updated
+- Update the act component mapping to use renamed component
 
-4. **`src/components/disrupt/DisruptMissionDebrief.tsx`** — Update founder profile labels to software-specific titles (e.g., "SaaS Visionary", "Technical Founder", "Growth Hacker")
+### 4. `src/components/disrupt/DisruptGTM.tsx` — Minor copy updates
+- Update section descriptions to be more actionable (specific channel tactics, not generic prompts)
+- Change opening message to focus on producing a concrete 30-day plan
 
-5. **`src/components/disrupt/DisruptVentureBuild.tsx`** — Update canvas descriptions to be SaaS-specific (e.g., "SaaS Pricing Model" instead of generic "Unit Economics")
-
-6. **`src/components/disrupt/DisruptGTM.tsx`** — Update GTM sections to software channels (Product Hunt, developer communities, content marketing)
+### 5. `src/components/disrupt/DisruptMissionDebrief.tsx` — Minor copy updates
+- Update ACT_LABELS to match new act names
 
 ## No structural changes
-
-- Same two-column strategist layout
-- Same 7-act flow and phase machine
+- Same sidebar navigation
+- Same 6-act flow
 - Same streaming chat infrastructure
 - Same localStorage progress tracking
-- Same edge function action routing (just prompt updates)
-- All existing components reused with updated copy only
+- Same edge function routing (one action name change)
 
 ## Scope
-
-~6 files modified. Primarily copy/data changes. One data file rewrite (incumbents). No new components, database tables, or edge functions.
+~3 files with significant changes, ~2 files with minor copy updates. One component rewrite (CustomerDiscovery → CustomerPainMining). One edge function prompt rewrite.
 
