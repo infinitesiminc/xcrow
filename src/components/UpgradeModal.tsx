@@ -49,7 +49,7 @@ export default function UpgradeModal({ open, onOpenChange, type, used, limit }: 
   }
 
   const inviteLink = referralCode
-    ? `${window.location.origin}/auth?ref=${referralCode}`
+    ? `https://xcrow.ai/auth?ref=${referralCode}`
     : "";
 
   const copyLink = async () => {

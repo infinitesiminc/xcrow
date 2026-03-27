@@ -337,7 +337,7 @@ function ReferralSection({ userId }: { userId?: string }) {
     })();
   }, [userId]);
 
-  const inviteLink = referralCode ? `${window.location.origin}/auth?ref=${referralCode}` : "";
+  const inviteLink = referralCode ? `https://xcrow.ai/auth?ref=${referralCode}` : "";
 
   const handleCopy = async () => {
     if (!inviteLink) return;
