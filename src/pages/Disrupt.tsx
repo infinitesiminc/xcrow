@@ -186,9 +186,18 @@ export default function Disrupt() {
           } catch { /* partial */ }
         }
       }
-      // If this was the initial briefing, store it
+      // If this was the initial briefing, store it and replace verbose chat with short summary
       if (action === "briefing" && !briefingData && assistantContent.length > 100) {
         setBriefingData(assistantContent);
+        setStrategistMessages(prev => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") {
+            return prev.map((m, idx) => idx === prev.length - 1
+              ? { ...m, content: `✅ **Intel briefing loaded** — check the cards on the right for the full breakdown.\n\nAsk me anything about the company, technology, or market. When you're ready, hit **Launch Simulation**.` }
+              : m);
+          }
+          return prev;
+        });
       }
     } catch { toast.error("Chat failed. Try again."); }
     finally { setIsStrategistStreaming(false); }
