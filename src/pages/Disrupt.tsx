@@ -490,7 +490,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
 
       {/* 7-Act Journey Explainer */}
       <div className="mb-12">
-        <h2 className="font-cinzel text-xl font-bold text-center mb-6 text-foreground">The 7-Act Founder Journey</h2>
+        <h2 className="font-cinzel text-xl font-bold text-center mb-6 text-foreground">The 6-Act Founder Journey</h2>
         <div className="flex flex-wrap justify-center gap-2 md:gap-0">
           {ACTS.map((act, i) => (
             <div key={act.num} className="flex items-center">
