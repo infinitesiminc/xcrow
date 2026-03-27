@@ -256,7 +256,8 @@ const Investors = () => (
     <Divider />
 
     {/* ═══ 4. SOLUTION — 4-Phase Mission ═══ */}
-    <Section>
+    <Section glow="radial-gradient(ellipse at 50% 50%, hsl(var(--territory-creative) / 0.05) 0%, transparent 60%)">
+      <HeaderVibeImages seed={99} count={5} />
       <SectionLabel>The Solution</SectionLabel>
       <SectionTitle sub="Xcrow is a gamified career intelligence platform built on a proprietary taxonomy of 183 AI-era skills. Students progress through four phases to build verified, portable competencies.">
         The AI Scouting Mission
