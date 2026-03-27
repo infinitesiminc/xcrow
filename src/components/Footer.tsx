@@ -20,7 +20,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
           >
             Xcrow.ai
           </Link>
-          <p className="text-xs text-muted-foreground mt-1 italic">183 new skills. 1 game. Get ready for AI agent economy.</p>
+          <p className="text-xs text-muted-foreground mt-1 italic">183 skills. 4 phases. 1 mission. Master the AI frontier.</p>
         </div>
         <div className="flex gap-10">
           <div className="flex flex-col gap-2">
