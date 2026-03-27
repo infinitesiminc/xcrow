@@ -284,16 +284,13 @@ export default function Disrupt() {
     const progress = getMissionProgress(incumbent.id);
 
     if (progress.completedActs.length > 0) {
-      if (progress.scoreResult) setScore(progress.scoreResult);
-      if (progress.battleTranscript) setMessages(progress.battleTranscript);
       setActScores({});
       progress.completedActs.forEach(actNum => {
         const key = `act${actNum}Score` as keyof MissionProgress;
         if (progress[key]) setActScores(prev => ({ ...prev, [actNum]: progress[key] as number }));
       });
-      setPhase("mission-board");
+      setPhase("simulation");
     } else {
-      // New mission → go to strategist with this target selected
       setPhase("strategist");
       setBriefingData(null);
       selectTargetFromChat(incumbent.id);
@@ -303,18 +300,12 @@ export default function Disrupt() {
 
   const launchAct = (actNum: number) => {
     if (!selectedIncumbent || !selectedCluster) return;
-    if (actNum === 1) {
-      startBattle();
-    } else if (actNum === 7) {
-      setPhase("act7");
-    } else {
-      setPhase(`act${actNum}` as GamePhase);
-    }
+    setPhase(actNum === 7 ? "act7" : `act${actNum}` as GamePhase);
   };
 
   const launchSimulation = () => {
     if (!selectedCluster || !selectedIncumbent) return;
-    setPhase("mission-board");
+    setPhase("simulation");
   };
 
   const startBattle = () => {
