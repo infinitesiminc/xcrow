@@ -81,7 +81,7 @@ export default function Leaderboard() {
   ];
 
   async function handleInvite() {
-    const shareUrl = `${window.location.origin}/leaderboard`;
+    const shareUrl = `https://xcrow.ai/leaderboard`;
     const shareText = "I'm conquering AI-era skills on Xcrow 🦅 See where you rank!";
     if (navigator.share) {
       try { await navigator.share({ title: "Join me on Xcrow", text: shareText, url: shareUrl }); return; } catch { /* cancelled */ }
