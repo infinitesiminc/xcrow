@@ -226,11 +226,8 @@ export default function Leaderboard() {
                     </div>
 
                     <div className="min-w-0">
-                      <p className={`text-sm font-medium truncate ${isMe ? "" : "text-foreground"}`}
-                        style={isMe ? { color: "hsl(var(--filigree-glow))" } : undefined}
-                      >
-                        {entry.display_name}
-                        {isMe && <span className="ml-1 text-[10px]" style={{ color: "hsl(var(--filigree) / 0.6)" }}>(you)</span>}
+                      <p className="text-sm font-medium truncate text-foreground font-mono">
+                        @{entry.user_id}
                       </p>
                     </div>
 
