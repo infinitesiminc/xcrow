@@ -14,11 +14,11 @@ import type { DisruptRoom, DisruptTeam } from "./DisruptLobby";
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const CANVASES = [
-  { id: "lean-canvas", label: "Lean Canvas", emoji: "📋", description: "Problem, Solution, Metrics, Unfair Advantage" },
-  { id: "market-sizing", label: "Market Sizing", emoji: "📊", description: "TAM / SAM / SOM estimation" },
-  { id: "gtm-playbook", label: "GTM Playbook", emoji: "🚀", description: "Go-to-Market strategy" },
-  { id: "unit-economics", label: "Unit Economics", emoji: "💰", description: "CAC, LTV, burn rate" },
-  { id: "moat-defense", label: "Moat Defense", emoji: "🏰", description: "Why the incumbent can't respond" },
+  { id: "lean-canvas", label: "Lean Canvas", emoji: "📋", description: "Problem, AI-Powered Solution, Key SaaS Metrics, Unfair Advantage" },
+  { id: "market-sizing", label: "SaaS Market Sizing", emoji: "📊", description: "TAM / SAM / SOM for your software vertical" },
+  { id: "gtm-playbook", label: "PLG & GTM Strategy", emoji: "🚀", description: "Product-led growth, content marketing, community building" },
+  { id: "unit-economics", label: "SaaS Unit Economics", emoji: "💰", description: "CAC, LTV, MRR, churn rate, payback period" },
+  { id: "moat-defense", label: "AI Moat Defense", emoji: "🏰", description: "Why can't the incumbent just add AI features?" },
 ] as const;
 
 export function DisruptVentureBuild({

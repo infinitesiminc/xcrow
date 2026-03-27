@@ -80,13 +80,13 @@ function updateMissionProgress(incumbentId: number, update: Partial<MissionProgr
 }
 
 const ACTS = [
-  { num: 1, name: "Scout", subtitle: "Find the Target", icon: Search, emoji: "🔍", skill: "Market Analysis & Competitive Intelligence", description: "Battle the incumbent CEO. Identify vulnerabilities using the 6-step disruption framework.", color: "hsl(var(--destructive))" },
-  { num: 2, name: "Discover", subtitle: "Talk to Customers", icon: Users, emoji: "🗣️", skill: "Customer Development & Empathy", description: "Interview AI customers in the beachhead niche. Validate problem-solution fit.", color: "hsl(var(--neon-cyan))" },
-  { num: 3, name: "Architect", subtitle: "Build the Model", icon: Hammer, emoji: "📋", skill: "Business Model Design & Financial Modeling", description: "Create your Lean Canvas and unit economics with an AI co-founder.", color: "hsl(var(--neon-purple))" },
-  { num: 4, name: "Launch", subtitle: "Go to Market", icon: Megaphone, emoji: "🚀", skill: "Channel Strategy, Pricing & Growth", description: "Design your GTM strategy: channels, pricing, and first 100 customers plan.", color: "hsl(var(--neon-lime))" },
-  { num: 5, name: "Defend", subtitle: "Build the Moat", icon: Castle, emoji: "🏰", skill: "Competitive Strategy & Moat Building", description: "The incumbent fights back. Defend why they literally cannot respond.", color: "hsl(var(--warning))" },
-  { num: 6, name: "Pitch", subtitle: "Face the VCs", icon: Presentation, emoji: "💼", skill: "Storytelling & Investor Psychology", description: "AI generates your pitch deck. Defend it against a panel of VC investors.", color: "hsl(var(--neon-pink))" },
-  { num: 7, name: "Debrief", subtitle: "Founder Report", icon: Brain, emoji: "📊", skill: "Self-Assessment & Pattern Recognition", description: "Get your combined score, startup valuation, and Founder Profile badge.", color: "hsl(var(--success))" },
+  { num: 1, name: "Scout", subtitle: "Analyze the Software", icon: Search, emoji: "🔍", skill: "SaaS Market Analysis & Competitive Intelligence", description: "Analyze the software incumbent — pricing model, feature gaps, user reviews, and churn signals.", color: "hsl(var(--destructive))" },
+  { num: 2, name: "Discover", subtitle: "Interview Users", icon: Users, emoji: "🗣️", skill: "Customer Development & User Research", description: "Interview frustrated users of the incumbent software. Find the feature gap and pain points.", color: "hsl(var(--neon-cyan))" },
+  { num: 3, name: "Architect", subtitle: "Design Your SaaS", icon: Hammer, emoji: "📋", skill: "SaaS Business Model & AI-First Architecture", description: "Design your SaaS model — pricing tiers, AI features, tech stack, and build timeline.", color: "hsl(var(--neon-purple))" },
+  { num: 4, name: "Launch", subtitle: "Ship & Grow", icon: Megaphone, emoji: "🚀", skill: "PLG, Content Marketing & Growth Hacking", description: "Launch playbook — Product Hunt, Reddit, cold outreach, content strategy, and first 100 users.", color: "hsl(var(--neon-lime))" },
+  { num: 5, name: "Defend", subtitle: "Build the Moat", icon: Castle, emoji: "🏰", skill: "Competitive Strategy & AI Moat Building", description: "Why can't the incumbent just add AI? Defend your speed, focus, and AI-native advantage.", color: "hsl(var(--warning))" },
+  { num: 6, name: "Pitch", subtitle: "Face the VCs", icon: Presentation, emoji: "💼", skill: "Storytelling & AI Leverage Narrative", description: "Pitch to investors — ARR projections, unit economics, and your AI leverage story.", color: "hsl(var(--neon-pink))" },
+  { num: 7, name: "Debrief", subtitle: "Founder Report", icon: Brain, emoji: "📊", skill: "Startup Readiness Assessment", description: "Get your score, startup valuation, and Founder Profile — idea viability, founder-market fit, execution plan.", color: "hsl(var(--success))" },
 ];
 
 export default function Disrupt() {
@@ -114,7 +114,7 @@ export default function Disrupt() {
 
   // Unified strategist state (replaces separate discovery + briefing)
   const [strategistMessages, setStrategistMessages] = useState<ChatMsg[]>([
-    { role: "assistant", content: `🚀 **Welcome to the Disruption Arena**\n\nI'm your AI strategist. Together, we'll find the perfect company for you to disrupt and build a startup around.\n\n**Tell me about yourself:**\n- What industries excite you? (tech, healthcare, finance, education…)\n- What problems have you personally experienced that feel broken?\n- Are you drawn to B2B or B2C?\n- Any companies you think are ripe for disruption?\n\nOr just tell me what you're passionate about — I'll connect it to real disruption opportunities from our database of **100 incumbents across 22 industries**.\n\n*No wrong answers — let's explore together.*` }
+    { role: "assistant", content: `🚀 **Welcome to AI Venture Lab**\n\nThe software industry is being rebuilt from scratch. AI tools now let a solo founder ship in days what used to take a team of 20. I'll help you find YOUR opportunity.\n\n**Tell me about yourself:**\n- What software tools frustrate you? (CRM, project management, analytics…)\n- What SaaS products do you think are overpriced or outdated?\n- Are you interested in B2B or B2C software?\n- Any specific software companies you think are vulnerable?\n\nOr just tell me what problems you want to solve — I'll connect it to real disruption opportunities from our database of **46 software incumbents across 15 verticals**.\n\n*No wrong answers — let's explore together.*` }
   ]);
   const [strategistInput, setStrategistInput] = useState("");
   const [isStrategistStreaming, setIsStrategistStreaming] = useState(false);
@@ -444,8 +444,8 @@ export default function Disrupt() {
   return (
     <>
       <Helmet>
-        <title>Disruption Arena — AI Startup Simulation | Xcrow</title>
-        <meta name="description" content="Build your startup portfolio by disrupting 100 real incumbents. 7-act simulation teaching the full founder journey." />
+        <title>AI Venture Lab — Software Startup Simulation | Xcrow</title>
+        <meta name="description" content="Learn to launch AI-powered software startups. Analyze 46 incumbents across 15 verticals. 7-act simulation from idea to investor pitch." />
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20 pb-12">
@@ -607,13 +607,13 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
       <div className="text-center mb-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Rocket className="w-4 h-4" /> Startup Simulation
+            <Rocket className="w-4 h-4" /> AI Venture Lab
           </div>
           <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Build Your <span className="text-primary">Startup Portfolio</span>
+            Disrupt <span className="text-primary">Software</span> with AI
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
-            22 industries. 100 incumbents. 7 acts per mission. Master the full founder journey from opportunity scout to investor pitch.
+            15 software verticals. 46 incumbents. 7 acts per mission. Learn to build AI-powered startups that disrupt legacy SaaS.
           </p>
 
           {/* Stats */}
@@ -634,7 +634,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
 
           {onStartDiscovery && (
             <Button onClick={onStartDiscovery} variant="outline" size="lg" className="px-6">
-              <Brain className="w-4 h-4 mr-2" /> Help me find a target to disrupt
+              <Brain className="w-4 h-4 mr-2" /> Help me find software to disrupt
             </Button>
           )}
         </motion.div>
@@ -689,7 +689,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
       )}
 
       {/* Industry Map */}
-      <h2 className="font-cinzel text-xl font-bold mb-4 text-foreground">🗺️ Industry Map</h2>
+      <h2 className="font-cinzel text-xl font-bold mb-4 text-foreground">🗺️ Software Market Map</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-12">
         {INDUSTRY_CLUSTERS.map((cluster) => {
           const done = getClusterProgress(cluster);
@@ -727,7 +727,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
 
       {/* Disruption Framework */}
       <div className="max-w-4xl mx-auto mb-12">
-        <h2 className="font-cinzel text-2xl font-bold text-center mb-8 text-foreground">The 6-Step Disruption Framework</h2>
+        <h2 className="font-cinzel text-2xl font-bold text-center mb-8 text-foreground">The 6-Step AI Disruption Framework</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {DISRUPTION_STEPS.map((s) => (
             <Card key={s.step} className="border-border/50">
@@ -1144,10 +1144,10 @@ function StrategistView({
       {messages.length <= 1 && !isStreaming && !selectedIncumbent && (
         <div className="flex flex-wrap gap-2 mb-3 px-4 shrink-0">
           {[
-            "I'm interested in fintech",
-            "Healthcare disruption opportunities?",
-            "I want to build in education",
-            "Most vulnerable companies",
+            "I want to build a better CRM",
+            "What SaaS tools have the worst UX?",
+            "Show me overpriced enterprise software",
+            "B2B tools ripe for AI disruption",
           ].map(q => (
             <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setInput(q)}>
               {q}
@@ -1337,8 +1337,8 @@ function ContextPanel({
   return (
     <div className="p-4 space-y-4">
       <div className="text-center mb-2">
-        <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">🗺️ Industry Map</h3>
-        <p className="text-xs text-muted-foreground">22 industries, 100 targets</p>
+        <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">🗺️ Software Market Map</h3>
+        <p className="text-xs text-muted-foreground">15 verticals, 46 targets</p>
       </div>
 
       <Card className="border-primary/20">

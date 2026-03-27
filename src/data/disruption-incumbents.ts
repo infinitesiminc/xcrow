@@ -1,7 +1,7 @@
 /**
- * 100 Incumbents ripe for AI disruption
- * Organized by 22 industry clusters
- * Source: Disruption thesis — Christensen's Innovator's Dilemma + Agentic AI
+ * Software Incumbents ripe for AI disruption
+ * Organized by 15 software verticals
+ * Thesis: AI has collapsed the cost of building software — anyone can now disrupt legacy SaaS
  */
 
 export interface DisruptionIncumbent {
@@ -14,6 +14,8 @@ export interface DisruptionIncumbent {
   disruptorModel: string;
   vector: DisruptionVector;
   existingDisruptor?: string;
+  aiDisruptionThesis: string;
+  pricingModel: string;
 }
 
 export type DisruptionVector = "Price" | "Speed" | "Niche" | "Unbundle" | "Channel" | "Regulation";
@@ -23,286 +25,178 @@ export interface IndustryCluster {
   name: string;
   emoji: string;
   timingCatalyst: string;
-  color: string; // HSL
+  color: string;
   incumbents: DisruptionIncumbent[];
 }
 
 export const DISRUPTION_VECTORS: { vector: DisruptionVector; description: string; emoji: string }[] = [
-  { vector: "Price", description: "10x cheaper via AI automation", emoji: "💰" },
-  { vector: "Speed", description: "Instant vs days/weeks", emoji: "⚡" },
-  { vector: "Niche", description: "Serve the customer segment they ignore", emoji: "🎯" },
+  { vector: "Price", description: "10x cheaper via AI-powered automation", emoji: "💰" },
+  { vector: "Speed", description: "Ship in days what takes them months", emoji: "⚡" },
+  { vector: "Niche", description: "Serve the segment they ignore", emoji: "🎯" },
   { vector: "Unbundle", description: "Take one feature and do it 10x better", emoji: "🔓" },
-  { vector: "Channel", description: "Reach customers they can't reach", emoji: "📡" },
-  { vector: "Regulation", description: "Use new laws they haven't adapted to", emoji: "📜" },
+  { vector: "Channel", description: "Reach users through new distribution", emoji: "📡" },
+  { vector: "Regulation", description: "Leverage new compliance requirements", emoji: "📜" },
 ];
 
 export const DISRUPTION_STEPS = [
-  { step: 1, title: "Find the Vulnerable Incumbent", description: "Look for 3+ vulnerability signals: low NPS, legacy tech, stagnant pricing, oligopoly", emoji: "🔍" },
-  { step: 2, title: "Identify the Asymmetric Angle", description: "What can't they do because of their revenue model, customer base, org structure, or tech stack?", emoji: "⚔️" },
-  { step: 3, title: "Validate Before Building", description: "Is the market >$1B? Can you reach customers for <$10 CAC? Is there a timing catalyst?", emoji: "✅" },
-  { step: 4, title: "The Beachhead Strategy", description: "Pick the smallest defensible niche. Own it completely. Expand from position of strength.", emoji: "🏰" },
-  { step: 5, title: "The Disruption Loop", description: "Monitor → Find complaints → Quantify pain → Build solution → Price below → Land customers", emoji: "🔄" },
-  { step: 6, title: "The Incumbent's Dilemma", description: "Model WHY they can't respond: cutting prices kills margins, serving your niche means abandoning premium", emoji: "🛡️" },
+  { step: 1, title: "Find the Vulnerable Software", description: "Look for 3+ signals: low G2 rating, bloated pricing, legacy UI, customer lock-in, feature bloat", emoji: "🔍" },
+  { step: 2, title: "Identify the AI Angle", description: "What can AI do now that makes their core product 10x cheaper/faster to build? What workflow can AI automate entirely?", emoji: "⚔️" },
+  { step: 3, title: "Validate the SaaS Opportunity", description: "Is the market >$1B ARR? Can you acquire users via PLG for <$50 CAC? Is there a timing catalyst?", emoji: "✅" },
+  { step: 4, title: "The Beachhead Strategy", description: "Pick the smallest user segment. Ship a focused product in 2 weeks. Win them completely before expanding.", emoji: "🏰" },
+  { step: 5, title: "The AI Leverage Loop", description: "AI handles 80% of work → price 10x lower → users switch → data flywheel → AI gets better → repeat", emoji: "🔄" },
+  { step: 6, title: "The Incumbent's Dilemma", description: "Why can't they just add AI? Revenue cannibalization, tech debt, enterprise contracts, org inertia.", emoji: "🛡️" },
 ];
 
 export const INDUSTRY_CLUSTERS: IndustryCluster[] = [
   {
-    id: 1, name: "Legal & Compliance", emoji: "⚖️",
-    timingCatalyst: "EU AI Act & Colorado AI Act deadlines (2026)",
+    id: 1, name: "CRM & Sales", emoji: "🤝",
+    timingCatalyst: "AI can now auto-research leads, draft emails, and update CRM — making per-seat pricing obsolete",
     color: "262 83% 58%",
     incumbents: [
-      { id: 1, name: "LexisNexis", age: "50+ yrs", vulnerability: "High-margin subscription model makes them fear per-query AI agents", asymmetricAngle: "Unbundle: Sell an agent that only does California AI Act Compliance", beachheadNiche: "Colorado-only AI disclosure auditor for small firms", disruptorModel: "Pay-per-Brief Agent: $10 per Validated Memorandum vs $400/mo", vector: "Unbundle", existingDisruptor: "Harvey AI / Paxton AI" },
-      { id: 2, name: "Tabs3", age: "Founded 1979", vulnerability: "Clunky desktop-first legacy UI, low NPS among Gen Z lawyers", asymmetricAngle: "Speed: Automated Passive Time-Tracking via screen/email agent", beachheadNiche: "Mac/Windows background app that auto-generates billing entries", disruptorModel: "Invisible Bookkeeper: 1% of total billed revenue", vector: "Speed", existingDisruptor: "Time by Ping" },
-      { id: 3, name: "Thomson Reuters (Westlaw)", age: "Oligopoly", vulnerability: "Forces long-term multi-year contracts with 5% annual escalators", asymmetricAngle: "Price: 10x cheaper via RAG on public court data", beachheadNiche: "Agent that writes Opposition to Motion drafts from free public filings", disruptorModel: "Shadow Auditor: $500/year Compliance Shield", vector: "Price", existingDisruptor: "Luminance" },
+      { id: 1, name: "Salesforce", age: "25 yrs", vulnerability: "Massive feature bloat, $150+/user/mo, requires dedicated admin. Most users touch <10% of features", asymmetricAngle: "AI can auto-update CRM from email/calls — no manual data entry. Kill the 'CRM admin' job entirely", beachheadNiche: "AI CRM for solo consultants and freelancers who hate data entry", disruptorModel: "AI-first CRM: $0/seat — charges per closed deal instead", vector: "Price", existingDisruptor: "Clay, Attio", aiDisruptionThesis: "GPT can extract deal data from emails, calls, and calendars automatically — eliminating 90% of CRM busywork", pricingModel: "Per-seat SaaS ($25-$300/user/mo)" },
+      { id: 2, name: "HubSpot", age: "18 yrs", vulnerability: "Free tier hooks you, then pricing explodes at scale. $3,600/mo for marketing hub enterprise", asymmetricAngle: "AI generates landing pages, email sequences, and lead scores — no need for HubSpot's complex workflow builder", beachheadNiche: "AI marketing autopilot for bootstrapped SaaS founders doing their own marketing", disruptorModel: "AI marketing agent: flat $99/mo regardless of contacts", vector: "Price", existingDisruptor: "Instantly, Apollo", aiDisruptionThesis: "AI can generate, test, and optimize entire marketing campaigns that HubSpot requires teams of marketers to run", pricingModel: "Freemium + tiered SaaS" },
+      { id: 3, name: "Outreach.io", age: "10 yrs", vulnerability: "Sales engagement tool that still requires reps to manually sequence and personalize. $100+/user/mo", asymmetricAngle: "AI agent that autonomously prospects, personalizes outreach, and books meetings — no human in the loop", beachheadNiche: "AI SDR for early-stage startups who can't afford a sales team", disruptorModel: "AI SDR agent: pay per booked meeting ($25-50/meeting)", vector: "Speed", existingDisruptor: "11x.ai, Artisan", aiDisruptionThesis: "LLMs can research prospects, write personalized emails, and handle objections better than junior SDRs", pricingModel: "Per-seat SaaS" },
+      { id: 4, name: "ZoomInfo", age: "20+ yrs", vulnerability: "Contact database charging $15k+/yr for data that's often stale. Lock-in via annual contracts", asymmetricAngle: "AI can scrape and verify contact data in real-time from public sources — no static database needed", beachheadNiche: "Real-time lead finder for recruiters targeting niche tech roles", disruptorModel: "Pay-per-verified-lead ($0.50/lead vs $0.50-$5/lead on ZoomInfo)", vector: "Price", existingDisruptor: "Apollo, Lusha", aiDisruptionThesis: "AI agents can crawl LinkedIn, company websites, and public filings to build fresher data than any static database", pricingModel: "Subscription + credits" },
     ],
   },
   {
-    id: 2, name: "HR & Payroll", emoji: "👔",
-    timingCatalyst: "2026 SaaSpocalypse: shift from per-seat to outcome-based pricing",
+    id: 2, name: "Project Management", emoji: "📋",
+    timingCatalyst: "AI can now auto-generate project plans, assign tasks, and predict delays — making manual PM tools feel like spreadsheets",
     color: "217 91% 60%",
     incumbents: [
-      { id: 4, name: "ADP", age: "70+ yrs", vulnerability: "Massive tech debt, every feature is a wrapper on 1990s mainframe", asymmetricAngle: "Org Structure: ADP is sales-led and slow, you are product-led and instant", beachheadNiche: "Instant Payroll for 1-person LLCs paying international contractors", disruptorModel: "Zero-Tax-Error Guarantee: flat $2/employee/month + 100% liability", vector: "Speed", existingDisruptor: "Warp" },
-      { id: 5, name: "Gusto", age: "10+ yrs", vulnerability: "Support Quicksand — users can't get a human when things break", asymmetricAngle: "Channel: Reach hyper-local Main Street shops Gusto ignores", beachheadNiche: "WhatsApp-based payroll bot: text 'Pay John $800' to run payroll", disruptorModel: "WhatsApp Payroll Bot: $25/mo flat for teams under 5", vector: "Channel", existingDisruptor: "Rippling" },
-      { id: 6, name: "Workday", age: "Enterprise-only", vulnerability: "Implementation 6-12 months, $100k+ starting price", asymmetricAngle: "Niche: Workday for the 10-person agency with 2-week setup", beachheadNiche: "AI-agent that scrapes Slack/Email to build employee directory instantly", disruptorModel: "Headless HCM: $5 per Successful Onboarding", vector: "Niche", existingDisruptor: "HiBob / Humaans" },
+      { id: 5, name: "Asana", age: "16 yrs", vulnerability: "Complex UI with dozens of views nobody uses. Teams spend more time updating Asana than doing work", asymmetricAngle: "AI project manager that auto-creates tasks from Slack conversations and meetings — zero manual input", beachheadNiche: "AI project tracker for remote dev teams (auto-creates tickets from Slack/GitHub)", disruptorModel: "AI PM assistant: $29/team/mo flat, unlimited users", vector: "Speed", existingDisruptor: "Linear, Height", aiDisruptionThesis: "AI can parse meeting transcripts, Slack threads, and PRs to auto-maintain project state — no human updating needed", pricingModel: "Per-seat SaaS ($11-$25/user/mo)" },
+      { id: 6, name: "Monday.com", age: "12 yrs", vulnerability: "Tries to be everything — PM, CRM, dev tool. Jack of all trades. Confusing pricing tiers", asymmetricAngle: "AI-native work OS that adapts interface to each user's actual workflow — no configuration needed", beachheadNiche: "AI work tracker for marketing agencies managing client deliverables", disruptorModel: "Self-configuring workspace: $19/team/mo", vector: "Unbundle", existingDisruptor: "ClickUp, Notion", aiDisruptionThesis: "AI can auto-build the perfect workspace layout by observing how teams actually work, eliminating weeks of setup", pricingModel: "Per-seat SaaS ($9-$19/user/mo)" },
+      { id: 7, name: "Jira", age: "22 yrs", vulnerability: "Universally hated UX. Engineers spend 15+ min/day on Jira admin. Atlassian keeps raising prices", asymmetricAngle: "AI creates and updates tickets from git commits and PR descriptions — developers never open Jira", beachheadNiche: "Ghost PM for open-source projects — auto-generates issues from GitHub activity", disruptorModel: "Developer-invisible project tracking: $5/dev/mo", vector: "Speed", existingDisruptor: "Linear, Shortcut", aiDisruptionThesis: "AI can infer task status, blockers, and dependencies directly from code — making the 'update your ticket' ritual obsolete", pricingModel: "Per-seat SaaS ($8-$16/user/mo)" },
     ],
   },
   {
-    id: 3, name: "Insurance & Corporate Ethics", emoji: "🛡️",
-    timingCatalyst: "2026 Healthcare enforcement & Applied Systems antitrust lawsuit",
-    color: "152 60% 45%",
-    incumbents: [
-      { id: 7, name: "Applied Systems", age: "Monopolist (80% share)", vulnerability: "Using sham litigation to kill rivals per 2026 lawsuits", asymmetricAngle: "Regulation: Use 2026 NAIC Uniform Application updates to automate licensing", beachheadNiche: "Auto-Licensing agent for individual P&C brokers in TX/FL", disruptorModel: "Independent Accounting Node: $0.50 per auto-reconciled commission", vector: "Regulation", existingDisruptor: "Cytora" },
-      { id: 8, name: "NAVEX (EthicsPoint)", age: "20+ yrs", vulnerability: "Legacy Whistleblower Hotline feels like a 2005 web form", asymmetricAngle: "Unbundle: Mobile-first encrypted chat for anonymous reporting", beachheadNiche: "Anonymous Speak Up bot for restaurant chains", disruptorModel: "Speak-Up Chatbot: Freemium to 50 employees, $99/mo Enterprise", vector: "Unbundle", existingDisruptor: "AllVoices / Whispli" },
-    ],
-  },
-  {
-    id: 4, name: "Enterprise Accounting (ERP)", emoji: "📊",
-    timingCatalyst: "Rise of Agentic Accounting — agents replace dashboard logins",
-    color: "38 92% 50%",
-    incumbents: [
-      { id: 9, name: "NetSuite", age: "Founded 1998", vulnerability: "Extremely complex UI, requires consultants to implement", asymmetricAngle: "Tech Stack: AI-native agent that sees across all data silos", beachheadNiche: "Anomaly Detector that connects to NetSuite API and flags Ghost Expenses", disruptorModel: "Anomaly Bounty Hunter: 10% of found Ghost Expenses/duplicates", vector: "Unbundle", existingDisruptor: "Vic.ai" },
-      { id: 10, name: "Sage Intacct", age: "Mid-market", vulnerability: "Doubled user fees in 2026, pricing hasn't adapted to AI-efficiency era", asymmetricAngle: "Price: Move from Per User to Per Audit pricing", beachheadNiche: "Agent that reconciles Stripe vs Bank statements for SaaS startups", disruptorModel: "Audit-Ready Ledger: $100 per Verified Monthly Close", vector: "Price", existingDisruptor: "Digits / Zeni" },
-    ],
-  },
-  {
-    id: 5, name: "Construction & PropTech", emoji: "🏗️",
-    timingCatalyst: "2026 Green Building Mandates & skilled trades labor shortage",
-    color: "30 70% 50%",
-    incumbents: [
-      { id: 11, name: "Procore", age: "Founded 2002", vulnerability: "Software for the trailer, not the field. Mobile app is clunky", asymmetricAngle: "Speed/Channel: Workers report progress via Voice/WhatsApp, no app login", beachheadNiche: "Agent that listens to foremen voice notes and auto-updates schedules", disruptorModel: "Headless Field Agent: voice-first construction management", vector: "Channel", existingDisruptor: "Buildots" },
-      { id: 12, name: "Autodesk (Revit)", age: "Legacy", vulnerability: "Proprietary formats, high pricing, built for skyscrapers", asymmetricAngle: "Niche: Generative ADU Design for backyard tiny homes", beachheadNiche: "Auto-generate permit-ready plans for California ADUs", disruptorModel: "Per-permit generative design tool", vector: "Niche", existingDisruptor: "TestFit" },
-      { id: 13, name: "CoStar", age: "Monopoly", vulnerability: "CRE data monopoly, $1k+/mo, captive feel", asymmetricAngle: "Price/Channel: Crowdsourced agentic data from LinkedIn/social", beachheadNiche: "Shadow LoopNet for Industrial Warehouse subleases in Tier 2 cities", disruptorModel: "Crowdsourced CRE intelligence platform", vector: "Price", existingDisruptor: "Crexi" },
-      { id: 14, name: "Yardi / AppFolio", age: "20+ yrs", vulnerability: "Legacy ledger logic, months-long implementation", asymmetricAngle: "Speed: AI handles 100% of Maintenance Ticketing via SMS", beachheadNiche: "SMS bot for Student Housing maintenance triage", disruptorModel: "Autonomous Property Manager", vector: "Speed" },
-      { id: 15, name: "DocuSign", age: "Stagnant product", vulnerability: "High per-envelope tax, commodity e-signature", asymmetricAngle: "Niche/Regulation: Self-Executing Lien Waiver with payment escrow", beachheadNiche: "Payment-contingent escrow for General Contractors", disruptorModel: "Payment-linked signature + escrow agent", vector: "Regulation" },
-    ],
-  },
-  {
-    id: 6, name: "Healthcare & Pharma Admin", emoji: "🏥",
-    timingCatalyst: "2026 Medicare Price Negotiation & Value-Based Care requirements",
-    color: "185 95% 50%",
-    incumbents: [
-      { id: 16, name: "Epic Systems", age: "Walled Garden", vulnerability: "Regulatory capture via hospital lobbying, $Millions implementation", asymmetricAngle: "Unbundle: Agent that extracts signal from Epic noise", beachheadNiche: "AI scribe that only generates Discharge Summaries for Oncology", disruptorModel: "Patient Chart Summarizer overlay", vector: "Unbundle", existingDisruptor: "Ambience Healthcare" },
-      { id: 17, name: "IQVIA", age: "Legacy", vulnerability: "Ancient interface, enterprise-only opaque pricing", asymmetricAngle: "Niche: Trials for Digital Health (non-drug clinical trials)", beachheadNiche: "Automated Patient Recruitment agent for Mental Health startups", disruptorModel: "Digital trial platform for therapy apps/wearables", vector: "Niche", existingDisruptor: "Paradigm" },
-      { id: 18, name: "Veeva Systems", age: "Monopoly", vulnerability: "Built on old Salesforce architecture", asymmetricAngle: "Speed/Price: Replace Field Rep portal with instant medical-query bot", beachheadNiche: "Compliance-verified chatbot for Rare Disease physicians", disruptorModel: "Medical Affairs Agent", vector: "Speed" },
-      { id: 19, name: "Change Healthcare", age: "Legacy", vulnerability: "Massive legacy clearinghouse, recent high-profile hacks decimated trust", asymmetricAngle: "Speed/Tech Stack: Pre-audit claims in milliseconds instead of days", beachheadNiche: "Claims auditor for Telehealth Speech Therapy providers", disruptorModel: "Instant Claims Clearinghouse", vector: "Speed" },
-      { id: 20, name: "McKesson", age: "Trillion-dollar", vulnerability: "Pricing hasn't changed, high margin on efficiency fees", asymmetricAngle: "Regulation: Automate 2026 DSCSA pedigree tracking", beachheadNiche: "Automated Pedigree Tracker for independent pharmacies", disruptorModel: "Compliance automation per-transaction", vector: "Regulation" },
-    ],
-  },
-  {
-    id: 7, name: "GovTech", emoji: "🏛️",
-    timingCatalyst: "2026 Digital Citizen Executive Order & Tyler Technologies breach settlements",
+    id: 3, name: "Design & Creative Tools", emoji: "🎨",
+    timingCatalyst: "AI image/video generation makes professional design accessible to non-designers, threatening per-seat creative tool licenses",
     color: "330 90% 60%",
     incumbents: [
-      { id: 21, name: "Tyler Technologies", age: "Legacy", vulnerability: "Class-action lawsuits from wrongful arrests caused by software lag", asymmetricAngle: "Speed: Real-Time Justice Agent fixing lag between court orders and police DBs", beachheadNiche: "SMS alerts for Public Defenders flagging Discrepancy Errors", disruptorModel: "Real-time justice sync layer", vector: "Speed" },
-      { id: 22, name: "Accela", age: "20+ yrs", vulnerability: "Permitting takes months, UI is a maze of required fields", asymmetricAngle: "Niche: Solar Permit Fast-Pass using AI + satellite imagery", beachheadNiche: "Agent auditing residential solar applications for one city (Phoenix)", disruptorModel: "AI-powered permit automation", vector: "Niche" },
-      { id: 23, name: "CentralSquare", age: "Legacy", vulnerability: "Dispatchers complain about frozen screens during 911 calls", asymmetricAngle: "Channel: Civilian First-Response Bot bypassing dispatch UI", beachheadNiche: "Web-link for 911 callers to live stream emergency to officers", disruptorModel: "Citizen-direct emergency communication", vector: "Channel" },
-      { id: 24, name: "Granicus", age: "Founded 1999", vulnerability: "Feature bloat, low NPS for government meeting/website CMS", asymmetricAngle: "Unbundle: AI Meeting Clerk that only transcribes City Council meetings", beachheadNiche: "Searchable video archive for small-town school board meetings", disruptorModel: "Per-meeting AI transcription service", vector: "Unbundle" },
-      { id: 25, name: "Black Mountain", age: "Legacy ERP", vulnerability: "Small-town clerks still use keyboard shortcuts from the 90s", asymmetricAngle: "Price: Per-Transaction pricing for municipalities <5k people", beachheadNiche: "Automated Water Bill collector that texts residents", disruptorModel: "Per-transaction municipal utility billing", vector: "Price" },
+      { id: 8, name: "Adobe Creative Cloud", age: "40+ yrs", vulnerability: "$55/mo/app, forces annual commitment. Most users need 2-3 features from a 20-app suite", asymmetricAngle: "AI generates production-ready assets (logos, social posts, videos) from text prompts — no Photoshop skills needed", beachheadNiche: "AI brand kit generator for Shopify store owners who can't afford designers", disruptorModel: "AI creative studio: $19/mo unlimited assets", vector: "Price", existingDisruptor: "Canva, Midjourney", aiDisruptionThesis: "Generative AI can produce 80% of the creative assets that small businesses need without any design expertise", pricingModel: "Per-seat subscription ($55-$83/mo)" },
+      { id: 9, name: "Figma", age: "12 yrs", vulnerability: "Powerful but complex. Steep learning curve. Now $15/editor/mo after Adobe acquisition attempt raised prices", asymmetricAngle: "AI generates entire UI designs from natural language descriptions — skip the wireframing stage entirely", beachheadNiche: "AI UI generator for indie hackers — describe your app, get a working prototype", disruptorModel: "Prompt-to-prototype: $29/mo unlimited designs", vector: "Speed", existingDisruptor: "Lovable, v0, Galileo", aiDisruptionThesis: "AI can generate pixel-perfect UI components and full page layouts from descriptions, making manual wireframing obsolete for most use cases", pricingModel: "Freemium + per-seat ($0-$75/editor/mo)" },
+      { id: 10, name: "Canva", age: "12 yrs", vulnerability: "Template-based approach hitting ceiling. AI features feel bolted-on. Enterprise pricing climbing to $30/user/mo", asymmetricAngle: "AI that understands your brand and auto-generates all marketing materials maintaining perfect consistency", beachheadNiche: "AI social media content engine for real estate agents (listing → 20 assets in seconds)", disruptorModel: "Brand-aware AI designer: $15/mo unlimited", vector: "Niche", existingDisruptor: "Kittl, Glorify", aiDisruptionThesis: "AI can learn a brand's visual identity and autonomously create on-brand content — no template browsing needed", pricingModel: "Freemium + tiered ($0-$30/user/mo)" },
     ],
   },
   {
-    id: 8, name: "Higher Ed Admin", emoji: "🎓",
-    timingCatalyst: "2026 Enrollment Cliff — universities desperate to cut admin bloat",
+    id: 4, name: "Accounting & Finance", emoji: "📊",
+    timingCatalyst: "AI can now categorize transactions, reconcile accounts, and generate financial reports — threatening bookkeeper-dependent software",
+    color: "38 92% 50%",
+    incumbents: [
+      { id: 11, name: "QuickBooks (Intuit)", age: "30+ yrs", vulnerability: "Price hikes every year. $200/mo for payroll+accounting. Complexity grows while UX stagnates", asymmetricAngle: "AI bookkeeper that auto-categorizes every transaction and generates tax-ready reports — no accountant needed", beachheadNiche: "AI bookkeeper for Etsy/Amazon sellers — auto-imports sales, calculates COGs, files Schedule C", disruptorModel: "AI accounting: $29/mo all-inclusive (books + tax prep)", vector: "Price", existingDisruptor: "Bench, Pilot", aiDisruptionThesis: "AI can now do 90% of what a bookkeeper does: categorize transactions, reconcile accounts, generate P&L — all automatically", pricingModel: "Tiered SaaS ($30-$200/mo)" },
+      { id: 12, name: "Xero", age: "18 yrs", vulnerability: "Still requires accountant to set up chart of accounts. UX better than QB but still manual-heavy", asymmetricAngle: "Zero-setup accounting — AI reads your bank feed and builds the entire chart of accounts automatically", beachheadNiche: "AI accounting for UK/AU freelancers — auto-handles VAT/GST calculations", disruptorModel: "Self-driving books: $19/mo, setup in 5 minutes", vector: "Speed", existingDisruptor: "FreeAgent", aiDisruptionThesis: "AI can infer accounting categories from transaction descriptions with 95%+ accuracy, eliminating manual categorization", pricingModel: "Per-org SaaS ($15-$78/mo)" },
+      { id: 13, name: "Bill.com", age: "18 yrs", vulnerability: "Charges per transaction on top of subscription. AP/AR automation still requires manual approval workflows", asymmetricAngle: "AI agent that handles entire AP/AR cycle — receives invoices, matches POs, schedules payments, chases late payers", beachheadNiche: "AI accounts payable for restaurants managing 50+ vendor invoices monthly", disruptorModel: "AI AP clerk: flat $49/mo unlimited invoices", vector: "Unbundle", existingDisruptor: "Ramp, Brex", aiDisruptionThesis: "AI can read invoices, match to purchase orders, detect anomalies, and auto-approve routine payments — full AP automation", pricingModel: "Subscription + per-transaction fees" },
+    ],
+  },
+  {
+    id: 5, name: "HR & Recruiting", emoji: "👔",
+    timingCatalyst: "AI can screen resumes, schedule interviews, and draft offer letters — making legacy ATS/HRIS feel like filing cabinets",
+    color: "152 60% 45%",
+    incumbents: [
+      { id: 14, name: "Workday", age: "18 yrs", vulnerability: "$100k+ implementation, 6-12 month setup. Over-engineered for companies under 500 employees", asymmetricAngle: "AI-native HCM that self-configures from your org chart — setup in hours not months", beachheadNiche: "AI HR platform for 50-200 person startups scaling fast (auto-generates policies, handbooks, onboarding)", disruptorModel: "Self-building HR: $8/employee/mo, live in 1 day", vector: "Speed", existingDisruptor: "Rippling, Deel", aiDisruptionThesis: "AI can auto-generate HR policies, onboarding flows, and compliance docs that Workday requires consultants to configure", pricingModel: "Per-employee enterprise SaaS" },
+      { id: 15, name: "Greenhouse", age: "12 yrs", vulnerability: "ATS that still requires recruiters to manually screen every resume. $6k+/yr starting price", asymmetricAngle: "AI recruiter that screens applications, generates shortlists, and schedules interviews autonomously", beachheadNiche: "AI hiring assistant for YC-stage startups making their first 10 hires", disruptorModel: "AI recruiter: pay per qualified candidate ($50/candidate)", vector: "Price", existingDisruptor: "Ashby, Lever", aiDisruptionThesis: "AI can evaluate resumes against job requirements, assess culture fit from writing samples, and auto-schedule interviews", pricingModel: "Tiered SaaS ($6k-$50k+/yr)" },
+      { id: 16, name: "ADP", age: "70+ yrs", vulnerability: "Massive tech debt on 1990s mainframes. Every feature wrapped in layers of legacy code", asymmetricAngle: "AI payroll that handles multi-state tax compliance automatically — no payroll specialist needed", beachheadNiche: "AI payroll for 1-person LLCs paying international contractors", disruptorModel: "AI payroll: $2/employee/mo + 100% accuracy guarantee", vector: "Speed", existingDisruptor: "Gusto, Rippling", aiDisruptionThesis: "AI can handle tax calculations, compliance filings, and payroll processing that ADP requires massive infrastructure to do", pricingModel: "Per-employee + per-payroll-run" },
+    ],
+  },
+  {
+    id: 6, name: "Customer Support", emoji: "🎧",
+    timingCatalyst: "AI chatbots now resolve 60-80% of support tickets autonomously — making per-agent pricing models unsustainable",
+    color: "185 95% 50%",
+    incumbents: [
+      { id: 17, name: "Zendesk", age: "17 yrs", vulnerability: "$115/agent/mo for Suite Pro. AI features are add-ons costing extra. Acquired by PE firm cutting R&D", asymmetricAngle: "AI resolves 80% of tickets automatically — you only need human agents for the remaining 20%", beachheadNiche: "AI-first support for DTC e-commerce brands (handles shipping, returns, sizing questions)", disruptorModel: "AI support: $0.50/resolved ticket (not per-agent)", vector: "Price", existingDisruptor: "Intercom Fin, Sierra", aiDisruptionThesis: "LLMs can now handle nuanced customer conversations, access knowledge bases, and take actions — replacing Tier 1 support entirely", pricingModel: "Per-agent SaaS ($55-$115/agent/mo)" },
+      { id: 18, name: "Intercom", age: "13 yrs", vulnerability: "Pricing has skyrocketed. $74/seat/mo minimum. Their own AI (Fin) cannibalizes their per-seat model", asymmetricAngle: "AI-only support — no human agent seats at all. AI handles everything including escalation decisions", beachheadNiche: "AI support for developer tools/APIs — understands code, reads docs, solves technical issues", disruptorModel: "Zero-seat support: $199/mo flat for unlimited AI conversations", vector: "Unbundle", existingDisruptor: "Plain, Unthread", aiDisruptionThesis: "Intercom is trapped: their AI product Fin works so well it destroys the per-seat model that drives their revenue", pricingModel: "Per-seat + conversation-based" },
+      { id: 19, name: "Freshdesk", age: "14 yrs", vulnerability: "Trying to be Zendesk but cheaper. Feature-copying strategy, not innovating. Part of bloated Freshworks suite", asymmetricAngle: "AI that proactively reaches out to struggling users BEFORE they file a ticket — predictive support", beachheadNiche: "Proactive AI support for SaaS onboarding — detects confused users and intervenes automatically", disruptorModel: "Predictive support agent: $99/mo per product", vector: "Speed", aiDisruptionThesis: "AI can monitor user behavior patterns and intervene before frustration leads to churn — shifting from reactive to proactive support", pricingModel: "Per-agent tiered SaaS" },
+    ],
+  },
+  {
+    id: 7, name: "Marketing & Analytics", emoji: "📈",
+    timingCatalyst: "AI can now generate content, optimize campaigns, and analyze data — threatening the entire martech stack of 8,000+ tools",
     color: "82 85% 55%",
     incumbents: [
-      { id: 26, name: "Ellucian (Banner)", age: "50+ yrs", vulnerability: "Systems only work because legacy employees know workarounds. NPS in teens", asymmetricAngle: "Tech Stack: Headless Registrar — AI layer over Banner", beachheadNiche: "Add/Drop WhatsApp bot for students to change classes", disruptorModel: "Headless university registrar interface", vector: "Speed" },
-      { id: 27, name: "Jenzabar", age: "Legacy", vulnerability: "High tech debt, data integrity issues across departments", asymmetricAngle: "Speed: 1-Hour Financial Aid Award using AI to read tax returns", beachheadNiche: "FAFSA-scanning agent for Private Liberal Arts Colleges", disruptorModel: "Instant financial aid processing", vector: "Speed" },
-      { id: 28, name: "Anthology", age: "Merged legacy", vulnerability: "Integration Hell between acquired products (Blackboard/Campus Mgmt)", asymmetricAngle: "Niche: Alumni Engagement Agent with personalized career updates", beachheadNiche: "Agent that crawls Alumni LinkedIn to update university database", disruptorModel: "AI-powered alumni engagement", vector: "Niche" },
-      { id: 29, name: "Instructure (Canvas)", age: "Market leader", vulnerability: "Getting feature heavy, pricing increasing for up-market", asymmetricAngle: "Unbundle: AI Teaching Assistant that grades essays inside Canvas", beachheadNiche: "Feedback Loop tool for Freshman English courses", disruptorModel: "Per-essay grading agent", vector: "Unbundle" },
-      { id: 30, name: "Oracle PeopleSoft", age: "Enterprise", vulnerability: "Institutions terrified to upgrade because it breaks everything", asymmetricAngle: "Zero-Migration Data Fabric: query via Natural Language", beachheadNiche: "Slack bot for Deans to ask remaining department budget", disruptorModel: "Natural language data query layer", vector: "Speed" },
+      { id: 20, name: "Google Analytics (GA4)", age: "Legacy", vulnerability: "GA4 migration was a disaster. Complex event-based model confuses non-technical marketers", asymmetricAngle: "AI analytics dashboard that answers questions in plain English — 'What drove sales last week?' instead of building reports", beachheadNiche: "AI analytics for Shopify stores — answers business questions without touching GA4", disruptorModel: "Conversational analytics: $29/mo per store", vector: "Speed", existingDisruptor: "PostHog, Amplitude", aiDisruptionThesis: "AI can interpret analytics data and surface insights in natural language — eliminating the need to learn complex analytics UIs", pricingModel: "Freemium (free tier + paid premium)" },
+      { id: 21, name: "SEMrush", age: "16 yrs", vulnerability: "$130-$500/mo. Overwhelming number of tools, most users need keyword research only. Data can be outdated", asymmetricAngle: "AI SEO agent that auto-generates content briefs, writes articles, and monitors rankings — full SEO on autopilot", beachheadNiche: "AI SEO writer for B2B SaaS companies — research keywords, write articles, publish to CMS", disruptorModel: "AI SEO autopilot: $49/mo unlimited articles", vector: "Unbundle", existingDisruptor: "Surfer SEO, Ahrefs Lite", aiDisruptionThesis: "AI can research keywords, analyze SERPs, write optimized content, and monitor rankings — automating the entire SEO workflow", pricingModel: "Per-seat tiered SaaS ($130-$500/mo)" },
+      { id: 22, name: "Mailchimp", age: "23 yrs", vulnerability: "Intuit acquisition raised prices. Free tier gutted. $350/mo for 50k contacts. Still template-based", asymmetricAngle: "AI generates and sends personalized emails to each subscriber — no templates, no segments, no campaigns", beachheadNiche: "AI email for newsletter creators — auto-generates personalized content for each reader", disruptorModel: "AI email: $19/mo unlimited sends, per-reader personalization", vector: "Price", existingDisruptor: "Beehiiv, ConvertKit", aiDisruptionThesis: "AI can generate unique email content for each subscriber based on their behavior — making batch-and-blast segmentation obsolete", pricingModel: "Contact-based tiered SaaS" },
     ],
   },
   {
-    id: 9, name: "Energy & Utilities", emoji: "⚡",
-    timingCatalyst: "OBBBA 2025 mandating time-of-use pricing by 2027",
+    id: 8, name: "DevTools & Infrastructure", emoji: "🛠️",
+    timingCatalyst: "AI coding assistants can now write, test, and deploy code — reshaping how developers work and what tools they need",
     color: "45 100% 50%",
     incumbents: [
-      { id: 31, name: "Oracle Utilities", age: "Legacy", vulnerability: "Cannot handle dynamic pricing for 1M+ households without upgrades", asymmetricAngle: "Speed: Virtual Power Plant Orchestrator that balances, not just bills", beachheadNiche: "Agent managing EV charging for one specific neighborhood", disruptorModel: "VPP orchestration per-node", vector: "Speed" },
-      { id: 32, name: "Itron / Landis+Gyr", age: "Oligopoly", vulnerability: "Smart hardware, but software is a 2010s data silo", asymmetricAngle: "Channel: Smart-Meter API selling data to homeowners, not just utility", beachheadNiche: "App showing real-time appliance burn cost", disruptorModel: "Consumer energy intelligence", vector: "Channel" },
-      { id: 33, name: "GE Vernova", age: "Legacy SCADA", vulnerability: "Highly vulnerable to 2026 cyber-threats", asymmetricAngle: "Regulation: 2026 Interconnection Agent speeding Renewable Energy Queue 10x", beachheadNiche: "Automated Impact Study generator for small solar farm developers", disruptorModel: "Per-study renewable interconnection agent", vector: "Regulation" },
-      { id: 34, name: "Siemens (Grid)", age: "Industrial", vulnerability: "Massive tech debt, slow consultant-heavy implementation", asymmetricAngle: "Niche: Microgrid-as-a-Service for Corporate Campuses going off-grid", beachheadNiche: "Storage Optimizer for one hospital backup battery system", disruptorModel: "Microgrid management subscription", vector: "Niche" },
-      { id: 35, name: "SAP (Energy)", age: "NPS ~12", vulnerability: "Energy Suite too rigid for decentralized energy", asymmetricAngle: "Price: Performance-Based Billing Engine — pay only on error found", beachheadNiche: "Ghost Usage auditor for commercial office buildings", disruptorModel: "Performance-based billing optimization", vector: "Price" },
+      { id: 23, name: "GitHub", age: "17 yrs", vulnerability: "Copilot is good but limited to autocomplete. Platform becoming bloated (Actions, Packages, Projects, Discussions)", asymmetricAngle: "AI development environment where you describe features and AI writes, tests, and deploys the code", beachheadNiche: "AI-powered development for non-technical founders building MVPs", disruptorModel: "AI app builder: $29/mo, ship production apps from prompts", vector: "Speed", existingDisruptor: "Lovable, Cursor, Replit", aiDisruptionThesis: "AI can now write entire features, not just autocomplete lines — shifting from 'developer tool' to 'development agent'", pricingModel: "Freemium + per-seat ($0-$21/user/mo)" },
+      { id: 24, name: "Datadog", age: "14 yrs", vulnerability: "$23/host/mo + per-GB ingestion fees that balloon unpredictably. Companies get $100k+ surprise bills", asymmetricAngle: "AI that auto-detects anomalies and diagnoses root causes — no need to build dashboards or set alert thresholds", beachheadNiche: "AI observability for early-stage startups — auto-monitors everything, alerts only on real issues", disruptorModel: "AI ops: flat $99/mo per service (predictable pricing)", vector: "Price", existingDisruptor: "Grafana Cloud, Better Stack", aiDisruptionThesis: "AI can understand what 'normal' looks like for your system and only alert on genuine anomalies — no more dashboard fatigue", pricingModel: "Per-host + usage-based ingestion" },
+      { id: 25, name: "Vercel", age: "8 yrs", vulnerability: "Generous free tier but enterprise pricing is opaque. Function invocations and bandwidth can spike costs", asymmetricAngle: "AI-managed deployment that auto-optimizes infrastructure, caching, and edge distribution", beachheadNiche: "Zero-config AI deployment for indie hackers — push code, AI handles everything else", disruptorModel: "AI infra: $15/mo flat for most apps, truly predictable", vector: "Niche", existingDisruptor: "Netlify, Railway", aiDisruptionThesis: "AI can auto-configure CDN rules, serverless functions, and caching strategies that currently require DevOps expertise", pricingModel: "Freemium + usage-based" },
     ],
   },
   {
-    id: 10, name: "Supply Chain & 3PL", emoji: "🚢",
-    timingCatalyst: "2026 Logistics Transparency Act requiring real-time carbon tracking",
+    id: 9, name: "E-commerce & Payments", emoji: "🛒",
+    timingCatalyst: "AI can now build entire storefronts, manage inventory, and handle customer service — threatening the $5B+ e-commerce platform market",
+    color: "30 70% 50%",
+    incumbents: [
+      { id: 26, name: "Shopify", age: "18 yrs", vulnerability: "Takes 2.9% of every transaction + monthly fee. App ecosystem creates dependency and cost bloat", asymmetricAngle: "AI builds and manages entire online stores — from product photos to pricing to customer support", beachheadNiche: "AI storefront for Instagram creators monetizing their audience (DM → checkout in 60 seconds)", disruptorModel: "AI commerce: 1% transaction fee, no monthly fee, no apps needed", vector: "Price", existingDisruptor: "Fourthwall, Stan Store", aiDisruptionThesis: "AI can auto-generate product descriptions, optimize pricing, manage inventory, and handle support — making the app ecosystem unnecessary", pricingModel: "Monthly SaaS + 2.9% transaction fee" },
+      { id: 27, name: "Stripe", age: "14 yrs", vulnerability: "2.9% + 30¢ per transaction. Payment processing is increasingly commoditized. Dashboard is developer-heavy", asymmetricAngle: "AI payment orchestrator that auto-routes to cheapest processor and handles all compliance", beachheadNiche: "AI payment router for subscription SaaS — auto-retries failed charges, dunning, and churn prevention", disruptorModel: "Smart payments: 1.5% processing with AI retry optimization", vector: "Price", existingDisruptor: "Primer, Adyen", aiDisruptionThesis: "AI can analyze transaction patterns, auto-retry with optimal timing, and route to cheapest processor — reducing failed payments by 30-50%", pricingModel: "Per-transaction (2.9% + 30¢)" },
+      { id: 28, name: "BigCommerce", age: "15 yrs", vulnerability: "Losing market share to Shopify. Revenue-based pricing tiers force growing merchants to pay more", asymmetricAngle: "AI-native commerce platform that adapts to each merchant's industry with zero configuration", beachheadNiche: "AI wholesale platform for small food brands selling to restaurants (auto-manages orders, invoicing, delivery)", disruptorModel: "Industry-specific AI commerce: $49/mo flat regardless of revenue", vector: "Niche", aiDisruptionThesis: "AI can create industry-specific shopping experiences automatically — no need for generic platform + expensive customization", pricingModel: "Revenue-tiered SaaS" },
+    ],
+  },
+  {
+    id: 10, name: "Communication & Collaboration", emoji: "💬",
+    timingCatalyst: "AI can now summarize meetings, draft responses, and manage threads — making information overload in chat tools a solvable problem",
     color: "200 80% 50%",
     incumbents: [
-      { id: 36, name: "Manhattan Associates", age: "WMS king", vulnerability: "Still relies on scanning barcodes for every movement", asymmetricAngle: "Tech Stack: Computer Vision WMS using existing security cameras", beachheadNiche: "Dock Door Auditor flagging misloaded pallets via camera", disruptorModel: "Vision-based warehouse management", vector: "Speed" },
-      { id: 37, name: "Blue Yonder (JDA)", age: "Complex", vulnerability: "Last Agentic update seen as a bolt-on", asymmetricAngle: "Unbundle: Disruption Response Agent for What if a ship is late?", beachheadNiche: "Suez/Panama Canal risk-dashboard for mid-sized retailers", disruptorModel: "Supply chain disruption intelligence", vector: "Unbundle" },
-      { id: 38, name: "WiseTech Global", age: "Dominant", vulnerability: "Per-shipment tax eating margins", asymmetricAngle: "Price: Zero-Tax Forwarding via automated paperwork", beachheadNiche: "Automated Customs Broker for US-Mexico cross-border trade", disruptorModel: "Flat monthly subscription freight forwarding", vector: "Price" },
-      { id: 39, name: "SAP (S/4HANA)", age: "ERP giant", vulnerability: "Too slow to react to changes", asymmetricAngle: "Speed: Continuous Inventory Scribe listening to warehouse radios", beachheadNiche: "Voice-to-Inventory tool for Cold Storage facilities", disruptorModel: "Voice-first inventory management", vector: "Speed" },
-      { id: 40, name: "Descartes", age: "Legacy EDI", vulnerability: "Expensive and slow Electronic Data Interchange", asymmetricAngle: "Tech Stack: EDI Translator turning PDF emails into EDI messages", beachheadNiche: "Email-to-Order agent for small auto-parts distributors", disruptorModel: "AI-powered EDI bridge", vector: "Speed" },
+      { id: 29, name: "Slack", age: "11 yrs", vulnerability: "$12.50/user/mo. Information gets lost in channels. Search is poor. Notification overload causes burnout", asymmetricAngle: "AI work assistant that reads all channels and gives each person a personalized daily briefing — no more scrolling", beachheadNiche: "AI Slack summarizer for remote teams — morning briefing of what happened overnight across all channels", disruptorModel: "AI work inbox: $5/user/mo replaces Slack for async teams", vector: "Unbundle", existingDisruptor: "Threads, Loom", aiDisruptionThesis: "AI can parse thousands of Slack messages and surface only what's relevant to each person — solving the 'too many messages' problem", pricingModel: "Per-seat SaaS ($7.25-$12.50/user/mo)" },
+      { id: 30, name: "Zoom", age: "13 yrs", vulnerability: "Commoditized video calling. Trying to become 'platform' but competing with Teams/Meet. AI features are basic", asymmetricAngle: "AI meeting agent that attends meetings for you, takes notes, and sends follow-ups — you only join when needed", beachheadNiche: "AI meeting proxy for executives — AI attends status updates, you get a 2-minute summary", disruptorModel: "AI meeting agent: $29/mo, skip 80% of your meetings", vector: "Speed", existingDisruptor: "Otter.ai, Fireflies", aiDisruptionThesis: "AI can now understand meeting context well enough to take notes, identify action items, and even answer routine questions on your behalf", pricingModel: "Freemium + per-seat SaaS" },
+      { id: 31, name: "Microsoft Teams", age: "8 yrs", vulnerability: "Bundled with Office 365 but clunky UX. EU forcing unbundling. Too many features, confusing navigation", asymmetricAngle: "Lightweight AI workspace that replaces Teams+SharePoint+Planner with one intelligent surface", beachheadNiche: "AI workspace for professional services firms (lawyers, accountants) — replaces Teams + document management", disruptorModel: "AI work hub: $15/user/mo replaces Teams+SharePoint", vector: "Unbundle", existingDisruptor: "Notion, Coda", aiDisruptionThesis: "AI can unify chat, docs, tasks, and files into one intelligent workspace — no more switching between 5 Microsoft apps", pricingModel: "Bundled with Microsoft 365" },
     ],
   },
   {
-    id: 11, name: "Retail & Commerce", emoji: "🛒",
-    timingCatalyst: "2026 Universal Payment Interoperability laws & POS model collapse",
+    id: 11, name: "Legal Tech", emoji: "⚖️",
+    timingCatalyst: "AI can now draft contracts, review legal documents, and handle compliance — threatening $300B+ legal services market",
     color: "330 70% 55%",
     incumbents: [
-      { id: 41, name: "NCR Voyix", age: "NPS ~4", vulnerability: "Heavily reliant on legacy hardware, price hikes with no value", asymmetricAngle: "Price/Tech: App-Free POS processing payments via smartphone camera", beachheadNiche: "Pop-up Store terminal for QR payments at farmer's markets", disruptorModel: "Camera-based POS", vector: "Price" },
-      { id: 42, name: "Oracle MICROS", age: "Legacy", vulnerability: "$20k+ implementation, Windows XP-style interface, slow support", asymmetricAngle: "Speed: 10-Minute Restaurant Setup scanning PDF menu to build POS", beachheadNiche: "POS for Ghost Kitchens syncing DoorDash and UberEats", disruptorModel: "Instant restaurant POS", vector: "Speed" },
-      { id: 43, name: "Salesforce Commerce Cloud", age: "Enterprise", vulnerability: "Extreme pricing complexity, requires army of consultants", asymmetricAngle: "Niche: Headless Shopfront for Creators — TikTok to checkout", beachheadNiche: "Auto-generate Shopify checkout links from YouTube video scripts", disruptorModel: "Creator commerce agent", vector: "Niche" },
-      { id: 44, name: "SAP Retail", age: "Legacy", vulnerability: "AI messaging outpaces actual modernization, data trapped in silos", asymmetricAngle: "Unbundle: Real-Time Stock Auditor fixing inventory inaccuracies", beachheadNiche: "Slack bot alerting when SAP says In Stock but shelf is empty", disruptorModel: "Real-time inventory truth layer", vector: "Unbundle" },
-      { id: 45, name: "Manhattan Active", age: "Enterprise", vulnerability: "High complexity in omnichannel returns", asymmetricAngle: "Channel: Return-to-Local Agent rerouting returns to nearest buyer", beachheadNiche: "Buy-Back widget for luxury sneaker resellers", disruptorModel: "Peer-to-peer return marketplace", vector: "Channel" },
+      { id: 32, name: "LexisNexis", age: "50+ yrs", vulnerability: "High-margin subscription model ($400+/mo). Fears AI cannibalizing research revenue. Slow to innovate", asymmetricAngle: "AI legal research agent that answers legal questions with citations — no subscription, pay per query", beachheadNiche: "AI legal researcher for solo immigration attorneys — drafts briefs from case law automatically", disruptorModel: "Pay-per-brief: $10/research query vs $400/mo subscription", vector: "Price", existingDisruptor: "Harvey AI, CoCounsel", aiDisruptionThesis: "AI can search, synthesize, and cite legal precedents faster than any human researcher — at 1/100th the cost", pricingModel: "Annual subscription ($400+/mo)" },
+      { id: 33, name: "DocuSign", age: "20 yrs", vulnerability: "Commodity e-signature charging premium prices. $25-$65/user/mo for what's essentially a stamp", asymmetricAngle: "AI contract platform that drafts, negotiates, and executes agreements — signature is just the last step", beachheadNiche: "AI contract manager for freelancers — generates custom contracts from plain English", disruptorModel: "AI contracts: $9/mo unlimited (draft + sign + manage)", vector: "Unbundle", existingDisruptor: "PandaDoc, Juro", aiDisruptionThesis: "AI can draft contracts from templates, flag risky clauses, and negotiate terms — making the 'dumb signature' product obsolete", pricingModel: "Per-envelope + per-seat SaaS" },
+      { id: 34, name: "Clio", age: "16 yrs", vulnerability: "Practice management + billing at $89-$149/user/mo. Still requires lawyers to manually track time", asymmetricAngle: "AI law practice that auto-tracks time from screen activity, auto-generates invoices, and drafts client communications", beachheadNiche: "AI practice manager for personal injury attorneys — auto-tracks case progress and generates status letters", disruptorModel: "AI law office: $39/lawyer/mo with passive time tracking", vector: "Speed", existingDisruptor: "Smokeball, MyCase", aiDisruptionThesis: "AI can passively track billable time from email/doc/meeting activity and auto-generate invoices — eliminating the #1 lawyer pain point", pricingModel: "Per-seat SaaS ($39-$149/user/mo)" },
     ],
   },
   {
-    id: 12, name: "Manufacturing & Industrial", emoji: "🏭",
-    timingCatalyst: "May 2026 Epicor Classic UI sunset & global on-shoring shift",
-    color: "15 80% 50%",
-    incumbents: [
-      { id: 46, name: "Rockwell Automation", age: "Legacy", vulnerability: "Slow transition from hardware logic to Cloud-Edge software", asymmetricAngle: "Tech Stack: PLC Translator explaining code in plain English to new workers", beachheadNiche: "Troubleshooting Guide bot for injection molding machines", disruptorModel: "Industrial AI assistant", vector: "Speed" },
-      { id: 47, name: "Epicor Kinetic", age: "Sunsetting", vulnerability: "Classic UI sunset forcing expensive painful migrations", asymmetricAngle: "Price/Speed: Zero-Migration MES — agent runs Shop Floor terminal", beachheadNiche: "Mobile Work Order viewer for metal fabrication operators", disruptorModel: "Overlay MES without migration", vector: "Price" },
-      { id: 48, name: "Dassault Systèmes (Enovia)", age: "Legacy PLM", vulnerability: "Opaque pricing, heavy and slow software", asymmetricAngle: "Unbundle: Bill of Materials Agent auto-updating parts prices globally", beachheadNiche: "BOM optimizer for Drone Startups", disruptorModel: "AI-powered BOM management", vector: "Unbundle" },
-      { id: 49, name: "Plex Systems", age: "Vertical MES", vulnerability: "Rigid Workflows that don't adapt to custom manufacturing", asymmetricAngle: "Niche: Micro-Factory OS for 3D Printing and CNC shops <10 employees", beachheadNiche: "Automated Quoting Engine reading CAD files, price in 5 seconds", disruptorModel: "Instant manufacturing quote agent", vector: "Niche" },
-      { id: 50, name: "Infor CloudSuite", age: "Generalist", vulnerability: "Tries to be everything, NPS plummeted 2025/2026", asymmetricAngle: "Speed/Channel: Warehouse Voice-Scribe — no typing, voice logging", beachheadNiche: "Hands-Free inventory logger for Cold Storage food workers", disruptorModel: "Voice-first warehouse management", vector: "Channel" },
-    ],
-  },
-  {
-    id: 13, name: "Agriculture & Food", emoji: "🌾",
-    timingCatalyst: "2026 Right to Repair victories & EU Soil Monitoring laws",
-    color: "120 60% 40%",
-    incumbents: [
-      { id: 51, name: "John Deere Ops Center", age: "Walled garden", vulnerability: "Restricted data access for independent repair shops (Regulatory Capture)", asymmetricAngle: "Regulation: Open-Tractor API using Right-to-Repair laws", beachheadNiche: "Maintenance Predictor for independent wheat farmers in Midwest", disruptorModel: "Open tractor health dashboard", vector: "Regulation" },
-      { id: 52, name: "Trimble (Ag)", age: "Legacy", vulnerability: "GPS hardware great, software is afterthought", asymmetricAngle: "Unbundle: Variable-Rate Scriptwriter based on weather data", beachheadNiche: "One-Click Prescription tool for Canola farmers in Manitoba", disruptorModel: "AI precision agriculture prescriptions", vector: "Unbundle" },
-      { id: 53, name: "Nutrien Ag Solutions", age: "Monopoly", vulnerability: "Pricing tied to own chemical/seed sales (conflict of interest)", asymmetricAngle: "Niche: Bio-Organic Planner for farmers transitioning away from chemicals", beachheadNiche: "Carbon Credit calculator for regenerative farmers", disruptorModel: "Independent ag planning + carbon credits", vector: "Niche" },
-      { id: 54, name: "SAP Food & Beverage", age: "Legacy", vulnerability: "Brittle UI-dependent programs, messy master data", asymmetricAngle: "Speed: Recall Agent identifying contaminated batches in minutes", beachheadNiche: "Recall Readiness auditor for mid-sized dairy producers", disruptorModel: "Real-time food safety intelligence", vector: "Speed" },
-      { id: 55, name: "Corteva (Granular)", age: "Acquired", vulnerability: "Stagnant features since acquisition", asymmetricAngle: "Channel: WhatsApp Agronomist — farmers get soil advice via chat", beachheadNiche: "Harvest Window predictor for Wine Vineyards", disruptorModel: "Chat-based agronomic advisory", vector: "Channel" },
-    ],
-  },
-  {
-    id: 14, name: "Hospitality & Travel", emoji: "✈️",
-    timingCatalyst: "2026 Hotel PMS Report: 49% operators want AI-native automation",
-    color: "280 70% 55%",
-    incumbents: [
-      { id: 56, name: "Oracle Opera", age: "Legacy", vulnerability: "3-12 month implementation, costs up to $500k, 1995-era interface", asymmetricAngle: "Price/Tech: Headless Hotel — agents handle 100% check-ins via mobile", beachheadNiche: "Self-Check-in bot for Boutique Hotels with <20 rooms", disruptorModel: "Zero-front-desk hotel operations", vector: "Price" },
-      { id: 57, name: "Amadeus (GDS)", age: "Middleman", vulnerability: "Fees haven't changed, captive travel agent base", asymmetricAngle: "Speed/Price: Direct-Connect Agent bypassing GDS fees via airline APIs", beachheadNiche: "Corporate Travel tool for small law firms auto-booking cheapest direct", disruptorModel: "GDS-free direct booking agent", vector: "Price" },
-      { id: 58, name: "Sabre", age: "Legacy", vulnerability: "High Technical Debt risk factors in 2025/2026 reports", asymmetricAngle: "Niche: Travel Agency Copilot turning client emails into itineraries", beachheadNiche: "Draft-to-Sabre tool for luxury travel consultants", disruptorModel: "AI travel planning assistant", vector: "Niche" },
-      { id: 59, name: "Cvent", age: "Monopoly", vulnerability: "Over-complicated for small/mid-sized conferences", asymmetricAngle: "Unbundle: Instant Speaker-Matcher finding and booking speakers by topic", beachheadNiche: "Speaker Outreach bot for Tech Meetups", disruptorModel: "AI event speaker marketplace", vector: "Unbundle" },
-      { id: 60, name: "Choice Hotels (ChoiceEdge)", age: "Legacy PMS", vulnerability: "Support Quicksand for franchisees", asymmetricAngle: "Speed: Franchise Optimizer auto-adjusting rates based on local events", beachheadNiche: "Dynamic Pricing bot for Choice hotels near Major Stadiums", disruptorModel: "AI-powered franchise revenue optimization", vector: "Speed" },
-    ],
-  },
-  {
-    id: 15, name: "Media & AdTech", emoji: "📺",
-    timingCatalyst: "2026 MRC whistleblowing on Nielsen & death of third-party cookies",
-    color: "350 80% 55%",
-    incumbents: [
-      { id: 61, name: "Nielsen", age: "Oligopoly", vulnerability: "Double-digit accuracy declines in Big Data demographic panels", asymmetricAngle: "Price/Speed: Synthetic Panels using AI to model audience behavior", beachheadNiche: "Accuracy auditor for Streaming TV ads on niche platforms", disruptorModel: "AI-powered synthetic audience measurement", vector: "Price" },
-      { id: 62, name: "Mediaocean", age: "Legacy", vulnerability: "Decades-old tech slowing agile marketing teams", asymmetricAngle: "Speed: Headless Media Buyer executing across TikTok/Meta/Google instantly", beachheadNiche: "Automated Direct-to-Buy agent for local political campaigns", disruptorModel: "API-first programmatic buying", vector: "Speed" },
-      { id: 63, name: "Comscore", age: "Legacy", vulnerability: "Hasn't adapted to Privacy-First cookieless web of 2026", asymmetricAngle: "Tech Stack: Zero-Knowledge Measurement via edge-AI, no personal data", beachheadNiche: "Privacy-Safe dashboard for Substack and Newsletter publishers", disruptorModel: "Privacy-native digital measurement", vector: "Speed" },
-      { id: 64, name: "Kantar", age: "30+ yrs", vulnerability: "Relies on slow manual survey-based market research", asymmetricAngle: "Speed: Real-Time Sentiment Agent replacing surveys with social listening", beachheadNiche: "Crisis Monitor for CPG brands during PR flubs", disruptorModel: "Real-time AI sentiment intelligence", vector: "Speed" },
-      { id: 65, name: "DoubleVerify", age: "High pricing", vulnerability: "Captive market (Ad Agencies), per-impression tax", asymmetricAngle: "Unbundle: Fraud Hunter for Micro-Influencers in the long-tail", beachheadNiche: "Agent flagging Bot Followers on Instagram/LinkedIn for small agencies", disruptorModel: "Micro-influencer verification service", vector: "Unbundle" },
-    ],
-  },
-  {
-    id: 16, name: "EdTech & K-12", emoji: "📚",
-    timingCatalyst: "2026 AI Assessment Crisis — traditional homework 100% defeatable by LLMs",
+    id: 12, name: "Education & Learning", emoji: "🎓",
+    timingCatalyst: "AI tutors can now provide personalized 1:1 instruction — threatening the $400B+ education technology market",
     color: "160 70% 45%",
     incumbents: [
-      { id: 66, name: "Pearson (MyLab)", age: "100+ yrs", vulnerability: "BBB complaints cite system delays and unfair access denial", asymmetricAngle: "Price/Tech: Open-Source Tutor with no Access Codes required", beachheadNiche: "AI Biology 101 companion for Community College students", disruptorModel: "Open-source AI tutoring", vector: "Price" },
-      { id: 67, name: "PowerSchool", age: "Oligopoly K-12", vulnerability: "Tech debt from acquisitions, UX Maze", asymmetricAngle: "Niche: Charter School Registrar for agile compliance", beachheadNiche: "Waitlist Management bot for Specialty Charter Schools", disruptorModel: "Lightweight charter school admin", vector: "Niche" },
-      { id: 68, name: "Infinite Campus", age: "SIS leader", vulnerability: "Confusing for novices, lacks modern AI automation", asymmetricAngle: "Speed: Instant Attendance Scribe replacing manual entries with Vision-AI", beachheadNiche: "Late-Slip bot for middle schools handling morning tardiness", disruptorModel: "AI-powered attendance automation", vector: "Speed" },
-      { id: 69, name: "Anthology (LMS)", age: "Merged", vulnerability: "Massive merger, implementation takes months, data siloed", asymmetricAngle: "Channel: Career-Path Agent connecting student performance to LinkedIn Jobs", beachheadNiche: "Job-Readiness Scorecard for Trade Schools", disruptorModel: "Student-to-career pipeline agent", vector: "Channel" },
-      { id: 70, name: "Frontline Education", age: "Legacy", vulnerability: "Stagnant updates, clunky mobile experiences", asymmetricAngle: "Speed: Sub-Teacher Matcher with Uber-style Instant-Book", beachheadNiche: "SMS-based sub-matching bot for one suburban school district", disruptorModel: "Instant substitute teacher marketplace", vector: "Speed" },
+      { id: 35, name: "Coursera", age: "12 yrs", vulnerability: "Completion rates under 10%. Static video lectures. $49/mo or $399/course for certificates. Content gets stale", asymmetricAngle: "AI tutor that teaches through conversation and adapts to each learner's pace — no pre-recorded videos", beachheadNiche: "AI coding bootcamp — learns by building real projects with an AI mentor, not watching videos", disruptorModel: "AI tutor: $19/mo for personalized learning paths", vector: "Speed", existingDisruptor: "Brilliant, Scrimba", aiDisruptionThesis: "AI can provide Socratic, adaptive 1:1 tutoring at scale — something MOOCs promised but never delivered", pricingModel: "Subscription + per-course ($49/mo or $399/course)" },
+      { id: 36, name: "Canvas (Instructure)", age: "16 yrs", vulnerability: "LMS that's essentially a file-sharing system with grades. Faculty hate it. Students ignore it", asymmetricAngle: "AI learning environment that auto-generates quizzes, gives feedback on essays, and creates study guides from lectures", beachheadNiche: "AI teaching assistant for community college instructors — auto-grades essays and provides student feedback", disruptorModel: "AI TA: $3/student/semester for automated grading + feedback", vector: "Price", existingDisruptor: "Turnitin AI", aiDisruptionThesis: "AI can grade assignments, provide personalized feedback, and identify struggling students — replacing the most time-consuming parts of teaching", pricingModel: "Per-student institutional license" },
+      { id: 37, name: "Chegg", age: "19 yrs", vulnerability: "Revenue collapsed 50% as ChatGPT replaced homework answers. Pivoting desperately to AI. Stock down 85%", asymmetricAngle: "AI study buddy that teaches HOW to solve problems instead of giving answers — flipped the Chegg model", beachheadNiche: "AI STEM tutor for pre-med students — explains concepts through worked examples, not answers", disruptorModel: "AI study partner: $9/mo with mastery tracking", vector: "Speed", existingDisruptor: "Khanmigo, Photomath", aiDisruptionThesis: "AI can teach problem-solving methodology through Socratic dialogue — making 'look up the answer' services worthless", pricingModel: "Per-student subscription ($15/mo)" },
     ],
   },
   {
-    id: 17, name: "Non-Profit & NGO", emoji: "🤝",
-    timingCatalyst: "2026 Great Retention Crisis — mid-market leaving legacy CRMs",
+    id: 13, name: "Healthcare & Wellness Tech", emoji: "🏥",
+    timingCatalyst: "AI can now triage symptoms, manage appointments, and handle billing — threatening $50B+ healthcare IT market",
+    color: "15 80% 50%",
+    incumbents: [
+      { id: 38, name: "Epic Systems", age: "45 yrs", vulnerability: "Costs hospitals $100M+ to implement. Walled garden trapping patient data. Interface designed in the 2000s", asymmetricAngle: "AI layer that sits on top of Epic and gives clinicians a clean, intelligent interface — no data migration needed", beachheadNiche: "AI clinical assistant for urgent care clinics — auto-generates visit notes from doctor-patient conversation", disruptorModel: "AI scribe overlay: $99/provider/mo, works with existing Epic", vector: "Unbundle", existingDisruptor: "Abridge, Ambience", aiDisruptionThesis: "AI can translate Epic's complex interface into simple workflows and auto-generate documentation — solving the #1 physician burnout cause", pricingModel: "Per-bed institutional license ($M+)" },
+      { id: 39, name: "Teladoc", age: "22 yrs", vulnerability: "Stock down 90% from peak. $75-$300 per visit. Doctors still manually review records between calls", asymmetricAngle: "AI-first telehealth where AI handles triage, history review, and follow-ups — doctor time reduced by 60%", beachheadNiche: "AI mental health check-ins between therapy sessions — daily mood tracking + AI-guided exercises", disruptorModel: "AI-assisted telehealth: $29/mo unlimited check-ins", vector: "Price", existingDisruptor: "Cerebral, Headway", aiDisruptionThesis: "AI can handle patient intake, symptom triage, and routine follow-ups — letting doctors focus only on diagnosis and treatment decisions", pricingModel: "Per-visit + subscription" },
+      { id: 40, name: "Practice Fusion", age: "19 yrs", vulnerability: "Free EHR funded by pharma ads — creating conflicts of interest. Now owned by Allscripts, declining", asymmetricAngle: "AI-native patient records that auto-document visits and suggest evidence-based treatments — no data entry", beachheadNiche: "AI EHR for solo practitioners — voice-to-chart, auto-billing, patient portal included", disruptorModel: "AI practice suite: $49/provider/mo all-inclusive", vector: "Speed", aiDisruptionThesis: "AI can transcribe visits, generate SOAP notes, code diagnoses, and submit claims — automating the entire documentation workflow", pricingModel: "Freemium (ad-supported)" },
+    ],
+  },
+  {
+    id: 14, name: "Real Estate & PropTech", emoji: "🏠",
+    timingCatalyst: "NAR settlement disrupting agent commissions + AI can now generate listings, virtual tours, and market analyses automatically",
     color: "270 60% 55%",
     incumbents: [
-      { id: 71, name: "Blackbaud (Raiser's Edge)", age: "40+ yrs", vulnerability: "Overwhelmingly complicated backend, price hikes, captive data", asymmetricAngle: "Price/Unbundle: 10-Minute Donor Manager — talk to your data, zero training", beachheadNiche: "Major Gift Prospector scanning local news for donor leads", disruptorModel: "AI donor intelligence", vector: "Price" },
-      { id: 72, name: "DonorPerfect", age: "Stagnant", vulnerability: "Captive users due to data migration fears", asymmetricAngle: "Zero-Migration Fabric connecting to API and fixing UI without data move", beachheadNiche: "Mobile Donor Outreach agent for Museum directors", disruptorModel: "Overlay CRM without migration", vector: "Speed" },
-      { id: 73, name: "Neon One", age: "Mid-market", vulnerability: "AI features feel bolted-on rather than native", asymmetricAngle: "Speed: Instant Tax-Receipt Bot automating the most hated admin task", beachheadNiche: "Tool for Church/Synagogue treasurers issuing annual reports", disruptorModel: "Automated tax receipt service", vector: "Speed" },
-      { id: 74, name: "Bonterra (Salsa Labs)", age: "PE consolidated", vulnerability: "Feature Bloat, declining support quality", asymmetricAngle: "Niche: Legislative Action Agent — 1-click WhatsApp advocacy", beachheadNiche: "Call Your Rep bot for Climate Action non-profits", disruptorModel: "Instant advocacy mobilization", vector: "Niche" },
-      { id: 75, name: "Bloomerang", age: "Growing", vulnerability: "Pricing increasing as they move up-market", asymmetricAngle: "Channel: Local Charity Copilot for grassroots <$1M non-profits", beachheadNiche: "Grant-Writing Agent drafting proposals in 5 minutes", disruptorModel: "AI grant writing for small orgs", vector: "Channel" },
+      { id: 41, name: "Zillow", age: "18 yrs", vulnerability: "Zestimate accuracy questioned. Agent-centric model being disrupted by commission changes. Massive ad dependency", asymmetricAngle: "AI real estate agent that handles everything from listing to closing — no 6% commission", beachheadNiche: "AI listing agent for FSBO sellers — generates photos, descriptions, pricing recommendation, and handles inquiries", disruptorModel: "AI listing service: flat $499 per listing (vs $15-30k commission)", vector: "Price", existingDisruptor: "Opendoor, Redfin", aiDisruptionThesis: "AI can create professional listings, respond to buyer inquiries, schedule showings, and manage offers — the core work of listing agents", pricingModel: "Lead-gen ads to agents + Premier Agent subscription" },
+      { id: 42, name: "CoStar/Apartments.com", age: "30+ yrs", vulnerability: "Commercial real estate data monopoly charging $1k+/mo. Acquired Apartments.com for residential control", asymmetricAngle: "AI-powered CRE intelligence using public data, satellite imagery, and web scraping — no proprietary database needed", beachheadNiche: "AI market analyzer for small CRE investors — property valuation + tenant risk scoring from public data", disruptorModel: "AI property intelligence: $49/mo (vs $1,000+/mo CoStar)", vector: "Price", existingDisruptor: "Reonomy, Crexi", aiDisruptionThesis: "AI can aggregate and analyze property data from public records, satellite imagery, and web sources — breaking CoStar's data monopoly", pricingModel: "Subscription ($1,000+/mo)" },
+      { id: 43, name: "Yardi", age: "40+ yrs", vulnerability: "Legacy property management software with 1990s-era UI. Months-long implementation. Maintenance ticket hell", asymmetricAngle: "AI property manager that handles tenant communication, maintenance dispatch, and rent collection autonomously", beachheadNiche: "AI property manager for Airbnb hosts with 5-20 units — handles guest comms, pricing, cleaning coordination", disruptorModel: "AI landlord: $10/unit/mo, handles 90% of management tasks", vector: "Speed", existingDisruptor: "Buildium, TurboTenant", aiDisruptionThesis: "AI can handle tenant screening, lease generation, maintenance triage, and rent reminders — the entire property management workflow", pricingModel: "Per-unit SaaS ($2-$8/unit/mo)" },
     ],
   },
   {
-    id: 18, name: "Wealth Management", emoji: "💎",
-    timingCatalyst: "Great Wealth Transfer 2025-2026: $84T moving to Gen Z/Millennials",
-    color: "45 80% 45%",
+    id: 15, name: "Cybersecurity", emoji: "🔒",
+    timingCatalyst: "AI-powered attacks are outpacing traditional security tools — only AI-native security can keep up with AI-generated threats",
+    color: "120 60% 40%",
     incumbents: [
-      { id: 76, name: "Envestnet (Tamarac)", age: "20+ yrs", vulnerability: "Best of the worst — powerful but zero flexibility", asymmetricAngle: "Tech Stack: Agentic Rebalancer with Goal-based AI agents", beachheadNiche: "Tax-Loss Harvesting auditor for Small Independent Advisors (RIAs)", disruptorModel: "AI-powered portfolio rebalancing", vector: "Speed" },
-      { id: 77, name: "SS&C Advent", age: "Massive debt", vulnerability: "Pricing hasn't changed, owns the middle office", asymmetricAngle: "Price: Open-Accounting Node charging per-audit not licensing tax", beachheadNiche: "Portfolio Performance auditor for Multi-Family Offices", disruptorModel: "Per-audit accounting service", vector: "Price" },
-      { id: 78, name: "SEI Investments", age: "Legacy", vulnerability: "Dominates bank-trust processing, interface feels like 1992", asymmetricAngle: "Niche: Trusts for the Rest of Us — automate small family trust logic", beachheadNiche: "Trust-Distribution agent for middle-class estate executors", disruptorModel: "Democratized trust management", vector: "Niche" },
-      { id: 79, name: "Fidelity (Wealthscape)", age: "Oligopoly", vulnerability: "Data Silos between Fidelity and other tools", asymmetricAngle: "Unbundle: Unified Advisory Inbox syncing Fidelity with Salesforce/Slack", beachheadNiche: "Client-Update agent texting clients when trades settle", disruptorModel: "Cross-platform advisory sync", vector: "Unbundle" },
-      { id: 80, name: "Morningstar Direct", age: "Monopoly", vulnerability: "Ratings data monopoly, $20k+/year pricing", asymmetricAngle: "Open-Source quantitative data replacing proprietary ratings", beachheadNiche: "ESG Auditor agent for Sustainable Investing startups", disruptorModel: "Open-source investment intelligence", vector: "Price" },
-    ],
-  },
-  {
-    id: 19, name: "Deep Science & Pharma R&D", emoji: "🧬",
-    timingCatalyst: "2026 Medicine Maker report: 95% scientists can't analyze data independently",
-    color: "190 80% 45%",
-    incumbents: [
-      { id: 81, name: "Benchling / IDBS", age: "10+ yrs", vulnerability: "Transitioned from innovation to passive record-keeping", asymmetricAngle: "Speed: Active Lab Partner flagging experiment duplication proactively", beachheadNiche: "Protocol Checker for CRISPR startups auditing redundancy", disruptorModel: "Proactive lab intelligence", vector: "Speed" },
-      { id: 82, name: "Dotmatics", age: "Legacy portfolio", vulnerability: "Integration fatigue across acquired products", asymmetricAngle: "Tech Stack: Headless LIMS — API-first, scientists use Python/R directly", beachheadNiche: "Data-Uploader for early-stage Biotech moving from Excel to cloud", disruptorModel: "Developer-first lab information system", vector: "Speed" },
-      { id: 83, name: "Waters (Empower)", age: "Monopoly", vulnerability: "Chromatography data monopoly, rigid tech stack, hard to export", asymmetricAngle: "Unbundle: Empower Signal-Exfiltrator extracting data into modern AI models", beachheadNiche: "Anomaly Detector for Quality Control labs using Empower 3", disruptorModel: "Data liberation + AI analytics", vector: "Unbundle" },
-      { id: 84, name: "Thermo Fisher (SampleManager)", age: "Enterprise LIMS", vulnerability: "Multi-year multi-million dollar consultant sinkhole implementation", asymmetricAngle: "Price: Pay-per-Sample disrupting $100k licensing fee", beachheadNiche: "Sample Tracker for Craft Distilleries or small food-testing labs", disruptorModel: "Usage-based laboratory management", vector: "Price" },
-      { id: 85, name: "Schrödinger", age: "High-end", vulnerability: "Pricing prohibitive for garage biotech startups", asymmetricAngle: "Open-Source Simulation Agents: 80% of value for 1% of cost", beachheadNiche: "Lead Optimizer bot for Longevity-focused Biohackers", disruptorModel: "Open-source molecular modeling", vector: "Price" },
-    ],
-  },
-  {
-    id: 20, name: "Productivity & Office", emoji: "💻",
-    timingCatalyst: "2026 Dual-Stack Crisis: 64% companies paying for BOTH Google and Microsoft",
-    color: "220 70% 55%",
-    incumbents: [
-      { id: 86, name: "Microsoft Teams", age: "Feature bloat", vulnerability: "NPS declining due to Notification Hell and slow performance", asymmetricAngle: "Speed: Silent Communicator — only alerts when a decision is needed", beachheadNiche: "Decision Log for Remote Engineering teams syncing Slack/Jira/Teams", disruptorModel: "Decision-focused communication", vector: "Speed" },
-      { id: 87, name: "Google Drive", age: "Digital Junkyard", vulnerability: "Easy to add files, impossible to find them without exact name", asymmetricAngle: "Tech Stack: Semantic File-System organizing by intent not folder name", beachheadNiche: "Due Diligence Organizer for VCs cleaning startup data rooms", disruptorModel: "AI-powered semantic file management", vector: "Speed" },
-      { id: 88, name: "Slack (Salesforce)", age: "Post-acquisition", vulnerability: "Pricing increased, fun replaced by Enterprise bloat", asymmetricAngle: "Channel: WhatsApp Enterprise Bridge for workers refusing to install Slack", beachheadNiche: "Shift-Swap bot for Starbucks/Retail workers via WhatsApp", disruptorModel: "WhatsApp-native workplace communication", vector: "Channel" },
-      { id: 89, name: "Box / Dropbox", age: "Legacy", vulnerability: "Sync & Share is commodity, pricing not adapted to AI storage era", asymmetricAngle: "Unbundle: Governance Agent focusing only on HIPAA/SOC2 compliance", beachheadNiche: "Auto-Redactor for Healthcare admin sharing patient records", disruptorModel: "Compliance-first file governance", vector: "Unbundle" },
-      { id: 90, name: "Zoom", age: "Stagnant", vulnerability: "AI Summary is a basic add-on, not core workflow", asymmetricAngle: "Speed: Meeting-Free Agent that attends for you", beachheadNiche: "Daily Standup bot replacing the 9 AM Zoom call with AI-sync", disruptorModel: "Autonomous meeting representative", vector: "Speed" },
-    ],
-  },
-  {
-    id: 21, name: "Public Utilities & Smart Cities", emoji: "🏙️",
-    timingCatalyst: "2026 Banning Crisis: legacy billing failure paralyzed 11k CA utility customers",
-    color: "170 60% 45%",
-    incumbents: [
-      { id: 91, name: "Tyler Tech (Incode)", age: "1990s legacy", vulnerability: "High tech debt, failed rollouts left cities desperate", asymmetricAngle: "Price: Boutique Utility Billing — charge per active meter not $1M license", beachheadNiche: "Billing dashboard for Rural Water Districts (<2,000 meters)", disruptorModel: "Per-meter utility billing", vector: "Price" },
-      { id: 92, name: "Oracle Utilities (CC&B)", age: "Monopoly Tier 1", vulnerability: "5-year implementation cycle", asymmetricAngle: "Speed: Net-Billing Fast-Track sidecar for Solar/NEM 3.0 logic", beachheadNiche: "Solar Credit Auditor for Southern California Edison customers", disruptorModel: "Solar billing overlay agent", vector: "Speed" },
-      { id: 93, name: "Badger Meter (Beacon)", age: "Hardware-first", vulnerability: "Beacon software cited as non-intuitive for city clerks", asymmetricAngle: "Channel: Citizen-Transparency Bot — citizens text water usage questions", beachheadNiche: "Leak Alert SMS bot for University Campuses", disruptorModel: "Citizen-facing utility intelligence", vector: "Channel" },
-      { id: 94, name: "SAP Public Sector", age: "Extreme complexity", vulnerability: "Requires a PhD to run a payroll report", asymmetricAngle: "Natural Language Controller translating SAP T-Codes to plain English", beachheadNiche: "Budget Tracker for City Council members", disruptorModel: "Natural language government ERP", vector: "Speed" },
-      { id: 95, name: "Sensus (Xylem)", age: "Hardware moat", vulnerability: "Walled garden software tied to proprietary hardware", asymmetricAngle: "Tech Stack: Universal Meter Bridge pulling data via radio to open API", beachheadNiche: "Water-Waste monitor for Commercial Property Managers", disruptorModel: "Open-source meter data bridge", vector: "Speed" },
-    ],
-  },
-  {
-    id: 22, name: "Global NGO & Social Impact", emoji: "🌍",
-    timingCatalyst: "2026 Transparency Mandate for NGOs receiving EU/UN funding",
-    color: "140 65% 45%",
-    incumbents: [
-      { id: 96, name: "Blackbaud (Luminate)", age: "Founded 1981", vulnerability: "Pricing unchanged for years, data silo lock-in", asymmetricAngle: "Niche: Grassroots Advocacy Bot for hyper-local campaigns", beachheadNiche: "Petition-to-Email agent for neighborhood associations", disruptorModel: "Hyper-local advocacy platform", vector: "Niche" },
-      { id: 97, name: "Submittable", age: "Grant management", vulnerability: "Increased fees for reviewers in 2026", asymmetricAngle: "Speed: Instant Grant-Screener vetting applications against 100 criteria", beachheadNiche: "Sustainability Grant screener for Local City Green Funds", disruptorModel: "AI grant screening agent", vector: "Speed" },
-      { id: 98, name: "Salesforce Non-Profit Cloud", age: "Over-engineered", vulnerability: "Requires $120k Salesforce Admin to manage for 90% of NGOs", asymmetricAngle: "Price: $0-Admin CRM managed via Slack interface", beachheadNiche: "Donor-Thank-You bot for Animal Shelters", disruptorModel: "Zero-admin non-profit CRM", vector: "Price" },
-      { id: 99, name: "CyberGrants (Bonterra)", age: "Enterprise-only", vulnerability: "High friction for Employee Giving programs", asymmetricAngle: "Channel: Slack-Giving Agent — employees give to charities in Slack/Teams", beachheadNiche: "Disaster-Relief match-bot for Tech Startups", disruptorModel: "In-workspace charitable giving", vector: "Channel" },
-      { id: 100, name: "Foundant", age: "Legacy", vulnerability: "Slow report-building, stagnant features", asymmetricAngle: "Unbundle: Impact-Report Scribe auto-pulling data and writing donor reports", beachheadNiche: "Annual Report generator for Family Foundations", disruptorModel: "AI-powered impact reporting", vector: "Unbundle" },
+      { id: 44, name: "CrowdStrike", age: "13 yrs", vulnerability: "$25/endpoint/mo. July 2024 global outage destroyed trust. Kernel-level access is a single point of failure", asymmetricAngle: "AI security that operates in userspace (no kernel access) and auto-remediates threats without crashing systems", beachheadNiche: "AI endpoint protection for SMBs — auto-detects and removes threats without IT team intervention", disruptorModel: "AI security: $5/endpoint/mo with auto-remediation", vector: "Price", existingDisruptor: "SentinelOne, Wiz", aiDisruptionThesis: "AI can detect behavioral anomalies and respond to threats in real-time without requiring kernel-level access that risks system-wide failures", pricingModel: "Per-endpoint SaaS ($25+/endpoint/mo)" },
+      { id: 45, name: "Palo Alto Networks", age: "18 yrs", vulnerability: "$50k+ annual contracts. Requires certified engineers to configure. Moving to 'platformization' but adding complexity", asymmetricAngle: "AI firewall that self-configures based on your infrastructure and auto-adapts to new threats — no SIEM analyst needed", beachheadNiche: "AI network security for e-commerce companies — auto-blocks attacks, no security team required", disruptorModel: "AI security mesh: $199/mo for full network protection", vector: "Niche", existingDisruptor: "Tailscale, Cloudflare Zero Trust", aiDisruptionThesis: "AI can analyze network traffic patterns and auto-configure firewall rules — eliminating the need for expensive security engineers", pricingModel: "Annual enterprise contracts ($50k+)" },
+      { id: 46, name: "Okta", age: "15 yrs", vulnerability: "Identity management at $6-$15/user/mo. Multiple breaches eroded trust. Authentication shouldn't cost this much", asymmetricAngle: "AI identity platform that auto-configures SSO/MFA based on your app stack — setup in minutes not weeks", beachheadNiche: "AI auth for SaaS startups — one line of code for enterprise-grade SSO, MFA, and compliance", disruptorModel: "AI auth: $2/user/mo with auto-configured SSO", vector: "Price", existingDisruptor: "Clerk, WorkOS", aiDisruptionThesis: "AI can auto-discover apps in your stack, configure SSO connections, and set security policies — eliminating weeks of manual integration", pricingModel: "Per-user SaaS ($6-$15/user/mo)" },
     ],
   },
 ];
-
-/** Flatten all incumbents for easy lookup */
-export const ALL_INCUMBENTS = INDUSTRY_CLUSTERS.flatMap(c => 
-  c.incumbents.map(inc => ({ ...inc, cluster: c }))
-);

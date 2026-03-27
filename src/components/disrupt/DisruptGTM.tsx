@@ -11,9 +11,9 @@ import type { IndustryCluster, DisruptionIncumbent } from "@/data/disruption-inc
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const GTM_SECTIONS = [
-  { id: "channels", label: "Channel Strategy", emoji: "📡", description: "Where will you reach your first customers?" },
-  { id: "pricing", label: "Pricing Model", emoji: "💰", description: "How will you price to disrupt the incumbent?" },
-  { id: "first-100", label: "First 100 Customers", emoji: "🎯", description: "Specific plan to land your first 100 paying users" },
+  { id: "channels", label: "Distribution Channels", emoji: "📡", description: "Product Hunt, Reddit, developer communities, or content-led? Where will you reach early adopters?" },
+  { id: "pricing", label: "SaaS Pricing Model", emoji: "💰", description: "How will you price to undercut the incumbent? Freemium, usage-based, flat-rate, or outcome-based?" },
+  { id: "first-100", label: "First 100 Users", emoji: "🎯", description: "Specific plan to land your first 100 paying users — cold outreach, community, PLG, or partnerships?" },
 ];
 
 export function DisruptGTM({ incumbent, cluster, onComplete }: {
