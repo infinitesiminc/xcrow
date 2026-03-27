@@ -39,7 +39,7 @@ export function DisruptScoreboard({
 
   const allDone = activeTeams.every(t => t.completed_at);
   const getIncumbentName = (id: string | null) =>
-    id ? INDUSTRY_CLUSTERS.flatMap(c => c.incumbents).find(i => i.id === id)?.name || "Unknown" : "—";
+    id ? INDUSTRY_CLUSTERS.flatMap(c => c.incumbents).find(i => String(i.id) === id)?.name || "Unknown" : "—";
 
   const getMedal = (idx: number) => {
     if (idx === 0) return <Crown className="w-6 h-6 text-yellow-500" />;

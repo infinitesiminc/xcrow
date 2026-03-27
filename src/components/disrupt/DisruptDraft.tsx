@@ -98,7 +98,7 @@ export function DisruptDraft({
             <CardContent className="py-4 px-8">
               <p className="text-sm text-muted-foreground">Your target:</p>
               <p className="font-cinzel text-xl font-bold text-foreground">
-                {INDUSTRY_CLUSTERS.flatMap(c => c.incumbents).find(i => i.id === myTeam.incumbent_id)?.name}
+                {INDUSTRY_CLUSTERS.flatMap(c => c.incumbents).find(i => String(i.id) === myTeam.incumbent_id)?.name}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Waiting for all teams to draft...</p>
             </CardContent>

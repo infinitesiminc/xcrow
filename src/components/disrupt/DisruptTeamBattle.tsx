@@ -21,8 +21,8 @@ export function DisruptTeamBattle({
   team: DisruptTeam;
   onComplete: () => void;
 }) {
-  const cluster = INDUSTRY_CLUSTERS.find(c => c.id === team.cluster_id);
-  const incumbent = cluster?.incumbents.find(i => i.id === team.incumbent_id);
+  const cluster = INDUSTRY_CLUSTERS.find(c => String(c.id) === team.cluster_id);
+  const incumbent = cluster?.incumbents.find(i => String(i.id) === team.incumbent_id);
 
   const [currentStep, setCurrentStep] = useState(team.current_step || 1);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
