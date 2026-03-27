@@ -665,7 +665,7 @@ function getCurrentActNum(phase: GamePhase): number {
 }
 
 /* ── Mission Hub ── */
-function MissionHub({ onSelectCluster, progress }: { onSelectCluster: (c: IndustryCluster) => void; progress: Record<string, MissionProgress> }) {
+function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectCluster: (c: IndustryCluster) => void; progress: Record<string, MissionProgress>; onStartDiscovery?: () => void }) {
   const totalCompleted = Object.values(progress).filter(p => p.status === "completed").length;
   const totalInProgress = Object.values(progress).filter(p => p.status === "in-progress").length;
   const allIncumbents = INDUSTRY_CLUSTERS.flatMap(c => c.incumbents);
