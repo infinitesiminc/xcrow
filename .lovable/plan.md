@@ -1,71 +1,51 @@
 
 
-# Disruption Arena — Full 3-Act MBA Simulation
+# Fix: Wire Up the 3-Act Flow
 
-## Overview
+## Problem
+The 3-act components (`DisruptVentureBuild`, `DisruptPitchBattle`, `DisruptFinalScoreboard`) exist but are unreachable because:
 
-Transform the current single-phase disruption battle into a complete **3-act startup simulation** that teaches MBA students the full journey from opportunity identification to investor pitch.
+1. **Solo mode has no Acts 2/3** — it goes map → battle → score with no venture or pitch phase
+2. **Team mode transitions are broken** — `DisruptTeamBattle.onComplete()` only sets local state (`setPhase("team-venture")`) but never updates `disrupt_rooms.status` to `"venture"` in the database, so realtime sync doesn't work for other team members
+3. **No host controls** for advancing between acts (battle → venture → pitch → completed)
+4. **`DisruptTeamBattle.finishBattle`** doesn't set `act: 2` on the team record
 
-```text
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   ACT 1: SCOUT  │ ──▶ │  ACT 2: BUILD   │ ──▶ │  ACT 3: PITCH   │
-│  (Current game)  │     │ Venture Architect│     │  Pitch Battle   │
-│  6-step disrupt  │     │ Lean Canvas, GTM │     │ VC Q&A + Vote   │
-│  framework       │     │ Unit Economics   │     │ Class ranking   │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-```
+## Fix Plan
 
-## Act 2: Venture Architecture (New)
+### 1. Add Solo 3-Act Flow (Disrupt.tsx)
+- After `solo-score`, add a "Continue to Venture Build" button that transitions to a new `solo-venture` phase
+- After venture, add `solo-pitch` phase for VC Q&A
+- After pitch, show final combined score
+- Reuse the existing `DisruptVentureBuild` and `DisruptPitchBattle` components with a solo-compatible wrapper (create a mock team/room object for solo play)
 
-After conquering the 6 disruption steps, teams enter a structured startup-building phase. AI acts as a **co-founder advisor** (not adversary) through 5 sequential canvases:
+### 2. Fix Team Act Transitions (DisruptTeamBattle.tsx)
+- In `finishBattle`, after scoring, also update `disrupt_teams.act` to `2`
+- When all teams in a room have `act >= 2`, auto-update `disrupt_rooms.status` to `"venture"` OR add host control
 
-1. **Lean Canvas** — AI helps draft; team must challenge and refine each section (Problem, Solution, Metrics, Unfair Advantage, Channels, Cost/Revenue)
-2. **Market Sizing** — TAM/SAM/SOM estimation with AI data assistance; team defends methodology
-3. **Go-to-Market Playbook** — AI proposes 3 GTM strategies; team picks one and justifies
-4. **Unit Economics** — CAC, LTV, burn rate modeling; AI stress-tests assumptions
-5. **Moat Defense** — Team articulates why their startup survives the incumbent's counter-attack
+### 3. Add Host Act-Advance Controls (DisruptDraft.tsx or new component)
+- Show a floating host control bar during team play that displays:
+  - Current act status
+  - "Advance to Act 2: Build" button (sets room status to `"venture"`)
+  - "Advance to Act 3: Pitch" button (sets room status to `"pitching"`)
+  - "Show Results" button (sets room status to `"completed"`)
+- Only visible to `room.created_by === user.id`
 
-Each canvas produces a structured JSON output stored on the team record. AI provides streaming feedback like Act 1.
+### 4. Fix DisruptVentureBuild.tsx
+- The `finishVenture` function already updates `act: 2` — change to `act: 3` so it progresses correctly
+- Ensure the component works in both solo and team contexts
 
-## Act 3: Pitch Battle (New)
+### 5. Fix DisruptPitchBattle.tsx  
+- Ensure it renders correctly for both solo and team modes
+- Wire up the voting → completed transition
 
-Teams present their startup to the class:
+### Files Modified
+- `src/pages/Disrupt.tsx` — Add solo Acts 2/3 phases, add host control bar for team mode
+- `src/components/disrupt/DisruptTeamBattle.tsx` — Update `finishBattle` to set `act: 2`
+- `src/components/disrupt/DisruptVentureBuild.tsx` — Fix act progression value
+- `src/components/disrupt/DisruptPitchBattle.tsx` — Solo mode compatibility
 
-1. **Auto-generated Pitch Deck** — AI compiles a 5-slide summary from Acts 1+2 data (Problem, Solution, Market, Traction Plan, Ask)
-2. **VC Q&A Mode** — AI plays "VC panel" asking tough questions; other teams can also submit questions via a live question queue
-3. **Class Vote** — All non-presenting teams rate each pitch (1-5 stars) on Viability, Clarity, and Defensibility
-4. **Final Scoring** — Weighted: 40% AI battle score (Act 1) + 30% venture architecture quality (Act 2) + 30% pitch vote (Act 3)
-
-## Technical Plan
-
-### Database Changes
-- Add columns to `disrupt_teams`: `venture_canvas` (jsonb), `pitch_data` (jsonb), `class_votes` (jsonb), `act` (int default 1)
-- New table `disrupt_votes` for class voting: `id`, `room_id`, `voter_id`, `team_id`, `viability`, `clarity`, `defensibility`, `created_at`
-
-### Edge Function Updates
-- Extend `disruption-battle` with new actions:
-  - `"venture"` — AI co-founder advisor for Act 2 canvases (streaming)
-  - `"generate-pitch"` — Compiles pitch deck data from Acts 1+2
-  - `"vc-qa"` — AI VC panel Q&A (streaming)
-  - `"final-score"` — Combines all 3 act scores
-
-### New Components
-- `DisruptVentureBuild.tsx` — 5-canvas venture architecture interface with progress sidebar
-- `DisruptPitchBattle.tsx` — Pitch presentation view with auto-deck, VC Q&A chat, and class voting
-- `DisruptFinalScoreboard.tsx` — Enhanced scoreboard showing 3-act breakdown
-
-### Game Flow Changes
-- `disrupt_rooms.status` gets new values: `"venture"`, `"pitching"`, `"voting"`
-- Host controls act transitions (Start Battle → Start Building → Start Pitching → Show Results)
-- Timer resets per act (configurable by host)
-- Real-time sync continues via Supabase Realtime for all new phases
-
-### Phase Transitions (Host-controlled)
-```text
-lobby → drafting → battling → venture → pitching → voting → completed
-```
-
-## Scope
-
-~6 files modified/created. Reuses existing streaming infrastructure and RPG styling. The venture and pitch phases follow the same chat-with-AI pattern as Act 1, keeping the UX consistent.
+### Technical Details
+- Solo mode creates a synthetic team/room object so venture/pitch components work without database records
+- Host controls use `supabase.from("disrupt_rooms").update({ status })` to trigger realtime transitions for all clients
+- The `ScoreScreen` component gets a "Continue Building" CTA that advances to Act 2
 
