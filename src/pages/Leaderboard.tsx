@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import leaderboardBg from "@/assets/leaderboard-bg.jpg";
 import { motion } from "framer-motion";
 import {
   Trophy, Zap, Target, Play, ArrowUpDown, Crown, Medal, Award,
