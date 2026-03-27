@@ -111,10 +111,11 @@ const DATA_MOAT = [
 
 /* ── 9. Team ── */
 const TEAM = {
-  name: "Jackson",
+  name: "Jackson Lam",
   title: "Founder & CEO",
   bio: "Built Xcrow from a simple question: why are we training students for jobs AI is already transforming? Combined deep product instinct with AI-native architecture to create the skill infrastructure the market is desperately missing.",
   location: "Los Angeles, CA",
+  linkedin: "https://www.linkedin.com/in/jacksonlam/",
 };
 
 /* ── 10. The Ask ── */
