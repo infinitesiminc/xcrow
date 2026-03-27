@@ -14,7 +14,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     if (action === "battle") {
-      const { incumbent, cluster, messages, step, userStrategy } = payload;
+      const { incumbent, cluster, messages, step } = payload;
 
       const systemPrompt = `You are the CEO of "${incumbent.name}" — a legacy ${cluster.name} company.
 You are role-playing a DISRUPTION BATTLE SIMULATION for MBA students learning about startup strategy.
@@ -51,6 +51,71 @@ IMPORTANT: You want the student to WIN eventually, but they must EARN it. Make t
 If they're on Step ${step}, focus your response on challenging their thinking for that step.
 When they've proven their case for the current step, say "⚔️ STEP ${step} CONQUERED" and introduce the next challenge.`;
 
+      return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
+    }
+
+    if (action === "venture") {
+      const { incumbent, cluster, canvas, canvasData, messages } = payload;
+      const canvasDescriptions: Record<string, string> = {
+        "lean-canvas": "Help the team draft a Lean Canvas. Walk through: Problem, Solution, Key Metrics, Unfair Advantage, Channels, Customer Segments, Cost Structure, Revenue Streams. Challenge weak assumptions.",
+        "market-sizing": "Help the team estimate TAM/SAM/SOM. Push them to use bottom-up methodology, validate data sources, and defend their numbers. Ask: what's the average deal size? How many potential customers in the beachhead?",
+        "gtm-playbook": "Propose 3 distinct Go-to-Market strategies for their startup. Let the team pick one and justify why. Challenge their choice with real-world execution concerns.",
+        "unit-economics": "Help model unit economics: CAC, LTV, payback period, burn rate. Stress-test their assumptions — are they being realistic about conversion rates and churn?",
+        "moat-defense": "The incumbent is about to counter-attack. Help the team articulate their moat: network effects, switching costs, data advantages, regulatory capture, or speed. Challenge each claim.",
+      };
+
+      const systemPrompt = `You are a **Startup Co-Founder Advisor** helping an MBA team build their venture after identifying a disruption opportunity.
+
+CONTEXT:
+- They are disrupting: ${incumbent.name} in ${cluster.name}
+- Incumbent vulnerability: ${incumbent.vulnerability}
+- Disruption vector: ${incumbent.vector}
+
+CURRENT CANVAS: ${canvas}
+${canvasDescriptions[canvas] || "Guide the team through this strategic exercise."}
+
+${canvasData ? `PREVIOUS CANVAS DATA:\n${JSON.stringify(canvasData, null, 2)}` : ""}
+
+YOUR ROLE:
+- Act as a supportive but rigorous co-founder advisor
+- Ask probing questions, challenge weak assumptions
+- Provide frameworks and real-world examples from 2026
+- When the team gives a strong answer, acknowledge it and move to the next section
+- Keep responses under 250 words
+- Use markdown formatting
+- When ALL sections of the current canvas are adequately addressed, say "✅ CANVAS COMPLETE" and provide a structured JSON summary wrapped in \`\`\`json code blocks
+
+IMPORTANT: Be encouraging but never accept vague or unsupported claims. Make them think like real founders.`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
+    }
+
+    if (action === "generate-pitch") {
+      const { incumbent, cluster, battleTranscript, ventureCanvas } = payload;
+
+      const prompt = `You are an expert pitch deck consultant. Based on a team's disruption battle and venture architecture work, generate a structured 5-slide pitch deck summary.
+
+DISRUPTION TARGET: ${incumbent.name} in ${cluster.name}
+VULNERABILITY: ${incumbent.vulnerability}
+VECTOR: ${incumbent.vector}
+
+BATTLE INSIGHTS (summarized):
+${battleTranscript ? battleTranscript.slice(0, 2000) : "No battle data available"}
+
+VENTURE CANVAS DATA:
+${ventureCanvas ? JSON.stringify(ventureCanvas, null, 2) : "No venture data available"}
+
+Generate a JSON object with exactly 5 slides. Each slide has: title, bullets (array of 3-4 key points), and speakerNotes (2-3 sentences the presenter should say).
+
+The 5 slides should be:
+1. The Problem — What's broken in the incumbent's market
+2. Our Solution — The disruptive approach  
+3. Market Opportunity — TAM/SAM/SOM and timing
+4. Go-to-Market — How we win the beachhead
+5. The Moat — Why the incumbent can't respond
+
+Respond ONLY with the JSON using tool calling.`;
+
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -59,33 +124,68 @@ When they've proven their case for the current step, say "⚔️ STEP ${step} CO
         },
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...messages,
-          ],
-          stream: true,
+          messages: [{ role: "user", content: prompt }],
+          tools: [{
+            type: "function",
+            function: {
+              name: "generate_pitch_deck",
+              description: "Generate a 5-slide pitch deck",
+              parameters: {
+                type: "object",
+                properties: {
+                  slides: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        bullets: { type: "array", items: { type: "string" } },
+                        speakerNotes: { type: "string" },
+                      },
+                      required: ["title", "bullets", "speakerNotes"],
+                    },
+                  },
+                  startupName: { type: "string", description: "Suggested startup name" },
+                  tagline: { type: "string", description: "One-line pitch" },
+                },
+                required: ["slides", "startupName", "tagline"],
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "generate_pitch_deck" } },
         }),
       });
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        if (response.status === 402) {
-          return new Response(JSON.stringify({ error: "Credits exhausted. Please add funds." }), {
-            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        const t = await response.text();
-        console.error("AI gateway error:", response.status, t);
-        throw new Error("AI gateway error");
+      if (!response.ok) throw new Error("Pitch generation failed");
+      const data = await response.json();
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (toolCall?.function?.arguments) {
+        return new Response(JSON.stringify(JSON.parse(toolCall.function.arguments)), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
+      throw new Error("No pitch data returned");
+    }
 
-      return new Response(response.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-      });
+    if (action === "vc-qa") {
+      const { incumbent, cluster, pitchData, messages } = payload;
+
+      const systemPrompt = `You are a panel of 3 tough VC investors evaluating a startup pitch. The startup is disrupting ${incumbent.name} in ${cluster.name}.
+
+PITCH SUMMARY:
+${pitchData ? JSON.stringify(pitchData, null, 2) : "No pitch data"}
+
+YOUR ROLE:
+- Ask sharp, realistic VC questions that test the team's thinking
+- Challenge market assumptions, unit economics, competitive moat
+- Rotate between 3 VC personas: (1) The Numbers VC — obsessed with metrics/economics, (2) The Market VC — focused on timing/competition, (3) The Skeptic — plays devil's advocate
+- Prefix each response with the VC persona speaking, e.g. "**📊 Numbers VC:**" or "**🎯 Market VC:**" or "**😈 The Skeptic:**"
+- When the team gives a strong defense, acknowledge with "Strong answer." then pivot to next concern
+- Keep responses under 200 words
+- After 4-5 solid exchanges, say "💼 VC PANEL SATISFIED — Investment committee will deliberate."
+- Use markdown formatting`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
     }
 
     if (action === "score") {
@@ -168,6 +268,31 @@ Respond with a JSON object using tool calling.`;
       throw new Error("No score data returned");
     }
 
+    if (action === "final-score") {
+      const { teams } = payload;
+
+      // Calculate weighted final scores for all teams
+      const results = teams.map((team: any) => {
+        const act1Score = team.score_result?.overall || 0;
+        const act2Score = team.venture_canvas ? calculateVentureScore(team.venture_canvas) : 0;
+        const act3Score = team.class_votes || 0;
+
+        const weighted = Math.round(act1Score * 0.4 + act2Score * 0.3 + act3Score * 0.3);
+
+        return {
+          teamId: team.id,
+          act1Score,
+          act2Score,
+          act3Score,
+          finalScore: weighted,
+        };
+      });
+
+      return new Response(JSON.stringify({ results }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -178,6 +303,54 @@ Respond with a JSON object using tool calling.`;
     });
   }
 });
+
+async function streamAI(apiKey: string, systemPrompt: string, messages: any[]) {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages,
+      ],
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (response.status === 402) {
+      return new Response(JSON.stringify({ error: "Credits exhausted. Please add funds." }), {
+        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const t = await response.text();
+    console.error("AI gateway error:", response.status, t);
+    throw new Error("AI gateway error");
+  }
+
+  return new Response(response.body, {
+    headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+  });
+}
+
+function calculateVentureScore(canvas: any): number {
+  // Simple heuristic: count completed canvases, each worth 20 points
+  let score = 0;
+  const keys = ["lean-canvas", "market-sizing", "gtm-playbook", "unit-economics", "moat-defense"];
+  for (const key of keys) {
+    if (canvas[key]) score += 20;
+  }
+  return score;
+}
 
 function getStepName(step: number): string {
   const names: Record<number, string> = {
