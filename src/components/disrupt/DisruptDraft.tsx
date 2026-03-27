@@ -31,8 +31,8 @@ export function DisruptDraft({
 
   // Track which incumbents are already drafted
   useEffect(() => {
-    const ids = new Set<string>();
-    teams.forEach(t => { if (t.incumbent_id) ids.add(t.incumbent_id); });
+    const ids = new Set<number>();
+    teams.forEach(t => { if (t.incumbent_id) ids.add(Number(t.incumbent_id)); });
     setDraftedIds(ids);
   }, [teams]);
 
