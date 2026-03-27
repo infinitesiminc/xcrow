@@ -696,15 +696,16 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* Role NPC Encounter */}
         {activeRoleNPC && (
           <RoleNPCEncounter
-            role={activeRoleNPC}
+            role={activeRoleNPC.role}
+            avatarSrc={activeRoleNPC.avatarSrc}
             onClose={() => {
               setActiveRoleNPC(null);
             }}
             onCollectSkills={(ids) => {
               mission.scoutRole(
-                activeRoleNPC.jobId,
-                activeRoleNPC.territory,
-                ids.map(id => ({ id, name: id, category: activeRoleNPC.territory }))
+                activeRoleNPC.role.jobId,
+                activeRoleNPC.role.territory,
+                ids.map(id => ({ id, name: id, category: activeRoleNPC.role.territory }))
               );
             }}
           />
