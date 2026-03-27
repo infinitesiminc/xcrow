@@ -1002,8 +1002,8 @@ function ActScoreScreen({ actNum, score, title, summary, dimensions, nextSteps, 
           </CardContent>
         </Card>
       )}
-      <Button onClick={onContinue} size="lg" className="px-8" style={{ background: nextAct?.color }}>
-        {nextAct ? <>Continue to Act {actNum + 1}: {nextAct.name} <ChevronRight className="w-4 h-4 ml-1" /></> : "View Final Report"}
+      <Button onClick={onContinue} size="lg" className="px-8" style={{ background: act?.color }}>
+        {actNum >= 6 ? "View Final Report" : <><MapIcon className="w-4 h-4 mr-2" /> Back to Mission Board</>}
       </Button>
     </div>
   );
