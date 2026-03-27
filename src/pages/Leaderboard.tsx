@@ -57,42 +57,21 @@ const RANK_ICONS = [
 ];
 
 export default function Leaderboard() {
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [sortBy, setSortBy] = useState<SortKey>("total_xp");
   const [search, setSearch] = useState("");
 
-  const { data: entries = [], isLoading } = useQuery({
-    queryKey: ["leaderboard"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_leaderboard" as any);
-      if (error) throw error;
-      return (data as any[]).map((r: any) => ({
-        user_id: r.user_id,
-        display_name: r.display_name || "Anonymous",
-        total_xp: Number(r.total_xp) || 0,
-        skills_unlocked: Number(r.skills_unlocked) || 0,
-        tasks_completed: Number(r.tasks_completed) || 0,
-      })) as LeaderboardEntry[];
-    },
-    staleTime: 60_000,
-  });
+  const entries = MOCK_ENTRIES;
 
   const filtered = useMemo(() => {
     let data = [...entries];
     if (search) {
       const q = search.toLowerCase();
-      data = data.filter(e => e.display_name.toLowerCase().includes(q));
+      data = data.filter(e => e.user_id.toLowerCase().includes(q));
     }
     return data.sort((a, b) => (b[sortBy] as number) - (a[sortBy] as number));
   }, [entries, sortBy, search]);
-
-  const myEntry = user ? entries.find(e => e.user_id === user.id) : null;
-  const myRank = useMemo(() => {
-    if (!user) return 0;
-    const sorted = [...entries].sort((a, b) => b[sortBy] - a[sortBy]);
-    return sorted.findIndex(e => e.user_id === user.id) + 1;
-  }, [entries, sortBy, user]);
 
   const columns: { key: SortKey; label: string; icon: typeof Zap }[] = [
     { key: "total_xp", label: "XP", icon: Zap },
