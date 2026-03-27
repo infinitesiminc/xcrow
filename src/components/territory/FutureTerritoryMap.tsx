@@ -379,16 +379,31 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* Cinematic vignette */}
         <div className="absolute inset-0 map-vignette z-[1]" />
 
-        {/* Company filter pills */}
+        {/* Company filter pills + rotation button */}
         {companyNames.length > 0 && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex flex-wrap gap-1.5 max-w-[80%] justify-center">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex flex-wrap gap-1.5 max-w-[80%] justify-center items-center">
+            <button
+              onClick={() => setBatchSeed(s => s + 1)}
+              disabled={batchRotating}
+              className="px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md border border-primary/40 bg-primary/15 text-primary hover:bg-primary/25 transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50"
+              title="Shuffle to new companies"
+            >
+              <svg
+                viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                className={`${batchRotating ? "animate-spin" : ""}`}
+              >
+                <path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17M14.5 8a6.5 6.5 0 0 1-11.48 4.17" />
+                <path d="M13 1v3h-3M3 15v-3h3" />
+              </svg>
+              Shuffle
+            </button>
             {companyNames.slice(0, 12).map(name => {
               const active = companyFilter.has(name);
               return (
                 <button
                   key={name}
                   onClick={() => toggleCompanyFilter(name)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold backdrop-blur-md border transition-all duration-200 ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md border transition-all duration-200 ${
                     active
                       ? "bg-primary/90 text-primary-foreground border-primary shadow-md shadow-primary/25"
                       : "bg-card/70 text-muted-foreground border-border/50 hover:bg-card hover:text-foreground"
@@ -401,7 +416,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             {companyFilter.size > 0 && (
               <button
                 onClick={() => setCompanyFilter(new Set())}
-                className="px-2 py-1 rounded-full text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="px-2 py-1 rounded-full text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 ✕ Clear
               </button>
