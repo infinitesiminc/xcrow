@@ -8,11 +8,11 @@ import { Trophy, Map as MapIcon, Brain, Star, BarChart3 } from "lucide-react";
 import type { IndustryCluster, DisruptionIncumbent } from "@/data/disruption-incumbents";
 
 const FOUNDER_PROFILES = [
-  { min: 90, title: "The Visionary Founder", emoji: "🦅", desc: "You see the future before others. Strong in strategy, market sensing, and storytelling." },
-  { min: 80, title: "The Strategic Operator", emoji: "⚔️", desc: "Execution is your superpower. Strong on GTM, unit economics, and competitive defense." },
-  { min: 70, title: "The Growth Hacker", emoji: "🚀", desc: "You find creative angles. Strong on customer discovery and go-to-market." },
-  { min: 60, title: "The Resilient Builder", emoji: "🔨", desc: "You learn fast and iterate. Keep sharpening your disruption instincts." },
-  { min: 0, title: "The Apprentice Disruptor", emoji: "🌱", desc: "Every founder starts somewhere. Try another incumbent to build your skills." },
+  { min: 90, title: "The SaaS Visionary", emoji: "🦅", desc: "You see the AI opportunity before others. Strong in market sensing, product strategy, and GTM." },
+  { min: 80, title: "The Technical Founder", emoji: "⚔️", desc: "Execution is your superpower. Strong on AI architecture, unit economics, and competitive defense." },
+  { min: 70, title: "The Growth Hacker", emoji: "🚀", desc: "You find creative distribution angles. Strong on PLG, content marketing, and product-led growth." },
+  { min: 60, title: "The Resilient Builder", emoji: "🔨", desc: "You learn fast and iterate. Keep sharpening your SaaS instincts with more simulations." },
+  { min: 0, title: "The Apprentice Founder", emoji: "🌱", desc: "Every founder starts somewhere. Try another software incumbent to build your skills." },
 ];
 
 const ACT_LABELS = [
