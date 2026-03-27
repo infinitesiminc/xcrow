@@ -181,6 +181,7 @@ const Investors = () => (
 
     {/* ═══ 1. COVER ═══ */}
     <motion.section className="relative py-28 md:py-36 px-6 text-center overflow-hidden" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
+      <HeaderVibeImages seed={42} count={6} />
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, hsl(var(--destructive) / 0.08) 0%, transparent 60%)" }} />
       <div className="relative max-w-3xl mx-auto">
         <p className="text-xs uppercase tracking-[0.25em] mb-6 inline-block px-4 py-1.5 rounded-full" style={{ color: "hsl(var(--filigree))", background: "hsl(var(--filigree) / 0.08)", border: "1px solid hsl(var(--filigree) / 0.2)", ...cinzel }}>{HERO.badge}</p>
