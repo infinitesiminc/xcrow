@@ -363,8 +363,8 @@ export default function Disrupt() {
               <DisruptVentureBuild
                 room={soloRoom as any}
                 team={soloTeam as any}
-                onComplete={(actScore) => {
-                  completeAct(3, actScore || 70, { ventureCanvas: soloTeam.venture_canvas });
+                onComplete={() => {
+                  completeAct(3, 70);
                 }}
               />
             </motion.div>
