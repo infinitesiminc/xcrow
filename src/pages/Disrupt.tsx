@@ -1337,8 +1337,8 @@ function ContextPanel({
   return (
     <div className="p-4 space-y-4">
       <div className="text-center mb-2">
-        <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">🗺️ Industry Map</h3>
-        <p className="text-xs text-muted-foreground">22 industries, 100 targets</p>
+        <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">🗺️ Software Market Map</h3>
+        <p className="text-xs text-muted-foreground">15 verticals, 46 targets</p>
       </div>
 
       <Card className="border-primary/20">
