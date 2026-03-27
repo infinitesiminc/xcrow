@@ -80,13 +80,13 @@ function updateMissionProgress(incumbentId: number, update: Partial<MissionProgr
 }
 
 const ACTS = [
-  { num: 1, name: "Scout", subtitle: "Find the Target", icon: Search, emoji: "🔍", skill: "Market Analysis & Competitive Intelligence", description: "Battle the incumbent CEO. Identify vulnerabilities using the 6-step disruption framework.", color: "hsl(var(--destructive))" },
-  { num: 2, name: "Discover", subtitle: "Talk to Customers", icon: Users, emoji: "🗣️", skill: "Customer Development & Empathy", description: "Interview AI customers in the beachhead niche. Validate problem-solution fit.", color: "hsl(var(--neon-cyan))" },
-  { num: 3, name: "Architect", subtitle: "Build the Model", icon: Hammer, emoji: "📋", skill: "Business Model Design & Financial Modeling", description: "Create your Lean Canvas and unit economics with an AI co-founder.", color: "hsl(var(--neon-purple))" },
-  { num: 4, name: "Launch", subtitle: "Go to Market", icon: Megaphone, emoji: "🚀", skill: "Channel Strategy, Pricing & Growth", description: "Design your GTM strategy: channels, pricing, and first 100 customers plan.", color: "hsl(var(--neon-lime))" },
-  { num: 5, name: "Defend", subtitle: "Build the Moat", icon: Castle, emoji: "🏰", skill: "Competitive Strategy & Moat Building", description: "The incumbent fights back. Defend why they literally cannot respond.", color: "hsl(var(--warning))" },
-  { num: 6, name: "Pitch", subtitle: "Face the VCs", icon: Presentation, emoji: "💼", skill: "Storytelling & Investor Psychology", description: "AI generates your pitch deck. Defend it against a panel of VC investors.", color: "hsl(var(--neon-pink))" },
-  { num: 7, name: "Debrief", subtitle: "Founder Report", icon: Brain, emoji: "📊", skill: "Self-Assessment & Pattern Recognition", description: "Get your combined score, startup valuation, and Founder Profile badge.", color: "hsl(var(--success))" },
+  { num: 1, name: "Scout", subtitle: "Analyze the Software", icon: Search, emoji: "🔍", skill: "SaaS Market Analysis & Competitive Intelligence", description: "Analyze the software incumbent — pricing model, feature gaps, user reviews, and churn signals.", color: "hsl(var(--destructive))" },
+  { num: 2, name: "Discover", subtitle: "Interview Users", icon: Users, emoji: "🗣️", skill: "Customer Development & User Research", description: "Interview frustrated users of the incumbent software. Find the feature gap and pain points.", color: "hsl(var(--neon-cyan))" },
+  { num: 3, name: "Architect", subtitle: "Design Your SaaS", icon: Hammer, emoji: "📋", skill: "SaaS Business Model & AI-First Architecture", description: "Design your SaaS model — pricing tiers, AI features, tech stack, and build timeline.", color: "hsl(var(--neon-purple))" },
+  { num: 4, name: "Launch", subtitle: "Ship & Grow", icon: Megaphone, emoji: "🚀", skill: "PLG, Content Marketing & Growth Hacking", description: "Launch playbook — Product Hunt, Reddit, cold outreach, content strategy, and first 100 users.", color: "hsl(var(--neon-lime))" },
+  { num: 5, name: "Defend", subtitle: "Build the Moat", icon: Castle, emoji: "🏰", skill: "Competitive Strategy & AI Moat Building", description: "Why can't the incumbent just add AI? Defend your speed, focus, and AI-native advantage.", color: "hsl(var(--warning))" },
+  { num: 6, name: "Pitch", subtitle: "Face the VCs", icon: Presentation, emoji: "💼", skill: "Storytelling & AI Leverage Narrative", description: "Pitch to investors — ARR projections, unit economics, and your AI leverage story.", color: "hsl(var(--neon-pink))" },
+  { num: 7, name: "Debrief", subtitle: "Founder Report", icon: Brain, emoji: "📊", skill: "Startup Readiness Assessment", description: "Get your score, startup valuation, and Founder Profile — idea viability, founder-market fit, execution plan.", color: "hsl(var(--success))" },
 ];
 
 export default function Disrupt() {
