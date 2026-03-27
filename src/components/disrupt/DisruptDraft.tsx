@@ -42,7 +42,7 @@ export function DisruptDraft({
 
     const { error } = await supabase
       .from("disrupt_teams")
-      .update({ incumbent_id: incumbent.id, cluster_id: cluster.id })
+      .update({ incumbent_id: String(incumbent.id), cluster_id: String(cluster.id) })
       .eq("id", myTeamId);
 
     if (error) { toast.error("Failed to draft incumbent"); return; }
