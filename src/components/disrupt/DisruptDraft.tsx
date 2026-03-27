@@ -86,7 +86,7 @@ export function DisruptDraft({
           >
             {team.incumbent_id ? <Check className="w-3 h-3 mr-1" /> : null}
             {team.name}: {team.incumbent_id
-              ? INDUSTRY_CLUSTERS.flatMap(c => c.incumbents).find(i => i.id === team.incumbent_id)?.name || "Selected"
+              ? INDUSTRY_CLUSTERS.flatMap(c => c.incumbents).find(i => String(i.id) === team.incumbent_id)?.name || "Selected"
               : "Drafting..."}
           </Badge>
         ))}
