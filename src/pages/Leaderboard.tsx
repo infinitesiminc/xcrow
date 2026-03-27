@@ -101,7 +101,7 @@ export default function Leaderboard() {
           style={{ backgroundImage: `url(${leaderboardBg})` }}
         />
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to bottom, hsl(var(--background) / 0.6), hsl(var(--background) / 0.95))" }} />
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
+        <div className="relative mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
