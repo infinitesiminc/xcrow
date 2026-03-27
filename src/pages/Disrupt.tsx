@@ -1144,10 +1144,10 @@ function StrategistView({
       {messages.length <= 1 && !isStreaming && !selectedIncumbent && (
         <div className="flex flex-wrap gap-2 mb-3 px-4 shrink-0">
           {[
-            "I'm interested in fintech",
-            "Healthcare disruption opportunities?",
-            "I want to build in education",
-            "Most vulnerable companies",
+            "I want to build a better CRM",
+            "What SaaS tools have the worst UX?",
+            "Show me overpriced enterprise software",
+            "B2B tools ripe for AI disruption",
           ].map(q => (
             <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setInput(q)}>
               {q}
