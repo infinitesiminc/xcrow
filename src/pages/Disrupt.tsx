@@ -727,7 +727,7 @@ function MissionHub({ onSelectCluster, progress, onStartDiscovery }: { onSelectC
 
       {/* Disruption Framework */}
       <div className="max-w-4xl mx-auto mb-12">
-        <h2 className="font-cinzel text-2xl font-bold text-center mb-8 text-foreground">The 6-Step Disruption Framework</h2>
+        <h2 className="font-cinzel text-2xl font-bold text-center mb-8 text-foreground">The 6-Step AI Disruption Framework</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {DISRUPTION_STEPS.map((s) => (
             <Card key={s.step} className="border-border/50">
