@@ -137,7 +137,7 @@ export function DisruptCustomerDiscovery({ incumbent, cluster, onComplete }: {
     <div className="max-w-5xl mx-auto px-4 flex gap-4" style={{ height: "calc(100vh - 12rem)" }}>
       {/* Sidebar */}
       <div className="w-52 shrink-0 hidden md:block">
-        <Badge variant="outline" className="text-xs mb-3">Act 2: Discover</Badge>
+        <Badge variant="outline" className="text-xs mb-3">Act 1: Discover</Badge>
         <h3 className="font-cinzel font-bold text-sm text-foreground mb-1">Customer Discovery</h3>
         <p className="text-[11px] text-muted-foreground mb-4">Interview 3 customer personas to validate your startup idea.</p>
 

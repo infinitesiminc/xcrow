@@ -173,7 +173,7 @@ export function DisruptVentureBuild({
       {/* Sidebar */}
       <div className="w-56 shrink-0 hidden md:block">
         <div className="mb-4">
-          <Badge variant="outline" className="text-xs mb-2">Act 2: Build</Badge>
+          <Badge variant="outline" className="text-xs mb-2">Act 2: Architect</Badge>
           <h3 className="font-cinzel font-bold text-foreground text-sm">Venture Architecture</h3>
           <p className="text-[11px] text-muted-foreground mt-1">
             Disrupting {incumbent.name}
