@@ -391,11 +391,24 @@ const Investors = () => (
       <SectionLabel>Team</SectionLabel>
       <SectionTitle>Founder-Market Fit</SectionTitle>
 
-      <div className="rounded-lg p-8 max-w-2xl" style={stoneCard}>
-        <h3 className="text-xl font-bold mb-1" style={cinzel}>{TEAM.name}</h3>
-        <p className="text-sm text-primary mb-3">{TEAM.title}</p>
-        <p className="text-sm text-muted-foreground mb-4">{TEAM.bio}</p>
-        <p className="text-xs text-muted-foreground/60">{TEAM.location}</p>
+      <div className="rounded-lg p-8 max-w-2xl flex gap-6 items-start" style={stoneCard}>
+        <img
+          src={founderImg}
+          alt="Jackson Lam — Founder & CEO"
+          className="w-24 h-24 md:w-28 md:h-28 rounded-lg object-cover shrink-0"
+          style={{ border: "2px solid hsl(var(--filigree) / 0.3)" }}
+        />
+        <div>
+          <h3 className="text-xl font-bold mb-1" style={cinzel}>{TEAM.name}</h3>
+          <p className="text-sm text-primary mb-3">{TEAM.title}</p>
+          <p className="text-sm text-muted-foreground mb-4">{TEAM.bio}</p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-muted-foreground/60">{TEAM.location}</p>
+            <a href={TEAM.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline">
+              <Linkedin className="w-3.5 h-3.5" /> LinkedIn
+            </a>
+          </div>
+        </div>
       </div>
     </Section>
 
