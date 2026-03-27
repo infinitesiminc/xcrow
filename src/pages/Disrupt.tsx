@@ -425,7 +425,26 @@ export default function Disrupt() {
             </motion.div>
           )}
 
-          {/* Act Intro Screens */}
+          {/* Briefing Phase */}
+          {phase === "briefing" && selectedIncumbent && selectedCluster && (
+            <motion.div key="briefing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <BriefingChat
+                incumbent={selectedIncumbent}
+                cluster={selectedCluster}
+                messages={briefingMessages}
+                input={briefingInput}
+                setInput={setBriefingInput}
+                onSend={sendBriefingMessage}
+                isStreaming={isBriefingStreaming}
+                chatEndRef={briefingEndRef}
+                onBack={() => setPhase("cluster")}
+                onLaunch={() => setPhase("act1-intro")}
+                onSwitchTarget={handleSwitchTarget}
+              />
+            </motion.div>
+          )}
+
+
           {phase.endsWith("-intro") && selectedIncumbent && (
             <motion.div key={phase} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
               <ActIntro
