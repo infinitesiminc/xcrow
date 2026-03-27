@@ -30,6 +30,9 @@ import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";
 import bossBattlePreview from "@/assets/boss-battle-preview.png";
+import showcaseRoleNpc from "@/assets/showcase-role-npc.png";
+import showcaseWanderingNpc from "@/assets/showcase-wandering-npc.png";
+import showcaseGuardian from "@/assets/showcase-guardian.png";
 
 import avatarCrow from "@/assets/avatars/crow.webp";
 import avatarDragon from "@/assets/avatars/dragon.webp";
