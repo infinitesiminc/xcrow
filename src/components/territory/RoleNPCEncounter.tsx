@@ -18,6 +18,7 @@ import ReactMarkdown from "react-markdown";
 
 interface RoleNPCEncounterProps {
   role: RoleNPC;
+  avatarSrc?: string;
   onClose: () => void;
   onCollectSkills?: (skillIds: string[]) => void;
   onExploreRole?: (role: RoleNPC) => void;
