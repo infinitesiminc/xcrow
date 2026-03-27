@@ -214,7 +214,11 @@ export default function Disrupt() {
                   setTeams(t);
                   setMembers(m);
                   setMyTeamId(tid);
-                  setPhase(r.status === "battling" ? "team-battle" : "team-draft");
+                  const statusPhaseMap: Record<string, GamePhase> = {
+                    battling: "team-battle", venture: "team-venture",
+                    pitching: "team-pitch", voting: "team-pitch", completed: "team-scoreboard",
+                  };
+                  setPhase(statusPhaseMap[r.status] || "team-draft");
                 }}
               />
             </motion.div>
