@@ -11,9 +11,9 @@ import type { IndustryCluster, DisruptionIncumbent } from "@/data/disruption-inc
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const GTM_SECTIONS = [
-  { id: "channels", label: "Distribution Channels", emoji: "📡", description: "Product Hunt, Reddit, developer communities, or content-led? Where will you reach early adopters?" },
-  { id: "pricing", label: "SaaS Pricing Model", emoji: "💰", description: "How will you price to undercut the incumbent? Freemium, usage-based, flat-rate, or outcome-based?" },
-  { id: "first-100", label: "First 100 Users", emoji: "🎯", description: "Specific plan to land your first 100 paying users — cold outreach, community, PLG, or partnerships?" },
+  { id: "channels", label: "Distribution Channels", emoji: "📡", description: "Build a concrete channel plan: Product Hunt launch day, Reddit communities to target, dev forums to post in, content pieces to write. Name specific subreddits, keywords, and tactics." },
+  { id: "pricing", label: "SaaS Pricing Model", emoji: "💰", description: "Design your pricing to undercut the incumbent. Define exact tiers, price points, and what's free vs paid. Calculate unit economics: CAC target, LTV, payback period." },
+  { id: "first-100", label: "30-Day Launch Plan", emoji: "🎯", description: "Week-by-week plan for your first 30 days. Week 1: beta list. Week 2: cold outreach templates. Week 3: Product Hunt launch. Week 4: first paid conversions. Be specific." },
 ];
 
 export function DisruptGTM({ incumbent, cluster, onComplete }: {

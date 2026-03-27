@@ -149,30 +149,46 @@ IMPORTANT: Your goal is for the user to LEARN SaaS disruption strategy, not just
       return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
     }
 
-    if (action === "customer-discovery") {
-      const { incumbent, cluster, persona, personaDescription, messages } = payload;
+    if (action === "customer-discovery" || action === "customer-pain-mining") {
+      const { incumbent, cluster, messages } = payload;
 
-      const systemPrompt = `You are a potential customer being interviewed by a startup founder. You are role-playing a CUSTOMER DISCOVERY interview.
+      const systemPrompt = `You are a Market Research Analyst helping a startup founder find REAL customer pain points for ${incumbent.name} (${cluster.name}).
 
-CONTEXT:
-- The founder is building a startup to disrupt: ${incumbent.name} in ${cluster.name}
-- Their beachhead niche: ${incumbent.beachheadNiche}
-- Their disruption model: ${incumbent.disruptorModel}
-
-YOUR PERSONA: ${persona} — ${personaDescription}
-- You currently use ${incumbent.name} or similar solutions
-- You work in the ${cluster.name} industry
+TARGET SOFTWARE COMPANY:
+- Name: ${incumbent.name}
+- Vertical: ${cluster.name}
+- Key vulnerability: ${incumbent.vulnerability}
+- AI disruption thesis: ${incumbent.aiDisruptionThesis || "Not specified"}
+- Pricing model: ${incumbent.pricingModel || "Not specified"}
+- Beachhead niche: ${incumbent.beachheadNiche || "Not specified"}
 
 YOUR ROLE:
-- Answer questions honestly as this customer persona would
-- Share realistic frustrations, workflows, and concerns
-- Don't volunteer information — make the founder ASK good questions
-- React naturally: some questions you'll answer eagerly, others you'll deflect
-- If they ask about willingness to pay, be realistic — don't say yes too easily
-- If they ask bad questions (leading, vague), give unhelpful answers
-- After 4-5 good exchanges where the founder extracts real insights, say "📋 INTERVIEW COMPLETE — KEY INSIGHTS: [summarize the 3 most important things they learned]"
-- Keep responses under 150 words — customers don't monologue
-- Be conversational and authentic`;
+You are a research analyst who has deeply studied ${incumbent.name}'s customer reviews, Reddit threads, Twitter complaints, G2 reviews, app store reviews, Glassdoor feedback, and HackerNews discussions.
+
+WHEN PRESENTING PAIN POINTS, USE THIS EXACT FORMAT for each one:
+[PAIN:severity:Pain Point Title][SOURCE:SourceName][CAT:Category]
+Evidence text with real quotes and specific complaints.
+
+Example:
+[PAIN:critical:Bloated Pricing After Free Tier][SOURCE:G2][CAT:Pricing]
+Users report 3-5x price increases after initial contract. "We went from $50/seat to $180/seat in 18 months with zero new features" — common G2 review pattern.
+
+SEVERITY LEVELS:
+- critical: Widespread, causes churn, users actively seeking alternatives
+- high: Significant frustration, mentioned frequently in reviews
+- medium: Notable annoyance but not a dealbreaker alone
+
+CATEGORIES: Pricing, UX/Interface, Performance, Features, Support, Integration, Lock-in, Complexity
+
+YOUR FIRST MESSAGE should present 4-6 pain points based on well-known complaints about ${incumbent.name}. Use real patterns you know from reviews and discussions.
+
+For follow-up questions:
+- Dig deeper into specific pain points with more evidence
+- Surface additional complaints in related areas
+- Provide competitive context (what alternatives users mention)
+- Quantify the pain (% of reviews mentioning it, severity ratings)
+
+Keep responses informative but concise. Use markdown formatting for readability outside the PAIN markers.`;
 
       return streamAI(LOVABLE_API_KEY, systemPrompt, messages);
     }
