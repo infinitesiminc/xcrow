@@ -57,7 +57,7 @@ export default function Disrupt() {
 
   // Realtime subscription for team game
   useEffect(() => {
-    if (!room || (phase !== "team-draft" && phase !== "team-battle" && phase !== "team-scoreboard")) return;
+    if (!room || !["team-draft", "team-battle", "team-venture", "team-pitch", "team-scoreboard"].includes(phase)) return;
 
     const ch = supabase
       .channel(`game-${room.id}`)
@@ -66,6 +66,8 @@ export default function Disrupt() {
           const updated = payload.new as DisruptRoom;
           setRoom(updated);
           if (updated.status === "battling" && phase === "team-draft") setPhase("team-battle");
+          if (updated.status === "venture") setPhase("team-venture");
+          if (updated.status === "pitching" || updated.status === "voting") setPhase("team-pitch");
           if (updated.status === "completed") setPhase("team-scoreboard");
         }
       })
