@@ -516,17 +516,16 @@ export default function Disrupt() {
             </motion.div>
           )}
 
-          {phase.endsWith("-intro") && selectedIncumbent && (
-            <motion.div key={phase} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <ActIntro
-                actNum={getCurrentActNum(phase)}
+          {phase === "mission-board" && selectedIncumbent && selectedCluster && (
+            <motion.div key="mission-board" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+              <MissionBoard
                 incumbent={selectedIncumbent}
-                cluster={selectedCluster!}
-                onBegin={() => {
-                  const actNum = getCurrentActNum(phase);
-                  if (actNum === 1) startBattle();
-                  else setPhase(`act${actNum}` as GamePhase);
-                }}
+                cluster={selectedCluster}
+                completedActs={getMissionProgress(selectedIncumbent.id).completedActs || []}
+                actScores={actScores}
+                onLaunchAct={launchAct}
+                onBack={() => setPhase("hub")}
+                onBackToStrategist={() => setPhase("strategist")}
               />
             </motion.div>
           )}
