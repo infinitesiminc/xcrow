@@ -1038,8 +1038,8 @@ function BattleArena({
         <div className="space-y-4 pb-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
-                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>blockquote]:border-l-primary/50">
+              <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-primary text-primary-foreground rounded-br-md text-sm" : "bg-muted/60 text-foreground rounded-bl-md"}`}>
+                <div className={msg.role === "user" ? "text-sm" : "disrupt-prose"}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
               </div>
@@ -1102,12 +1102,12 @@ function StrategistView({
         <div className="space-y-4 pb-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
+              <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${
                 msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-muted text-foreground rounded-bl-md"
+                  ? "bg-primary text-primary-foreground rounded-br-md text-sm"
+                  : "bg-muted/60 text-foreground rounded-bl-md"
               }`}>
-                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0">
+                <div className={msg.role === "user" ? "text-sm" : "disrupt-prose"}>
                   <ReactMarkdown>{msg.content.replace(/\[SELECT:\d+:[^\]]+\]/g, "")}</ReactMarkdown>
                 </div>
               </div>
