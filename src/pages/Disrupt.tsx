@@ -23,7 +23,7 @@ import { DisruptPitchBattle } from "@/components/disrupt/DisruptPitchBattle";
 import { DisruptMissionDebrief } from "@/components/disrupt/DisruptMissionDebrief";
 
 type GamePhase =
-  | "hub" | "cluster"
+  | "hub" | "cluster" | "briefing"
   | "act1-intro" | "act1" | "act1-score"
   | "act2-intro" | "act2" | "act2-score"
   | "act3-intro" | "act3" | "act3-score"
@@ -109,14 +109,19 @@ export default function Disrupt() {
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }, []);
 
+  // Briefing state
+  const [briefingMessages, setBriefingMessages] = useState<ChatMsg[]>([]);
+  const [briefingInput, setBriefingInput] = useState("");
+  const [isBriefingStreaming, setIsBriefingStreaming] = useState(false);
+  const briefingEndRef = useRef<HTMLDivElement>(null);
+
   const startMission = (cluster: IndustryCluster, incumbent: DisruptionIncumbent) => {
     setSelectedCluster(cluster);
     setSelectedIncumbent(incumbent);
     const progress = getMissionProgress(incumbent.id);
-    // Find first incomplete act
-    const firstIncomplete = ACTS.find(a => !progress.completedActs.includes(a.num));
-    if (firstIncomplete) {
-      // Restore any saved state
+
+    // If user has progress, skip briefing and resume
+    if (progress.completedActs.length > 0) {
       if (progress.scoreResult) setScore(progress.scoreResult);
       if (progress.battleTranscript) setMessages(progress.battleTranscript);
       setActScores({});
@@ -124,11 +129,128 @@ export default function Disrupt() {
         const key = `act${actNum}Score` as keyof MissionProgress;
         if (progress[key]) setActScores(prev => ({ ...prev, [actNum]: progress[key] as number }));
       });
-      setPhase(`act${firstIncomplete.num}-intro` as GamePhase);
+      const firstIncomplete = ACTS.find(a => !progress.completedActs.includes(a.num));
+      if (firstIncomplete) setPhase(`act${firstIncomplete.num}-intro` as GamePhase);
+      else setPhase("act7");
     } else {
-      setPhase("act7");
+      // New mission → go to briefing
+      setBriefingMessages([]);
+      setBriefingInput("");
+      startBriefingChat(cluster, incumbent);
     }
     updateMissionProgress(incumbent.id, { status: "in-progress" });
+  };
+
+  const startBriefingChat = async (cluster: IndustryCluster, incumbent: DisruptionIncumbent) => {
+    setPhase("briefing");
+    setIsBriefingStreaming(true);
+
+    const systemMessage: ChatMsg = {
+      role: "user",
+      content: "I just selected this company. Brief me on everything I need to know before I start the disruption simulation.",
+    };
+
+    let assistantContent = "";
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: "briefing", payload: { incumbent, cluster, messages: [systemMessage] } }),
+        },
+      );
+      if (!resp.ok || !resp.body) throw new Error("Briefing failed");
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setBriefingMessages([{ role: "assistant", content: assistantContent }]);
+            }
+          } catch { /* partial */ }
+        }
+      }
+    } catch { toast.error("Briefing failed. Try again."); }
+    finally { setIsBriefingStreaming(false); }
+  };
+
+  const sendBriefingMessage = async () => {
+    if (!briefingInput.trim() || isBriefingStreaming || !selectedIncumbent || !selectedCluster) return;
+    const userMsg: ChatMsg = { role: "user", content: briefingInput.trim() };
+    const updatedMessages = [...briefingMessages, userMsg];
+    setBriefingMessages(updatedMessages);
+    setBriefingInput("");
+    setIsBriefingStreaming(true);
+    setTimeout(() => briefingEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+
+    let assistantContent = "";
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/disruption-battle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: "briefing", payload: { incumbent: selectedIncumbent, cluster: selectedCluster, messages: updatedMessages, allIncumbents: selectedCluster.incumbents.map(i => ({ name: i.name, id: i.id, vulnerability: i.vulnerability, vector: i.vector })) } }),
+        },
+      );
+      if (!resp.ok || !resp.body) throw new Error("Briefing failed");
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setBriefingMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && prev.length === updatedMessages.length + 1) {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
+                }
+                return [...prev, { role: "assistant", content: assistantContent }];
+              });
+              setTimeout(() => briefingEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+            }
+          } catch { /* partial */ }
+        }
+      }
+    } catch { toast.error("Briefing failed. Try again."); }
+    finally { setIsBriefingStreaming(false); }
+  };
+
+  const handleSwitchTarget = (newIncumbent: DisruptionIncumbent) => {
+    if (!selectedCluster) return;
+    setSelectedIncumbent(newIncumbent);
+    setBriefingMessages([]);
+    startBriefingChat(selectedCluster, newIncumbent);
   };
 
   const startBattle = () => {
@@ -270,8 +392,8 @@ export default function Disrupt() {
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20 pb-12">
-        {/* Mission Progress Bar — visible during any act */}
-        {phase !== "hub" && phase !== "cluster" && selectedIncumbent && selectedCluster && (
+        {/* Mission Progress Bar — visible during any act (not briefing) */}
+        {phase !== "hub" && phase !== "cluster" && phase !== "briefing" && selectedIncumbent && selectedCluster && (
           <MissionProgressBar
             incumbent={selectedIncumbent}
             cluster={selectedCluster}
@@ -303,7 +425,26 @@ export default function Disrupt() {
             </motion.div>
           )}
 
-          {/* Act Intro Screens */}
+          {/* Briefing Phase */}
+          {phase === "briefing" && selectedIncumbent && selectedCluster && (
+            <motion.div key="briefing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <BriefingChat
+                incumbent={selectedIncumbent}
+                cluster={selectedCluster}
+                messages={briefingMessages}
+                input={briefingInput}
+                setInput={setBriefingInput}
+                onSend={sendBriefingMessage}
+                isStreaming={isBriefingStreaming}
+                chatEndRef={briefingEndRef}
+                onBack={() => setPhase("cluster")}
+                onLaunch={() => setPhase("act1-intro")}
+                onSwitchTarget={handleSwitchTarget}
+              />
+            </motion.div>
+          )}
+
+
           {phase.endsWith("-intro") && selectedIncumbent && (
             <motion.div key={phase} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
               <ActIntro
@@ -894,6 +1035,139 @@ function BattleArena({
       <div className="flex gap-2 shrink-0 pb-2">
         <Textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Your disruption strategy for Step ${step}...`} className="min-h-[48px] max-h-[120px] resize-none" onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }} disabled={isStreaming} />
         <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end"><Send className="w-4 h-4" /></Button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Briefing Chat (Pre-Simulation) ── */
+function BriefingChat({
+  incumbent, cluster, messages, input, setInput, onSend, isStreaming, chatEndRef, onBack, onLaunch, onSwitchTarget,
+}: {
+  incumbent: DisruptionIncumbent; cluster: IndustryCluster; messages: ChatMsg[];
+  input: string; setInput: (v: string) => void; onSend: () => void;
+  isStreaming: boolean; chatEndRef: React.RefObject<HTMLDivElement>;
+  onBack: () => void; onLaunch: () => void;
+  onSwitchTarget: (inc: DisruptionIncumbent) => void;
+}) {
+  const otherTargets = cluster.incumbents.filter(i => i.id !== incumbent.id);
+  const hasContent = messages.length > 0 && messages.some(m => m.role === "assistant" && m.content.length > 50);
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 flex flex-col" style={{ height: "calc(100vh - 8rem)" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          </Button>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg">{cluster.emoji}</span>
+            <div className="min-w-0">
+              <h2 className="font-cinzel font-bold text-sm truncate">{incumbent.name}</h2>
+              <p className="text-[11px] text-muted-foreground">Mission Briefing — {cluster.name}</p>
+            </div>
+          </div>
+        </div>
+        <Button onClick={onLaunch} disabled={!hasContent} className="shrink-0 bg-primary">
+          <Rocket className="w-4 h-4 mr-1" /> Launch Simulation
+        </Button>
+      </div>
+
+      {/* Briefing badge */}
+      <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2 mb-3 shrink-0">
+        <p className="text-xs text-foreground">
+          <Brain className="w-3 h-3 inline mr-1 text-primary" />
+          <span className="font-medium">Pre-Mission Briefing</span> — Learn about the target before entering the simulation. Ask any questions about the company, industry, or strategy.
+        </p>
+      </div>
+
+      {/* Chat area */}
+      <ScrollArea className="flex-1 pr-4 mb-3">
+        <div className="space-y-4 pb-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
+                msg.role === "user"
+                  ? "bg-primary text-primary-foreground rounded-br-md"
+                  : "bg-muted text-foreground rounded-bl-md"
+              }`}>
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>blockquote]:border-l-primary/50">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          ))}
+          {isStreaming && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
+            <div className="flex justify-start">
+              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce" />
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.1s]" />
+                  <span className="w-2 h-2 rounded-full bg-foreground/30 animate-bounce [animation-delay:0.2s]" />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Quick action chips */}
+      {hasContent && messages.length <= 2 && !isStreaming && (
+        <div className="flex flex-wrap gap-2 mb-3 shrink-0">
+          {[
+            "What's their revenue model?",
+            "Who are their biggest competitors?",
+            "How big is this market?",
+            "Show me different targets",
+          ].map((q) => (
+            <Button
+              key={q}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => { setInput(q); }}
+            >
+              {q}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* Alternative targets strip */}
+      {otherTargets.length > 0 && hasContent && messages.length <= 2 && !isStreaming && (
+        <div className="mb-3 shrink-0">
+          <p className="text-[11px] text-muted-foreground mb-1.5">Not interested? Try another target:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {otherTargets.slice(0, 4).map((alt) => (
+              <Button
+                key={alt.id}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => onSwitchTarget(alt)}
+              >
+                <Target className="w-3 h-3 mr-1" /> {alt.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="flex gap-2 shrink-0 pb-2">
+        <Textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask about the company, industry, strategy, or say 'switch target'..."
+          className="min-h-[48px] max-h-[120px] resize-none"
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
+          disabled={isStreaming}
+        />
+        <Button onClick={onSend} disabled={isStreaming || !input.trim()} size="icon" className="shrink-0 self-end">
+          <Send className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );
