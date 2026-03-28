@@ -685,117 +685,90 @@ export default function Disrupt() {
                   {/* Panel body */}
                   <ScrollArea className="flex-1">
                     <div className="p-5 space-y-4">
-                      {/* Startup Thesis */}
-                      {as.agent_play && !hasPrompt && (
-                        <Card className="border" style={{ background: "hsl(var(--primary) / 0.06)", borderColor: "hsl(var(--primary) / 0.2)" }}>
-                          <CardContent className="p-4">
-                            <div className="flex gap-3 mb-3">
-                              <Lightbulb className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                              <div>
-                                <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--filigree))" }}>Startup Thesis</p>
-                                <p className="text-[15px] text-foreground leading-relaxed font-medium">{as.agent_play}</p>
+                      {/* Agent Landing Page Preview */}
+                      {as.agent_play && !hasPrompt && (() => {
+                        const workflows = as.automatable_workflows.slice(0, 4);
+                        const incumbents = niche.companies.filter(c => c.role === "incumbent").slice(0, 3);
+                        const agentName = niche.name.replace(/\s*(Software|Platform|Tools|Solutions|Management)\s*/gi, "").trim();
+                        return (
+                          <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.3)" }}>
+                            {/* Fake browser chrome */}
+                            <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ background: "hsl(var(--muted) / 0.3)", borderColor: "hsl(var(--border) / 0.3)" }}>
+                              <div className="flex gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(var(--destructive) / 0.5)" }} />
+                                <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(var(--warning) / 0.5)" }} />
+                                <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(var(--success) / 0.5)" }} />
+                              </div>
+                              <div className="flex-1 mx-4 h-5 rounded-md flex items-center px-2 text-[10px] text-muted-foreground" style={{ background: "hsl(var(--background) / 0.5)" }}>
+                                {agentName.toLowerCase().replace(/\s+/g, "")}.ai
                               </div>
                             </div>
-                            {/* Before / After visual */}
-                            {(() => {
-                              const incumbents = niche.companies.filter(c => c.role === "incumbent");
-                              const topNames = incumbents.slice(0, 2).map(c => c.name);
-                              const manualSteps = as.automatable_workflows.slice(0, 3);
-                              const fullCount = manualSteps.filter(w => w.automation_level === "full").length;
-                              const autoPercent = manualSteps.length > 0 ? Math.round((fullCount / manualSteps.length) * 100) : 0;
-                              return (
-                                <div className="grid grid-cols-[1fr_auto_1fr] gap-0 mt-2 items-stretch">
-                                  {/* TODAY */}
-                                  <div className="rounded-l-lg p-3 border border-r-0" style={{ background: "hsl(var(--destructive) / 0.05)", borderColor: "hsl(var(--destructive) / 0.15)" }}>
-                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2.5 text-center" style={{ color: "hsl(var(--destructive) / 0.7)" }}>Today</p>
-                                    {/* Stacked icon cluster */}
-                                    <div className="flex justify-center mb-2.5">
-                                      <div className="relative w-14 h-10">
-                                        <div className="absolute left-0 top-0 w-8 h-8 rounded-lg border flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)", borderColor: "hsl(var(--destructive) / 0.2)" }}>
-                                          <Building2 className="w-4 h-4" style={{ color: "hsl(var(--destructive) / 0.5)" }} />
-                                        </div>
-                                        <div className="absolute right-0 bottom-0 w-8 h-8 rounded-lg border flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)", borderColor: "hsl(var(--destructive) / 0.2)" }}>
-                                          <Users className="w-4 h-4" style={{ color: "hsl(var(--destructive) / 0.5)" }} />
-                                        </div>
-                                      </div>
-                                    </div>
-                                    {topNames.length > 0 && (
-                                      <p className="text-[10px] text-center text-foreground/50 mb-2 truncate">{topNames.join(" · ")}</p>
-                                    )}
-                                    {/* Pain bars */}
-                                    <div className="space-y-1.5">
-                                      <div className="flex items-center gap-1.5">
-                                        <Clock className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
-                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
-                                          <div className="h-full rounded-full" style={{ width: "85%", background: "hsl(var(--destructive) / 0.35)" }} />
-                                        </div>
-                                        <span className="text-[9px] text-muted-foreground w-8 text-right">Slow</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <DollarSign className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
-                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
-                                          <div className="h-full rounded-full" style={{ width: "75%", background: "hsl(var(--destructive) / 0.35)" }} />
-                                        </div>
-                                        <span className="text-[9px] text-muted-foreground w-8 text-right">$$$$</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Users className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
-                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
-                                          <div className="h-full rounded-full" style={{ width: "90%", background: "hsl(var(--destructive) / 0.35)" }} />
-                                        </div>
-                                        <span className="text-[9px] text-muted-foreground w-8 text-right">Manual</span>
-                                      </div>
-                                    </div>
-                                  </div>
 
-                                  {/* Arrow divider */}
-                                  <div className="flex items-center justify-center px-1" style={{ background: "hsl(var(--surface-stone))" }}>
-                                    <div className="flex flex-col items-center gap-1">
-                                      <ArrowRightLeft className="w-4 h-4 text-muted-foreground/40" />
-                                    </div>
+                            {/* Landing page content */}
+                            <div style={{ background: "linear-gradient(180deg, hsl(var(--background)), hsl(var(--card)))" }}>
+                              {/* Hero section */}
+                              <div className="px-6 pt-8 pb-6 text-center">
+                                <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] border mb-4" style={{ background: "hsl(var(--primary) / 0.08)", borderColor: "hsl(var(--primary) / 0.2)", color: "hsl(var(--primary))" }}>
+                                  <Bot className="w-3 h-3" />
+                                  AI-Powered Agent
+                                </div>
+                                <h3 className="text-xl font-bold text-foreground leading-tight mb-2">
+                                  {agentName} on Autopilot
+                                </h3>
+                                <p className="text-[13px] text-muted-foreground leading-relaxed max-w-sm mx-auto mb-5">
+                                  {as.agent_play}
+                                </p>
+                                <div className="flex justify-center gap-2">
+                                  <div className="px-4 py-2 rounded-lg text-[12px] font-semibold text-primary-foreground" style={{ background: "hsl(var(--primary))" }}>
+                                    Start Free Trial
                                   </div>
-
-                                  {/* WITH YOUR AGENT */}
-                                  <div className="rounded-r-lg p-3 border border-l-0" style={{ background: "hsl(var(--success) / 0.05)", borderColor: "hsl(var(--success) / 0.15)" }}>
-                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2.5 text-center" style={{ color: "hsl(var(--success) / 0.8)" }}>Your Agent</p>
-                                    {/* Bot icon with glow */}
-                                    <div className="flex justify-center mb-2.5">
-                                      <div className="w-10 h-10 rounded-xl border flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--success) / 0.12), hsl(var(--success) / 0.04))", borderColor: "hsl(var(--success) / 0.3)", boxShadow: "0 0 12px hsl(var(--success) / 0.15)" }}>
-                                        <Bot className="w-5 h-5" style={{ color: "hsl(var(--success))" }} />
-                                      </div>
-                                    </div>
-                                    <p className="text-[10px] text-center font-medium mb-2" style={{ color: "hsl(var(--success) / 0.8)" }}>{autoPercent}% automated</p>
-                                    {/* Improvement bars */}
-                                    <div className="space-y-1.5">
-                                      <div className="flex items-center gap-1.5">
-                                        <Zap className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success) / 0.7)" }} />
-                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--success) / 0.08)" }}>
-                                          <div className="h-full rounded-full" style={{ width: "95%", background: "hsl(var(--success) / 0.5)" }} />
-                                        </div>
-                                        <span className="text-[9px] w-8 text-right" style={{ color: "hsl(var(--success) / 0.7)" }}>Fast</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <TrendingUp className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success) / 0.7)" }} />
-                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--success) / 0.08)" }}>
-                                          <div className="h-full rounded-full" style={{ width: "80%", background: "hsl(var(--success) / 0.5)" }} />
-                                        </div>
-                                        <span className="text-[9px] w-8 text-right" style={{ color: "hsl(var(--success) / 0.7)" }}>10x↓</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Cpu className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success) / 0.7)" }} />
-                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--success) / 0.08)" }}>
-                                          <div className="h-full rounded-full" style={{ width: `${Math.max(autoPercent, 60)}%`, background: "hsl(var(--success) / 0.5)" }} />
-                                        </div>
-                                        <span className="text-[9px] w-8 text-right" style={{ color: "hsl(var(--success) / 0.7)" }}>Auto</span>
-                                      </div>
-                                    </div>
+                                  <div className="px-4 py-2 rounded-lg text-[12px] font-medium border text-foreground/70" style={{ borderColor: "hsl(var(--border))" }}>
+                                    Watch Demo
                                   </div>
                                 </div>
-                              );
-                            })()}
-                          </CardContent>
-                        </Card>
-                      )}
+                              </div>
+
+                              {/* Features / Workflows */}
+                              <div className="px-5 pb-5">
+                                <p className="text-[10px] font-cinzel uppercase tracking-widest text-center mb-3" style={{ color: "hsl(var(--filigree))" }}>What It Automates</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {workflows.map((wf, i) => (
+                                    <div key={i} className="rounded-lg border p-3 flex items-start gap-2.5" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border) / 0.5)" }}>
+                                      <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{
+                                        background: wf.automation_level === "full" ? "hsl(var(--success) / 0.1)" : wf.automation_level === "partial" ? "hsl(var(--warning) / 0.1)" : "hsl(var(--primary) / 0.1)",
+                                      }}>
+                                        {wf.automation_level === "full" ? <Zap className="w-3.5 h-3.5" style={{ color: "hsl(var(--success))" }} /> : wf.automation_level === "partial" ? <Cpu className="w-3.5 h-3.5" style={{ color: "hsl(var(--warning))" }} /> : <Wand2 className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />}
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-[11px] font-medium text-foreground leading-tight truncate">{wf.name}</p>
+                                        <p className="text-[10px] text-muted-foreground mt-0.5 capitalize">{wf.automation_level} automation</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Social proof / Replaces */}
+                              {incumbents.length > 0 && (
+                                <div className="px-5 pb-5">
+                                  <p className="text-[10px] text-center text-muted-foreground mb-2">Replaces legacy tools like</p>
+                                  <div className="flex justify-center gap-3">
+                                    {incumbents.map(c => (
+                                      <div key={c.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] text-foreground/50" style={{ borderColor: "hsl(var(--border) / 0.3)", background: "hsl(var(--muted) / 0.15)" }}>
+                                        <Building2 className="w-3 h-3" />
+                                        <span className="line-through decoration-muted-foreground/40">{c.name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Fade overlay hint */}
+                              <div className="h-6" style={{ background: "linear-gradient(to bottom, transparent, hsl(var(--card)))" }} />
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Market Proof — Why This Score */}
                       {!hasPrompt && (() => {
