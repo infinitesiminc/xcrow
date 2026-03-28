@@ -680,7 +680,7 @@ export default function Disrupt() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-sm font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
-                            <Loader2 className="w-4 h-4 animate-spin" /> The Oracle is forging your scroll…
+                            <Loader2 className="w-4 h-4 animate-spin" /> Generating your master prompt…
                           </div>
                         )}
                       </div>
