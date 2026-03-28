@@ -273,7 +273,7 @@ export default function Disrupt() {
     return (
       <>
         <Helmet>
-          <title>The Forge — One Prompt to Launch Your AI Startup | Xcrow</title>
+          <title>Xcrow Founder — One Prompt to Launch Your AI Startup | Xcrow</title>
           <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
         </Helmet>
         <Navbar />
@@ -286,15 +286,15 @@ export default function Disrupt() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree-glow) / 0.6), transparent)" }} />
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <div className="text-5xl mb-4">⚔️</div>
+              <div className="text-5xl mb-4">🚀</div>
               <h1 className="text-3xl md:text-4xl font-bold font-cinzel text-foreground mb-3 tracking-wide">
-                The Forge
+                Xcrow Founder
               </h1>
               <p className="text-base font-cinzel tracking-wide mb-2" style={{ color: "hsl(var(--filigree))" }}>
                 One Prompt. One Founder. Ship It.
               </p>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                Choose your battlefield below. The Forge will craft a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Scroll</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your venture.
+                Pick a high-opportunity niche below. We'll generate a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your startup.
               </p>
             </motion.div>
 
@@ -309,7 +309,7 @@ export default function Disrupt() {
                 <div className="relative flex-1 min-w-[200px] max-w-xs">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <Input
-                    placeholder="Scout for niches, workflows…"
+                    placeholder="Search niches, workflows…"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="pl-8 h-8 text-xs border-border/30"
@@ -322,13 +322,13 @@ export default function Disrupt() {
                   className="h-8 text-xs rounded-md border px-2 text-foreground"
                   style={{ borderColor: "hsl(var(--filigree) / 0.2)", background: "hsl(var(--background))" }}
                 >
-                  <option value="">All Kingdoms</option>
+                  <option value="">All Verticals</option>
                   {verticals.map(v => (
                     <option key={v.id} value={v.id}>{v.name}</option>
                   ))}
                 </select>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree))" }}>Threat Level:</span>
+                  <span className="text-[10px] font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree))" }}>Min Score:</span>
                   {[0, 50, 70, 85].map(s => (
                     <button
                       key={s}
@@ -346,7 +346,7 @@ export default function Disrupt() {
                 </div>
               </div>
               <p className="text-[10px] mt-2 font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.6)" }}>
-                {filteredNiches.length} targets scouted across {new Set(filteredNiches.map(n => n.verticalId)).size} kingdoms
+                {filteredNiches.length} opportunities across {new Set(filteredNiches.map(n => n.verticalId)).size} verticals
               </p>
             </div>
           </div>
@@ -356,11 +356,11 @@ export default function Disrupt() {
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="w-6 h-6 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />
-                <p className="text-xs font-cinzel tracking-wider text-muted-foreground">Scouting the realm…</p>
+                <p className="text-xs font-cinzel tracking-wider text-muted-foreground">Loading opportunities…</p>
               </div>
             ) : filteredNiches.length === 0 ? (
               <div className="text-center py-16 text-sm font-cinzel text-muted-foreground">
-                No territories match your scout parameters. Broaden your search, adventurer.
+                No niches match your filters. Try broadening your search.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -397,13 +397,13 @@ export default function Disrupt() {
                               <span className="text-[10px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
                             </div>
                             <Badge variant="outline" className={`text-[9px] h-5 px-1.5 shrink-0 ${whitespaceColor[niche.whitespace]}`}>
-                              {niche.whitespace === "open" ? "🏴 Open" : niche.whitespace === "low-competition" ? "⚔️ Contested" : "🛡️ Fortified"}
+                              {niche.whitespace === "open" ? "Open" : niche.whitespace === "low-competition" ? "Low Competition" : "Crowded"}
                             </Badge>
                           </div>
 
                           {/* Agent Play */}
                           <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-2 mb-2 min-h-[2.75rem]">
-                            💡 {as.agent_play || "Uncharted territory — ripe for conquest"}
+                            💡 {as.agent_play || "Emerging opportunity for AI-native disruption"}
                           </p>
 
                           {/* Workflow tags */}
@@ -420,8 +420,8 @@ export default function Disrupt() {
 
                           {/* Footer */}
                           <div className="flex items-center gap-2 text-[10px] border-t pt-2 mt-auto" style={{ borderColor: "hsl(var(--filigree) / 0.1)", color: "hsl(var(--muted-foreground))" }}>
-                            <span>🏰 {incumbentCount}</span>
-                            <span>· ⚔️ {disruptorCount}</span>
+                            <span>{incumbentCount} incumbents</span>
+                            <span>· {disruptorCount} disruptors</span>
                             <div className="flex gap-1 ml-auto">
                               <button
                                 onClick={(e) => toggleSave(niche, e)}
@@ -461,7 +461,7 @@ export default function Disrupt() {
   return (
     <>
       <Helmet>
-        <title>{phase === "generating" ? "Forging…" : phase === "result" ? `${savedNiche} — Builder Scroll` : `${niche?.name} — Intel`} | Xcrow</title>
+        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : `${niche?.name} — Deep Dive`} | Xcrow</title>
       </Helmet>
       <Navbar />
       <div className="min-h-screen pt-16" style={{ background: "hsl(var(--background))" }}>
@@ -471,7 +471,7 @@ export default function Disrupt() {
             className="flex items-center gap-1.5 text-xs hover:text-foreground transition-colors mb-6 font-cinzel tracking-wider"
             style={{ color: "hsl(var(--filigree))" }}
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "⚔️ Scout another target" : "🏰 Back to The Forge"}
+            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "Find another niche" : "Back to opportunities"}
           </button>
 
           <div className="flex flex-col lg:flex-row gap-6">
@@ -484,7 +484,7 @@ export default function Disrupt() {
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="outline" className="text-[10px]" style={{ borderColor: "hsl(var(--filigree) / 0.3)", color: "hsl(var(--filigree))" }}>{niche.verticalName}</Badge>
                       <Badge variant="outline" className={`text-[10px] ${whitespaceColor[niche.whitespace]}`}>
-                        {niche.whitespace === "open" ? "🏴 Open" : niche.whitespace === "low-competition" ? "⚔️ Contested" : "🛡️ Fortified"}
+                        {niche.whitespace === "open" ? "Open" : niche.whitespace === "low-competition" ? "Low Competition" : "Crowded"}
                       </Badge>
                       <div className="flex gap-1 ml-auto">
                         <button onClick={() => toggleSave(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}>
@@ -512,7 +512,7 @@ export default function Disrupt() {
                       <CardContent className="p-3 flex gap-2.5">
                         <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Battle Thesis</p>
+                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Startup Thesis</p>
                           <p className={`text-foreground leading-relaxed ${hasPrompt ? "text-[11px]" : "text-sm"}`}>{as.agent_play}</p>
                         </div>
                       </CardContent>
@@ -525,7 +525,7 @@ export default function Disrupt() {
                       <CardContent className="p-3 flex gap-2.5">
                         <Bot className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--sentinel))" }} />
                         <div>
-                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Oracle's Verdict</p>
+                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>AI Analysis</p>
                           <p className="text-xs text-foreground/80 leading-relaxed">{as.agent_verdict}</p>
                         </div>
                       </CardContent>
@@ -562,11 +562,11 @@ export default function Disrupt() {
                   {!hasPrompt && (
                     <Card className="mb-4 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
                       <CardContent className="p-3">
-                        <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Battlefield Map</p>
+                        <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Competitive Landscape</p>
                         <div className="space-y-2">
                           {niche.companies.filter(c => c.role === "incumbent").length > 0 && (
                             <div>
-                              <p className="text-[10px] font-medium mb-1" style={{ color: "hsl(var(--destructive) / 0.8)" }}>🏰 Fortified Incumbents</p>
+                              <p className="text-[10px] font-medium mb-1" style={{ color: "hsl(var(--destructive) / 0.8)" }}>Incumbents</p>
                               <div className="flex flex-wrap gap-1">
                                 {niche.companies.filter(c => c.role === "incumbent").map(c => (
                                   <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-destructive/20 text-foreground/70">
@@ -579,7 +579,7 @@ export default function Disrupt() {
                           )}
                           {niche.companies.filter(c => c.role === "disruptor").length > 0 && (
                             <div>
-                              <p className="text-[10px] font-medium text-primary/80 mb-1">⚔️ Challenger Disruptors</p>
+                              <p className="text-[10px] font-medium text-primary/80 mb-1">Disruptors</p>
                               <div className="flex flex-wrap gap-1">
                                 {niche.companies.filter(c => c.role === "disruptor").map(c => (
                                   <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-primary/20 text-foreground/70">
@@ -612,7 +612,7 @@ export default function Disrupt() {
                     <>
                       <Card className="mb-4 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.2)" }}>
                         <CardContent className="p-3">
-                          <h3 className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>The Scroll Contains:</h3>
+                          <h3 className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Your prompt will include:</h3>
                           <div className="grid grid-cols-2 gap-1.5">
                             {[
                               { emoji: "🎯", label: "Vision & target user" },
@@ -649,10 +649,10 @@ export default function Disrupt() {
                     <div className="space-y-2">
                       <Button onClick={copyPrompt} size="sm" className="gap-1.5 w-full font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
                         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        {copied ? "Scroll Copied!" : "Copy Builder Scroll"}
+                        {copied ? "Copied!" : "Copy Master Prompt"}
                       </Button>
                       <Button onClick={restart} variant="outline" size="sm" className="gap-1.5 w-full font-cinzel tracking-wider" style={{ borderColor: "hsl(var(--filigree) / 0.3)" }}>
-                        <Rocket className="w-3.5 h-3.5" /> Scout Another Target
+                        <Rocket className="w-3.5 h-3.5" /> Find Another Niche
                       </Button>
                     </div>
                   )}
@@ -667,7 +667,7 @@ export default function Disrupt() {
                   {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />}
                   {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
                   <h2 className="text-sm font-semibold text-foreground font-cinzel tracking-wider">
-                    {phase === "generating" ? "⚒️ Forging…" : "📜 Builder Scroll"}
+                    {phase === "generating" ? "Generating…" : "Master Prompt"}
                   </h2>
                 </div>
                 <Card className="border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(0 0% 0% / 0.2)" }}>
@@ -680,7 +680,7 @@ export default function Disrupt() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-sm font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
-                            <Loader2 className="w-4 h-4 animate-spin" /> The Oracle is forging your scroll…
+                            <Loader2 className="w-4 h-4 animate-spin" /> Generating your master prompt…
                           </div>
                         )}
                       </div>
