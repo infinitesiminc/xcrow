@@ -579,7 +579,7 @@ export default function Disrupt() {
                           )}
                           {niche.companies.filter(c => c.role === "disruptor").length > 0 && (
                             <div>
-                              <p className="text-[10px] font-medium text-primary/80 mb-1">Existing Disruptors</p>
+                              <p className="text-[10px] font-medium text-primary/80 mb-1">⚔️ Challenger Disruptors</p>
                               <div className="flex flex-wrap gap-1">
                                 {niche.companies.filter(c => c.role === "disruptor").map(c => (
                                   <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-primary/20 text-foreground/70">
