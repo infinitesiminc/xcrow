@@ -451,6 +451,14 @@ export default function Disrupt() {
                       <Badge variant="outline" className={`text-[10px] ${whitespaceColor[niche.whitespace]}`}>
                         {whitespaceLabel[niche.whitespace]}
                       </Badge>
+                      <div className="flex gap-1 ml-auto">
+                        <button onClick={() => toggleSave(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}>
+                          {isNicheSaved(niche) ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4 text-muted-foreground" />}
+                        </button>
+                        <button onClick={() => shareNiche(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title="Share opportunity">
+                          <Share2 className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      </div>
                     </div>
                     <h1 className={`font-bold font-cinzel text-foreground mb-1 ${hasPrompt ? "text-lg" : "text-2xl"}`}>
                       {niche.name}
