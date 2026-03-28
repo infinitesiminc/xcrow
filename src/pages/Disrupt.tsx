@@ -461,7 +461,7 @@ export default function Disrupt() {
   return (
     <>
       <Helmet>
-        <title>{phase === "generating" ? "Forging…" : phase === "result" ? `${savedNiche} — Builder Scroll` : `${niche?.name} — Intel`} | Xcrow</title>
+        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : `${niche?.name} — Deep Dive`} | Xcrow</title>
       </Helmet>
       <Navbar />
       <div className="min-h-screen pt-16" style={{ background: "hsl(var(--background))" }}>
