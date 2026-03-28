@@ -249,6 +249,52 @@ export default function Disrupt() {
                     )}
                   </h2>
 
+                  {/* Opportunity Scorecard */}
+                  {vs && vs.opportunityScore > 0 && (
+                    <Collapsible>
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20 border border-border/30 mb-3 text-left hover:bg-muted/30 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[10px] font-semibold text-foreground/80">Opportunity Score</span>
+                              <span className="text-xs font-bold text-primary">{vs.opportunityScore.toFixed(1)}/10</span>
+                              <Progress value={vs.opportunityScore * 10} className="h-1.5 w-16 bg-muted/40" />
+                            </div>
+                            <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
+                              <span>🟢 {vs.sub_verticals.filter(s => s.whitespace === "open").length} open</span>
+                              <span>🟡 {vs.sub_verticals.filter(s => s.whitespace === "low-competition").length} low-comp</span>
+                              <span>🔴 {vs.sub_verticals.filter(s => s.whitespace === "crowded").length} crowded</span>
+                            </div>
+                          </div>
+                          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="p-3 rounded-lg bg-muted/10 border border-border/20 mb-3 space-y-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                            <div className="flex flex-col">
+                              <span className="text-muted-foreground">Incumbents</span>
+                              <span className="font-semibold text-foreground">{vs.counts.incumbent}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-muted-foreground">Disruptors</span>
+                              <span className="font-semibold text-foreground">{vs.disruptorMaturity.count} (avg: {vs.disruptorMaturity.avgFunding})</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-muted-foreground">Avg Disruptor ARR</span>
+                              <span className="font-semibold text-foreground">{vs.disruptorMaturity.avgArr}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-muted-foreground">Avg Team Size</span>
+                              <span className="font-semibold text-foreground">{vs.disruptorMaturity.avgSize}</span>
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground/80 italic">{vs.verdict}</p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+
                   {/* Sub-vertical pills */}
                   {subVerticals.length > 1 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
