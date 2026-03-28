@@ -124,7 +124,7 @@ export default function Index() {
           <img
             src={heroImage}
             alt=""
-            className="w-full h-[70%] object-cover object-center"
+            className="w-full h-[75%] object-cover object-top"
             style={{ opacity: 1 }}
             draggable={false}
           />
