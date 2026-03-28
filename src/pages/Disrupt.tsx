@@ -525,7 +525,7 @@ export default function Disrupt() {
                       <CardContent className="p-3 flex gap-2.5">
                         <Bot className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--sentinel))" }} />
                         <div>
-                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Oracle's Verdict</p>
+                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>AI Analysis</p>
                           <p className="text-xs text-foreground/80 leading-relaxed">{as.agent_verdict}</p>
                         </div>
                       </CardContent>
