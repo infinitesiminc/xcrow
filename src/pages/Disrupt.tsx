@@ -317,14 +317,12 @@ export default function Disrupt() {
                           </div>
 
                           {/* Agent Play */}
-                          {as.agent_play && (
-                            <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-2 mb-2">
-                              💡 {as.agent_play}
-                            </p>
-                          )}
+                          <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-2 mb-2 min-h-[2.75rem]">
+                            💡 {as.agent_play || "Emerging opportunity for AI-native disruption"}
+                          </p>
 
                           {/* Workflow tags */}
-                          <div className="flex flex-wrap gap-1 mb-2">
+                          <div className="flex flex-wrap gap-1 mb-2 min-h-[1.5rem]">
                             {as.automatable_workflows.slice(0, 3).map((wf, i) => (
                               <Badge key={i} variant="outline" className={`text-[8px] h-4 px-1.5 ${
                                 wf.automation_level === "full" ? "text-emerald-400 border-emerald-500/20" :
@@ -336,8 +334,8 @@ export default function Disrupt() {
                             ))}
                           </div>
 
-                          {/* Competitive density */}
-                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border/20 pt-2">
+                          {/* Competitive density - pushed to bottom */}
+                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border/20 pt-2 mt-auto">
                             <span>{incumbentCount} incumbent{incumbentCount !== 1 ? "s" : ""}</span>
                             <span>{disruptorCount} disruptor{disruptorCount !== 1 ? "s" : ""}</span>
                             <div className="flex gap-1 ml-auto">
