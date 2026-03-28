@@ -29,6 +29,7 @@ const VERTICALS = [
   { id: 20, name: "Content & CMS", keywords: ["cms", "content management", "headless cms", "website builder", "digital experience", "web publishing", "content platform"] },
   { id: 21, name: "Procurement & Spend", keywords: ["procurement", "purchasing", "spend management", "vendor management", "sourcing", "expense management", "corporate card"] },
   { id: 22, name: "GRC & Compliance", keywords: ["governance", "risk", "compliance", "grc", "audit", "regulatory", "privacy", "trust", "soc2", "iso"] },
+  { id: 23, name: "AI Infrastructure", keywords: ["ai infrastructure", "foundation model", "llm", "large language model", "generative ai", "ai platform", "machine learning", "ml ops", "ai assistant", "multimodal ai", "ai app builder", "ai code editor", "ai agent platform"] },
 ];
 
 // Non-software industries to exclude
@@ -169,7 +170,7 @@ Rules:
 
         const inserts: any[] = [];
         for (const r of results) {
-          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 22) {
+          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 23) {
             totalSkipped++;
             continue;
           }
