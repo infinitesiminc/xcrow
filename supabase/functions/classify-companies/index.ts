@@ -170,7 +170,7 @@ Rules:
 
         const inserts: any[] = [];
         for (const r of results) {
-          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 22) {
+          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 23) {
             totalSkipped++;
             continue;
           }
