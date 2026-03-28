@@ -8,6 +8,8 @@ export interface DisruptionIncumbent {
   id: number;
   name: string;
   age: string;
+  status: "Public" | "Private";
+  valuation: string;
   vulnerability: string;
   asymmetricAngle: string;
   beachheadNiche: string;
