@@ -286,15 +286,15 @@ export default function Disrupt() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree-glow) / 0.6), transparent)" }} />
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <div className="text-5xl mb-4">⚔️</div>
+              <div className="text-5xl mb-4">🚀</div>
               <h1 className="text-3xl md:text-4xl font-bold font-cinzel text-foreground mb-3 tracking-wide">
-                The Forge
+                Xcrow Founder
               </h1>
               <p className="text-base font-cinzel tracking-wide mb-2" style={{ color: "hsl(var(--filigree))" }}>
                 One Prompt. One Founder. Ship It.
               </p>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                Choose your battlefield below. The Forge will craft a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Scroll</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your venture.
+                Pick a high-opportunity niche below. We'll generate a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your startup.
               </p>
             </motion.div>
 
