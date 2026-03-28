@@ -119,7 +119,7 @@ export default function Blog() {
               <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
                 Scout any role, see which skills are under threat, and start practicing — free.
               </p>
-              <a href="/map"
+              <a href="/upskill"
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-primary text-primary-foreground font-fantasy text-sm font-medium hover:opacity-90 transition-opacity"
                 style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.25)" }}>
                 Enter the World Map <ArrowRight className="h-4 w-4" />

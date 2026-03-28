@@ -174,7 +174,7 @@ export default function WhyTheseSkillsMatter() {
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Button asChild className="font-fantasy">
-                  <Link to="/map">
+                  <Link to="/upskill">
                     Enter the World Map <ArrowRight className="h-4 w-4 ml-1.5" />
                   </Link>
                 </Button>

@@ -203,7 +203,7 @@ const MapPage = () => {
     if (params.get("checkout") === "success") {
       refreshSubscription();
       toast({ title: "⚔️ Champion Pass activated!", description: "Welcome to the Champion ranks. All quests are unlocked." });
-      window.history.replaceState({}, "", "/map");
+      window.history.replaceState({}, "", "/upskill");
     }
   }, [refreshSubscription, toast]);
 

@@ -69,8 +69,8 @@ export default function Navbar() {
         ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
       ]
     : [
-        { label: "Upskill", path: "/map", icon: Map },
-        { label: "Founder", path: "/disrupt", icon: Swords },
+        { label: "Upskill", path: "/upskill", icon: Map },
+        { label: "Founder", path: "/founder", icon: Swords },
         { label: "Leadgen", path: "/leadgen", icon: Compass },
         { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
       ];

@@ -268,7 +268,7 @@ export default function Skills() {
             <p className="text-muted-foreground mb-6">
               Every skill here is a castle you can claim. Open the World Map and begin your first quest.
             </p>
-            <Button size="lg" onClick={() => window.location.href = "/map"} className="text-base px-8"
+            <Button size="lg" onClick={() => window.location.href = "/upskill"} className="text-base px-8"
               style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.25)" }}>
               <Sparkles className="h-5 w-5 mr-2" /> Enter the World Map
             </Button>

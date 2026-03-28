@@ -31,7 +31,7 @@ const PRODUCTS = [
     tagline: "One prompt. One founder. Ship an AI startup.",
     description: "Discover high-potential niches scored by AI agent disruption potential, then generate a complete builder spec to launch your venture.",
     icon: Rocket,
-    route: "/disrupt",
+    route: "/founder",
     cta: "Find Opportunities",
     color: "from-violet-500/20 to-violet-500/5",
     border: "border-violet-500/30 hover:border-violet-500/60",
