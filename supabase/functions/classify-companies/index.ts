@@ -85,11 +85,14 @@ Deno.serve(async (req) => {
       );
 
       // Process in batches of 30 using AI
-      const BATCH_SIZE = 30;
+      const BATCH_SIZE = 20;
+      const MAX_BATCHES = 5;
       let totalClassified = 0;
       let totalSkipped = 0;
+      let batchCount = 0;
 
-      for (let i = 0; i < softwareCompanies.length; i += BATCH_SIZE) {
+      for (let i = 0; i < softwareCompanies.length && batchCount < MAX_BATCHES; i += BATCH_SIZE) {
+        batchCount++;
         const batch = softwareCompanies.slice(i, i + BATCH_SIZE);
 
         const companyList = batch
