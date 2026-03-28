@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
+import heroImage from "@/assets/og-hero.png";
 import { Map, Rocket, Target, ArrowRight, Sword, Shield, Flame } from "lucide-react";
 import { useEffect, useRef } from "react";
 
