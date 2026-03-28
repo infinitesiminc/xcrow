@@ -177,7 +177,7 @@ export default function Skills() {
                 <Sparkles className="h-5 w-5 text-primary shrink-0" />
                 <p className="text-sm text-foreground font-medium">Ready to start mastering these skills? Open your World Map and claim your first territory.</p>
               </div>
-              <Button size="sm" onClick={() => window.location.href = "/map"} className="shrink-0">
+              <Button size="sm" onClick={() => window.location.href = "/upskill"} className="shrink-0">
                 Open World Map <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
