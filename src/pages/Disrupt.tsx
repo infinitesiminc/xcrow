@@ -534,9 +534,9 @@ export default function Disrupt() {
 
                   {/* Automatable Workflows */}
                   {!hasPrompt && as.automatable_workflows.length > 0 && (
-                    <Card className="bg-card/40 border-border/30 mb-3">
+                    <Card className="mb-3 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
                       <CardContent className="p-3">
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Automatable Workflows</p>
+                        <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Automatable Workflows</p>
                         <div className="space-y-2">
                           {as.automatable_workflows.map((wf, i) => (
                             <div key={i} className="flex items-start gap-2">
