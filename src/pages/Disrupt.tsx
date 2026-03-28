@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3, Cpu, Wand2, ArrowRight } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3, Cpu, Wand2, ArrowRight, Clock, DollarSign, Users, ArrowRightLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -701,42 +701,93 @@ export default function Disrupt() {
                               const incumbents = niche.companies.filter(c => c.role === "incumbent");
                               const topNames = incumbents.slice(0, 2).map(c => c.name);
                               const manualSteps = as.automatable_workflows.slice(0, 3);
+                              const fullCount = manualSteps.filter(w => w.automation_level === "full").length;
+                              const autoPercent = manualSteps.length > 0 ? Math.round((fullCount / manualSteps.length) * 100) : 0;
                               return (
-                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                <div className="grid grid-cols-[1fr_auto_1fr] gap-0 mt-2 items-stretch">
                                   {/* TODAY */}
-                                  <div className="rounded-lg p-3 border" style={{ background: "hsl(var(--destructive) / 0.05)", borderColor: "hsl(var(--destructive) / 0.15)" }}>
-                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2" style={{ color: "hsl(var(--destructive) / 0.7)" }}>Today</p>
-                                    <div className="space-y-1.5">
-                                      {topNames.length > 0 && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Building2 className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.5)" }} />
-                                          <span className="text-[11px] text-foreground/60 truncate">{topNames.join(", ")}</span>
+                                  <div className="rounded-l-lg p-3 border border-r-0" style={{ background: "hsl(var(--destructive) / 0.05)", borderColor: "hsl(var(--destructive) / 0.15)" }}>
+                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2.5 text-center" style={{ color: "hsl(var(--destructive) / 0.7)" }}>Today</p>
+                                    {/* Stacked icon cluster */}
+                                    <div className="flex justify-center mb-2.5">
+                                      <div className="relative w-14 h-10">
+                                        <div className="absolute left-0 top-0 w-8 h-8 rounded-lg border flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)", borderColor: "hsl(var(--destructive) / 0.2)" }}>
+                                          <Building2 className="w-4 h-4" style={{ color: "hsl(var(--destructive) / 0.5)" }} />
                                         </div>
-                                      )}
-                                      {manualSteps.map((wf, i) => (
-                                        <div key={i} className="flex items-center gap-1.5">
-                                          <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--destructive) / 0.3)" }} />
-                                          <span className="text-[11px] text-foreground/50 truncate">{wf.name}</span>
+                                        <div className="absolute right-0 bottom-0 w-8 h-8 rounded-lg border flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)", borderColor: "hsl(var(--destructive) / 0.2)" }}>
+                                          <Users className="w-4 h-4" style={{ color: "hsl(var(--destructive) / 0.5)" }} />
                                         </div>
-                                      ))}
-                                      <p className="text-[10px] text-muted-foreground italic mt-1">Manual · Slow · Expensive</p>
+                                      </div>
                                     </div>
-                                  </div>
-                                  {/* WITH YOUR AGENT */}
-                                  <div className="rounded-lg p-3 border" style={{ background: "hsl(var(--success) / 0.05)", borderColor: "hsl(var(--success) / 0.15)" }}>
-                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2" style={{ color: "hsl(var(--success) / 0.8)" }}>With Your Agent</p>
+                                    {topNames.length > 0 && (
+                                      <p className="text-[10px] text-center text-foreground/50 mb-2 truncate">{topNames.join(" · ")}</p>
+                                    )}
+                                    {/* Pain bars */}
                                     <div className="space-y-1.5">
                                       <div className="flex items-center gap-1.5">
-                                        <Bot className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
-                                        <span className="text-[11px] text-foreground/70 font-medium">AI-native workflow</span>
-                                      </div>
-                                      {manualSteps.map((wf, i) => (
-                                        <div key={i} className="flex items-center gap-1.5">
-                                          <Zap className="w-3 h-3 shrink-0" style={{ color: wf.automation_level === "full" ? "hsl(var(--success))" : "hsl(var(--warning))" }} />
-                                          <span className="text-[11px] text-foreground/70 truncate">{wf.name}</span>
+                                        <Clock className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
+                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
+                                          <div className="h-full rounded-full" style={{ width: "85%", background: "hsl(var(--destructive) / 0.35)" }} />
                                         </div>
-                                      ))}
-                                      <p className="text-[10px] font-medium mt-1" style={{ color: "hsl(var(--success) / 0.8)" }}>Autonomous · Fast · Scalable</p>
+                                        <span className="text-[9px] text-muted-foreground w-8 text-right">Slow</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <DollarSign className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
+                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
+                                          <div className="h-full rounded-full" style={{ width: "75%", background: "hsl(var(--destructive) / 0.35)" }} />
+                                        </div>
+                                        <span className="text-[9px] text-muted-foreground w-8 text-right">$$$$</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <Users className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
+                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
+                                          <div className="h-full rounded-full" style={{ width: "90%", background: "hsl(var(--destructive) / 0.35)" }} />
+                                        </div>
+                                        <span className="text-[9px] text-muted-foreground w-8 text-right">Manual</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Arrow divider */}
+                                  <div className="flex items-center justify-center px-1" style={{ background: "hsl(var(--surface-stone))" }}>
+                                    <div className="flex flex-col items-center gap-1">
+                                      <ArrowRightLeft className="w-4 h-4 text-muted-foreground/40" />
+                                    </div>
+                                  </div>
+
+                                  {/* WITH YOUR AGENT */}
+                                  <div className="rounded-r-lg p-3 border border-l-0" style={{ background: "hsl(var(--success) / 0.05)", borderColor: "hsl(var(--success) / 0.15)" }}>
+                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2.5 text-center" style={{ color: "hsl(var(--success) / 0.8)" }}>Your Agent</p>
+                                    {/* Bot icon with glow */}
+                                    <div className="flex justify-center mb-2.5">
+                                      <div className="w-10 h-10 rounded-xl border flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--success) / 0.12), hsl(var(--success) / 0.04))", borderColor: "hsl(var(--success) / 0.3)", boxShadow: "0 0 12px hsl(var(--success) / 0.15)" }}>
+                                        <Bot className="w-5 h-5" style={{ color: "hsl(var(--success))" }} />
+                                      </div>
+                                    </div>
+                                    <p className="text-[10px] text-center font-medium mb-2" style={{ color: "hsl(var(--success) / 0.8)" }}>{autoPercent}% automated</p>
+                                    {/* Improvement bars */}
+                                    <div className="space-y-1.5">
+                                      <div className="flex items-center gap-1.5">
+                                        <Zap className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success) / 0.7)" }} />
+                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--success) / 0.08)" }}>
+                                          <div className="h-full rounded-full" style={{ width: "95%", background: "hsl(var(--success) / 0.5)" }} />
+                                        </div>
+                                        <span className="text-[9px] w-8 text-right" style={{ color: "hsl(var(--success) / 0.7)" }}>Fast</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <TrendingUp className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success) / 0.7)" }} />
+                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--success) / 0.08)" }}>
+                                          <div className="h-full rounded-full" style={{ width: "80%", background: "hsl(var(--success) / 0.5)" }} />
+                                        </div>
+                                        <span className="text-[9px] w-8 text-right" style={{ color: "hsl(var(--success) / 0.7)" }}>10x↓</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <Cpu className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success) / 0.7)" }} />
+                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--success) / 0.08)" }}>
+                                          <div className="h-full rounded-full" style={{ width: `${Math.max(autoPercent, 60)}%`, background: "hsl(var(--success) / 0.5)" }} />
+                                        </div>
+                                        <span className="text-[9px] w-8 text-right" style={{ color: "hsl(var(--success) / 0.7)" }}>Auto</span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
