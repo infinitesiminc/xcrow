@@ -104,7 +104,7 @@ export default function WhyTheseSkillsMatter() {
                 <Sparkles className="h-5 w-5 text-primary mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground mb-4">Explore all 183 skills on the interactive World Map.</p>
                 <Button asChild size="sm" className="font-fantasy">
-                  <Link to="/map">
+                  <Link to="/upskill">
                     Enter the World Map <ArrowRight className="h-4 w-4 ml-1.5" />
                   </Link>
                 </Button>
