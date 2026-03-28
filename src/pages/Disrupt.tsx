@@ -686,14 +686,62 @@ export default function Disrupt() {
                   <ScrollArea className="flex-1">
                     <div className="p-5 space-y-4">
                       {/* Startup Thesis */}
-                      {as.agent_play && (
+                      {as.agent_play && !hasPrompt && (
                         <Card className="border" style={{ background: "hsl(var(--primary) / 0.06)", borderColor: "hsl(var(--primary) / 0.2)" }}>
-                          <CardContent className="p-4 flex gap-3">
-                            <Lightbulb className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                            <div>
-                              <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--filigree))" }}>Startup Thesis</p>
-                              <p className="text-[15px] text-foreground leading-relaxed font-medium">{as.agent_play}</p>
+                          <CardContent className="p-4">
+                            <div className="flex gap-3 mb-3">
+                              <Lightbulb className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                              <div>
+                                <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--filigree))" }}>Startup Thesis</p>
+                                <p className="text-[15px] text-foreground leading-relaxed font-medium">{as.agent_play}</p>
+                              </div>
                             </div>
+                            {/* Before / After visual */}
+                            {(() => {
+                              const incumbents = niche.companies.filter(c => c.role === "incumbent");
+                              const topNames = incumbents.slice(0, 2).map(c => c.name);
+                              const manualSteps = as.automatable_workflows.slice(0, 3);
+                              return (
+                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                  {/* TODAY */}
+                                  <div className="rounded-lg p-3 border" style={{ background: "hsl(var(--destructive) / 0.05)", borderColor: "hsl(var(--destructive) / 0.15)" }}>
+                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2" style={{ color: "hsl(var(--destructive) / 0.7)" }}>Today</p>
+                                    <div className="space-y-1.5">
+                                      {topNames.length > 0 && (
+                                        <div className="flex items-center gap-1.5">
+                                          <Building2 className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--destructive) / 0.5)" }} />
+                                          <span className="text-[11px] text-foreground/60 truncate">{topNames.join(", ")}</span>
+                                        </div>
+                                      )}
+                                      {manualSteps.map((wf, i) => (
+                                        <div key={i} className="flex items-center gap-1.5">
+                                          <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--destructive) / 0.3)" }} />
+                                          <span className="text-[11px] text-foreground/50 truncate">{wf.name}</span>
+                                        </div>
+                                      ))}
+                                      <p className="text-[10px] text-muted-foreground italic mt-1">Manual · Slow · Expensive</p>
+                                    </div>
+                                  </div>
+                                  {/* WITH YOUR AGENT */}
+                                  <div className="rounded-lg p-3 border" style={{ background: "hsl(var(--success) / 0.05)", borderColor: "hsl(var(--success) / 0.15)" }}>
+                                    <p className="text-[10px] font-cinzel font-bold uppercase tracking-widest mb-2" style={{ color: "hsl(var(--success) / 0.8)" }}>With Your Agent</p>
+                                    <div className="space-y-1.5">
+                                      <div className="flex items-center gap-1.5">
+                                        <Bot className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
+                                        <span className="text-[11px] text-foreground/70 font-medium">AI-native workflow</span>
+                                      </div>
+                                      {manualSteps.map((wf, i) => (
+                                        <div key={i} className="flex items-center gap-1.5">
+                                          <Zap className="w-3 h-3 shrink-0" style={{ color: wf.automation_level === "full" ? "hsl(var(--success))" : "hsl(var(--warning))" }} />
+                                          <span className="text-[11px] text-foreground/70 truncate">{wf.name}</span>
+                                        </div>
+                                      ))}
+                                      <p className="text-[10px] font-medium mt-1" style={{ color: "hsl(var(--success) / 0.8)" }}>Autonomous · Fast · Scalable</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </CardContent>
                         </Card>
                       )}
