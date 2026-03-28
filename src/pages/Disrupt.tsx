@@ -495,7 +495,7 @@ export default function Disrupt() {
                         </button>
                       </div>
                     </div>
-                    <h1 className={`font-bold font-cinzel text-foreground mb-1 ${hasPrompt ? "text-lg" : "text-2xl"}`}>
+                    <h1 className={`font-bold font-cinzel text-foreground mb-1 tracking-wide ${hasPrompt ? "text-lg" : "text-2xl"}`}>
                       {niche.name}
                     </h1>
                     <div className="flex items-center gap-3">
