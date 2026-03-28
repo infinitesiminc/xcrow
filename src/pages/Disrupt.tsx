@@ -304,7 +304,7 @@ export default function Disrupt() {
   return (
     <>
       <Helmet>
-        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : "Xcrow Founder — One Prompt to Launch Your AI Startup"} | Xcrow</title>
+        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : "Agent Launcher — Build AI Agents with One Prompt"} | Xcrow</title>
         <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
       </Helmet>
         <Navbar />
