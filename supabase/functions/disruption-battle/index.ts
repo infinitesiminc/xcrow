@@ -91,7 +91,7 @@ RULES:
       const systemPrompt = `You are an AI Software Factory — an autonomous startup blueprint generator. Given a startup idea, produce a COMPLETE startup framework across 6 stages.
 
 THE IDEA: ${idea}
-${targetName ? \`TARGET INCUMBENT: \${targetName}\` : ""}
+${targetName ? "TARGET INCUMBENT: " + targetName : ""}
 
 OUTPUT FORMAT — You MUST use these EXACT markers to delimit each stage. Output them in order:
 
