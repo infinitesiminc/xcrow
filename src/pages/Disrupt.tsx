@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, Search, Bot, TrendingUp, X } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -18,11 +18,21 @@ import { Input } from "@/components/ui/input";
 type Phase = "browse" | "deepdive" | "generating" | "result";
 
 const FACTORY_RESULT_KEY = "sf-master-prompt";
+const SAVED_NICHES_KEY = "sf-saved-niches";
 
 interface SavedResult {
   nicheName: string;
   verticalName: string;
   prompt: string;
+}
+
+interface SavedNiche {
+  key: string;
+  name: string;
+  verticalName: string;
+  agentScore: number;
+  agentPlay: string;
+  savedAt: string;
 }
 
 interface FlatNiche extends SubVertical {
@@ -35,6 +45,29 @@ function loadResult(): SavedResult | null {
     const raw = localStorage.getItem(FACTORY_RESULT_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
+}
+
+function loadSavedNiches(): SavedNiche[] {
+  try {
+    const raw = localStorage.getItem(SAVED_NICHES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function nicheKey(niche: FlatNiche): string {
+  return `${niche.verticalId}-${niche.name}`;
+}
+
+function shareNiche(niche: { name: string; verticalName: string; agentScore?: { agent_score: number; agent_play?: string | null } | null }) {
+  const score = niche.agentScore?.agent_score ?? 0;
+  const text = `🤖 ${niche.name} (${niche.verticalName}) — Agent Score: ${score}/100\n💡 ${niche.agentScore?.agent_play || "AI-native opportunity"}\n\nDiscover more AI startup opportunities:`;
+  const url = `${window.location.origin}/disrupt`;
+  if (navigator.share) {
+    navigator.share({ title: `${niche.name} — AI Opportunity`, text, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(`${text}\n${url}`);
+    toast.success("Opportunity link copied!");
+  }
 }
 
 const whitespaceColor: Record<WhitespaceLabel, string> = {
@@ -58,7 +91,24 @@ export default function Disrupt() {
   const [search, setSearch] = useState("");
   const [verticalFilter, setVerticalFilter] = useState<number | null>(null);
   const [minScore, setMinScore] = useState(50);
+  const [savedNiches, setSavedNiches] = useState<SavedNiche[]>(loadSavedNiches);
   const abortRef = useRef<AbortController | null>(null);
+
+  const toggleSave = (niche: FlatNiche, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const key = nicheKey(niche);
+    setSavedNiches(prev => {
+      const exists = prev.some(s => s.key === key);
+      const next = exists
+        ? prev.filter(s => s.key !== key)
+        : [...prev, { key, name: niche.name, verticalName: niche.verticalName, agentScore: niche.agentScore?.agent_score || 0, agentPlay: niche.agentScore?.agent_play || "", savedAt: new Date().toISOString() }];
+      localStorage.setItem(SAVED_NICHES_KEY, JSON.stringify(next));
+      toast.success(exists ? "Removed from saved" : "Saved opportunity!");
+      return next;
+    });
+  };
+
+  const isNicheSaved = (niche: FlatNiche) => savedNiches.some(s => s.key === nicheKey(niche));
 
   // Flatten all sub-verticals into a single ranked list
   const allNiches = useMemo<FlatNiche[]>(() => {
@@ -334,14 +384,25 @@ export default function Disrupt() {
                             ))}
                           </div>
 
-                          {/* Competitive density - pushed to bottom */}
-                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border/20 pt-2 mt-auto">
-                            <span>{incumbentCount} incumbent{incumbentCount !== 1 ? "s" : ""}</span>
-                            <span>{disruptorCount} disruptor{disruptorCount !== 1 ? "s" : ""}</span>
+                          {/* Footer with save/share */}
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground border-t border-border/20 pt-2 mt-auto">
+                            <span>{incumbentCount} incumbents</span>
+                            <span>· {disruptorCount} disruptors</span>
                             <div className="flex gap-1 ml-auto">
-                              {as.workflow_types.slice(0, 2).map(wt => (
-                                <span key={wt} className="text-[9px] text-muted-foreground/60">{wt}</span>
-                              ))}
+                              <button
+                                onClick={(e) => toggleSave(niche, e)}
+                                className="p-1 rounded hover:bg-muted/40 transition-colors"
+                                title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}
+                              >
+                                {isNicheSaved(niche) ? <BookmarkCheck className="w-3.5 h-3.5 text-primary" /> : <Bookmark className="w-3.5 h-3.5" />}
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); shareNiche(niche); }}
+                                className="p-1 rounded hover:bg-muted/40 transition-colors"
+                                title="Share opportunity"
+                              >
+                                <Share2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </div>
                         </CardContent>
@@ -390,6 +451,14 @@ export default function Disrupt() {
                       <Badge variant="outline" className={`text-[10px] ${whitespaceColor[niche.whitespace]}`}>
                         {whitespaceLabel[niche.whitespace]}
                       </Badge>
+                      <div className="flex gap-1 ml-auto">
+                        <button onClick={() => toggleSave(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}>
+                          {isNicheSaved(niche) ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4 text-muted-foreground" />}
+                        </button>
+                        <button onClick={() => shareNiche(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title="Share opportunity">
+                          <Share2 className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      </div>
                     </div>
                     <h1 className={`font-bold font-cinzel text-foreground mb-1 ${hasPrompt ? "text-lg" : "text-2xl"}`}>
                       {niche.name}
