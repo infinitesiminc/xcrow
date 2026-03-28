@@ -669,7 +669,10 @@ export default function Disrupt() {
                       <div className="text-3xl font-bold tabular-nums font-cinzel" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))", textShadow: as.agent_score >= 80 ? "0 0 10px hsl(var(--success) / 0.4)" : "none" }}>
                         {as.agent_score}
                       </div>
-                      <Progress value={as.agent_score} className="h-1.5 w-20" style={{ background: "hsl(var(--background))" }} />
+                      <p className="text-[11px] font-medium mt-0.5" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))" }}>
+                        {as.agent_score >= 80 ? "High Potential" : as.agent_score >= 60 ? "Emerging" : as.agent_score >= 40 ? "Moderate" : "Challenging"}
+                      </p>
+                      <Progress value={as.agent_score} className="h-1.5 w-20 mt-1" style={{ background: "hsl(var(--background))" }} />
                     </div>
                     <button
                       onClick={hasPrompt ? restart : () => setPhase("browse")}
