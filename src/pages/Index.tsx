@@ -124,18 +124,18 @@ export default function Index() {
           <img
             src={heroImage}
             alt=""
-            className="w-full h-full object-cover"
-            style={{ opacity: 0.35 }}
+            className="w-full h-[70%] object-cover object-center"
+            style={{ opacity: 1 }}
             draggable={false}
           />
           <div
             className="absolute inset-0"
             style={{
               background: `linear-gradient(180deg, 
-                hsl(var(--background) / 0.3) 0%, 
-                hsl(var(--background) / 0.6) 40%, 
-                hsl(var(--background) / 0.95) 75%, 
-                hsl(var(--background)) 100%)`,
+                transparent 0%, 
+                hsl(var(--background) / 0.2) 25%, 
+                hsl(var(--background) / 0.7) 50%, 
+                hsl(var(--background)) 70%)`,
             }}
           />
         </div>
