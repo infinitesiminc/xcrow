@@ -61,7 +61,7 @@ function nicheKey(niche: FlatNiche): string {
 function shareNiche(niche: { name: string; verticalName: string; agentScore?: { agent_score: number; agent_play?: string | null } | null }) {
   const score = niche.agentScore?.agent_score ?? 0;
   const text = `🤖 ${niche.name} (${niche.verticalName}) — Agent Score: ${score}/100\n💡 ${niche.agentScore?.agent_play || "AI-native opportunity"}\n\nDiscover more AI startup opportunities:`;
-  const url = `${window.location.origin}/disrupt`;
+  const url = `${window.location.origin}/founder`;
   if (navigator.share) {
     navigator.share({ title: `${niche.name} — AI Opportunity`, text, url }).catch(() => {});
   } else {
