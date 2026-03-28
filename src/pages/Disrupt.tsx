@@ -332,6 +332,47 @@ export default function Disrupt() {
     );
   }
 
+  // ── Parse sections from master prompt ──
+  const parsedSections = (() => {
+    if (!masterPrompt) return [];
+    const sectionRegex = /^##\s+(.+)$/gm;
+    const matches: { title: string; content: string; emoji: string }[] = [];
+    let match: RegExpExecArray | null;
+    const positions: { title: string; start: number; end: number }[] = [];
+
+    while ((match = sectionRegex.exec(masterPrompt)) !== null) {
+      if (positions.length > 0) positions[positions.length - 1].end = match.index;
+      positions.push({ title: match[1].trim(), start: match.index + match[0].length, end: masterPrompt.length });
+    }
+
+    const emojiMap: Record<string, string> = {
+      vision: "🎯", product: "🎯", target: "🎯",
+      mvp: "✅", feature: "✅", core: "✅",
+      database: "🗄️", schema: "🗄️", data: "🗄️",
+      api: "🔌", route: "🔌", edge: "🔌", backend: "🔌",
+      ui: "🎨", page: "🎨", component: "🎨", frontend: "🎨",
+      ai: "🤖", integration: "🤖", model: "🤖",
+      pricing: "💰", monetiz: "💰", revenue: "💰",
+      launch: "🚀", checklist: "🚀", "30": "🚀", plan: "🚀",
+      tech: "⚙️", stack: "⚙️", architect: "⚙️",
+    };
+
+    for (const pos of positions) {
+      const content = masterPrompt.slice(pos.start, pos.end).trim();
+      if (content.length < 20) continue;
+      const lower = pos.title.toLowerCase();
+      let emoji = "📋";
+      for (const [key, val] of Object.entries(emojiMap)) {
+        if (lower.includes(key)) { emoji = val; break; }
+      }
+      matches.push({ title: pos.title.replace(/^[^\w\s]+\s*/, ""), content, emoji });
+    }
+    return matches;
+  })();
+
+  const [expandedSection, setExpandedSection] = useState<number | null>(null);
+  const [showFullPrompt, setShowFullPrompt] = useState(false);
+
   // ── GENERATING / RESULT PHASE ──
   return (
     <>
@@ -340,7 +381,7 @@ export default function Disrupt() {
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={restart}
@@ -373,26 +414,89 @@ export default function Disrupt() {
             )}
           </div>
 
-          <Card className="bg-card/60 border-border/40">
-            <CardContent className="p-0">
-              <ScrollArea className={phase === "generating" ? "h-[60vh]" : "max-h-[70vh]"}>
-                <div className="p-6">
-                  {masterPrompt ? (
-                    <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
-                      <ReactMarkdown>{masterPrompt}</ReactMarkdown>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" /> Initializing factory…
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          {/* Section Summary Grid */}
+          {parsedSections.length > 0 && phase === "result" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {parsedSections.map((section, i) => {
+                const isExpanded = expandedSection === i;
+                const preview = section.content.split("\n").filter(l => l.trim()).slice(0, 3).join(" ").slice(0, 120);
+                return (
+                  <Card
+                    key={i}
+                    className={`bg-card/60 border-border/40 cursor-pointer transition-all hover:border-primary/40 ${isExpanded ? "sm:col-span-2 border-primary/30" : ""}`}
+                    onClick={() => setExpandedSection(isExpanded ? null : i)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-base shrink-0">{section.emoji}</span>
+                          <h3 className="text-sm font-semibold text-foreground truncate">{section.title}</h3>
+                        </div>
+                        {isExpanded
+                          ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                          : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />}
+                      </div>
+                      {!isExpanded && (
+                        <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{preview}…</p>
+                      )}
+                      {isExpanded && (
+                        <div className="mt-3 prose prose-sm prose-invert max-w-none text-xs leading-relaxed max-h-64 overflow-y-auto">
+                          <ReactMarkdown>{section.content}</ReactMarkdown>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Full Prompt (collapsible in result, always shown when generating) */}
+          {phase === "generating" ? (
+            <Card className="bg-card/60 border-border/40">
+              <CardContent className="p-0">
+                <ScrollArea className="h-[60vh]">
+                  <div className="p-6">
+                    {masterPrompt ? (
+                      <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
+                        <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" /> Initializing factory…
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="mb-6">
+              <button
+                onClick={() => setShowFullPrompt(!showFullPrompt)}
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
+              >
+                {showFullPrompt ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                {showFullPrompt ? "Hide full prompt" : "View full prompt"}
+              </button>
+              {showFullPrompt && (
+                <Card className="bg-card/60 border-border/40">
+                  <CardContent className="p-0">
+                    <ScrollArea className="max-h-[70vh]">
+                      <div className="p-6">
+                        <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
+                          <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+                        </div>
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
 
           {phase === "result" && (
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button onClick={copyPrompt} size="lg" className="gap-2 w-full sm:w-auto">
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? "Copied!" : "Copy & Paste into Lovable"}
