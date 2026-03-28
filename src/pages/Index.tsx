@@ -124,7 +124,7 @@ export default function Index() {
           <img
             src={heroImage}
             alt=""
-            className="w-full h-[70%] object-cover object-center"
+            className="w-full h-[75%] object-cover object-top"
             style={{ opacity: 1 }}
             draggable={false}
           />
@@ -133,9 +133,10 @@ export default function Index() {
             style={{
               background: `linear-gradient(180deg, 
                 transparent 0%, 
-                hsl(var(--background) / 0.2) 25%, 
-                hsl(var(--background) / 0.7) 50%, 
-                hsl(var(--background)) 70%)`,
+                transparent 40%,
+                hsl(var(--background) / 0.4) 55%, 
+                hsl(var(--background) / 0.85) 68%, 
+                hsl(var(--background)) 78%)`,
             }}
           />
         </div>
@@ -153,7 +154,7 @@ export default function Index() {
         <div className="rpg-filigree-top" />
 
         {/* Hero */}
-        <div className="flex-1 flex flex-col items-center justify-start px-4 pt-[38vh] pb-10 relative z-10">
+        <div className="flex-1 flex flex-col items-center justify-start px-4 pt-[52vh] pb-10 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
