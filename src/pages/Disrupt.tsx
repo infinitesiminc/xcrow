@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2 } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -93,6 +93,7 @@ export default function Disrupt() {
   const [minScore, setMinScore] = useState(50);
   const [savedNiches, setSavedNiches] = useState<SavedNiche[]>(loadSavedNiches);
   const abortRef = useRef<AbortController | null>(null);
+  const [showChart, setShowChart] = useState(false);
 
   const toggleSave = (niche: FlatNiche, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -148,6 +149,21 @@ export default function Disrupt() {
     return verticalStats
       .filter(v => v.sub_verticals.some(sv => sv.agentScore))
       .sort((a, b) => a.name.localeCompare(b.name));
+  }, [verticalStats]);
+
+  // Aggregate agent scores per vertical for chart
+  const verticalScoreData = useMemo(() => {
+    if (!verticalStats) return [];
+    return verticalStats
+      .filter(v => v.sub_verticals.some(sv => sv.agentScore))
+      .map(v => {
+        const scored = v.sub_verticals.filter(sv => sv.agentScore);
+        const avg = scored.length ? Math.round(scored.reduce((s, sv) => s + (sv.agentScore?.agent_score || 0), 0) / scored.length) : 0;
+        const max = scored.length ? Math.max(...scored.map(sv => sv.agentScore?.agent_score || 0)) : 0;
+        const highPotential = scored.filter(sv => (sv.agentScore?.agent_score || 0) >= 80).length;
+        return { name: v.name, avg, max, count: scored.length, highPotential, id: v.id };
+      })
+      .sort((a, b) => b.avg - a.avg);
   }, [verticalStats]);
 
   const openDeepDive = (niche: FlatNiche) => {
@@ -364,7 +380,85 @@ export default function Disrupt() {
             </div>
           </div>
 
-          {/* ── Niche Grid (RPG cards) ── */}
+          {/* ── Agent Score Distribution Chart ── */}
+          {!isLoading && verticalScoreData.length > 0 && (
+            <div className="max-w-5xl mx-auto px-4 mb-6">
+              <button
+                onClick={() => setShowChart(v => !v)}
+                className="flex items-center gap-2 text-xs font-cinzel tracking-wider mb-2 hover:text-foreground transition-colors"
+                style={{ color: "hsl(var(--filigree))" }}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                Agent Score by Vertical
+                {showChart ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+              <AnimatePresence>
+                {showChart && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="overflow-hidden"
+                  >
+                    <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                      <CardContent className="p-4">
+                        <div className="space-y-2.5">
+                          {verticalScoreData.map(v => {
+                            const barColor = v.avg >= 80 ? "hsl(var(--success))" : v.avg >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))";
+                            return (
+                              <button
+                                key={v.id}
+                                onClick={() => setVerticalFilter(verticalFilter === v.id ? null : v.id)}
+                                className={`w-full text-left group transition-all rounded-md p-1.5 -m-1.5 ${verticalFilter === v.id ? "bg-primary/10" : "hover:bg-muted/20"}`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-[11px] font-medium text-foreground truncate max-w-[60%]">{v.name}</span>
+                                  <div className="flex items-center gap-2 text-[11px] tabular-nums">
+                                    <span style={{ color: barColor }} className="font-semibold">{v.avg}</span>
+                                    <span className="text-muted-foreground">avg</span>
+                                    <span className="text-muted-foreground">·</span>
+                                    <span className="text-foreground/70">{v.max}</span>
+                                    <span className="text-muted-foreground">peak</span>
+                                    {v.highPotential > 0 && (
+                                      <>
+                                        <span className="text-muted-foreground">·</span>
+                                        <span style={{ color: "hsl(var(--success))" }}>{v.highPotential}</span>
+                                        <span className="text-muted-foreground">high</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--background))" }}>
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${v.avg}%` }}
+                                    transition={{ duration: 0.5, delay: 0.05 }}
+                                    className="absolute inset-y-0 left-0 rounded-full"
+                                    style={{ background: barColor }}
+                                  />
+                                  {/* Max score marker */}
+                                  <div
+                                    className="absolute top-0 bottom-0 w-px"
+                                    style={{ left: `${v.max}%`, background: "hsl(var(--foreground) / 0.3)" }}
+                                  />
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-3">
+                          Click a vertical to filter · Showing avg and peak agent scores across {verticalScoreData.reduce((s, v) => s + v.count, 0)} niches
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* ── Niche Grid ── */}
           <div className="max-w-6xl mx-auto px-4 pb-16">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
