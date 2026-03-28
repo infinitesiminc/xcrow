@@ -499,10 +499,10 @@ export default function Disrupt() {
                       {niche.name}
                     </h1>
                     <div className="flex items-center gap-3">
-                      <div className={`text-3xl font-bold tabular-nums ${scoreColor(as.agent_score)}`}>
+                      <div className="text-3xl font-bold tabular-nums font-cinzel" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))", textShadow: as.agent_score >= 80 ? "0 0 10px hsl(var(--success) / 0.4)" : "none" }}>
                         {as.agent_score}<span className="text-sm font-normal text-muted-foreground">/100</span>
                       </div>
-                      <Progress value={as.agent_score} className="h-2 flex-1 bg-muted/40" />
+                      <Progress value={as.agent_score} className="h-2 flex-1" style={{ background: "hsl(var(--surface-stone))" }} />
                     </div>
                   </div>
 
