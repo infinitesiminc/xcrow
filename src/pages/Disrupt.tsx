@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3 } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3, Cpu, Wand2, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -483,7 +483,7 @@ export default function Disrupt() {
                   return (
                     <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
                       <Card
-                        className="cursor-pointer border transition-all group h-full flex flex-col overflow-hidden"
+                        className="cursor-pointer border transition-all group h-full flex flex-col overflow-hidden relative"
                         onClick={() => openDeepDive(niche)}
                         style={{
                           background: `linear-gradient(135deg, hsl(var(--card)), hsl(var(--surface-stone)))`,
@@ -491,6 +491,12 @@ export default function Disrupt() {
                           boxShadow: `0 0 20px ${scoreGlow}, inset 0 1px 0 hsl(var(--emboss-light))`,
                         }}
                       >
+                        {/* Agent badge — top-right */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1 px-1.5 py-0.5 rounded-md border" style={{ background: "hsl(var(--primary) / 0.08)", borderColor: "hsl(var(--primary) / 0.2)" }}>
+                          <Bot className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+                          <span className="text-[8px] font-semibold tracking-wider uppercase" style={{ color: "hsl(var(--primary))" }}>Agent</span>
+                        </div>
+
                         <CardContent className="p-4 flex flex-col flex-1">
                           {/* Score + Niche name */}
                           <div className="flex items-start gap-3 mb-2">
@@ -500,36 +506,50 @@ export default function Disrupt() {
                             >
                               {as.agent_score}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 pr-12">
                               <h3 className="font-semibold text-foreground text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
                                 {niche.name}
                               </h3>
                               <span className="text-[10px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
                             </div>
-                            {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
-                              <Badge variant="outline" className={`text-[9px] h-5 px-1.5 shrink-0 ${sig.color}`}>{sig.label}</Badge>
-                            ); })()}
                           </div>
 
-                          {/* Agent Play */}
+                          {/* Opportunity signal */}
+                          {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
+                            <Badge variant="outline" className={`text-[9px] h-5 px-1.5 mb-2 w-fit ${sig.color}`}>{sig.label}</Badge>
+                          ); })()}
+
+                          {/* Startup Thesis */}
                           <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-2 mb-2 min-h-[2.75rem]">
-                            💡 {as.agent_play || "Emerging opportunity for AI-native disruption"}
+                            <Lightbulb className="w-3 h-3 inline-block mr-1 -mt-0.5" style={{ color: "hsl(var(--filigree))" }} />
+                            {as.agent_play || "Emerging opportunity for AI-native disruption"}
                           </p>
 
-                          {/* Workflow tags */}
-                          <div className="flex flex-wrap gap-1 mb-2 min-h-[1.5rem]">
+                          {/* Automatable workflows */}
+                          <div className="flex flex-wrap gap-1 mb-3 min-h-[1.5rem]">
                             {as.automatable_workflows.slice(0, 3).map((wf, i) => (
-                              <Badge key={i} variant="outline" className="text-[8px] h-4 px-1.5" style={{
+                              <Badge key={i} variant="outline" className="text-[8px] h-4 px-1.5 flex items-center gap-0.5" style={{
                                 borderColor: wf.automation_level === "full" ? "hsl(var(--success) / 0.3)" : wf.automation_level === "partial" ? "hsl(var(--warning) / 0.3)" : "hsl(var(--neon-blue) / 0.3)",
                                 color: wf.automation_level === "full" ? "hsl(var(--success))" : wf.automation_level === "partial" ? "hsl(var(--warning))" : "hsl(var(--neon-blue))",
                               }}>
-                                {wf.automation_level === "full" ? "⚡" : wf.automation_level === "partial" ? "🔄" : "🤝"} {wf.name}
+                                {wf.automation_level === "full" ? <Zap className="w-2.5 h-2.5" /> : wf.automation_level === "partial" ? <Cpu className="w-2.5 h-2.5" /> : <Wand2 className="w-2.5 h-2.5" />}
+                                {wf.name}
                               </Badge>
                             ))}
                           </div>
 
+                          {/* Build CTA */}
+                          <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-md border" style={{ background: "hsl(var(--primary) / 0.05)", borderColor: "hsl(var(--primary) / 0.15)" }}>
+                            <Wand2 className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                            <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>
+                              Build this agent with one prompt
+                            </span>
+                            <ArrowRight className="w-3 h-3 ml-auto shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "hsl(var(--primary))" }} />
+                          </div>
+
                           {/* Footer */}
                           <div className="flex items-center gap-2 text-[10px] border-t pt-2 mt-auto" style={{ borderColor: "hsl(var(--filigree) / 0.1)", color: "hsl(var(--muted-foreground))" }}>
+                            <Building2 className="w-3 h-3" />
                             <span>{incumbentCount} incumbents</span>
                             <span>· {disruptorCount} disruptors</span>
                             <div className="flex gap-1 ml-auto">
