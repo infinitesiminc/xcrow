@@ -61,7 +61,7 @@ serve(async (req) => {
     }
 
     const svList = Object.values(subVerticals);
-    const batchSize = 5;
+    const batchSize = svList.length > 50 ? 15 : 5;
     const results: any[] = [];
 
     for (let i = 0; i < svList.length; i += batchSize) {
