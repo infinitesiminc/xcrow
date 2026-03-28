@@ -116,17 +116,12 @@ export default function Index() {
         title="Xcrow — AI Skills, Startups & Lead Generation"
         description="Three products. One platform. Master AI skills, launch AI-native startups, or let AI agents find your next customer."
         path="/"
-        ogImage="https://xcrow.ai/og-hero.jpg"
       />
       <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-        {/* Hero background image */}
-        <div className="absolute inset-0 pointer-events-none">
-          <img
-            src="/og-hero.jpg"
-            alt=""
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+        {/* Ambient background glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-[hsl(262_83%_58%/0.06)] blur-[120px]" />
+          <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] rounded-full bg-[hsl(38_55%_45%/0.04)] blur-[100px]" />
         </div>
 
         {/* Ember particles */}
