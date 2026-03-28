@@ -403,7 +403,7 @@ export default function Disrupt() {
 
                           {/* Agent Play */}
                           <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-2 mb-2 min-h-[2.75rem]">
-                            💡 {as.agent_play || "Uncharted territory — ripe for conquest"}
+                            💡 {as.agent_play || "Emerging opportunity for AI-native disruption"}
                           </p>
 
                           {/* Workflow tags */}
