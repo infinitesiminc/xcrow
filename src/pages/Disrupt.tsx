@@ -857,7 +857,4 @@ export default function Disrupt() {
         <Footer />
       </>
     );
-  }
-
-  return null;
 }
