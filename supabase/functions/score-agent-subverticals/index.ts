@@ -20,11 +20,13 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get all vertical map data with company info
-    const { data: mapData, error: mapErr } = await supabase
+    // Get vertical map data - optionally filter by vertical_id
+    let query = supabase
       .from("company_vertical_map")
       .select("vertical_id, vertical_name, sub_vertical, role, companies(name, description, industry)")
       .order("vertical_id");
+    if (filterVerticalId) query = query.eq("vertical_id", filterVerticalId);
+    const { data: mapData, error: mapErr } = await query;
 
     if (mapErr) throw mapErr;
 
