@@ -22,6 +22,13 @@ const VERTICALS = [
   { id: 13, name: "Healthcare & Wellness Tech", keywords: ["healthcare", "health tech", "medical", "telemedicine", "ehr", "wellness", "clinical"] },
   { id: 14, name: "Real Estate & PropTech", keywords: ["real estate", "proptech", "property", "rental", "mortgage", "housing"] },
   { id: 15, name: "Cybersecurity", keywords: ["cybersecurity", "security", "infosec", "endpoint", "firewall", "threat detection", "identity"] },
+  { id: 16, name: "Data & BI", keywords: ["data", "business intelligence", "analytics platform", "data warehouse", "etl", "data pipeline", "visualization", "reporting", "bi tool"] },
+  { id: 17, name: "Supply Chain & Logistics", keywords: ["supply chain", "logistics", "shipping", "freight", "warehouse management", "inventory", "fulfillment", "fleet"] },
+  { id: 18, name: "ERP & Operations", keywords: ["erp", "enterprise resource planning", "operations", "resource planning", "business operations", "back office"] },
+  { id: 19, name: "IT Service Management", keywords: ["itsm", "it service", "incident management", "service desk", "it operations", "observability", "apm"] },
+  { id: 20, name: "Content & CMS", keywords: ["cms", "content management", "headless cms", "website builder", "digital experience", "web publishing", "content platform"] },
+  { id: 21, name: "Procurement & Spend", keywords: ["procurement", "purchasing", "spend management", "vendor management", "sourcing", "expense management", "corporate card"] },
+  { id: 22, name: "GRC & Compliance", keywords: ["governance", "risk", "compliance", "grc", "audit", "regulatory", "privacy", "trust", "soc2", "iso"] },
 ];
 
 // Non-software industries to exclude
@@ -162,7 +169,7 @@ Rules:
 
         const inserts: any[] = [];
         for (const r of results) {
-          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 15) {
+          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 22) {
             totalSkipped++;
             continue;
           }
