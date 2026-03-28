@@ -68,10 +68,9 @@ Include: landing, auth, dashboard, 2-3 core feature pages, settings.
 ## 🤖 AI Integration Points
 For each AI feature, specify as a function signature:
 - **Function**: \`generateX(input: InputType): OutputType\`
-- **Model**: Any LLM (GPT, Gemini, Claude — builder will use its default)
 - **Prompt template**: "Given {input}, produce {output} in {format}"
 - **Trigger**: user clicks X / automatic on Y
-Do NOT reference specific model versions — keep it model-agnostic so any AI builder can implement it.
+CRITICAL: Do NOT mention ANY specific AI model names (no GPT, no Claude, no Gemini, no OpenAI, no Anthropic). Say "LLM" or "AI model" only. The builder agent will wire its own model. This prompt must be 100% builder-tool-neutral.
 
 ## 💰 Monetization
 JSON-like pricing config:
@@ -83,9 +82,12 @@ Enterprise: $Y/mo — [feature list]
 Reference how this undercuts ${incumbent.name}'s pricing (${incumbent.pricingModel}).
 
 RULES:
-- The ENTIRE output IS the prompt the founder pastes into Lovable/Cursor/Claude to get a WORKING app with landing pages
+- The ENTIRE output IS the prompt the founder pastes into ANY AI builder tool (Lovable, Cursor, Replit, Claude, etc.) to get a WORKING app with landing pages
+- NEVER mention specific AI model names (GPT, Claude, Gemini, etc.) or AI companies (OpenAI, Anthropic, Google). Use "LLM" or "AI model" only
 - Use real table names, real route paths, real component names — no placeholders
-- SQL must be valid PostgreSQL. Code blocks must be properly formatted
+- SQL must be valid PostgreSQL with RLS policies (enable row level security, add policies referencing auth.uid())
+- Include a /pages/:slug route for rendering hosted landing pages from the database
+- Code blocks must be properly formatted
 - No filler, no "consider this", no launch checklists — only buildable specs
 - Self-contained: a builder agent reading this alone can build the entire MVP with landing pages
 - Reference ${incumbent.name} throughout to keep disruptive positioning clear
