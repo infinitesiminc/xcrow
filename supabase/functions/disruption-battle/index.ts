@@ -43,18 +43,26 @@ Numbered list of 5-7 features as acceptance criteria:
 Bullet list of 3-4 features to explicitly defer.
 
 ## 🗄️ Database Schema
-Write actual PostgreSQL CREATE TABLE statements. Include: users/profiles, core domain tables, AI-related tables. Add column types, constraints, foreign keys, and indexes. Example format:
+Write actual PostgreSQL CREATE TABLE statements. Include: users/profiles, core domain tables, AI-related tables. Add column types, constraints, foreign keys, and indexes.
+- Use \`id UUID PRIMARY KEY DEFAULT gen_random_uuid()\` for all tables
+- Use \`user_id UUID NOT NULL\` for ownership (do NOT reference auth.users — keep it framework-agnostic)
+- Enable RLS on every table: \`ALTER TABLE x ENABLE ROW LEVEL SECURITY;\`
+- Add RLS policies for every table that has RLS enabled (never enable RLS without a policy)
+- Add a policy for public read access on published content (e.g. landing pages)
+Example format:
 \`\`\`sql
 CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
   name TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own projects" ON projects FOR ALL USING (user_id = auth.uid());
 \`\`\`
 
 ## 🔌 API Routes & Edge Functions
-Use a markdown table:
+Use a markdown table. Each route must have a unique purpose — do not create duplicate routes for the same resource:
 | Method | Path | Description | Auth |
 |--------|------|-------------|------|
 | POST | /api/generate | Generates X from Y | Required |
@@ -64,13 +72,14 @@ Use route → component hierarchy:
 - \`/\` → \`<LandingPage>\` → [\`<Hero>\`, \`<Features>\`, \`<Pricing>\`, \`<CTA>\`]
 - \`/dashboard\` → \`<DashboardLayout>\` → [\`<MetricsGrid>\`, \`<ActivityFeed>\`]
 Include: landing, auth, dashboard, 2-3 core feature pages, settings.
+If the app has hosted/public pages, include a \`/pages/:slug\` route that renders content from the database.
 
 ## 🤖 AI Integration Points
 For each AI feature, specify as a function signature:
 - **Function**: \`generateX(input: InputType): OutputType\`
 - **Prompt template**: "Given {input}, produce {output} in {format}"
 - **Trigger**: user clicks X / automatic on Y
-CRITICAL: Do NOT mention ANY specific AI model names (no GPT, no Claude, no Gemini, no OpenAI, no Anthropic). Say "LLM" or "AI model" only. The builder agent will wire its own model. This prompt must be 100% builder-tool-neutral.
+CRITICAL: Do NOT mention ANY specific AI model names (no GPT, no Claude, no Gemini, no OpenAI, no Anthropic, no specific version numbers). Say "LLM" or "AI model" only. The builder agent will wire its own model. This prompt must be 100% builder-tool-neutral.
 
 ## 💰 Monetization
 JSON-like pricing config:
@@ -82,11 +91,15 @@ Enterprise: $Y/mo — [feature list]
 Reference how this undercuts ${incumbent.name}'s pricing (${incumbent.pricingModel}).
 
 RULES:
-- The ENTIRE output IS the prompt the founder pastes into ANY AI builder tool (Lovable, Cursor, Replit, Claude, etc.) to get a WORKING app with landing pages
-- NEVER mention specific AI model names (GPT, Claude, Gemini, etc.) or AI companies (OpenAI, Anthropic, Google). Use "LLM" or "AI model" only
+- The ENTIRE output IS the prompt the founder pastes into ANY AI builder tool to get a WORKING app with landing pages
+- NEVER mention specific AI model names, versions, or AI companies. Use "LLM" or "AI model" only
+- NEVER mention specific frameworks (no Next.js, no React, no Vue, no Supabase, no Firebase). The builder agent decides the stack
+- Do NOT add a "Final Instructions" or "Tech Stack" section — the builder agent chooses its own tools
 - Use real table names, real route paths, real component names — no placeholders
-- SQL must be valid PostgreSQL with RLS policies (enable row level security, add policies referencing auth.uid())
-- Include a /pages/:slug route for rendering hosted landing pages from the database
+- SQL must be valid PostgreSQL with RLS enabled AND policies on every table (never enable RLS without a matching policy)
+- For user-owned tables, use \`user_id UUID NOT NULL\` without foreign key references to auth tables (keeps it framework-agnostic)
+- If the product has hosted public pages, include a /pages/:slug route in both the API and UI sections (not duplicated)
+- For landing page content, store structured JSON (not raw HTML) to prevent XSS — the frontend renders it safely
 - Code blocks must be properly formatted
 - No filler, no "consider this", no launch checklists — only buildable specs
 - Self-contained: a builder agent reading this alone can build the entire MVP with landing pages
