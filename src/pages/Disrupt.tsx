@@ -299,10 +299,9 @@ export default function Disrupt() {
                       { emoji: "✅", label: "MVP feature set (5-7 features)" },
                       { emoji: "🗄️", label: "Database schema (PostgreSQL)" },
                       { emoji: "🔌", label: "API routes & edge functions" },
-                      { emoji: "🎨", label: "UI pages & components" },
+                      { emoji: "🎨", label: "UI pages & landing pages" },
                       { emoji: "🤖", label: "AI integration points" },
                       { emoji: "💰", label: "Pricing & monetization" },
-                      { emoji: "🚀", label: "30-day launch checklist" },
                     ].map(item => (
                       <div key={item.label} className="flex items-center gap-2 text-[11px] text-muted-foreground">
                         <span>{item.emoji}</span>
