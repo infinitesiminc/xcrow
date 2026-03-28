@@ -5,8 +5,9 @@
  */
 
 import { useMemo } from "react";
-import { Shield, Target, Crown, Star, Gauge } from "lucide-react";
+import { Shield, Target, Crown, Star, Gauge, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import type { SkillXP } from "@/lib/skill-map";
 import { getCastleState } from "@/lib/castle-levels";
 import { getPlayerRank, type KingdomTier } from "@/lib/progression";
