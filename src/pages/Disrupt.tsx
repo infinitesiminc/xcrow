@@ -109,7 +109,6 @@ export default function Disrupt() {
   };
 
   const isNicheSaved = (niche: FlatNiche) => savedNiches.some(s => s.key === nicheKey(niche));
-  const abortRef = useRef<AbortController | null>(null);
 
   // Flatten all sub-verticals into a single ranked list
   const allNiches = useMemo<FlatNiche[]>(() => {
