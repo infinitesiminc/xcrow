@@ -61,18 +61,18 @@ export default function Navbar() {
 
   const navItems = user
     ? [
-        { label: "Home", path: "/map", icon: Map },
-        { label: "Disrupt", path: "/disrupt", icon: Swords },
+        { label: "Upskill", path: "/map", icon: Map },
+        { label: "Founder", path: "/disrupt", icon: Swords },
+        { label: "Leadgen", path: "/leadgen", icon: Compass },
         { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
         ...(isSchoolAdmin ? [{ label: "School", path: "/school", icon: GraduationCap }] : []),
         ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
       ]
     : [
-        { label: "Explore", path: "/", icon: Compass },
-        { label: "Disrupt", path: "/disrupt", icon: Swords },
-        { label: "How It Works", path: "/how-it-works", icon: BookOpen },
+        { label: "Upskill", path: "/map", icon: Map },
+        { label: "Founder", path: "/disrupt", icon: Swords },
+        { label: "Leadgen", path: "/leadgen", icon: Compass },
         { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
-        { label: "Skills", path: "/skills", icon: Sparkles },
       ];
 
   const handleNav = (path: string) => {

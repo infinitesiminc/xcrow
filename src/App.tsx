@@ -155,6 +155,9 @@ const App = () => (
               <Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />
                <Route path="/investors" element={<Investors />} />
               <Route path="/disrupt" element={<><Disrupt /></>} />
+              <Route path="/founder" element={<Navigate to="/disrupt" replace />} />
+              <Route path="/leadgen" element={<><Leadgen /></>} />
+              <Route path="/upskill" element={<Navigate to="/map" replace />} />
               <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               <Route path="/tools" element={<Navigate to="/" replace />} />
               <Route path="/org-stack" element={<Navigate to="/" replace />} />
