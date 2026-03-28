@@ -294,12 +294,12 @@ export default function Disrupt() {
                   const disruptorCount = niche.companies.filter(c => c.role === "disruptor").length;
 
                   return (
-                    <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                    <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="h-full">
                       <Card
-                        className={`cursor-pointer border transition-all group hover:border-primary/40 hover:bg-card/80 ${scoreBg(as.agent_score)}`}
+                        className={`cursor-pointer border transition-all group hover:border-primary/40 hover:bg-card/80 h-full flex flex-col ${scoreBg(as.agent_score)}`}
                         onClick={() => openDeepDive(niche)}
                       >
-                        <CardContent className="p-4">
+                        <CardContent className="p-4 flex flex-col flex-1">
                           {/* Score + Niche name */}
                           <div className="flex items-start gap-3 mb-2">
                             <div className={`text-2xl font-bold tabular-nums leading-none ${scoreColor(as.agent_score)}`}>
