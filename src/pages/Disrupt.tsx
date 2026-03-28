@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from "react";
+import agentLauncherHero from "@/assets/agent-launcher-hero.jpg";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
