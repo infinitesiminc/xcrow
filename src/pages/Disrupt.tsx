@@ -610,9 +610,9 @@ export default function Disrupt() {
                   {/* CTA */}
                   {phase === "deepdive" && (
                     <>
-                      <Card className="bg-muted/20 border-border/30 mb-4">
+                      <Card className="mb-4 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.2)" }}>
                         <CardContent className="p-3">
-                          <h3 className="text-[10px] font-semibold text-foreground mb-2">AI generates a complete spec:</h3>
+                          <h3 className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>The Scroll Contains:</h3>
                           <div className="grid grid-cols-2 gap-1.5">
                             {[
                               { emoji: "🎯", label: "Vision & target user" },
@@ -631,10 +631,15 @@ export default function Disrupt() {
                           </div>
                         </CardContent>
                       </Card>
-                      <Button onClick={confirmGenerate} size="lg" className="gap-2 w-full">
-                        <Rocket className="w-4 h-4" /> Generate Master Prompt
+                      <Button
+                        onClick={confirmGenerate}
+                        size="lg"
+                        className="gap-2 w-full font-cinzel tracking-wider"
+                        style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
+                      >
+                        <Rocket className="w-4 h-4" /> Forge the Builder Scroll
                       </Button>
-                      <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
+                      <p className="text-[10px] text-center mt-3 font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.5)" }}>
                         ~30 seconds. One prompt for Lovable, Cursor, or any AI builder.
                       </p>
                     </>
@@ -642,12 +647,12 @@ export default function Disrupt() {
 
                   {phase === "result" && (
                     <div className="space-y-2">
-                      <Button onClick={copyPrompt} size="sm" className="gap-1.5 w-full">
+                      <Button onClick={copyPrompt} size="sm" className="gap-1.5 w-full font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
                         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        {copied ? "Copied!" : "Copy Master Prompt"}
+                        {copied ? "Scroll Copied!" : "Copy Builder Scroll"}
                       </Button>
-                      <Button onClick={restart} variant="outline" size="sm" className="gap-1.5 w-full">
-                        <Rocket className="w-3.5 h-3.5" /> Find Another Niche
+                      <Button onClick={restart} variant="outline" size="sm" className="gap-1.5 w-full font-cinzel tracking-wider" style={{ borderColor: "hsl(var(--filigree) / 0.3)" }}>
+                        <Rocket className="w-3.5 h-3.5" /> Scout Another Target
                       </Button>
                     </div>
                   )}
@@ -655,17 +660,17 @@ export default function Disrupt() {
               </div>
             )}
 
-            {/* RIGHT: Master Prompt */}
+            {/* RIGHT: Master Prompt / Builder Scroll */}
             {hasPrompt && (
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-3">
-                  {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                  {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />}
                   {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
-                  <h2 className="text-sm font-semibold text-foreground">
-                    {phase === "generating" ? "Generating…" : "Master Prompt"}
+                  <h2 className="text-sm font-semibold text-foreground font-cinzel tracking-wider">
+                    {phase === "generating" ? "⚒️ Forging…" : "📜 Builder Scroll"}
                   </h2>
                 </div>
-                <Card className="bg-card/60 border-border/40">
+                <Card className="border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(0 0% 0% / 0.2)" }}>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[70vh]">
                       <div className="p-5">
@@ -674,8 +679,8 @@ export default function Disrupt() {
                             <ReactMarkdown>{masterPrompt}</ReactMarkdown>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                            <Loader2 className="w-4 h-4 animate-spin" /> Analyzing niche…
+                          <div className="flex items-center gap-2 text-sm font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
+                            <Loader2 className="w-4 h-4 animate-spin" /> The Oracle is forging your scroll…
                           </div>
                         )}
                       </div>
