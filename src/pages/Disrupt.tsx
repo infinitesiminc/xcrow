@@ -461,16 +461,17 @@ export default function Disrupt() {
   return (
     <>
       <Helmet>
-        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Builder Prompt` : `${niche?.name} — Deep Dive`} | Xcrow</title>
+        <title>{phase === "generating" ? "Forging…" : phase === "result" ? `${savedNiche} — Builder Scroll` : `${niche?.name} — Intel`} | Xcrow</title>
       </Helmet>
       <Navbar />
-      <div className="min-h-screen bg-background pt-16">
+      <div className="min-h-screen pt-16" style={{ background: "hsl(var(--background))" }}>
         <div className="max-w-6xl mx-auto px-4 py-2">
           <button
             onClick={hasPrompt ? restart : () => setPhase("browse")}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
+            className="flex items-center gap-1.5 text-xs hover:text-foreground transition-colors mb-6 font-cinzel tracking-wider"
+            style={{ color: "hsl(var(--filigree))" }}
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "Find another niche" : "Back to opportunities"}
+            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "⚔️ Scout another target" : "🏰 Back to The Forge"}
           </button>
 
           <div className="flex flex-col lg:flex-row gap-6">
