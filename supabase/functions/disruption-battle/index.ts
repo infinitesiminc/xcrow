@@ -125,7 +125,103 @@ RULES:
       ]);
     }
 
-    if (action === "factory") {
+    if (action === "niche-prompt") {
+      const { niche } = payload;
+      const incumbentList = (niche.incumbents || []).join(", ") || "None identified";
+      const disruptorList = (niche.disruptors || []).join(", ") || "None yet";
+      const workflowList = (niche.workflows || []).map((w: any) => `- ${w.name} (${w.automation_level}): ${w.description}`).join("\n");
+
+      const systemPrompt = `You are a world-class AI startup architect. A solo founder has identified a software niche with high AI agent disruption potential. Generate a SINGLE, COMPLETE builder prompt they can paste directly into an AI coding agent (Lovable, Cursor, Replit) to build a working MVP.
+
+NICHE OPPORTUNITY:
+- Sub-vertical: ${niche.name}
+- Parent vertical: ${niche.verticalName}
+- Agent Disruption Score: ${niche.agentScore}/100
+- Whitespace Status: ${niche.whitespace}
+- Startup Thesis: ${niche.agentPlay}
+- AI Analysis: ${niche.agentVerdict}
+
+COMPETITIVE LANDSCAPE:
+- Incumbents: ${incumbentList}
+- Existing Disruptors: ${disruptorList}
+
+AUTOMATABLE WORKFLOWS:
+${workflowList}
+
+WORKFLOW CATEGORIES: ${(niche.workflowTypes || []).join(", ")}
+
+OUTPUT A SINGLE MASTER PROMPT optimized for AI builder agents. Use these EXACT section headings and formats:
+
+## 🎯 Product Vision & Target User
+One paragraph: what you're building (an AI-agent-native product for the "${niche.name}" niche), who it's for (specific persona with job title, company size, daily frustration), why now. Reference the incumbent landscape (${incumbentList}) to position the disruption. End with a single sentence value prop grounded in the startup thesis.
+
+## ✅ MVP Feature Set
+Numbered list of 5-7 features as acceptance criteria:
+1. **Feature Name** — User can [action], system does [behavior], result is [outcome]. AI-powered: [yes/no].
+Each feature should map to one of the automatable workflows identified above. Prioritize "full automation" workflows.
+
+## 🚫 NOT in MVP
+Bullet list of 3-4 features to explicitly defer.
+
+## 🗄️ Database Schema
+Write actual PostgreSQL CREATE TABLE statements. Include: users/profiles, core domain tables, AI-related tables. Add column types, constraints, foreign keys, and indexes.
+- Use \`id UUID PRIMARY KEY DEFAULT gen_random_uuid()\` for all tables
+- Use \`user_id UUID NOT NULL\` for ownership (do NOT reference auth.users — keep it framework-agnostic)
+- Enable RLS on every table: \`ALTER TABLE x ENABLE ROW LEVEL SECURITY;\`
+- Add RLS policies for every table that has RLS enabled (never enable RLS without a policy)
+- NEVER use \`USING (true)\` in RLS policies — every policy MUST scope access to the owning user via \`user_id = auth.uid()\` or through a parent table join
+- For child tables, scope access through the parent
+- The ONLY exception for public access is published content pages: \`FOR SELECT USING (is_published = true)\`
+- For auth page components, say "Auth (email/password signup and login)" — do NOT reference specific social login providers
+
+## 🔌 API Routes & Edge Functions
+Use a markdown table:
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+Include routes for each AI-agent workflow. Each route must have a unique purpose.
+
+## 🎨 UI Pages & Component Tree
+Use route → component hierarchy:
+- \`/\` → \`<LandingPage>\` → [\`<Hero>\`, \`<Features>\`, \`<Pricing>\`, \`<CTA>\`]
+- \`/dashboard\` → \`<DashboardLayout>\` → [\`<MetricsGrid>\`, \`<ActivityFeed>\`]
+Include: landing, auth, dashboard, 2-3 core feature pages, settings.
+
+## 🤖 AI Agent Integration Points
+For each AI feature, specify as a function signature:
+- **Function**: \`generateX(input: InputType): OutputType\`
+- **Prompt template**: "Given {input}, produce {output} in {format}"
+- **Trigger**: user clicks X / automatic on Y
+- **Automation level**: Full / Partial / Augmented
+Map each integration point to the automatable workflows. This is an AI-AGENT-NATIVE product — the AI should be doing the heavy lifting, not just assisting.
+CRITICAL: Do NOT mention ANY specific AI model names. Say "LLM" or "AI model" only. This prompt must be 100% builder-tool-neutral.
+
+## 💰 Monetization
+JSON-like pricing config:
+\`\`\`
+Free: $0/mo — [feature list, limits]
+Pro: $X/mo — [feature list, limits]
+Enterprise: $Y/mo — [feature list]
+\`\`\`
+Position pricing against the incumbents (${incumbentList}) — show how the AI-agent approach enables dramatically lower pricing.
+
+RULES:
+- The ENTIRE output IS the prompt the founder pastes into ANY AI builder tool to get a WORKING app
+- NEVER mention specific AI model names, versions, or AI companies. Use "LLM" or "AI model" only
+- NEVER mention specific frameworks. The builder agent decides the stack
+- Do NOT add a "Final Instructions" or "Tech Stack" section
+- Use real table names, real route paths, real component names — no placeholders
+- SQL must be valid PostgreSQL with RLS enabled AND policies on every table
+- For user-owned tables, use \`user_id UUID NOT NULL\` without foreign key references to auth tables
+- No filler — only buildable specs
+- Self-contained: a builder agent reading this alone can build the entire MVP
+- Total length: 2000-3000 words`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, [
+        { role: "user", content: `Generate a complete master builder prompt for an AI-agent-native startup targeting the "${niche.name}" niche in the ${niche.verticalName} vertical. Startup thesis: ${niche.agentPlay}` },
+      ]);
+    }
+
+
       const { idea, targetName } = payload;
 
       const systemPrompt = `You are an AI Software Factory — an autonomous startup blueprint generator. Given a startup idea, produce a COMPLETE startup framework across 6 stages.
