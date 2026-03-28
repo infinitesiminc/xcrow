@@ -229,6 +229,17 @@ export function useVerticalMap() {
       for (const v of Object.values(verticals)) {
         for (const sv of v.sub_verticals) {
           sv.whitespace = computeWhitespace(sv.counts);
+          // Attach sub-vertical agent score
+          const svAs = svAgentScores.find(a => a.vertical_id === v.id && a.sub_vertical === sv.name);
+          if (svAs) {
+            sv.agentScore = {
+              agent_score: svAs.agent_score,
+              agent_verdict: svAs.agent_verdict,
+              automatable_workflows: (svAs.automatable_workflows as any[]) || [],
+              agent_play: svAs.agent_play,
+              workflow_types: svAs.workflow_types || [],
+            };
+          }
         }
         const order: Record<WhitespaceLabel, number> = { open: 0, "low-competition": 1, crowded: 2 };
         v.sub_verticals.sort((a, b) => order[a.whitespace] - order[b.whitespace]);
