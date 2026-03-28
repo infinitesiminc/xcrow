@@ -356,7 +356,7 @@ export default function Disrupt() {
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="w-6 h-6 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />
-                <p className="text-xs font-cinzel tracking-wider text-muted-foreground">Scouting the realm…</p>
+                <p className="text-xs font-cinzel tracking-wider text-muted-foreground">Loading opportunities…</p>
               </div>
             ) : filteredNiches.length === 0 ? (
               <div className="text-center py-16 text-sm font-cinzel text-muted-foreground">
