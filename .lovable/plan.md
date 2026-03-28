@@ -1,56 +1,76 @@
 
 
-## Whitespace Discovery for /disrupt
+## Vertical Opportunity Scorecard
 
 ### Problem
-Users see a flat list of incumbents per vertical but have no way to spot where the best startup opportunities are — sub-verticals where incumbents dominate but few disruptors exist.
+Users see individual company cards and sub-vertical whitespace pills, but there's no vertical-level summary that answers: **"Which vertical has the best AI-native opportunity right now?"** The data exists but isn't synthesized.
 
-### Data Available
-The `company_vertical_map` table already has `sub_vertical`, `role` (incumbent/disruptor/transitioning), and company references. Current query results show rich sub-vertical breakdowns (e.g., "CRM & Sales" has 7 sub-verticals with incumbents like "Enterprise CRM", "Sales Engagement" etc., and 31 disruptors scattered across many niches).
+### Available Signals (no new data needed)
+From `company_vertical_map` + enriched metrics already in the database:
 
-**Whitespace signal**: Sub-verticals with high incumbent count but low/zero disruptor count = opportunity. Sub-verticals crowded with disruptors = competitive.
+| Signal | Source | What it tells you |
+|--------|--------|-------------------|
+| Open sub-verticals | whitespace counts | Niches with zero disruptors |
+| Disruptor funding stage | `estimated_funding` | Are existing challengers early or scaled? |
+| Disruptor ARR | `estimated_arr` | Revenue traction of challengers |
+| Disruptor headcount | `estimated_employees` | Team size signals maturity |
+| Incumbent density | incumbent count | Size of the market to attack |
+| Incumbent age/status | hardcoded data | Older/public = more vulnerable |
+
+### Approach: Vertical Summary Cards
+
+Add a **collapsible scorecard** at the top of each vertical section that synthesizes these signals into a readable opportunity snapshot:
+
+```text
+┌─────────────────────────────────────────────────────┐
+│ 🏢 CRM & Sales                    Score: ██████░░ 7/10 │
+│                                                       │
+│ 🟢 3 open niches  🟡 2 low-comp  🔴 2 crowded       │
+│ 🏛️ 12 incumbents  ⚔️ 8 disruptors (avg: Seed-A)    │
+│ 💰 Avg disruptor ARR: <$5M  👥 Avg: 10-50           │
+│                                                       │
+│ Verdict: Early-stage disruptors, many open niches.   │
+│ Strong opportunity for AI-native entry.               │
+└─────────────────────────────────────────────────────┘
+```
+
+### Opportunity Score Formula
+Computed from existing data, no AI calls:
+
+1. **Whitespace ratio** (0-4): `openNiches / totalNiches * 4`
+2. **Disruptor immaturity** (0-3): Lower avg funding/employees = higher score (early = opportunity)
+3. **Market size** (0-3): More incumbents = bigger market to attack
+
+Total: 0-10 scale, displayed as a simple bar.
 
 ### Plan
 
-#### 1. Extend `useVerticalMap` hook to compute sub-vertical whitespace scores
+#### 1. Extend `useVerticalMap` hook with vertical-level opportunity metrics
+- Aggregate disruptor funding/ARR/employee signals per vertical
+- Compute avg disruptor maturity (parse strings like "$5M", "10-50" into ordinal buckets)
+- Compute opportunity score per vertical
+- Add to `VerticalStats` interface
 
-Add per-sub-vertical counts (`incumbent`, `disruptor`, `transitioning`) to the existing `SubVertical` interface. Derive a simple whitespace label:
-- **"Open"** — incumbents present, zero disruptors
-- **"Low competition"** — incumbent:disruptor ratio > 2:1
-- **"Crowded"** — more disruptors than incumbents
+#### 2. Add Vertical Opportunity Summary card in Disrupt browse view
+- Compact card between vertical header and sub-vertical pills
+- Shows: open niche count, disruptor maturity summary, incumbent count, opportunity score bar
+- One-line "verdict" text generated from the score components
+- Clickable to expand/collapse details
 
-#### 2. Add an expandable sub-vertical breakdown per vertical on the browse page
-
-Below each vertical header (where badges already show totals), add a collapsible row of sub-vertical pills. Each pill shows:
-- Sub-vertical name
-- Incumbent count / Disruptor count
-- Color-coded: green = open whitespace, amber = low competition, red = crowded
-
-Clicking a sub-vertical pill filters the incumbent cards below to only that sub-vertical's companies (or scrolls to them).
-
-#### 3. Add a "Show Whitespace" toggle/filter
-
-A single toggle at the top filter bar (next to "All" and vertical pills) that, when active:
-- Sorts verticals by whitespace opportunity (most open sub-verticals first)
-- Hides crowded sub-verticals
-- Highlights open/low-competition sub-verticals visually
-
-#### 4. Show sub-vertical context on incumbent cards
-
-When a sub-vertical is selected/filtered, show a small context line on each incumbent card: "1 of 2 incumbents · 0 disruptors in this niche" — making the whitespace tangible.
+#### 3. Sort verticals by opportunity score when Whitespace toggle is on
+- Currently verticals sort by ID; with whitespace mode, sort by opportunity score descending
+- Highest-opportunity verticals float to top
 
 ### Technical Details
 
-**Hook changes** (`src/hooks/use-vertical-map.ts`):
-- Add `counts: { incumbent, disruptor, transitioning }` to `SubVertical` interface
-- Compute counts during the existing aggregation loop
-- Add a `whitespace` computed field per sub-vertical
+**Hook** (`src/hooks/use-vertical-map.ts`):
+- Add `opportunityScore: number` and `disruptorMaturity: { avgFunding: string; avgSize: string; count: number }` to `VerticalStats`
+- Parse `estimated_funding` strings into ordinal: Seed=1, A=2, B=3, C+=4, Public=5
+- Parse `estimated_employees` into ordinal: 1-10=1, 10-50=2, 50-200=3, 200+=4
+- Compute weighted score
 
-**UI changes** (`src/pages/Disrupt.tsx`):
-- Add collapsible sub-vertical pill row under each vertical header
-- Add "Whitespace" toggle to top filter bar
-- Filter/sort logic based on sub-vertical selection and whitespace mode
-- No new components needed — all inline in existing browse phase
-
-**No database changes required** — all data already exists in `company_vertical_map`.
+**UI** (`src/pages/Disrupt.tsx`):
+- New inline `OpportunityCard` component (~40 lines)
+- Modify whitespace sort to use opportunity score
+- No new files, no database changes, no edge functions
 
