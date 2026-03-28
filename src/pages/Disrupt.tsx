@@ -197,21 +197,17 @@ export default function Disrupt() {
                   <span>{cluster.emoji}</span> {cluster.name}
                   {(() => {
                     const vs = verticalStats?.find(v => v.id === cluster.id);
-                    const hardcodedIncumbents = cluster.incumbents.length;
-                    const dbIncumbents = vs?.counts.incumbent ?? 0;
-                    const dbDisruptors = vs?.counts.disruptor ?? 0;
-                    const totalIncumbents = hardcodedIncumbents + dbIncumbents;
-                    const totalCompanies = totalIncumbents + dbDisruptors + (vs?.counts.transitioning ?? 0);
+                    if (!vs) return null;
                     return (
                       <span className="flex items-center gap-1.5 ml-1">
                         <Badge variant="secondary" className="text-[9px] h-4 px-1.5 gap-0.5">
-                          <Building2 className="w-2.5 h-2.5" /> {totalCompanies} companies
+                          <Building2 className="w-2.5 h-2.5" /> {vs.counts.total} companies
                         </Badge>
                         <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-destructive border-destructive/50 font-semibold">
-                          {totalIncumbents} incumbents
+                          {vs.counts.incumbent} incumbents
                         </Badge>
                         <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-primary border-primary/50 font-semibold">
-                          {dbDisruptors} disruptors
+                          {vs.counts.disruptor} disruptors
                         </Badge>
                       </span>
                     );
