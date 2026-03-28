@@ -177,9 +177,29 @@ export default function CompactHUD({ skills, targetSkillIds, userName, kingdomTi
           </>
         )}
 
+        {/* Leaderboard link */}
+        <div className="w-px h-4 opacity-30 ml-auto" style={{ background: "hsl(var(--filigree))" }} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => navigate("/leaderboard")}
+              className="flex items-center gap-1 px-2 py-1 rounded hover:bg-[hsl(var(--filigree)/0.1)] transition-colors"
+            >
+              <Trophy className="h-3.5 w-3.5" style={{ color: "hsl(var(--filigree-glow))" }} />
+              <span
+                className="text-[10px] tracking-wider uppercase hidden sm:inline"
+                style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+              >
+                Hall
+              </span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Hall of Champions</TooltipContent>
+        </Tooltip>
+
         {userName && (
           <span
-            className="text-[11px] ml-auto truncate max-w-[100px]"
+            className="text-[11px] truncate max-w-[100px]"
             style={{
               color: "hsl(var(--filigree))",
               fontFamily: "'Cinzel', serif",
