@@ -268,6 +268,19 @@ export default function Disrupt() {
     return "bg-muted/20 border-border/30";
   };
 
+  // Synthesize whitespace + agent score into a confidence signal
+  const opportunitySignal = (whitespace: WhitespaceLabel, agentScore: number): { label: string; color: string } => {
+    if (agentScore >= 80) return { label: "High Potential", color: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" };
+    if (agentScore >= 60) {
+      if (whitespace === "open") return { label: "Open Market", color: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" };
+      if (whitespace === "low-competition") return { label: "Emerging", color: "text-amber-400 border-amber-400/40 bg-amber-400/10" };
+      return { label: "Competitive", color: "text-amber-400 border-amber-400/40 bg-amber-400/10" };
+    }
+    if (whitespace === "open") return { label: "Open Market", color: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" };
+    if (whitespace === "low-competition") return { label: "Low Competition", color: "text-amber-400 border-amber-400/40 bg-amber-400/10" };
+    return { label: "Saturated", color: "text-muted-foreground border-border/40 bg-muted/20" };
+  };
+
   // ── BROWSE PHASE ──
   if (phase === "browse") {
     return (
