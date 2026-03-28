@@ -182,9 +182,9 @@ export default function Disrupt() {
           </div>
 
           <div className="max-w-5xl mx-auto px-4 mb-6">
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap items-center gap-2 justify-center">
               <button
-                onClick={() => setActiveCluster(null)}
+                onClick={() => { setActiveCluster(null); setActiveSubVertical(null); }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === null ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
               >
                 All
@@ -192,12 +192,18 @@ export default function Disrupt() {
               {INDUSTRY_CLUSTERS.map(c => (
                 <button
                   key={c.id}
-                  onClick={() => setActiveCluster(activeCluster === c.id ? null : c.id)}
+                  onClick={() => { setActiveCluster(activeCluster === c.id ? null : c.id); setActiveSubVertical(null); }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === c.id ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
                 >
                   {c.emoji} {c.name}
                 </button>
               ))}
+              <span className="w-px h-5 bg-border/50 mx-1" />
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-[10px] font-medium text-muted-foreground">Whitespace</span>
+                <Switch checked={showWhitespace} onCheckedChange={setShowWhitespace} className="scale-75" />
+              </label>
             </div>
           </div>
 
