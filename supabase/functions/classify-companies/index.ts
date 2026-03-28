@@ -79,9 +79,9 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Filter to software companies and skip already classified
+      // Filter to skip already classified only — let AI decide if it's software
       const softwareCompanies = companies.filter(
-        (c: any) => !classifiedIds.has(c.id) && !isExcluded(c.industry || "")
+        (c: any) => !classifiedIds.has(c.id)
       );
 
       // Process in batches of 30 using AI
