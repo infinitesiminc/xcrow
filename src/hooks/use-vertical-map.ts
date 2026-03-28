@@ -31,6 +31,13 @@ export interface DisruptorMaturity {
   count: number;
 }
 
+export interface AgentScore {
+  agent_score: number;
+  agent_verdict: string | null;
+  key_opportunities: string[];
+  workflow_types: string[];
+}
+
 export interface VerticalStats {
   id: number;
   name: string;
@@ -39,6 +46,7 @@ export interface VerticalStats {
   opportunityScore: number;
   disruptorMaturity: DisruptorMaturity;
   verdict: string;
+  agentScore?: AgentScore;
 }
 
 function computeWhitespace(counts: { incumbent: number; disruptor: number }): WhitespaceLabel {
@@ -156,15 +164,21 @@ export function useVerticalMap() {
   return useQuery({
     queryKey: ["vertical-map"],
     queryFn: async (): Promise<VerticalStats[]> => {
-      const { data, error } = await supabase
-        .from("company_vertical_map")
-        .select("vertical_id, vertical_name, sub_vertical, role, companies(id, name, industry, description, employee_range, logo_url, estimated_arr, estimated_employees, estimated_funding, enrichment_confidence)")
-        .order("vertical_id");
+      const [mapResult, agentResult] = await Promise.all([
+        supabase
+          .from("company_vertical_map")
+          .select("vertical_id, vertical_name, sub_vertical, role, companies(id, name, industry, description, employee_range, logo_url, estimated_arr, estimated_employees, estimated_funding, enrichment_confidence)")
+          .order("vertical_id"),
+        supabase
+          .from("vertical_agent_scores")
+          .select("vertical_id, agent_score, agent_verdict, key_opportunities, workflow_types"),
+      ]);
 
-      if (error) throw error;
+      if (mapResult.error) throw mapResult.error;
+      const agentScores = agentResult.data || [];
 
-      const verticals: Record<number, Omit<VerticalStats, 'opportunityScore' | 'disruptorMaturity' | 'verdict'> & { opportunityScore: number; disruptorMaturity: DisruptorMaturity; verdict: string }> = {};
-      for (const row of data || []) {
+      const verticals: Record<number, VerticalStats> = {};
+      for (const row of mapResult.data || []) {
         const vid = row.vertical_id;
         if (!verticals[vid]) {
           verticals[vid] = {
@@ -198,7 +212,7 @@ export function useVerticalMap() {
         }
       }
 
-      // Compute whitespace + opportunity scores
+      // Compute whitespace + opportunity scores + attach agent scores
       for (const v of Object.values(verticals)) {
         for (const sv of v.sub_verticals) {
           sv.whitespace = computeWhitespace(sv.counts);
@@ -206,12 +220,22 @@ export function useVerticalMap() {
         const order: Record<WhitespaceLabel, number> = { open: 0, "low-competition": 1, crowded: 2 };
         v.sub_verticals.sort((a, b) => order[a.whitespace] - order[b.whitespace]);
 
-        // Compute opportunity score
         const disruptorCompanies = v.sub_verticals.flatMap(s => s.companies.filter(c => c.role === "disruptor"));
         const { score, maturity, verdict } = computeOpportunityScore(v.sub_verticals, disruptorCompanies, v.counts.incumbent);
         v.opportunityScore = score;
         v.disruptorMaturity = maturity;
         v.verdict = verdict;
+
+        // Attach agent score
+        const as_ = agentScores.find(a => a.vertical_id === v.id);
+        if (as_) {
+          v.agentScore = {
+            agent_score: as_.agent_score,
+            agent_verdict: as_.agent_verdict,
+            key_opportunities: as_.key_opportunities || [],
+            workflow_types: as_.workflow_types || [],
+          };
+        }
       }
 
       const result = Object.values(verticals).sort((a, b) => a.id - b.id);

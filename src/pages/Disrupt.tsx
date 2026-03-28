@@ -259,6 +259,11 @@ export default function Disrupt() {
                               <span className="text-[10px] font-semibold text-foreground/80">Opportunity Score</span>
                               <span className="text-xs font-bold text-primary">{vs.opportunityScore.toFixed(1)}/10</span>
                               <Progress value={vs.opportunityScore * 10} className="h-1.5 w-16 bg-muted/40" />
+                              {vs.agentScore && (
+                                <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 border-violet-500/40 text-violet-400">
+                                  🤖 Agent: {vs.agentScore.agent_score}/100
+                                </Badge>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
                               <span>🟢 {vs.sub_verticals.filter(s => s.whitespace === "open").length} open</span>
@@ -290,6 +295,27 @@ export default function Disrupt() {
                             </div>
                           </div>
                           <p className="text-[10px] text-muted-foreground/80 italic">{vs.verdict}</p>
+                          {vs.agentScore && (
+                            <div className="pt-2 border-t border-border/20 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-semibold text-foreground/80">🤖 AI Agent Vulnerability</span>
+                                <Progress value={vs.agentScore.agent_score} className="h-1.5 w-20 bg-muted/40" />
+                                <span className="text-[10px] font-bold text-violet-400">{vs.agentScore.agent_score}/100</span>
+                              </div>
+                              {vs.agentScore.agent_verdict && (
+                                <p className="text-[10px] text-violet-400/80 italic">{vs.agentScore.agent_verdict}</p>
+                              )}
+                              {vs.agentScore.key_opportunities.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {vs.agentScore.key_opportunities.map((opp, i) => (
+                                    <Badge key={i} variant="outline" className="text-[8px] h-4 px-1.5 border-violet-500/20 text-violet-400/70">
+                                      {opp}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
