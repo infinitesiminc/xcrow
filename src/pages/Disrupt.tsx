@@ -34,6 +34,7 @@ function loadResult(): SavedResult | null {
 
 export default function Disrupt() {
   const isMobile = useIsMobile();
+  const { data: verticalStats } = useVerticalMap();
   const saved = loadResult();
   const [phase, setPhase] = useState<Phase>(saved ? "result" : "browse");
   const [selectedIncumbent, setSelectedIncumbent] = useState<IncumbentWithCluster | null>(null);
