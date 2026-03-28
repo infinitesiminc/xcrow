@@ -273,16 +273,16 @@ export default function Disrupt() {
     return (
       <>
         <Helmet>
-          <title>Software Factory — Find AI-Native Opportunities | Xcrow</title>
-          <meta name="description" content="Discover high-potential software niches ripe for AI agent disruption. Get a complete builder prompt to launch your startup." />
+          <title>Xcrow Founder — One Prompt to Launch Your AI Startup | Xcrow</title>
+          <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
         </Helmet>
         <Navbar />
         <div className="min-h-screen bg-background pt-20">
           <div className="text-center px-4 pt-8 pb-6 max-w-2xl mx-auto">
-            <div className="text-4xl mb-3">🤖</div>
-            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">AI Agent Opportunity Finder</h1>
+            <div className="text-4xl mb-3">⚡</div>
+            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">One Prompt. One Founder. Ship It.</h1>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Software niches ranked by AI agent disruption potential. Find where autonomous agents can replace entire workflows, then generate a builder prompt to launch.
+              Pick a high-opportunity niche below. We'll generate a single <span className="text-foreground font-medium">Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your startup today.
             </p>
           </div>
 
