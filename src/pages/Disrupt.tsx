@@ -300,14 +300,13 @@ export default function Disrupt() {
     return { label: "Saturated", color: "text-muted-foreground border-border/40 bg-muted/20" };
   };
 
-  // ── BROWSE PHASE ──
-  if (phase === "browse") {
-    return (
-      <>
-        <Helmet>
-          <title>Xcrow Founder — One Prompt to Launch Your AI Startup | Xcrow</title>
-          <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
-        </Helmet>
+  // ── BROWSE + SLIDE-IN PANEL ──
+  return (
+    <>
+      <Helmet>
+        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : "Xcrow Founder — One Prompt to Launch Your AI Startup"} | Xcrow</title>
+        <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
+      </Helmet>
         <Navbar />
         <div className="min-h-screen pt-20" style={{ background: "hsl(var(--background))" }}>
           {/* ── Hero Banner ── */}
@@ -598,251 +597,264 @@ export default function Disrupt() {
             )}
           </div>
         </div>
+
+        {/* ── Agent Detail Slide-in Panel ── */}
+        <AnimatePresence>
+          {(phase === "deepdive" || phase === "generating" || phase === "result") && selectedNiche && selectedNiche.agentScore && (() => {
+            const niche = selectedNiche;
+            const as = niche.agentScore!;
+            const hasPrompt = phase === "generating" || phase === "result";
+            return (
+              <>
+                {/* Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-40"
+                  style={{ background: "hsl(0 0% 0% / 0.6)", backdropFilter: "blur(4px)" }}
+                  onClick={hasPrompt ? restart : () => setPhase("browse")}
+                />
+                {/* Panel */}
+                <motion.div
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                  className="fixed top-0 right-0 h-full z-50 w-full max-w-2xl flex flex-col border-l"
+                  style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--filigree) / 0.15)" }}
+                >
+                  {/* Panel header */}
+                  <div className="flex items-center gap-3 px-5 py-4 border-b shrink-0" style={{ borderColor: "hsl(var(--filigree) / 0.1)", background: "hsl(var(--surface-stone))" }}>
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border"
+                      style={{
+                        background: as.agent_score >= 80
+                          ? "linear-gradient(135deg, hsl(var(--success) / 0.15), hsl(var(--success) / 0.05))"
+                          : as.agent_score >= 60
+                          ? "linear-gradient(135deg, hsl(var(--warning) / 0.15), hsl(var(--warning) / 0.05))"
+                          : "linear-gradient(135deg, hsl(var(--muted) / 0.3), hsl(var(--muted) / 0.1))",
+                        borderColor: as.agent_score >= 80 ? "hsl(var(--success) / 0.3)" : as.agent_score >= 60 ? "hsl(var(--warning) / 0.3)" : "hsl(var(--border))",
+                        boxShadow: as.agent_score >= 80 ? "0 0 12px hsl(var(--success) / 0.2)" : "none",
+                      }}
+                    >
+                      <Bot className="w-6 h-6" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))" }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-bold font-cinzel text-foreground text-lg leading-tight truncate">{niche.name}</h2>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[12px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
+                        {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
+                          <Badge variant="outline" className={`text-[11px] h-5 px-1.5 ${sig.color}`}>{sig.label}</Badge>
+                        ); })()}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-3xl font-bold tabular-nums font-cinzel" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))", textShadow: as.agent_score >= 80 ? "0 0 10px hsl(var(--success) / 0.4)" : "none" }}>
+                        {as.agent_score}
+                      </div>
+                      <Progress value={as.agent_score} className="h-1.5 w-20" style={{ background: "hsl(var(--background))" }} />
+                    </div>
+                    <button
+                      onClick={hasPrompt ? restart : () => setPhase("browse")}
+                      className="p-2 rounded-lg hover:bg-muted/40 transition-colors ml-1"
+                    >
+                      <X className="w-5 h-5 text-muted-foreground" />
+                    </button>
+                  </div>
+
+                  {/* Panel body */}
+                  <ScrollArea className="flex-1">
+                    <div className="p-5 space-y-4">
+                      {/* Startup Thesis */}
+                      {as.agent_play && (
+                        <Card className="border" style={{ background: "hsl(var(--primary) / 0.06)", borderColor: "hsl(var(--primary) / 0.2)" }}>
+                          <CardContent className="p-4 flex gap-3">
+                            <Lightbulb className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--filigree))" }}>Startup Thesis</p>
+                              <p className="text-[15px] text-foreground leading-relaxed font-medium">{as.agent_play}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* AI Analysis */}
+                      {as.agent_verdict && !hasPrompt && (
+                        <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                          <CardContent className="p-4 flex gap-3">
+                            <Bot className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "hsl(var(--sentinel))" }} />
+                            <div>
+                              <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--filigree))" }}>AI Analysis</p>
+                              <p className="text-[13px] text-foreground/80 leading-relaxed">{as.agent_verdict}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Automatable Workflows */}
+                      {!hasPrompt && as.automatable_workflows.length > 0 && (
+                        <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                          <CardContent className="p-4">
+                            <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-3" style={{ color: "hsl(var(--filigree))" }}>Automatable Workflows</p>
+                            <div className="space-y-3">
+                              {as.automatable_workflows.map((wf, i) => (
+                                <div key={i} className="flex items-start gap-3">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
+                                    wf.automation_level === "full" ? "border-emerald-500/30" :
+                                    wf.automation_level === "partial" ? "border-amber-500/30" : "border-blue-500/30"
+                                  }`} style={{
+                                    background: wf.automation_level === "full" ? "hsl(var(--success) / 0.1)" : wf.automation_level === "partial" ? "hsl(var(--warning) / 0.1)" : "hsl(var(--neon-blue) / 0.1)",
+                                  }}>
+                                    {wf.automation_level === "full" ? <Zap className="w-4 h-4" style={{ color: "hsl(var(--success))" }} /> : wf.automation_level === "partial" ? <Cpu className="w-4 h-4" style={{ color: "hsl(var(--warning))" }} /> : <Wand2 className="w-4 h-4" style={{ color: "hsl(var(--neon-blue))" }} />}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-[13px] font-medium text-foreground">{wf.name}</p>
+                                    <p className="text-[11px] text-muted-foreground leading-relaxed">{wf.description}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Competitive Landscape */}
+                      {!hasPrompt && (
+                        <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                          <CardContent className="p-4">
+                            <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-3" style={{ color: "hsl(var(--filigree))" }}>Competitive Landscape</p>
+                            <div className="space-y-3">
+                              {niche.companies.filter(c => c.role === "incumbent").length > 0 && (
+                                <div>
+                                  <p className="text-[11px] font-medium mb-1.5" style={{ color: "hsl(var(--destructive) / 0.8)" }}>Incumbents</p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {niche.companies.filter(c => c.role === "incumbent").map(c => (
+                                      <Badge key={c.id} variant="outline" className="text-[11px] h-6 px-2 border-destructive/20 text-foreground/70">
+                                        {c.name}
+                                        {c.estimated_employees && <span className="ml-1 text-muted-foreground">· {c.estimated_employees}</span>}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {niche.companies.filter(c => c.role === "disruptor").length > 0 && (
+                                <div>
+                                  <p className="text-[11px] font-medium text-primary/80 mb-1.5">Disruptors</p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {niche.companies.filter(c => c.role === "disruptor").map(c => (
+                                      <Badge key={c.id} variant="outline" className="text-[11px] h-6 px-2 border-primary/20 text-foreground/70">
+                                        {c.name}
+                                        {c.estimated_funding && <span className="ml-1 text-muted-foreground">· {c.estimated_funding}</span>}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {niche.companies.filter(c => c.role === "transitioning").length > 0 && (
+                                <div>
+                                  <p className="text-[11px] font-medium text-amber-400/80 mb-1.5">Transitioning</p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {niche.companies.filter(c => c.role === "transitioning").map(c => (
+                                      <Badge key={c.id} variant="outline" className="text-[11px] h-6 px-2 border-amber-500/20 text-foreground/70">
+                                        {c.name}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Master Prompt output */}
+                      {hasPrompt && (
+                        <Card className="border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(0 0% 0% / 0.2)" }}>
+                          <CardContent className="p-0">
+                            <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: "hsl(var(--filigree) / 0.1)" }}>
+                              {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />}
+                              {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
+                              <h3 className="text-[13px] font-semibold text-foreground font-cinzel tracking-wider">
+                                {phase === "generating" ? "Generating…" : "Master Prompt"}
+                              </h3>
+                            </div>
+                            <div className="p-5">
+                              {masterPrompt ? (
+                                <div className="prose prose-sm prose-invert max-w-none text-[13px] leading-relaxed">
+                                  <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 text-[13px] font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
+                                  <Loader2 className="w-4 h-4 animate-spin" /> Generating your master prompt…
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  </ScrollArea>
+
+                  {/* Panel footer CTA */}
+                  <div className="shrink-0 px-5 py-4 border-t" style={{ borderColor: "hsl(var(--filigree) / 0.1)", background: "hsl(var(--surface-stone))" }}>
+                    {phase === "deepdive" && (
+                      <div>
+                        <Card className="mb-3 border" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--filigree) / 0.1)" }}>
+                          <CardContent className="p-3">
+                            <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Your prompt will include:</p>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {[
+                                { icon: <TrendingUp className="w-3.5 h-3.5" />, label: "Vision & target user" },
+                                { icon: <Check className="w-3.5 h-3.5" />, label: "MVP features" },
+                                { icon: <Building2 className="w-3.5 h-3.5" />, label: "DB schema" },
+                                { icon: <Zap className="w-3.5 h-3.5" />, label: "API routes" },
+                                { icon: <Sparkles className="w-3.5 h-3.5" />, label: "UI & pages" },
+                                { icon: <Bot className="w-3.5 h-3.5" />, label: "AI agent integration" },
+                                { icon: <Rocket className="w-3.5 h-3.5" />, label: "Monetization" },
+                              ].map(item => (
+                                <div key={item.label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                  <span style={{ color: "hsl(var(--filigree))" }}>{item.icon}</span>
+                                  <span>{item.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Button
+                          onClick={confirmGenerate}
+                          size="lg"
+                          className="gap-2 w-full font-cinzel tracking-wider"
+                          style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
+                        >
+                          <Rocket className="w-4 h-4" /> Generate Master Prompt
+                        </Button>
+                      </div>
+                    )}
+                    {phase === "result" && (
+                      <div className="flex gap-2">
+                        <Button onClick={copyPrompt} className="gap-1.5 flex-1 font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
+                          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copied ? "Copied!" : "Copy Master Prompt"}
+                        </Button>
+                        <Button onClick={restart} variant="outline" className="gap-1.5 font-cinzel tracking-wider" style={{ borderColor: "hsl(var(--filigree) / 0.3)" }}>
+                          <Rocket className="w-3.5 h-3.5" /> New
+                        </Button>
+                      </div>
+                    )}
+                    {phase === "generating" && (
+                      <p className="text-[11px] text-center font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.5)" }}>
+                        Generating your master prompt… ~30 seconds
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            );
+          })()}
+        </AnimatePresence>
+
         <Footer />
       </>
     );
-  }
-
-  // ── DEEP DIVE / GENERATING / RESULT ──
-  const niche = selectedNiche;
-  const as = niche?.agentScore;
-  const hasPrompt = phase === "generating" || phase === "result";
-
-  return (
-    <>
-      <Helmet>
-        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : `${niche?.name} — Deep Dive`} | Xcrow</title>
-      </Helmet>
-      <Navbar />
-      <div className="min-h-screen pt-16" style={{ background: "hsl(var(--background))" }}>
-        <div className="max-w-6xl mx-auto px-4 py-2">
-          <button
-            onClick={hasPrompt ? restart : () => setPhase("browse")}
-            className="flex items-center gap-1.5 text-xs hover:text-foreground transition-colors mb-6 font-cinzel tracking-wider"
-            style={{ color: "hsl(var(--filigree))" }}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "Find another niche" : "Back to opportunities"}
-          </button>
-
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* LEFT: Niche Intel */}
-            {niche && as && (
-              <div className={`shrink-0 ${hasPrompt ? "lg:w-80" : "lg:w-full max-w-2xl mx-auto"}`}>
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                  {/* Header */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline" className="text-[10px]" style={{ borderColor: "hsl(var(--filigree) / 0.3)", color: "hsl(var(--filigree))" }}>{niche.verticalName}</Badge>
-                      {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
-                        <Badge variant="outline" className={`text-[10px] ${sig.color}`}>{sig.label}</Badge>
-                      ); })()}
-                      <div className="flex gap-1 ml-auto">
-                        <button onClick={() => toggleSave(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}>
-                          {isNicheSaved(niche) ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4 text-muted-foreground" />}
-                        </button>
-                        <button onClick={() => shareNiche(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title="Share opportunity">
-                          <Share2 className="w-4 h-4 text-muted-foreground" />
-                        </button>
-                      </div>
-                    </div>
-                    <h1 className={`font-bold font-cinzel text-foreground mb-1 tracking-wide ${hasPrompt ? "text-lg" : "text-2xl"}`}>
-                      {niche.name}
-                    </h1>
-                    <div className="flex items-center gap-3">
-                      <div className="text-3xl font-bold tabular-nums font-cinzel" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))", textShadow: as.agent_score >= 80 ? "0 0 10px hsl(var(--success) / 0.4)" : "none" }}>
-                        {as.agent_score}<span className="text-sm font-normal text-muted-foreground">/100</span>
-                      </div>
-                      <Progress value={as.agent_score} className="h-2 flex-1" style={{ background: "hsl(var(--surface-stone))" }} />
-                    </div>
-                  </div>
-
-                  {/* Agent Play - the thesis */}
-                  {as.agent_play && (
-                    <Card className="mb-3 border" style={{ background: "hsl(var(--primary) / 0.06)", borderColor: "hsl(var(--primary) / 0.2)" }}>
-                      <CardContent className="p-3 flex gap-2.5">
-                        <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Startup Thesis</p>
-                          <p className={`text-foreground leading-relaxed ${hasPrompt ? "text-[11px]" : "text-sm"}`}>{as.agent_play}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Verdict */}
-                  {as.agent_verdict && !hasPrompt && (
-                    <Card className="mb-3 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
-                      <CardContent className="p-3 flex gap-2.5">
-                        <Bot className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--sentinel))" }} />
-                        <div>
-                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>AI Analysis</p>
-                          <p className="text-xs text-foreground/80 leading-relaxed">{as.agent_verdict}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Automatable Workflows */}
-                  {!hasPrompt && as.automatable_workflows.length > 0 && (
-                    <Card className="mb-3 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
-                      <CardContent className="p-3">
-                        <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Automatable Workflows</p>
-                        <div className="space-y-2">
-                          {as.automatable_workflows.map((wf, i) => (
-                            <div key={i} className="flex items-start gap-2">
-                              <Badge variant="outline" className={`text-[8px] h-5 px-1.5 shrink-0 mt-0.5 ${
-                                wf.automation_level === "full" ? "text-emerald-400 border-emerald-500/30" :
-                                wf.automation_level === "partial" ? "text-amber-400 border-amber-500/30" :
-                                "text-blue-400 border-blue-500/30"
-                              }`}>
-                                {wf.automation_level === "full" ? "⚡ Full" : wf.automation_level === "partial" ? "🔄 Partial" : "🤝 Augmented"}
-                              </Badge>
-                              <div className="min-w-0">
-                                <p className="text-xs font-medium text-foreground/90">{wf.name}</p>
-                                <p className="text-[10px] text-muted-foreground leading-relaxed">{wf.description}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Competitive Landscape */}
-                  {!hasPrompt && (
-                    <Card className="mb-4 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
-                      <CardContent className="p-3">
-                        <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Competitive Landscape</p>
-                        <div className="space-y-2">
-                          {niche.companies.filter(c => c.role === "incumbent").length > 0 && (
-                            <div>
-                              <p className="text-[10px] font-medium mb-1" style={{ color: "hsl(var(--destructive) / 0.8)" }}>Incumbents</p>
-                              <div className="flex flex-wrap gap-1">
-                                {niche.companies.filter(c => c.role === "incumbent").map(c => (
-                                  <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-destructive/20 text-foreground/70">
-                                    {c.name}
-                                    {c.estimated_employees && <span className="ml-1 text-muted-foreground">· {c.estimated_employees}</span>}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {niche.companies.filter(c => c.role === "disruptor").length > 0 && (
-                            <div>
-                              <p className="text-[10px] font-medium text-primary/80 mb-1">Disruptors</p>
-                              <div className="flex flex-wrap gap-1">
-                                {niche.companies.filter(c => c.role === "disruptor").map(c => (
-                                  <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-primary/20 text-foreground/70">
-                                    {c.name}
-                                    {c.estimated_funding && <span className="ml-1 text-muted-foreground">· {c.estimated_funding}</span>}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {niche.companies.filter(c => c.role === "transitioning").length > 0 && (
-                            <div>
-                              <p className="text-[10px] font-medium text-amber-400/80 mb-1">Transitioning</p>
-                              <div className="flex flex-wrap gap-1">
-                                {niche.companies.filter(c => c.role === "transitioning").map(c => (
-                                  <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-amber-500/20 text-foreground/70">
-                                    {c.name}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* CTA */}
-                  {phase === "deepdive" && (
-                    <>
-                      <Card className="mb-4 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.2)" }}>
-                        <CardContent className="p-3">
-                          <h3 className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Your prompt will include:</h3>
-                          <div className="grid grid-cols-2 gap-1.5">
-                            {[
-                              { emoji: "🎯", label: "Vision & target user" },
-                              { emoji: "✅", label: "MVP features" },
-                              { emoji: "🗄️", label: "DB schema" },
-                              { emoji: "🔌", label: "API routes" },
-                              { emoji: "🎨", label: "UI & pages" },
-                              { emoji: "🤖", label: "AI agent integration" },
-                              { emoji: "💰", label: "Monetization" },
-                            ].map(item => (
-                              <div key={item.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                <span>{item.emoji}</span>
-                                <span>{item.label}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <Button
-                        onClick={confirmGenerate}
-                        size="lg"
-                        className="gap-2 w-full font-cinzel tracking-wider"
-                        style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
-                      >
-                        <Rocket className="w-4 h-4" /> Generate Master Prompt
-                      </Button>
-                      <p className="text-[10px] text-center mt-3 font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.5)" }}>
-                        ~30 seconds. One prompt for Lovable, Cursor, or any AI builder.
-                      </p>
-                    </>
-                  )}
-
-                  {phase === "result" && (
-                    <div className="space-y-2">
-                      <Button onClick={copyPrompt} size="sm" className="gap-1.5 w-full font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
-                        {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        {copied ? "Copied!" : "Copy Master Prompt"}
-                      </Button>
-                      <Button onClick={restart} variant="outline" size="sm" className="gap-1.5 w-full font-cinzel tracking-wider" style={{ borderColor: "hsl(var(--filigree) / 0.3)" }}>
-                        <Rocket className="w-3.5 h-3.5" /> Find Another Niche
-                      </Button>
-                    </div>
-                  )}
-                </motion.div>
-              </div>
-            )}
-
-            {/* RIGHT: Master Prompt / Builder Scroll */}
-            {hasPrompt && (
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-3">
-                  {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />}
-                  {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
-                  <h2 className="text-sm font-semibold text-foreground font-cinzel tracking-wider">
-                    {phase === "generating" ? "Generating…" : "Master Prompt"}
-                  </h2>
-                </div>
-                <Card className="border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(0 0% 0% / 0.2)" }}>
-                  <CardContent className="p-0">
-                    <ScrollArea className="h-[70vh]">
-                      <div className="p-5">
-                        {masterPrompt ? (
-                          <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
-                            <ReactMarkdown>{masterPrompt}</ReactMarkdown>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-sm font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
-                            <Loader2 className="w-4 h-4 animate-spin" /> Generating your master prompt…
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      <Footer />
-    </>
-  );
 }
