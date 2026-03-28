@@ -156,6 +156,13 @@ export default function Disrupt() {
     ? INDUSTRY_CLUSTERS.filter(c => c.id === activeCluster)
     : INDUSTRY_CLUSTERS;
 
+  const whitespaceColor: Record<WhitespaceLabel, string> = {
+    open: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
+    "low-competition": "text-amber-400 border-amber-400/40 bg-amber-400/10",
+    crowded: "text-muted-foreground border-border/40 bg-muted/20",
+  };
+  const whitespaceEmoji: Record<WhitespaceLabel, string> = { open: "🟢", "low-competition": "🟡", crowded: "🔴" };
+
   // ── BROWSE PHASE ──
   if (phase === "browse") {
     return (
