@@ -1,136 +1,56 @@
 
 
-# Pivot /disrupt → AI Software Factory
+## Whitespace Discovery for /disrupt
 
-## Concept
+### Problem
+Users see a flat list of incumbents per vertical but have no way to spot where the best startup opportunities are — sub-verticals where incumbents dominate but few disruptors exist.
 
-Replace the 6-act guided journey with a **live agent dashboard**. User describes their idea → AI agent runs autonomously through all stages (market research, business model, tech architecture, landing page, MVP scaffold) → user watches progress in real-time and gets a deployable starter project.
+### Data Available
+The `company_vertical_map` table already has `sub_vertical`, `role` (incumbent/disruptor/transitioning), and company references. Current query results show rich sub-vertical breakdowns (e.g., "CRM & Sales" has 7 sub-verticals with incumbents like "Enterprise CRM", "Sales Engagement" etc., and 31 disruptors scattered across many niches).
 
-## New Flow
+**Whitespace signal**: Sub-verticals with high incumbent count but low/zero disruptor count = opportunity. Sub-verticals crowded with disruptors = competitive.
 
-```text
-┌─────────────────────────────────────────────────┐
-│  1. INTAKE (30 seconds)                         │
-│  "Describe your startup idea or pick a target"  │
-│  → 3-5 quick questions (market, audience, name) │
-├─────────────────────────────────────────────────┤
-│  2. AGENT DASHBOARD (autonomous, ~2 min)        │
-│  Live progress panel showing agent working:     │
-│                                                 │
-│  ✅ Market Research     — pain points found     │
-│  ✅ Business Model      — lean canvas done      │
-│  🔄 Tech Architecture   — choosing stack...     │
-│  ⬚ Landing Page Copy   — queued                │
-│  ⬚ MVP Blueprint       — queued                │
-│  ⬚ Launch Playbook     — queued                │
-│                                                 │
-│  Each step expands to show live AI output       │
-│  User can chat with agent while it works        │
-├─────────────────────────────────────────────────┤
-│  3. LAUNCHPAD (results)                         │
-│  Exportable artifacts + "Deploy" actions        │
-│  - Lean Canvas card                             │
-│  - Landing page preview                         │
-│  - Tech stack recommendation                    │
-│  - 30-day launch plan                           │
-│  - Pitch deck outline                           │
-│  - "Create Lovable Project" button              │
-└─────────────────────────────────────────────────┘
-```
+### Plan
 
-## UI Design
+#### 1. Extend `useVerticalMap` hook to compute sub-vertical whitespace scores
 
-**Single page, three states:**
+Add per-sub-vertical counts (`incumbent`, `disruptor`, `transitioning`) to the existing `SubVertical` interface. Derive a simple whitespace label:
+- **"Open"** — incumbents present, zero disruptors
+- **"Low competition"** — incumbent:disruptor ratio > 2:1
+- **"Crowded"** — more disruptors than incumbents
 
-1. **Intake** — centered card with idea input + optional target picker (reuse existing incumbent data). Quick questions appear inline after first submit.
+#### 2. Add an expandable sub-vertical breakdown per vertical on the browse page
 
-2. **Agent Dashboard** — two columns:
-   - **Left**: Live agent log (streaming text showing what agent is doing, with chat input at bottom so user can steer)
-   - **Right**: Pipeline progress (6 stages as expandable cards, each fills with content as agent completes it)
+Below each vertical header (where badges already show totals), add a collapsible row of sub-vertical pills. Each pill shows:
+- Sub-vertical name
+- Incumbent count / Disruptor count
+- Color-coded: green = open whitespace, amber = low competition, red = crowded
 
-3. **Launchpad** — grid of artifact cards with export/copy actions. "Start building with Lovable" CTA.
+Clicking a sub-vertical pill filters the incumbent cards below to only that sub-vertical's companies (or scrolls to them).
 
-## 6 Agent Stages
+#### 3. Add a "Show Whitespace" toggle/filter
 
-| Stage | Agent Task | Output |
-|-------|-----------|--------|
-| 1. Market Intel | Analyze incumbent weaknesses, find pain points | Pain Point Report card |
-| 2. Business Model | Generate lean canvas, pricing model, unit economics | Lean Canvas card |
-| 3. Tech Blueprint | Recommend stack, AI integrations, architecture | Tech Stack card |
-| 4. Landing Page | Write hero copy, features, CTA, social proof | Landing Page Preview card |
-| 5. Launch Plan | 30-day timeline with specific channels and tactics | Launch Checklist card |
-| 6. Pitch Summary | 5-slide pitch outline with key metrics | Pitch Deck card |
+A single toggle at the top filter bar (next to "All" and vertical pills) that, when active:
+- Sorts verticals by whitespace opportunity (most open sub-verticals first)
+- Hides crowded sub-verticals
+- Highlights open/low-competition sub-verticals visually
 
-## Technical Approach
+#### 4. Show sub-vertical context on incumbent cards
 
-### Files Modified
+When a sub-vertical is selected/filtered, show a small context line on each incumbent card: "1 of 2 incumbents · 0 disruptors in this niche" — making the whitespace tangible.
 
-**1. `src/pages/Disrupt.tsx` — Major rewrite**
-- Replace 1100-line file with ~500 lines
-- Three phase states: `intake` | `running` | `complete`
-- `IntakeScreen`: idea textarea + optional incumbent picker, quick follow-up questions
-- `AgentDashboard`: left=streaming agent log + chat, right=pipeline cards
-- `LaunchpadScreen`: artifact grid with export actions
-- Remove all act-specific component imports, sidebar navigation, mission progress
+### Technical Details
 
-**2. `supabase/functions/disruption-battle/index.ts` — New `factory` action**
-- Single streaming endpoint that runs all 6 stages sequentially
-- Each stage outputs structured markers: `[STAGE:market-intel:START]`, `[STAGE:market-intel:COMPLETE]`
-- Content between markers is the artifact for that stage
-- One long-running AI call with a mega-prompt that produces all 6 sections
+**Hook changes** (`src/hooks/use-vertical-map.ts`):
+- Add `counts: { incumbent, disruptor, transitioning }` to `SubVertical` interface
+- Compute counts during the existing aggregation loop
+- Add a `whitespace` computed field per sub-vertical
 
-**3. New: `src/components/disrupt/FactoryPipeline.tsx`**
-- Pipeline visualization component
-- 6 expandable cards showing stage status (queued → running → complete)
-- Each card expands to show generated content with copy/export buttons
-- Animated progress indicators
+**UI changes** (`src/pages/Disrupt.tsx`):
+- Add collapsible sub-vertical pill row under each vertical header
+- Add "Whitespace" toggle to top filter bar
+- Filter/sort logic based on sub-vertical selection and whitespace mode
+- No new components needed — all inline in existing browse phase
 
-**4. New: `src/components/disrupt/LaunchpadGrid.tsx`**
-- Grid of completed artifact cards
-- Each card: title, summary preview, "Copy" and "Export" buttons
-- Landing page card has a live HTML preview
-- "Create Lovable Project" CTA at bottom
-
-**5. Delete/deprecate existing act components**
-- `DisruptCustomerDiscovery.tsx`, `DisruptVentureBuild.tsx`, `DisruptGTM.tsx`, `DisruptMoatDefense.tsx`, `DisruptPitchBattle.tsx`, `DisruptMissionDebrief.tsx` — no longer used
-- Keep files but remove imports from Disrupt.tsx
-
-### Edge Function Strategy
-
-Instead of 6 separate AI calls, the factory runs **one streaming call** with a structured mega-prompt:
-
-```
-You are an AI Startup Factory. Given this idea and target market, produce a complete startup blueprint.
-
-Output format — use these exact markers:
-[STAGE:market-intel:START]
-...market research content...
-[STAGE:market-intel:COMPLETE]
-[STAGE:business-model:START]
-...lean canvas content...
-[STAGE:business-model:COMPLETE]
-...etc for all 6 stages
-```
-
-Frontend parses markers in real-time to update pipeline cards as they complete.
-
-### State Management
-
-- `factoryState`: `{ phase, idea, targetIncumbent?, stages: Record<stageId, { status, content }>, agentLog: string[] }`
-- localStorage persistence so user can return to completed factory runs
-- No database writes needed (all client-side for MVP)
-
-## Copy Changes
-
-- Page title: "AI Venture Lab" → **"Software Factory"**
-- Tagline: "From idea to launchpad in 2 minutes"
-- SEO: "AI-powered startup builder — instant market research, business model, and MVP blueprint"
-
-## What Gets Simpler
-
-- 1100 lines → ~500 lines
-- 6 separate components → 2 new focused components
-- 6 edge function actions → 1 `factory` action
-- Complex act navigation → linear 3-phase flow
-- No sidebar, no act scoring, no mission progress tracking
+**No database changes required** — all data already exists in `company_vertical_map`.
 
