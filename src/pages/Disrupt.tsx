@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -6,91 +6,52 @@ import { INDUSTRY_CLUSTERS, type DisruptionIncumbent, type IndustryCluster } fro
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Rocket, Zap, ArrowRight, ChevronDown, RotateCcw } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import FactoryPipeline, { type StageId, type StageData, STAGE_META } from "@/components/disrupt/FactoryPipeline";
-import LaunchpadGrid from "@/components/disrupt/LaunchpadGrid";
 
-type Phase = "intake" | "running" | "complete";
-type ChatMsg = { role: "user" | "assistant"; content: string };
+type Phase = "browse" | "generating" | "result";
 
-const FACTORY_KEY = "software-factory-state";
+const FACTORY_RESULT_KEY = "sf-master-prompt";
 
-interface FactoryState {
-  phase: Phase;
-  idea: string;
-  targetName?: string;
-  stages: Record<StageId, StageData>;
-  agentLog: string;
+interface SavedResult {
+  incumbentId: number;
+  incumbentName: string;
+  prompt: string;
 }
 
-const emptyStages = (): Record<StageId, StageData> => ({
-  "market-intel": { status: "queued", content: "" },
-  "business-model": { status: "queued", content: "" },
-  "tech-blueprint": { status: "queued", content: "" },
-  "landing-page": { status: "queued", content: "" },
-  "launch-plan": { status: "queued", content: "" },
-  "pitch-summary": { status: "queued", content: "" },
-});
-
-function loadFactory(): FactoryState | null {
+function loadResult(): SavedResult | null {
   try {
-    const raw = localStorage.getItem(FACTORY_KEY);
+    const raw = localStorage.getItem(FACTORY_RESULT_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
 
-function saveFactory(state: FactoryState) {
-  localStorage.setItem(FACTORY_KEY, JSON.stringify(state));
-}
-
 export default function Disrupt() {
   const isMobile = useIsMobile();
-  const saved = loadFactory();
-  const [phase, setPhase] = useState<Phase>(saved?.phase === "complete" ? "complete" : "intake");
-  const [idea, setIdea] = useState(saved?.idea || "");
-  const [targetName, setTargetName] = useState(saved?.targetName || "");
-  const [stages, setStages] = useState<Record<StageId, StageData>>(saved?.phase === "complete" ? saved.stages : emptyStages());
-  const [agentLog, setAgentLog] = useState(saved?.agentLog || "");
-  const [chatInput, setChatInput] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [showTargets, setShowTargets] = useState(false);
-  const logEndRef = useRef<HTMLDivElement>(null);
+  const saved = loadResult();
+  const [phase, setPhase] = useState<Phase>(saved ? "result" : "browse");
+  const [selectedIncumbent, setSelectedIncumbent] = useState<(DisruptionIncumbent & { clusterName: string; clusterEmoji: string; clusterColor: string }) | null>(null);
+  const [masterPrompt, setMasterPrompt] = useState(saved?.prompt || "");
+  const [savedName, setSavedName] = useState(saved?.incumbentName || "");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [activeCluster, setActiveCluster] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const promptRef = useRef<HTMLDivElement>(null);
 
-  // All incumbents flat
-  const allIncumbents = INDUSTRY_CLUSTERS.flatMap(c => c.incumbents.map(i => ({ ...i, clusterName: c.name, clusterEmoji: c.emoji })));
+  const allIncumbents = INDUSTRY_CLUSTERS.flatMap(c =>
+    c.incumbents.map(i => ({ ...i, clusterName: c.name, clusterEmoji: c.emoji, clusterColor: c.color }))
+  );
 
-  const scrollLog = () => setTimeout(() => logEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-
-  const pickTarget = (inc: typeof allIncumbents[0]) => {
-    setIdea(`Build an AI-powered alternative to ${inc.name} (${inc.clusterName})`);
-    setTargetName(inc.name);
-    setShowTargets(false);
-  };
-
-  const restart = () => {
-    localStorage.removeItem(FACTORY_KEY);
-    setPhase("intake");
-    setIdea("");
-    setTargetName("");
-    setStages(emptyStages());
-    setAgentLog("");
-    setChatInput("");
-  };
-
-  const launchFactory = async () => {
-    if (!idea.trim()) { toast.error("Describe your startup idea first"); return; }
-    setPhase("running");
-    setIsRunning(true);
-    setStages(emptyStages());
-    setAgentLog("🏭 Starting Software Factory...\n");
-    scrollLog();
+  const pick = async (inc: typeof allIncumbents[0]) => {
+    setSelectedIncumbent(inc);
+    setPhase("generating");
+    setMasterPrompt("");
+    setIsStreaming(true);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -101,238 +62,273 @@ export default function Disrupt() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-          body: JSON.stringify({ action: "factory", payload: { idea, targetName } }),
+          body: JSON.stringify({
+            action: "master-prompt",
+            payload: {
+              incumbent: {
+                name: inc.name,
+                vulnerability: inc.vulnerability,
+                asymmetricAngle: inc.asymmetricAngle,
+                beachheadNiche: inc.beachheadNiche,
+                disruptorModel: inc.disruptorModel,
+                vector: inc.vector,
+                aiDisruptionThesis: inc.aiDisruptionThesis,
+                pricingModel: inc.pricingModel,
+                existingDisruptor: inc.existingDisruptor,
+              },
+              cluster: { name: inc.clusterName, emoji: inc.clusterEmoji },
+            },
+          }),
           signal: controller.signal,
         },
       );
-      if (!resp.ok || !resp.body) throw new Error("Factory failed");
+      if (!resp.ok || !resp.body) throw new Error("Generation failed");
 
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let currentStage: StageId | null = null;
-      let stageContent: Record<StageId, string> = { "market-intel": "", "business-model": "", "tech-blueprint": "", "landing-page": "", "launch-plan": "", "pitch-summary": "" };
       let fullText = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
+        let nl: number;
+        while ((nl = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, nl);
+          buffer = buffer.slice(nl + 1);
           if (line.endsWith("\r")) line = line.slice(0, -1);
           if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") break;
           try {
-            const parsed = JSON.parse(jsonStr);
+            const parsed = JSON.parse(json);
             const content = parsed.choices?.[0]?.delta?.content;
-            if (!content) continue;
-            fullText += content;
-
-            // Parse stage markers
-            const startMatch = content.match(/\[STAGE:([a-z-]+):START\]/);
-            const completeMatch = content.match(/\[STAGE:([a-z-]+):COMPLETE\]/);
-
-            if (startMatch) {
-              const stageId = startMatch[1] as StageId;
-              currentStage = stageId;
-              setStages(prev => ({ ...prev, [stageId]: { status: "running", content: "" } }));
-              setAgentLog(prev => prev + `\n▶ Starting ${STAGE_META.find(s => s.id === stageId)?.label}...\n`);
-              scrollLog();
-            } else if (completeMatch) {
-              const stageId = completeMatch[1] as StageId;
-              setStages(prev => ({ ...prev, [stageId]: { status: "complete", content: stageContent[stageId] } }));
-              setAgentLog(prev => prev + `✅ ${STAGE_META.find(s => s.id === stageId)?.label} complete\n`);
-              currentStage = null;
-              scrollLog();
-            } else if (currentStage) {
-              // Strip marker fragments from content
-              const cleanContent = content.replace(/\[STAGE:[a-z-]+:(START|COMPLETE)\]/g, "");
-              if (cleanContent) {
-                stageContent[currentStage] += cleanContent;
-                setStages(prev => ({
-                  ...prev,
-                  [currentStage!]: { status: "running", content: stageContent[currentStage!] },
-                }));
-              }
+            if (content) {
+              fullText += content;
+              setMasterPrompt(fullText);
             }
-          } catch { /* partial json */ }
+          } catch { /* partial */ }
         }
       }
 
-      // Check full text for any missed markers
-      for (const meta of STAGE_META) {
-        const startIdx = fullText.indexOf(`[STAGE:${meta.id}:START]`);
-        const endIdx = fullText.indexOf(`[STAGE:${meta.id}:COMPLETE]`);
-        if (startIdx !== -1 && endIdx !== -1) {
-          const extracted = fullText.slice(startIdx + `[STAGE:${meta.id}:START]`.length, endIdx).trim();
-          if (extracted) {
-            setStages(prev => ({ ...prev, [meta.id]: { status: "complete", content: extracted } }));
-          }
-        }
-      }
-
-      setPhase("complete");
-      setAgentLog(prev => prev + "\n🎉 All stages complete! Your startup blueprint is ready.\n");
-      const finalState: FactoryState = { phase: "complete", idea, targetName, stages: (() => {
-        const s = emptyStages();
-        for (const meta of STAGE_META) {
-          const startIdx = fullText.indexOf(`[STAGE:${meta.id}:START]`);
-          const endIdx = fullText.indexOf(`[STAGE:${meta.id}:COMPLETE]`);
-          if (startIdx !== -1 && endIdx !== -1) {
-            s[meta.id] = { status: "complete", content: fullText.slice(startIdx + `[STAGE:${meta.id}:START]`.length, endIdx).trim() };
-          }
-        }
-        return s;
-      })(), agentLog: "" };
-      saveFactory(finalState);
+      setPhase("result");
+      setSavedName(inc.name);
+      localStorage.setItem(FACTORY_RESULT_KEY, JSON.stringify({
+        incumbentId: inc.id,
+        incumbentName: inc.name,
+        prompt: fullText,
+      }));
     } catch (e: any) {
       if (e.name !== "AbortError") {
-        toast.error("Factory encountered an error. Try again.");
-        setAgentLog(prev => prev + "\n❌ Error occurred. Please try again.\n");
+        toast.error("Failed to generate. Try again.");
+        setPhase("browse");
       }
     } finally {
-      setIsRunning(false);
+      setIsStreaming(false);
     }
   };
 
-  // ── INTAKE PHASE ──
-  if (phase === "intake") {
+  const restart = () => {
+    localStorage.removeItem(FACTORY_RESULT_KEY);
+    setPhase("browse");
+    setMasterPrompt("");
+    setSelectedIncumbent(null);
+    setSavedName("");
+  };
+
+  const copyPrompt = () => {
+    navigator.clipboard.writeText(masterPrompt);
+    setCopied(true);
+    toast.success("Master prompt copied — paste it into Lovable or Cursor to start building!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const filteredClusters = activeCluster !== null
+    ? INDUSTRY_CLUSTERS.filter(c => c.id === activeCluster)
+    : INDUSTRY_CLUSTERS;
+
+  // ── BROWSE PHASE ──
+  if (phase === "browse") {
     return (
       <>
         <Helmet>
-          <title>Software Factory — AI Startup Builder | Xcrow</title>
-          <meta name="description" content="From idea to startup blueprint in 2 minutes. AI-powered market research, business model, tech stack, and launch plan." />
-        </Helmet>
-        <Navbar />
-        <div className="min-h-screen bg-background pt-20 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-lg"
-          >
-            <div className="text-center mb-8">
-              <div className="text-4xl mb-3">🏭</div>
-              <h1 className="text-3xl font-bold font-cinzel text-foreground mb-2">Software Factory</h1>
-              <p className="text-muted-foreground text-sm">From idea to launchpad in 2 minutes</p>
-            </div>
-
-            <Card className="bg-card/80 border-border/50">
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-2 block">Describe your startup idea</label>
-                  <Textarea
-                    value={idea}
-                    onChange={e => setIdea(e.target.value)}
-                    placeholder="e.g. Build an AI-powered alternative to QuickBooks for freelancers..."
-                    className="min-h-[100px] bg-background/50 border-border/50 text-sm"
-                  />
-                </div>
-
-                <div className="text-center text-xs text-muted-foreground">or</div>
-
-                <div>
-                  <button
-                    onClick={() => setShowTargets(!showTargets)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-muted/20 border border-border/30 text-xs text-muted-foreground hover:bg-muted/30 transition-colors"
-                  >
-                    <span>🎯 Pick a SaaS company to disrupt</span>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showTargets ? "rotate-180" : ""}`} />
-                  </button>
-
-                  <AnimatePresence>
-                    {showTargets && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-2 max-h-48 overflow-y-auto space-y-1 pr-1">
-                          {INDUSTRY_CLUSTERS.map(cluster => (
-                            <div key={cluster.id}>
-                              <p className="text-[10px] text-muted-foreground font-medium px-1 py-1">{cluster.emoji} {cluster.name}</p>
-                              {cluster.incumbents.map(inc => (
-                                <button
-                                  key={inc.id}
-                                  onClick={() => pickTarget({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji })}
-                                  className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-muted/30 transition-colors flex items-center justify-between"
-                                >
-                                  <span className="font-medium text-foreground">{inc.name}</span>
-                                  <Badge variant="outline" className="text-[9px]">{inc.vector}</Badge>
-                                </button>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <Button onClick={launchFactory} className="w-full gap-2" size="lg" disabled={!idea.trim()}>
-                  <Rocket className="w-4 h-4" /> Launch Factory
-                </Button>
-
-                <p className="text-[10px] text-muted-foreground/60 text-center">
-                  AI will research your market, design a business model, plan your tech stack, write landing page copy, create a launch plan, and outline your pitch — all in one shot.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
-
-  // ── COMPLETE PHASE ──
-  if (phase === "complete" && !isRunning) {
-    return (
-      <>
-        <Helmet>
-          <title>Your Startup Blueprint — Software Factory | Xcrow</title>
+          <title>Software Factory — Pick a Giant to Disrupt | Xcrow</title>
+          <meta name="description" content="Choose a software incumbent to disrupt. AI generates a complete builder prompt — paste it into Lovable or Cursor to launch your startup." />
         </Helmet>
         <Navbar />
         <div className="min-h-screen bg-background pt-20">
-          <LaunchpadGrid stages={stages} idea={idea} onRestart={restart} />
+          {/* Hero */}
+          <div className="text-center px-4 pt-8 pb-6 max-w-2xl mx-auto">
+            <div className="text-4xl mb-3">🏭</div>
+            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">
+              Software Factory
+            </h1>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Pick a software giant to disrupt. AI generates a master prompt you can paste into any builder agent to launch your startup.
+            </p>
+          </div>
+
+          {/* Cluster Filter Pills */}
+          <div className="max-w-5xl mx-auto px-4 mb-6">
+            <div className="flex flex-wrap gap-2 justify-center">
+              <button
+                onClick={() => setActiveCluster(null)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  activeCluster === null
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                All
+              </button>
+              {INDUSTRY_CLUSTERS.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveCluster(activeCluster === c.id ? null : c.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    activeCluster === c.id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {c.emoji} {c.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Incumbent Grid */}
+          <div className="max-w-6xl mx-auto px-4 pb-16">
+            {filteredClusters.map(cluster => (
+              <div key={cluster.id} className="mb-8">
+                <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                  <span>{cluster.emoji}</span> {cluster.name}
+                  <span className="text-[10px] font-normal text-muted-foreground/60">— {cluster.timingCatalyst.slice(0, 80)}…</span>
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {cluster.incumbents.map(inc => (
+                    <motion.div
+                      key={inc.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Card
+                        className="cursor-pointer bg-card/60 border-border/40 hover:border-primary/40 hover:bg-card/80 transition-all group"
+                        onClick={() => pick({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji, clusterColor: cluster.color })}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
+                                {inc.name}
+                              </h3>
+                              <p className="text-[10px] text-muted-foreground">{inc.age}</p>
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] shrink-0"
+                              style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}
+                            >
+                              {inc.vector}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">
+                            {inc.vulnerability}
+                          </p>
+                          <p className="text-[10px] text-primary/80 font-medium line-clamp-1">
+                            💡 {inc.asymmetricAngle.slice(0, 80)}…
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         <Footer />
       </>
     );
   }
 
-  // ── RUNNING PHASE ──
+  // ── GENERATING / RESULT PHASE ──
   return (
     <>
       <Helmet>
-        <title>Building Blueprint... — Software Factory | Xcrow</title>
+        <title>{phase === "generating" ? "Generating..." : `Disrupt ${savedName}`} — Software Factory | Xcrow</title>
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
-        <div className={`flex h-[calc(100vh-5rem)] ${isMobile ? "flex-col" : ""}`}>
-          {/* Left: Agent Log */}
-          <div className={`${isMobile ? "flex-1" : "flex-1"} flex flex-col border-r border-border/30`}>
-            <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Agent Log</span>
-              </div>
-              <Badge variant="outline" className="text-[10px] animate-pulse">Building...</Badge>
-            </div>
-            <ScrollArea className="flex-1 p-4">
-              <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">{agentLog}</pre>
-              <div ref={logEndRef} />
-            </ScrollArea>
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={restart}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Pick another
+            </button>
+            {phase === "result" && (
+              <Button onClick={copyPrompt} size="sm" className="gap-1.5">
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? "Copied!" : "Copy Master Prompt"}
+              </Button>
+            )}
           </div>
 
-          {/* Right: Pipeline */}
-          <div className={`${isMobile ? "h-64 border-t" : "w-80"} border-border/30 bg-card/20`}>
-            <FactoryPipeline stages={stages} />
+          {/* Target Info */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+              {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
+              <h1 className="text-lg font-bold text-foreground">
+                {phase === "generating"
+                  ? `Generating blueprint to disrupt ${selectedIncumbent?.name || savedName}…`
+                  : `Master Prompt: Disrupt ${savedName}`
+                }
+              </h1>
+            </div>
+            {phase === "result" && (
+              <p className="text-xs text-muted-foreground">
+                Copy this prompt and paste it into <strong>Lovable</strong>, <strong>Cursor</strong>, or any AI builder to start building your startup.
+              </p>
+            )}
           </div>
+
+          {/* Prompt Output */}
+          <Card className="bg-card/60 border-border/40">
+            <CardContent className="p-0">
+              <ScrollArea className={phase === "generating" ? "h-[60vh]" : "max-h-[70vh]"}>
+                <div ref={promptRef} className="p-6">
+                  {masterPrompt ? (
+                    <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
+                      <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Initializing factory…
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          {/* Bottom CTA */}
+          {phase === "result" && (
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button onClick={copyPrompt} size="lg" className="gap-2 w-full sm:w-auto">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? "Copied!" : "Copy & Paste into Lovable"}
+              </Button>
+              <Button onClick={restart} variant="outline" size="lg" className="gap-2 w-full sm:w-auto">
+                <Rocket className="w-4 h-4" /> Disrupt Another
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       <Footer />
