@@ -221,7 +221,7 @@ RULES:
       ]);
     }
 
-
+    if (action === "factory") {
       const { idea, targetName } = payload;
 
       const systemPrompt = `You are an AI Software Factory — an autonomous startup blueprint generator. Given a startup idea, produce a COMPLETE startup framework across 6 stages.
