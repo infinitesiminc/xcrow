@@ -203,10 +203,10 @@ export default function Disrupt() {
                         <Badge variant="secondary" className="text-[9px] h-4 px-1.5 gap-0.5">
                           <Building2 className="w-2.5 h-2.5" /> {vs.counts.total} companies
                         </Badge>
-                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-destructive/80 border-destructive/30">
+                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-destructive border-destructive/50 font-semibold">
                           {vs.counts.incumbent} incumbents
                         </Badge>
-                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-primary/80 border-primary/30">
+                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-primary border-primary/50 font-semibold">
                           {vs.counts.disruptor} disruptors
                         </Badge>
                       </span>
