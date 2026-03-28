@@ -153,7 +153,7 @@ export default function Index() {
         <div className="rpg-filigree-top" />
 
         {/* Hero */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-10 relative z-10">
+        <div className="flex-1 flex flex-col items-center justify-start px-4 pt-[38vh] pb-10 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
