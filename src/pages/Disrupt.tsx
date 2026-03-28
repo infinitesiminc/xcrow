@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from "react";
+import agentLauncherHero from "@/assets/agent-launcher-hero.jpg";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -309,28 +310,43 @@ export default function Disrupt() {
       </Helmet>
         <Navbar />
         <div className="min-h-screen pt-20" style={{ background: "hsl(var(--background))" }}>
-          {/* ── Hero Banner ── */}
-          <div className="relative text-center px-4 pt-10 pb-8 max-w-3xl mx-auto overflow-hidden">
-            {/* Stone texture overlay */}
-            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" viewBox=\"0 0 40 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"%23fff\" fill-opacity=\"0.4\"%3E%3Cpath d=\"M0 0h20v20H0zM20 20h20v20H20z\"/%3E%3C/g%3E%3C/svg%3E')" }} />
-            {/* Filigree glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree-glow) / 0.6), transparent)" }} />
+          {/* ── Hero Banner with background image ── */}
+          <div className="relative text-center px-4 pt-10 pb-10 max-w-full mx-auto overflow-hidden">
+            {/* Background image */}
+            <div className="absolute inset-0">
+              <img
+                src={agentLauncherHero}
+                alt=""
+                className="w-full h-full object-cover object-top"
+                width={1920}
+                height={768}
+              />
+              {/* Gradient fade to background */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(to bottom, hsl(var(--background) / 0.3) 0%, hsl(var(--background) / 0.5) 40%, hsl(var(--background) / 0.85) 70%, hsl(var(--background)) 100%)`,
+                }}
+              />
+            </div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <div className="text-5xl mb-4">🚀</div>
-              <h1 className="text-3xl md:text-4xl font-bold font-cinzel text-foreground mb-3 tracking-wide">
+            {/* Filigree glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full z-10" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree-glow) / 0.6), transparent)" }} />
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 pt-16 pb-4">
+              <h1 className="text-3xl md:text-5xl font-bold font-cinzel text-foreground mb-3 tracking-wide drop-shadow-lg">
                 Agent Launcher
               </h1>
-              <p className="text-base font-cinzel tracking-wide mb-2" style={{ color: "hsl(var(--filigree))" }}>
+              <p className="text-base md:text-lg font-cinzel tracking-wide mb-2 drop-shadow-md" style={{ color: "hsl(var(--filigree))" }}>
                 One Prompt. One Agent. Ship It.
               </p>
-              <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                Pick a high-opportunity niche below. We'll generate a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your startup.
+              <p className="text-[13px] text-foreground/80 max-w-lg mx-auto leading-relaxed drop-shadow-sm">
+                Pick a high-opportunity niche below. We'll generate a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your agent.
               </p>
             </motion.div>
 
             {/* Bottom filigree */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.3), transparent)" }} />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-px z-10" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.3), transparent)" }} />
           </div>
 
           {/* ── Filters (styled as parchment bar) ── */}
