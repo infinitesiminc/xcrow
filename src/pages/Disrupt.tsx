@@ -210,7 +210,14 @@ export default function Disrupt() {
           </div>
 
           <div className="max-w-6xl mx-auto px-4 pb-16">
-            {filteredClusters.map(cluster => {
+          {(showWhitespace
+            ? [...filteredClusters].sort((a, b) => {
+                const vsA = verticalStats?.find(v => v.id === a.id);
+                const vsB = verticalStats?.find(v => v.id === b.id);
+                return (vsB?.opportunityScore || 0) - (vsA?.opportunityScore || 0);
+              })
+            : filteredClusters
+          ).map(cluster => {
               const vs = verticalStats?.find(v => v.id === cluster.id);
               const subVerticals = vs?.sub_verticals || [];
               const visibleSubs = showWhitespace ? subVerticals.filter(s => s.whitespace !== "crowded") : subVerticals;
