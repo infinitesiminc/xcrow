@@ -11,9 +11,13 @@ export interface VerticalCompany {
   role: "incumbent" | "disruptor" | "transitioning";
 }
 
+export type WhitespaceLabel = "open" | "low-competition" | "crowded";
+
 export interface SubVertical {
   name: string;
   companies: VerticalCompany[];
+  counts: { incumbent: number; disruptor: number; transitioning: number };
+  whitespace: WhitespaceLabel;
 }
 
 export interface VerticalStats {
@@ -21,6 +25,12 @@ export interface VerticalStats {
   name: string;
   counts: { incumbent: number; disruptor: number; transitioning: number; total: number };
   sub_verticals: SubVertical[];
+}
+
+function computeWhitespace(counts: { incumbent: number; disruptor: number }): WhitespaceLabel {
+  if (counts.incumbent > 0 && counts.disruptor === 0) return "open";
+  if (counts.incumbent > 0 && counts.incumbent > counts.disruptor * 2) return "low-competition";
+  return "crowded";
 }
 
 export function useVerticalMap() {
@@ -47,19 +57,33 @@ export function useVerticalMap() {
         }
         const v = verticals[vid];
         const role = row.role as keyof typeof v.counts;
-        if (role in v.counts) v.counts[role]++;
+        if (role in v.counts && role !== "total") (v.counts as any)[role]++;
         v.counts.total++;
 
         const svName = row.sub_vertical || "General";
         let sv = v.sub_verticals.find((s) => s.name === svName);
         if (!sv) {
-          sv = { name: svName, companies: [] };
+          sv = { name: svName, companies: [], counts: { incumbent: 0, disruptor: 0, transitioning: 0 }, whitespace: "crowded" };
           v.sub_verticals.push(sv);
         }
+
+        const r = row.role as "incumbent" | "disruptor" | "transitioning";
+        if (r in sv.counts) sv.counts[r]++;
+
         const company = row.companies as any;
         if (company) {
-          sv.companies.push({ ...company, role: row.role as VerticalCompany["role"] });
+          sv.companies.push({ ...company, role: r });
         }
+      }
+
+      // Compute whitespace labels
+      for (const v of Object.values(verticals)) {
+        for (const sv of v.sub_verticals) {
+          sv.whitespace = computeWhitespace(sv.counts);
+        }
+        // Sort sub-verticals: open first, then low-competition, then crowded
+        const order: Record<WhitespaceLabel, number> = { open: 0, "low-competition": 1, crowded: 2 };
+        v.sub_verticals.sort((a, b) => order[a.whitespace] - order[b.whitespace]);
       }
 
       return Object.values(verticals).sort((a, b) => a.id - b.id);
