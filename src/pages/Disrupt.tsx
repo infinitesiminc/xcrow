@@ -669,7 +669,10 @@ export default function Disrupt() {
                       <div className="text-3xl font-bold tabular-nums font-cinzel" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))", textShadow: as.agent_score >= 80 ? "0 0 10px hsl(var(--success) / 0.4)" : "none" }}>
                         {as.agent_score}
                       </div>
-                      <Progress value={as.agent_score} className="h-1.5 w-20" style={{ background: "hsl(var(--background))" }} />
+                      <p className="text-[11px] font-medium mt-0.5" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))" }}>
+                        {as.agent_score >= 80 ? "High Potential" : as.agent_score >= 60 ? "Emerging" : as.agent_score >= 40 ? "Moderate" : "Challenging"}
+                      </p>
+                      <Progress value={as.agent_score} className="h-1.5 w-20 mt-1" style={{ background: "hsl(var(--background))" }} />
                     </div>
                     <button
                       onClick={hasPrompt ? restart : () => setPhase("browse")}
@@ -694,6 +697,71 @@ export default function Disrupt() {
                           </CardContent>
                         </Card>
                       )}
+
+                      {/* Market Proof — Why This Score */}
+                      {!hasPrompt && (() => {
+                        const incumbents = niche.companies.filter(c => c.role === "incumbent");
+                        const disruptors = niche.companies.filter(c => c.role === "disruptor");
+                        const fullAuto = as.automatable_workflows.filter(wf => wf.automation_level === "full").length;
+                        const totalWf = as.automatable_workflows.length;
+                        const topIncumbentNames = incumbents.slice(0, 3).map(c => c.name);
+                        const topDisruptorNames = disruptors.slice(0, 2).map(c => c.name);
+
+                        const incumbentLine = incumbents.length > 0
+                          ? `${incumbents.length} legacy incumbent${incumbents.length > 1 ? "s" : ""} (${topIncumbentNames.join(", ")}${incumbents.length > 3 ? ` +${incumbents.length - 3} more` : ""}) — slow-moving, ripe for unbundling`
+                          : "No established incumbents — greenfield market";
+
+                        const disruptorLine = disruptors.length === 0
+                          ? "Zero AI-native challengers — market is wide open"
+                          : disruptors.length <= 2
+                          ? `Only ${disruptors.length} AI challenger${disruptors.length > 1 ? "s" : ""} (${topDisruptorNames.join(", ")}) — still early stage`
+                          : `${disruptors.length} disruptors present (${topDisruptorNames.join(", ")} +${disruptors.length - 2} more) — competitive but growing`;
+
+                        const autoLine = totalWf > 0
+                          ? `${fullAuto} of ${totalWf} workflows are fully automatable — ${fullAuto >= totalWf * 0.7 ? "strong agent fit" : fullAuto >= totalWf * 0.4 ? "solid automation potential" : "selective automation opportunity"}`
+                          : null;
+
+                        const bottomLine = as.agent_score >= 80
+                          ? "Large addressable market, minimal AI competition, high automation potential. Strong builder target."
+                          : as.agent_score >= 60
+                          ? "Growing market with early-stage competition. Good timing for a focused AI agent play."
+                          : "Competitive landscape requires a differentiated approach. Focus on underserved workflows.";
+
+                        return (
+                          <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <BarChart3 className="w-4 h-4" style={{ color: "hsl(var(--filigree))" }} />
+                                <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em]" style={{ color: "hsl(var(--filigree))" }}>
+                                  Why {as.agent_score}/100
+                                </p>
+                              </div>
+                              <div className="space-y-2.5">
+                                <div className="flex items-start gap-2">
+                                  <Building2 className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "hsl(var(--destructive) / 0.7)" }} />
+                                  <p className="text-[12px] text-foreground/80 leading-relaxed">{incumbentLine}</p>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Rocket className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                                  <p className="text-[12px] text-foreground/80 leading-relaxed">{disruptorLine}</p>
+                                </div>
+                                {autoLine && (
+                                  <div className="flex items-start gap-2">
+                                    <Zap className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "hsl(var(--success))" }} />
+                                    <p className="text-[12px] text-foreground/80 leading-relaxed">{autoLine}</p>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="mt-3 pt-2.5 border-t" style={{ borderColor: "hsl(var(--filigree) / 0.1)" }}>
+                                <p className="text-[12px] font-medium text-foreground/90 leading-relaxed">
+                                  <TrendingUp className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))" }} />
+                                  {bottomLine}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })()}
 
                       {/* AI Analysis */}
                       {as.agent_verdict && !hasPrompt && (
