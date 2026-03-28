@@ -236,171 +236,139 @@ export default function Disrupt() {
     );
   }
 
-  // ── PREVIEW PHASE ──
-  if (phase === "preview" && selectedIncumbent) {
-    const inc = selectedIncumbent;
-    return (
-      <>
-        <Helmet>
-          <title>Disrupt {inc.name} — Software Factory | Xcrow</title>
-        </Helmet>
-        <Navbar />
-        <div className="min-h-screen bg-background pt-20">
-          <div className="max-w-2xl mx-auto px-4 py-8">
-            <button
-              onClick={() => setPhase("browse")}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" /> Back to targets
-            </button>
+  // ── PREVIEW / GENERATING / RESULT (unified) ──
+  const inc = selectedIncumbent;
+  const hasPrompt = phase === "generating" || phase === "result";
 
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              {/* Header */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">{inc.clusterEmoji}</span>
-                  <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${inc.clusterColor} / 0.4)`, color: `hsl(${inc.clusterColor})` }}>
-                    {inc.clusterName}
-                  </Badge>
-                </div>
-                <h1 className="text-2xl font-bold font-cinzel text-foreground mb-1">Disrupt {inc.name}</h1>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{inc.age}</span>
-                  <span className="text-xs text-muted-foreground/40">·</span>
-                  <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[10px]">{inc.status}</Badge>
-                  <span className="text-xs text-muted-foreground/40">·</span>
-                  <span className="text-xs font-semibold text-foreground/80">{inc.valuation}</span>
-                  <span className="text-xs text-muted-foreground/40">·</span>
-                  <span className="text-xs text-muted-foreground">{inc.pricingModel}</span>
-                </div>
-              </div>
-
-              {/* Intel Cards */}
-              <div className="space-y-3 mb-8">
-                <InfoCard icon={<Target className="w-4 h-4 text-destructive" />} label="Vulnerability" content={inc.vulnerability} />
-                <InfoCard icon={<Zap className="w-4 h-4 text-primary" />} label="AI Disruption Thesis" content={inc.aiDisruptionThesis} />
-                <InfoCard icon={<Lightbulb className="w-4 h-4 text-yellow-500" />} label="Your Asymmetric Angle" content={inc.asymmetricAngle} />
-                <InfoCard icon={<Users className="w-4 h-4 text-blue-400" />} label="Beachhead Niche" content={inc.beachheadNiche} />
-                <InfoCard icon={<DollarSign className="w-4 h-4 text-emerald-400" />} label="Disruptor Model" content={inc.disruptorModel} />
-                {inc.existingDisruptor && (
-                  <InfoCard icon={<Shield className="w-4 h-4 text-orange-400" />} label="Existing Challengers" content={inc.existingDisruptor} />
-                )}
-              </div>
-
-              {/* What You'll Get */}
-              <Card className="bg-muted/20 border-border/30 mb-6">
-                <CardContent className="p-4">
-                  <h3 className="text-xs font-semibold text-foreground mb-3">What the AI will generate for you:</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { emoji: "🎯", label: "Product vision & target user" },
-                      { emoji: "✅", label: "MVP feature set (5-7 features)" },
-                      { emoji: "🗄️", label: "Database schema (PostgreSQL)" },
-                      { emoji: "🔌", label: "API routes & edge functions" },
-                      { emoji: "🎨", label: "UI pages & landing pages" },
-                      { emoji: "🤖", label: "AI integration points" },
-                      { emoji: "💰", label: "Pricing & monetization" },
-                    ].map(item => (
-                      <div key={item.label} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span>{item.emoji}</span>
-                        <span>{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* CTA */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button onClick={confirmGenerate} size="lg" className="gap-2 flex-1">
-                  <Rocket className="w-4 h-4" /> Generate Master Prompt
-                </Button>
-                <Button onClick={() => setPhase("browse")} variant="outline" size="lg" className="flex-1">
-                  Pick Different Target
-                </Button>
-              </div>
-
-              <p className="text-[10px] text-muted-foreground/60 text-center mt-4">
-                Takes ~30 seconds. You'll get a single prompt you can paste into Lovable, Cursor, or any AI builder.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
-
-  // ── GENERATING / RESULT PHASE ──
   return (
     <>
       <Helmet>
-        <title>{phase === "generating" ? "Generating..." : `Disrupt ${savedName}`} — Software Factory | Xcrow</title>
+        <title>{phase === "generating" ? "Generating..." : phase === "result" ? `Disrupt ${savedName}` : `Disrupt ${inc?.name}`} — Software Factory | Xcrow</title>
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
-        <div className="max-w-3xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={restart}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" /> Pick another
-            </button>
-            {phase === "result" && (
-              <Button onClick={copyPrompt} size="sm" className="gap-1.5">
-                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? "Copied!" : "Copy Master Prompt"}
-              </Button>
-            )}
-          </div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <button
+            onClick={hasPrompt ? restart : () => setPhase("browse")}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "Pick another" : "Back to targets"}
+          </button>
 
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-1">
-              {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
-              {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
-              <h1 className="text-lg font-bold text-foreground">
-                {phase === "generating"
-                  ? `Generating blueprint to disrupt ${selectedIncumbent?.name || savedName}…`
-                  : `Master Prompt: Disrupt ${savedName}`}
-              </h1>
-            </div>
-            {phase === "result" && (
-              <p className="text-xs text-muted-foreground">
-                Copy this prompt and paste it into <strong>Lovable</strong>, <strong>Cursor</strong>, or any AI builder to start building your startup.
-              </p>
-            )}
-          </div>
-
-          <Card className="bg-card/60 border-border/40">
-            <CardContent className="p-0">
-              <ScrollArea className={phase === "generating" ? "h-[60vh]" : "max-h-[70vh]"}>
-                <div className="p-6">
-                  {masterPrompt ? (
-                    <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
-                      <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* LEFT: Incumbent Intel */}
+            {inc && (
+              <div className={`shrink-0 ${hasPrompt ? "lg:w-72" : "lg:w-full max-w-2xl mx-auto"}`}>
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">{inc.clusterEmoji}</span>
+                      <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${inc.clusterColor} / 0.4)`, color: `hsl(${inc.clusterColor})` }}>
+                        {inc.clusterName}
+                      </Badge>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" /> Initializing factory…
+                    <h1 className={`font-bold font-cinzel text-foreground mb-1 ${hasPrompt ? "text-lg" : "text-2xl"}`}>
+                      Disrupt {inc.name}
+                    </h1>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] text-muted-foreground">{inc.age}</span>
+                      <span className="text-[10px] text-muted-foreground/40">·</span>
+                      <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[9px] h-4 px-1.5">{inc.status}</Badge>
+                      <span className="text-[10px] text-muted-foreground/40">·</span>
+                      <span className="text-[10px] font-semibold text-foreground/80">{inc.valuation}</span>
+                    </div>
+                  </div>
+
+                  <div className={`space-y-2 ${hasPrompt ? "mb-4" : "mb-6"}`}>
+                    <InfoCard icon={<Target className="w-3.5 h-3.5 text-destructive" />} label="Vulnerability" content={inc.vulnerability} compact={hasPrompt} />
+                    <InfoCard icon={<Zap className="w-3.5 h-3.5 text-primary" />} label="AI Disruption Thesis" content={inc.aiDisruptionThesis} compact={hasPrompt} />
+                    <InfoCard icon={<Lightbulb className="w-3.5 h-3.5 text-yellow-500" />} label="Asymmetric Angle" content={inc.asymmetricAngle} compact={hasPrompt} />
+                    <InfoCard icon={<Users className="w-3.5 h-3.5 text-blue-400" />} label="Beachhead Niche" content={inc.beachheadNiche} compact={hasPrompt} />
+                    <InfoCard icon={<DollarSign className="w-3.5 h-3.5 text-emerald-400" />} label="Disruptor Model" content={inc.disruptorModel} compact={hasPrompt} />
+                    {inc.existingDisruptor && (
+                      <InfoCard icon={<Shield className="w-3.5 h-3.5 text-orange-400" />} label="Challengers" content={inc.existingDisruptor} compact={hasPrompt} />
+                    )}
+                  </div>
+
+                  {/* CTA when no prompt yet */}
+                  {phase === "preview" && (
+                    <>
+                      <Card className="bg-muted/20 border-border/30 mb-4">
+                        <CardContent className="p-3">
+                          <h3 className="text-[10px] font-semibold text-foreground mb-2">What AI generates:</h3>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {[
+                              { emoji: "🎯", label: "Vision & user" },
+                              { emoji: "✅", label: "MVP features" },
+                              { emoji: "🗄️", label: "DB schema" },
+                              { emoji: "🔌", label: "API routes" },
+                              { emoji: "🎨", label: "UI & pages" },
+                              { emoji: "🤖", label: "AI integration" },
+                              { emoji: "💰", label: "Monetization" },
+                            ].map(item => (
+                              <div key={item.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                <span>{item.emoji}</span>
+                                <span>{item.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Button onClick={confirmGenerate} size="lg" className="gap-2 w-full">
+                        <Rocket className="w-4 h-4" /> Generate Master Prompt
+                      </Button>
+                      <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
+                        ~30 seconds. One prompt for Lovable, Cursor, or any AI builder.
+                      </p>
+                    </>
+                  )}
+
+                  {/* Copy CTA when result ready */}
+                  {phase === "result" && (
+                    <div className="space-y-2">
+                      <Button onClick={copyPrompt} size="sm" className="gap-1.5 w-full">
+                        {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copied ? "Copied!" : "Copy Master Prompt"}
+                      </Button>
+                      <Button onClick={restart} variant="outline" size="sm" className="gap-1.5 w-full">
+                        <Rocket className="w-3.5 h-3.5" /> Disrupt Another
+                      </Button>
                     </div>
                   )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+                </motion.div>
+              </div>
+            )}
 
-          {phase === "result" && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button onClick={copyPrompt} size="lg" className="gap-2 w-full sm:w-auto">
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? "Copied!" : "Copy & Paste into Lovable"}
-              </Button>
-              <Button onClick={restart} variant="outline" size="lg" className="gap-2 w-full sm:w-auto">
-                <Rocket className="w-4 h-4" /> Disrupt Another
-              </Button>
-            </div>
-          )}
+            {/* RIGHT: Master Prompt */}
+            {hasPrompt && (
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-3">
+                  {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                  {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
+                  <h2 className="text-sm font-semibold text-foreground">
+                    {phase === "generating" ? "Generating…" : "Master Prompt"}
+                  </h2>
+                </div>
+                <Card className="bg-card/60 border-border/40">
+                  <CardContent className="p-0">
+                    <ScrollArea className="h-[70vh]">
+                      <div className="p-5">
+                        {masterPrompt ? (
+                          <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
+                            <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                            <Loader2 className="w-4 h-4 animate-spin" /> Initializing factory…
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <Footer />
@@ -408,14 +376,14 @@ export default function Disrupt() {
   );
 }
 
-function InfoCard({ icon, label, content }: { icon: React.ReactNode; label: string; content: string }) {
+function InfoCard({ icon, label, content, compact }: { icon: React.ReactNode; label: string; content: string; compact?: boolean }) {
   return (
     <Card className="bg-card/40 border-border/30">
-      <CardContent className="p-3 flex gap-3">
+      <CardContent className={`${compact ? "p-2" : "p-3"} flex gap-2.5`}>
         <div className="mt-0.5 shrink-0">{icon}</div>
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{label}</p>
-          <p className="text-xs text-foreground leading-relaxed">{content}</p>
+          <p className={`text-foreground leading-relaxed ${compact ? "text-[11px] line-clamp-2" : "text-xs"}`}>{content}</p>
         </div>
       </CardContent>
     </Card>
