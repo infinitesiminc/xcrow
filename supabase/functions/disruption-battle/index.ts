@@ -13,13 +13,85 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    if (action === "master-prompt") {
+      const { incumbent, cluster } = payload;
+
+      const systemPrompt = `You are a world-class AI startup architect. A solo founder has chosen a software incumbent to disrupt. Generate a SINGLE, COMPLETE builder prompt they can paste directly into an AI coding agent (Lovable, Cursor, Replit) to build a working MVP.
+
+TARGET TO DISRUPT:
+- Company: ${incumbent.name}
+- Vulnerability: ${incumbent.vulnerability}
+- AI Disruption Thesis: ${incumbent.aiDisruptionThesis}
+- Asymmetric Angle: ${incumbent.asymmetricAngle}
+- Beachhead Niche: ${incumbent.beachheadNiche}
+- Disruptor Business Model: ${incumbent.disruptorModel}
+- Disruption Vector: ${incumbent.vector}
+- Current Pricing: ${incumbent.pricingModel}
+- Existing Challengers: ${incumbent.existingDisruptor || "None known"}
+- Vertical: ${cluster.name} ${cluster.emoji}
+
+OUTPUT A SINGLE MASTER PROMPT with these sections:
+
+## 🎯 Product Vision
+One paragraph: what you're building, who it's for, why now. Reference the incumbent by name and the specific pain point you're solving.
+
+## 👤 Target User
+Specific persona with job title, company size, daily frustration, and what they currently pay the incumbent.
+
+## ✅ MVP Feature Set (Week 1)
+Numbered list of 5-7 core features. Each feature: one sentence describing what it does + how AI powers it. These should be BUILDABLE in a weekend with an AI coding agent.
+
+## 🚫 NOT in MVP
+3-4 features to explicitly defer. Prevents scope creep.
+
+## 🗄️ Database Schema
+Exact table definitions with columns, types, and relationships. Use PostgreSQL syntax. Include: users, the core domain tables, and any AI-related tables (prompts, generations, etc).
+
+## 🔌 API Routes / Edge Functions
+List each backend endpoint: method, path, what it does, auth requirements. Keep it to 6-10 endpoints max.
+
+## 🎨 UI Pages & Components
+List each page with its route, key components, and layout description. Include:
+- Landing/marketing page
+- Auth (signup/login)
+- Main dashboard
+- 2-3 core feature pages
+- Settings
+
+## 🤖 AI Integration Points
+For each AI-powered feature: what model to use, what the prompt looks like, input/output format. Be specific about which tasks are AI-automated vs manual.
+
+## 💰 Monetization
+Pricing tiers (Free/Pro/Enterprise) with specific prices and feature gates. Reference how this undercuts the incumbent's pricing.
+
+## 🚀 Launch Checklist (30 days)
+Week-by-week plan with specific actions:
+- Week 1: Build MVP features (list each)
+- Week 2: Beta testing tasks
+- Week 3: Launch channels (name specific subreddits, communities, platforms)
+- Week 4: Growth tactics
+
+RULES:
+- Write the ENTIRE output as if it IS the prompt the founder will paste into an AI builder
+- Be extremely specific — real table names, real route paths, real component names
+- No filler, no "consider this" — only actionable specs
+- Use markdown formatting throughout
+- The prompt should be self-contained — a builder agent reading it should be able to build the entire MVP
+- Reference the incumbent by name throughout to keep the disruptive positioning clear
+- Total length: 1500-2500 words`;
+
+      return streamAI(LOVABLE_API_KEY, systemPrompt, [
+        { role: "user", content: `Generate a complete master builder prompt for an AI-powered startup that disrupts ${incumbent.name} in the ${cluster.name} vertical.` },
+      ]);
+    }
+
     if (action === "factory") {
       const { idea, targetName } = payload;
 
       const systemPrompt = `You are an AI Software Factory — an autonomous startup blueprint generator. Given a startup idea, produce a COMPLETE startup framework across 6 stages.
 
 THE IDEA: ${idea}
-${targetName ? `TARGET INCUMBENT: ${targetName}` : ""}
+${targetName ? \`TARGET INCUMBENT: \${targetName}\` : ""}
 
 OUTPUT FORMAT — You MUST use these EXACT markers to delimit each stage. Output them in order:
 
