@@ -2,18 +2,19 @@ import { useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { INDUSTRY_CLUSTERS, type DisruptionIncumbent, type IndustryCluster } from "@/data/disruption-incumbents";
+import { INDUSTRY_CLUSTERS, type DisruptionIncumbent } from "@/data/disruption-incumbents";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Target, Shield, DollarSign, Users, Lightbulb } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-type Phase = "browse" | "generating" | "result";
+type Phase = "browse" | "preview" | "generating" | "result";
+type IncumbentWithCluster = DisruptionIncumbent & { clusterName: string; clusterEmoji: string; clusterColor: string };
 
 const FACTORY_RESULT_KEY = "sf-master-prompt";
 
@@ -34,21 +35,22 @@ export default function Disrupt() {
   const isMobile = useIsMobile();
   const saved = loadResult();
   const [phase, setPhase] = useState<Phase>(saved ? "result" : "browse");
-  const [selectedIncumbent, setSelectedIncumbent] = useState<(DisruptionIncumbent & { clusterName: string; clusterEmoji: string; clusterColor: string }) | null>(null);
+  const [selectedIncumbent, setSelectedIncumbent] = useState<IncumbentWithCluster | null>(null);
   const [masterPrompt, setMasterPrompt] = useState(saved?.prompt || "");
   const [savedName, setSavedName] = useState(saved?.incumbentName || "");
   const [isStreaming, setIsStreaming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const promptRef = useRef<HTMLDivElement>(null);
 
-  const allIncumbents = INDUSTRY_CLUSTERS.flatMap(c =>
-    c.incumbents.map(i => ({ ...i, clusterName: c.name, clusterEmoji: c.emoji, clusterColor: c.color }))
-  );
-
-  const pick = async (inc: typeof allIncumbents[0]) => {
+  const openPreview = (inc: IncumbentWithCluster) => {
     setSelectedIncumbent(inc);
+    setPhase("preview");
+  };
+
+  const confirmGenerate = async () => {
+    if (!selectedIncumbent) return;
+    const inc = selectedIncumbent;
     setPhase("generating");
     setMasterPrompt("");
     setIsStreaming(true);
@@ -122,7 +124,7 @@ export default function Disrupt() {
     } catch (e: any) {
       if (e.name !== "AbortError") {
         toast.error("Failed to generate. Try again.");
-        setPhase("browse");
+        setPhase("preview");
       }
     } finally {
       setIsStreaming(false);
@@ -158,27 +160,19 @@ export default function Disrupt() {
         </Helmet>
         <Navbar />
         <div className="min-h-screen bg-background pt-20">
-          {/* Hero */}
           <div className="text-center px-4 pt-8 pb-6 max-w-2xl mx-auto">
             <div className="text-4xl mb-3">🏭</div>
-            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">
-              Software Factory
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">Software Factory</h1>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
               Pick a software giant to disrupt. AI generates a master prompt you can paste into any builder agent to launch your startup.
             </p>
           </div>
 
-          {/* Cluster Filter Pills */}
           <div className="max-w-5xl mx-auto px-4 mb-6">
             <div className="flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => setActiveCluster(null)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  activeCluster === null
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
-                }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === null ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
               >
                 All
               </button>
@@ -186,11 +180,7 @@ export default function Disrupt() {
                 <button
                   key={c.id}
                   onClick={() => setActiveCluster(activeCluster === c.id ? null : c.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    activeCluster === c.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
-                  }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === c.id ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
                 >
                   {c.emoji} {c.name}
                 </button>
@@ -198,7 +188,6 @@ export default function Disrupt() {
             </div>
           </div>
 
-          {/* Incumbent Grid */}
           <div className="max-w-6xl mx-auto px-4 pb-16">
             {filteredClusters.map(cluster => (
               <div key={cluster.id} className="mb-8">
@@ -208,37 +197,23 @@ export default function Disrupt() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {cluster.incumbents.map(inc => (
-                    <motion.div
-                      key={inc.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
+                    <motion.div key={inc.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <Card
                         className="cursor-pointer bg-card/60 border-border/40 hover:border-primary/40 hover:bg-card/80 transition-all group"
-                        onClick={() => pick({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji, clusterColor: cluster.color })}
+                        onClick={() => openPreview({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji, clusterColor: cluster.color })}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-2">
                             <div>
-                              <h3 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
-                                {inc.name}
-                              </h3>
+                              <h3 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{inc.name}</h3>
                               <p className="text-[10px] text-muted-foreground">{inc.age}</p>
                             </div>
-                            <Badge
-                              variant="outline"
-                              className="text-[9px] shrink-0"
-                              style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}
-                            >
+                            <Badge variant="outline" className="text-[9px] shrink-0" style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}>
                               {inc.vector}
                             </Badge>
                           </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">
-                            {inc.vulnerability}
-                          </p>
-                          <p className="text-[10px] text-primary/80 font-medium line-clamp-1">
-                            💡 {inc.asymmetricAngle.slice(0, 80)}…
-                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">{inc.vulnerability}</p>
+                          <p className="text-[10px] text-primary/80 font-medium line-clamp-1">💡 {inc.asymmetricAngle.slice(0, 80)}…</p>
                         </CardContent>
                       </Card>
                     </motion.div>
@@ -246,6 +221,94 @@ export default function Disrupt() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  // ── PREVIEW PHASE ──
+  if (phase === "preview" && selectedIncumbent) {
+    const inc = selectedIncumbent;
+    return (
+      <>
+        <Helmet>
+          <title>Disrupt {inc.name} — Software Factory | Xcrow</title>
+        </Helmet>
+        <Navbar />
+        <div className="min-h-screen bg-background pt-20">
+          <div className="max-w-2xl mx-auto px-4 py-8">
+            <button
+              onClick={() => setPhase("browse")}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to targets
+            </button>
+
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+              {/* Header */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{inc.clusterEmoji}</span>
+                  <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${inc.clusterColor} / 0.4)`, color: `hsl(${inc.clusterColor})` }}>
+                    {inc.clusterName}
+                  </Badge>
+                </div>
+                <h1 className="text-2xl font-bold font-cinzel text-foreground mb-1">Disrupt {inc.name}</h1>
+                <p className="text-xs text-muted-foreground">{inc.age} old · {inc.pricingModel}</p>
+              </div>
+
+              {/* Intel Cards */}
+              <div className="space-y-3 mb-8">
+                <InfoCard icon={<Target className="w-4 h-4 text-destructive" />} label="Vulnerability" content={inc.vulnerability} />
+                <InfoCard icon={<Zap className="w-4 h-4 text-primary" />} label="AI Disruption Thesis" content={inc.aiDisruptionThesis} />
+                <InfoCard icon={<Lightbulb className="w-4 h-4 text-yellow-500" />} label="Your Asymmetric Angle" content={inc.asymmetricAngle} />
+                <InfoCard icon={<Users className="w-4 h-4 text-blue-400" />} label="Beachhead Niche" content={inc.beachheadNiche} />
+                <InfoCard icon={<DollarSign className="w-4 h-4 text-emerald-400" />} label="Disruptor Model" content={inc.disruptorModel} />
+                {inc.existingDisruptor && (
+                  <InfoCard icon={<Shield className="w-4 h-4 text-orange-400" />} label="Existing Challengers" content={inc.existingDisruptor} />
+                )}
+              </div>
+
+              {/* What You'll Get */}
+              <Card className="bg-muted/20 border-border/30 mb-6">
+                <CardContent className="p-4">
+                  <h3 className="text-xs font-semibold text-foreground mb-3">What the AI will generate for you:</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { emoji: "🎯", label: "Product vision & target user" },
+                      { emoji: "✅", label: "MVP feature set (5-7 features)" },
+                      { emoji: "🗄️", label: "Database schema (PostgreSQL)" },
+                      { emoji: "🔌", label: "API routes & edge functions" },
+                      { emoji: "🎨", label: "UI pages & components" },
+                      { emoji: "🤖", label: "AI integration points" },
+                      { emoji: "💰", label: "Pricing & monetization" },
+                      { emoji: "🚀", label: "30-day launch checklist" },
+                    ].map(item => (
+                      <div key={item.label} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <span>{item.emoji}</span>
+                        <span>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* CTA */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button onClick={confirmGenerate} size="lg" className="gap-2 flex-1">
+                  <Rocket className="w-4 h-4" /> Generate Master Prompt
+                </Button>
+                <Button onClick={() => setPhase("browse")} variant="outline" size="lg" className="flex-1">
+                  Pick Different Target
+                </Button>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground/60 text-center mt-4">
+                Takes ~30 seconds. You'll get a single prompt you can paste into Lovable, Cursor, or any AI builder.
+              </p>
+            </motion.div>
           </div>
         </div>
         <Footer />
@@ -262,7 +325,6 @@ export default function Disrupt() {
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
         <div className="max-w-3xl mx-auto px-4 py-8">
-          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={restart}
@@ -278,7 +340,6 @@ export default function Disrupt() {
             )}
           </div>
 
-          {/* Target Info */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
               {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
@@ -286,8 +347,7 @@ export default function Disrupt() {
               <h1 className="text-lg font-bold text-foreground">
                 {phase === "generating"
                   ? `Generating blueprint to disrupt ${selectedIncumbent?.name || savedName}…`
-                  : `Master Prompt: Disrupt ${savedName}`
-                }
+                  : `Master Prompt: Disrupt ${savedName}`}
               </h1>
             </div>
             {phase === "result" && (
@@ -297,19 +357,17 @@ export default function Disrupt() {
             )}
           </div>
 
-          {/* Prompt Output */}
           <Card className="bg-card/60 border-border/40">
             <CardContent className="p-0">
               <ScrollArea className={phase === "generating" ? "h-[60vh]" : "max-h-[70vh]"}>
-                <div ref={promptRef} className="p-6">
+                <div className="p-6">
                   {masterPrompt ? (
                     <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
                       <ReactMarkdown>{masterPrompt}</ReactMarkdown>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Initializing factory…
+                      <Loader2 className="w-4 h-4 animate-spin" /> Initializing factory…
                     </div>
                   )}
                 </div>
@@ -317,7 +375,6 @@ export default function Disrupt() {
             </CardContent>
           </Card>
 
-          {/* Bottom CTA */}
           {phase === "result" && (
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button onClick={copyPrompt} size="lg" className="gap-2 w-full sm:w-auto">
@@ -333,5 +390,19 @@ export default function Disrupt() {
       </div>
       <Footer />
     </>
+  );
+}
+
+function InfoCard({ icon, label, content }: { icon: React.ReactNode; label: string; content: string }) {
+  return (
+    <Card className="bg-card/40 border-border/30">
+      <CardContent className="p-3 flex gap-3">
+        <div className="mt-0.5 shrink-0">{icon}</div>
+        <div>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{label}</p>
+          <p className="text-xs text-foreground leading-relaxed">{content}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
