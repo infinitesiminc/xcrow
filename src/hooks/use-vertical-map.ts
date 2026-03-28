@@ -24,17 +24,132 @@ export interface SubVertical {
   whitespace: WhitespaceLabel;
 }
 
+export interface DisruptorMaturity {
+  avgFunding: string;
+  avgSize: string;
+  avgArr: string;
+  count: number;
+}
+
 export interface VerticalStats {
   id: number;
   name: string;
   counts: { incumbent: number; disruptor: number; transitioning: number; total: number };
   sub_verticals: SubVertical[];
+  opportunityScore: number;
+  disruptorMaturity: DisruptorMaturity;
+  verdict: string;
 }
 
 function computeWhitespace(counts: { incumbent: number; disruptor: number }): WhitespaceLabel {
   if (counts.incumbent > 0 && counts.disruptor === 0) return "open";
   if (counts.incumbent > 0 && counts.incumbent > counts.disruptor * 2) return "low-competition";
   return "crowded";
+}
+
+function parseFundingOrdinal(f: string | null): number {
+  if (!f) return 0;
+  const lower = f.toLowerCase();
+  if (lower.includes("pre-seed") || lower.includes("bootstrap")) return 1;
+  if (lower.includes("seed")) return 1;
+  if (lower.includes("series a") || lower === "a") return 2;
+  if (lower.includes("series b") || lower === "b") return 3;
+  if (lower.includes("series c") || lower.includes("series d") || lower.includes("late")) return 4;
+  if (lower.includes("public") || lower.includes("ipo")) return 5;
+  return 2; // default mid
+}
+
+function parseEmployeeOrdinal(e: string | null): number {
+  if (!e) return 0;
+  const num = parseInt(e.replace(/[^0-9]/g, ""));
+  if (isNaN(num)) {
+    const lower = e.toLowerCase();
+    if (lower.includes("1-10") || lower.includes("<10")) return 1;
+    if (lower.includes("10-50") || lower.includes("11-50")) return 2;
+    if (lower.includes("50-200") || lower.includes("51-200")) return 3;
+    return 2;
+  }
+  if (num <= 10) return 1;
+  if (num <= 50) return 2;
+  if (num <= 200) return 3;
+  return 4;
+}
+
+function fundingOrdinalToLabel(avg: number): string {
+  if (avg <= 1.2) return "Pre-Seed/Seed";
+  if (avg <= 2.2) return "Seed–A";
+  if (avg <= 3.2) return "Series A–B";
+  if (avg <= 4.2) return "Series C+";
+  return "Late/Public";
+}
+
+function sizeOrdinalToLabel(avg: number): string {
+  if (avg <= 1.3) return "1-10";
+  if (avg <= 2.3) return "10-50";
+  if (avg <= 3.3) return "50-200";
+  return "200+";
+}
+
+function arrOrdinalToLabel(companies: VerticalCompany[]): string {
+  const vals = companies.filter(c => c.estimated_arr).map(c => c.estimated_arr!);
+  if (vals.length === 0) return "Unknown";
+  // Simple frequency approach
+  const counts: Record<string, number> = {};
+  vals.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function computeVerdict(score: number, maturity: DisruptorMaturity, openCount: number, incumbentCount: number): string {
+  if (score >= 8) return "Prime opportunity — early-stage disruptors, wide-open niches for AI-native entry.";
+  if (score >= 6) return "Strong opportunity — moderate competition, room for differentiated AI plays.";
+  if (score >= 4) return "Moderate opportunity — some niches open but maturing disruptor field.";
+  if (score >= 2) return "Competitive — well-funded disruptors already present. Needs sharp niche focus.";
+  return "Crowded — heavily contested by funded challengers. Requires 10x differentiation.";
+}
+
+function computeOpportunityScore(
+  subVerticals: SubVertical[],
+  disruptorCompanies: VerticalCompany[],
+  incumbentCount: number
+): { score: number; maturity: DisruptorMaturity; verdict: string } {
+  const totalNiches = subVerticals.length || 1;
+  const openNiches = subVerticals.filter(s => s.whitespace === "open").length;
+
+  // 1. Whitespace ratio (0-4)
+  const whitespaceScore = (openNiches / totalNiches) * 4;
+
+  // 2. Disruptor immaturity (0-3) — lower maturity = higher score
+  let immaturityScore = 3; // default if no disruptors = max opportunity
+  if (disruptorCompanies.length > 0) {
+    const fundingVals = disruptorCompanies.map(c => parseFundingOrdinal(c.estimated_funding)).filter(v => v > 0);
+    const sizeVals = disruptorCompanies.map(c => parseEmployeeOrdinal(c.estimated_employees)).filter(v => v > 0);
+    const avgFunding = fundingVals.length > 0 ? fundingVals.reduce((a, b) => a + b, 0) / fundingVals.length : 2;
+    const avgSize = sizeVals.length > 0 ? sizeVals.reduce((a, b) => a + b, 0) / sizeVals.length : 2;
+    const avgMaturity = (avgFunding + avgSize) / 2; // 1-5 scale
+    immaturityScore = Math.max(0, 3 - (avgMaturity - 1) * 0.75);
+  }
+
+  // 3. Market size (0-3)
+  const marketScore = Math.min(3, incumbentCount / 5);
+
+  const score = Math.min(10, Math.round((whitespaceScore + immaturityScore + marketScore) * 10) / 10);
+
+  // Compute maturity labels
+  const fundingVals = disruptorCompanies.map(c => parseFundingOrdinal(c.estimated_funding)).filter(v => v > 0);
+  const sizeVals = disruptorCompanies.map(c => parseEmployeeOrdinal(c.estimated_employees)).filter(v => v > 0);
+  const avgF = fundingVals.length > 0 ? fundingVals.reduce((a, b) => a + b, 0) / fundingVals.length : 0;
+  const avgS = sizeVals.length > 0 ? sizeVals.reduce((a, b) => a + b, 0) / sizeVals.length : 0;
+
+  const maturity: DisruptorMaturity = {
+    avgFunding: fundingVals.length > 0 ? fundingOrdinalToLabel(avgF) : "N/A",
+    avgSize: sizeVals.length > 0 ? sizeOrdinalToLabel(avgS) : "N/A",
+    avgArr: arrOrdinalToLabel(disruptorCompanies),
+    count: disruptorCompanies.length,
+  };
+
+  const verdict = computeVerdict(score, maturity, openNiches, incumbentCount);
+
+  return { score, maturity, verdict };
 }
 
 export function useVerticalMap() {
@@ -48,7 +163,7 @@ export function useVerticalMap() {
 
       if (error) throw error;
 
-      const verticals: Record<number, VerticalStats> = {};
+      const verticals: Record<number, Omit<VerticalStats, 'opportunityScore' | 'disruptorMaturity' | 'verdict'> & { opportunityScore: number; disruptorMaturity: DisruptorMaturity; verdict: string }> = {};
       for (const row of data || []) {
         const vid = row.vertical_id;
         if (!verticals[vid]) {
@@ -57,6 +172,9 @@ export function useVerticalMap() {
             name: row.vertical_name,
             counts: { incumbent: 0, disruptor: 0, transitioning: 0, total: 0 },
             sub_verticals: [],
+            opportunityScore: 0,
+            disruptorMaturity: { avgFunding: "N/A", avgSize: "N/A", avgArr: "N/A", count: 0 },
+            verdict: "",
           };
         }
         const v = verticals[vid];
@@ -80,17 +198,24 @@ export function useVerticalMap() {
         }
       }
 
-      // Compute whitespace labels
+      // Compute whitespace + opportunity scores
       for (const v of Object.values(verticals)) {
         for (const sv of v.sub_verticals) {
           sv.whitespace = computeWhitespace(sv.counts);
         }
-        // Sort sub-verticals: open first, then low-competition, then crowded
         const order: Record<WhitespaceLabel, number> = { open: 0, "low-competition": 1, crowded: 2 };
         v.sub_verticals.sort((a, b) => order[a.whitespace] - order[b.whitespace]);
+
+        // Compute opportunity score
+        const disruptorCompanies = v.sub_verticals.flatMap(s => s.companies.filter(c => c.role === "disruptor"));
+        const { score, maturity, verdict } = computeOpportunityScore(v.sub_verticals, disruptorCompanies, v.counts.incumbent);
+        v.opportunityScore = score;
+        v.disruptorMaturity = maturity;
+        v.verdict = verdict;
       }
 
-      return Object.values(verticals).sort((a, b) => a.id - b.id);
+      const result = Object.values(verticals).sort((a, b) => a.id - b.id);
+      return result;
     },
     staleTime: 5 * 60 * 1000,
   });
