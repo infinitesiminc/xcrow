@@ -124,18 +124,18 @@ export default function Index() {
           <img
             src={heroImage}
             alt=""
-            className="w-full h-full object-cover"
-            style={{ opacity: 0.35 }}
+            className="w-full h-[70%] object-cover object-center"
+            style={{ opacity: 1 }}
             draggable={false}
           />
           <div
             className="absolute inset-0"
             style={{
               background: `linear-gradient(180deg, 
-                hsl(var(--background) / 0.3) 0%, 
-                hsl(var(--background) / 0.6) 40%, 
-                hsl(var(--background) / 0.95) 75%, 
-                hsl(var(--background)) 100%)`,
+                transparent 0%, 
+                hsl(var(--background) / 0.2) 25%, 
+                hsl(var(--background) / 0.7) 50%, 
+                hsl(var(--background)) 70%)`,
             }}
           />
         </div>
@@ -153,7 +153,7 @@ export default function Index() {
         <div className="rpg-filigree-top" />
 
         {/* Hero */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-10 relative z-10">
+        <div className="flex-1 flex flex-col items-center justify-start px-4 pt-[38vh] pb-10 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
