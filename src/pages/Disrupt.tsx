@@ -12,7 +12,9 @@ import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Target, Shield,
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVerticalMap } from "@/hooks/use-vertical-map";
+import { useVerticalMap, type WhitespaceLabel } from "@/hooks/use-vertical-map";
+import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Phase = "browse" | "preview" | "generating" | "result";
 type IncumbentWithCluster = DisruptionIncumbent & { clusterName: string; clusterEmoji: string; clusterColor: string };
