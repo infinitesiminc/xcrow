@@ -384,14 +384,25 @@ export default function Disrupt() {
                             ))}
                           </div>
 
-                          {/* Competitive density - pushed to bottom */}
-                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border/20 pt-2 mt-auto">
-                            <span>{incumbentCount} incumbent{incumbentCount !== 1 ? "s" : ""}</span>
-                            <span>{disruptorCount} disruptor{disruptorCount !== 1 ? "s" : ""}</span>
+                          {/* Footer with save/share */}
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground border-t border-border/20 pt-2 mt-auto">
+                            <span>{incumbentCount} incumbents</span>
+                            <span>· {disruptorCount} disruptors</span>
                             <div className="flex gap-1 ml-auto">
-                              {as.workflow_types.slice(0, 2).map(wt => (
-                                <span key={wt} className="text-[9px] text-muted-foreground/60">{wt}</span>
-                              ))}
+                              <button
+                                onClick={(e) => toggleSave(niche, e)}
+                                className="p-1 rounded hover:bg-muted/40 transition-colors"
+                                title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}
+                              >
+                                {isNicheSaved(niche) ? <BookmarkCheck className="w-3.5 h-3.5 text-primary" /> : <Bookmark className="w-3.5 h-3.5" />}
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); shareNiche(niche); }}
+                                className="p-1 rounded hover:bg-muted/40 transition-colors"
+                                title="Share opportunity"
+                              >
+                                <Share2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </div>
                         </CardContent>
