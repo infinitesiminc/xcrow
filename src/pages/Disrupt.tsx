@@ -612,7 +612,7 @@ export default function Disrupt() {
                     <>
                       <Card className="mb-4 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.2)" }}>
                         <CardContent className="p-3">
-                          <h3 className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>The Scroll Contains:</h3>
+                          <h3 className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: "hsl(var(--filigree))" }}>Your prompt will include:</h3>
                           <div className="grid grid-cols-2 gap-1.5">
                             {[
                               { emoji: "🎯", label: "Vision & target user" },
