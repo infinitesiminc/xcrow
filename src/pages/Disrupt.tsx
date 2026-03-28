@@ -328,7 +328,7 @@ export default function Disrupt() {
                   ))}
                 </select>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree))" }}>Threat Level:</span>
+                  <span className="text-[10px] font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree))" }}>Min Score:</span>
                   {[0, 50, 70, 85].map(s => (
                     <button
                       key={s}
