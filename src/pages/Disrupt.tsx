@@ -195,7 +195,23 @@ export default function Disrupt() {
               <div key={cluster.id} className="mb-8">
                 <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
                   <span>{cluster.emoji}</span> {cluster.name}
-                  <span className="text-[10px] font-normal text-muted-foreground/60">— {cluster.timingCatalyst.slice(0, 80)}…</span>
+                  {(() => {
+                    const vs = verticalStats?.find(v => v.id === cluster.id);
+                    if (!vs) return null;
+                    return (
+                      <span className="flex items-center gap-1.5 ml-1">
+                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 gap-0.5">
+                          <Building2 className="w-2.5 h-2.5" /> {vs.counts.total} companies
+                        </Badge>
+                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-destructive/80 border-destructive/30">
+                          {vs.counts.incumbent} incumbents
+                        </Badge>
+                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-primary/80 border-primary/30">
+                          {vs.counts.disruptor} disruptors
+                        </Badge>
+                      </span>
+                    );
+                  })()}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {cluster.incumbents.map(inc => (
