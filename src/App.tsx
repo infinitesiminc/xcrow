@@ -128,7 +128,7 @@ const App = () => (
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/card-styles" element={<Navigate to="/" replace />} />
               <Route path="/l2-formats" element={<Navigate to="/" replace />} />
-              <Route path="/journey" element={<Navigate to="/map" replace />} />
+              <Route path="/journey" element={<Navigate to="/upskill" replace />} />
               <Route path="/students" element={<Students />} />
               
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
