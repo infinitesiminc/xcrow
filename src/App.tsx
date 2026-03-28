@@ -44,6 +44,7 @@ const Investors = lazy(() => import("./pages/Investors.tsx"));
 const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard.tsx"));
 const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
 const Disrupt = lazy(() => import("./pages/Disrupt.tsx"));
+const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 
 
 // Admin (lazy)
@@ -68,14 +69,13 @@ const queryClient = new QueryClient();
 function HomeDashboard() {
   const { user, loading, profile, isSuperAdmin, isSchoolAdmin } = useAuth();
   if (loading) return null;
-  if (!user) return <Suspense fallback={null}><Navbar /><Index /></Suspense>;
-  // Show onboarding if not completed
+  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
   if (!profile || !profile.onboardingCompleted) {
-    return <Suspense fallback={null}><Navbar /><Index /></Suspense>;
+    return <Suspense fallback={null}><Index /></Suspense>;
   }
   if (isSuperAdmin) return <Navigate to="/admin" replace />;
   if (isSchoolAdmin) return <Navigate to="/school" replace />;
-  return <Navigate to="/map" replace />;
+  return <Suspense fallback={null}><Index /></Suspense>;
 }
 
 /** Gate admin routes to superadmins */
@@ -154,6 +154,9 @@ const App = () => (
               <Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />
                <Route path="/investors" element={<Investors />} />
               <Route path="/disrupt" element={<><Disrupt /></>} />
+              <Route path="/founder" element={<Navigate to="/disrupt" replace />} />
+              <Route path="/leadgen" element={<><Leadgen /></>} />
+              <Route path="/upskill" element={<Navigate to="/map" replace />} />
               <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               <Route path="/tools" element={<Navigate to="/" replace />} />
               <Route path="/org-stack" element={<Navigate to="/" replace />} />
