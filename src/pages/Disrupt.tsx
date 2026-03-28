@@ -322,7 +322,7 @@ export default function Disrupt() {
                   className="h-8 text-xs rounded-md border px-2 text-foreground"
                   style={{ borderColor: "hsl(var(--filigree) / 0.2)", background: "hsl(var(--background))" }}
                 >
-                  <option value="">All Kingdoms</option>
+                  <option value="">All Verticals</option>
                   {verticals.map(v => (
                     <option key={v.id} value={v.id}>{v.name}</option>
                   ))}
