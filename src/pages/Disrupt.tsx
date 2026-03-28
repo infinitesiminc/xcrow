@@ -259,6 +259,11 @@ export default function Disrupt() {
                               <span className="text-[10px] font-semibold text-foreground/80">Opportunity Score</span>
                               <span className="text-xs font-bold text-primary">{vs.opportunityScore.toFixed(1)}/10</span>
                               <Progress value={vs.opportunityScore * 10} className="h-1.5 w-16 bg-muted/40" />
+                              {vs.agentScore && (
+                                <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 border-violet-500/40 text-violet-400">
+                                  🤖 Agent: {vs.agentScore.agent_score}/100
+                                </Badge>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
                               <span>🟢 {vs.sub_verticals.filter(s => s.whitespace === "open").length} open</span>
