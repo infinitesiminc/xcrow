@@ -69,14 +69,13 @@ const queryClient = new QueryClient();
 function HomeDashboard() {
   const { user, loading, profile, isSuperAdmin, isSchoolAdmin } = useAuth();
   if (loading) return null;
-  if (!user) return <Suspense fallback={null}><Navbar /><Index /></Suspense>;
-  // Show onboarding if not completed
+  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
   if (!profile || !profile.onboardingCompleted) {
-    return <Suspense fallback={null}><Navbar /><Index /></Suspense>;
+    return <Suspense fallback={null}><Index /></Suspense>;
   }
   if (isSuperAdmin) return <Navigate to="/admin" replace />;
   if (isSchoolAdmin) return <Navigate to="/school" replace />;
-  return <Navigate to="/map" replace />;
+  return <Suspense fallback={null}><Index /></Suspense>;
 }
 
 /** Gate admin routes to superadmins */
