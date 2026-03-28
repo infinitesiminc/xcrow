@@ -34,6 +34,7 @@ interface CompactHUDProps {
 }
 
 export default function CompactHUD({ skills, targetSkillIds, userName, kingdomTiers = [], avgDegreeLevel }: CompactHUDProps) {
+  const navigate = useNavigate();
   const { rank, rankColor, RankIcon, claimed, total, coveragePct, castlesClaimed } = useMemo(() => {
     const castleTiers = skills.filter(s => s.xp > 0).map(s => getCastleState(s.xp).tier);
     const rank = getPlayerRank(castleTiers, kingdomTiers);
