@@ -667,7 +667,7 @@ export default function Disrupt() {
                   {phase === "generating" && <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />}
                   {phase === "result" && <Sparkles className="w-4 h-4 text-primary" />}
                   <h2 className="text-sm font-semibold text-foreground font-cinzel tracking-wider">
-                    {phase === "generating" ? "⚒️ Forging…" : "📜 Builder Scroll"}
+                    {phase === "generating" ? "Generating…" : "Master Prompt"}
                   </h2>
                 </div>
                 <Card className="border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(0 0% 0% / 0.2)" }}>
