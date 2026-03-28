@@ -268,6 +268,19 @@ export default function Disrupt() {
     return "bg-muted/20 border-border/30";
   };
 
+  // Synthesize whitespace + agent score into a confidence signal
+  const opportunitySignal = (whitespace: WhitespaceLabel, agentScore: number): { label: string; color: string } => {
+    if (agentScore >= 80) return { label: "High Potential", color: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" };
+    if (agentScore >= 60) {
+      if (whitespace === "open") return { label: "Open Market", color: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" };
+      if (whitespace === "low-competition") return { label: "Emerging", color: "text-amber-400 border-amber-400/40 bg-amber-400/10" };
+      return { label: "Competitive", color: "text-amber-400 border-amber-400/40 bg-amber-400/10" };
+    }
+    if (whitespace === "open") return { label: "Open Market", color: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" };
+    if (whitespace === "low-competition") return { label: "Low Competition", color: "text-amber-400 border-amber-400/40 bg-amber-400/10" };
+    return { label: "Saturated", color: "text-muted-foreground border-border/40 bg-muted/20" };
+  };
+
   // ── BROWSE PHASE ──
   if (phase === "browse") {
     return (
@@ -396,9 +409,9 @@ export default function Disrupt() {
                               </h3>
                               <span className="text-[10px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
                             </div>
-                            <Badge variant="outline" className={`text-[9px] h-5 px-1.5 shrink-0 ${whitespaceColor[niche.whitespace]}`}>
-                              {niche.whitespace === "open" ? "Open" : niche.whitespace === "low-competition" ? "Low Competition" : "Crowded"}
-                            </Badge>
+                            {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
+                              <Badge variant="outline" className={`text-[9px] h-5 px-1.5 shrink-0 ${sig.color}`}>{sig.label}</Badge>
+                            ); })()}
                           </div>
 
                           {/* Agent Play */}
@@ -483,9 +496,9 @@ export default function Disrupt() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="outline" className="text-[10px]" style={{ borderColor: "hsl(var(--filigree) / 0.3)", color: "hsl(var(--filigree))" }}>{niche.verticalName}</Badge>
-                      <Badge variant="outline" className={`text-[10px] ${whitespaceColor[niche.whitespace]}`}>
-                        {niche.whitespace === "open" ? "Open" : niche.whitespace === "low-competition" ? "Low Competition" : "Crowded"}
-                      </Badge>
+                      {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
+                        <Badge variant="outline" className={`text-[10px] ${sig.color}`}>{sig.label}</Badge>
+                      ); })()}
                       <div className="flex gap-1 ml-auto">
                         <button onClick={() => toggleSave(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}>
                           {isNicheSaved(niche) ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4 text-muted-foreground" />}
