@@ -637,7 +637,7 @@ export default function Disrupt() {
                         className="gap-2 w-full font-cinzel tracking-wider"
                         style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
                       >
-                        <Rocket className="w-4 h-4" /> Forge the Builder Scroll
+                        <Rocket className="w-4 h-4" /> Generate Master Prompt
                       </Button>
                       <p className="text-[10px] text-center mt-3 font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.5)" }}>
                         ~30 seconds. One prompt for Lovable, Cursor, or any AI builder.
