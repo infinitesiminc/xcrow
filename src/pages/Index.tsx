@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
+import heroImage from "@/assets/og-hero.png";
 import { Map, Rocket, Target, ArrowRight, Sword, Shield, Flame } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -118,8 +119,29 @@ export default function Index() {
         path="/"
       />
       <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+        {/* Hero background image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={heroImage}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ opacity: 0.35 }}
+            draggable={false}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(180deg, 
+                hsl(var(--background) / 0.3) 0%, 
+                hsl(var(--background) / 0.6) 40%, 
+                hsl(var(--background) / 0.95) 75%, 
+                hsl(var(--background)) 100%)`,
+            }}
+          />
+        </div>
+
         {/* Ambient background glow */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1]">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-[hsl(262_83%_58%/0.06)] blur-[120px]" />
           <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] rounded-full bg-[hsl(38_55%_45%/0.04)] blur-[100px]" />
         </div>
