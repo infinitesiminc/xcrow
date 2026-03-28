@@ -173,7 +173,7 @@ export function useVerticalMap() {
   return useQuery({
     queryKey: ["vertical-map"],
     queryFn: async (): Promise<VerticalStats[]> => {
-      const [mapResult, agentResult] = await Promise.all([
+      const [mapResult, agentResult, svAgentResult] = await Promise.all([
         supabase
           .from("company_vertical_map")
           .select("vertical_id, vertical_name, sub_vertical, role, companies(id, name, industry, description, employee_range, logo_url, estimated_arr, estimated_employees, estimated_funding, enrichment_confidence)")
@@ -181,6 +181,9 @@ export function useVerticalMap() {
         supabase
           .from("vertical_agent_scores")
           .select("vertical_id, agent_score, agent_verdict, key_opportunities, workflow_types"),
+        supabase
+          .from("subvertical_agent_scores")
+          .select("vertical_id, sub_vertical, agent_score, agent_verdict, automatable_workflows, agent_play, workflow_types"),
       ]);
 
       if (mapResult.error) throw mapResult.error;
