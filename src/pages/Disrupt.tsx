@@ -372,8 +372,6 @@ export default function Disrupt() {
     return matches;
   })();
 
-  const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  const [showFullPrompt, setShowFullPrompt] = useState(false);
 
   // ── GENERATING / RESULT PHASE ──
   return (
