@@ -62,14 +62,14 @@ export default function Navbar() {
   const navItems = user
     ? [
         { label: "Upskill", path: "/upskill", icon: Map },
-        { label: "Founder", path: "/founder", icon: Swords },
+        { label: "Agent Launcher", path: "/agentlauncher", icon: Swords },
         { label: "Leadgen", path: "/leadgen", icon: Compass },
         ...(isSchoolAdmin ? [{ label: "School", path: "/school", icon: GraduationCap }] : []),
         ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
       ]
     : [
         { label: "Upskill", path: "/upskill", icon: Map },
-        { label: "Founder", path: "/founder", icon: Swords },
+        { label: "Agent Launcher", path: "/agentlauncher", icon: Swords },
         { label: "Leadgen", path: "/leadgen", icon: Compass },
       ];
 

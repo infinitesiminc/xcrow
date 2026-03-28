@@ -61,7 +61,7 @@ function nicheKey(niche: FlatNiche): string {
 function shareNiche(niche: { name: string; verticalName: string; agentScore?: { agent_score: number; agent_play?: string | null } | null }) {
   const score = niche.agentScore?.agent_score ?? 0;
   const text = `🤖 ${niche.name} (${niche.verticalName}) — Agent Score: ${score}/100\n💡 ${niche.agentScore?.agent_play || "AI-native opportunity"}\n\nDiscover more AI startup opportunities:`;
-  const url = `${window.location.origin}/founder`;
+  const url = `${window.location.origin}/agentlauncher`;
   if (navigator.share) {
     navigator.share({ title: `${niche.name} — AI Opportunity`, text, url }).catch(() => {});
   } else {
@@ -304,7 +304,7 @@ export default function Disrupt() {
   return (
     <>
       <Helmet>
-        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : "Xcrow Founder — One Prompt to Launch Your AI Startup"} | Xcrow</title>
+        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : "Agent Launcher — Build AI Agents with One Prompt"} | Xcrow</title>
         <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
       </Helmet>
         <Navbar />
@@ -319,10 +319,10 @@ export default function Disrupt() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               <div className="text-5xl mb-4">🚀</div>
               <h1 className="text-3xl md:text-4xl font-bold font-cinzel text-foreground mb-3 tracking-wide">
-                Xcrow Founder
+                Agent Launcher
               </h1>
               <p className="text-base font-cinzel tracking-wide mb-2" style={{ color: "hsl(var(--filigree))" }}>
-                One Prompt. One Founder. Ship It.
+                One Prompt. One Agent. Ship It.
               </p>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
                 Pick a high-opportunity niche below. We'll generate a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your startup.
