@@ -81,19 +81,12 @@ Enterprise: $Y/mo — [feature list]
 \`\`\`
 Reference how this undercuts ${incumbent.name}'s pricing (${incumbent.pricingModel}).
 
-## 🚀 30-Day Launch Checklist
-Week-by-week with specific actions:
-- **Week 1**: Build [list each MVP feature]
-- **Week 2**: Beta testing — [specific tasks]
-- **Week 3**: Launch on [specific subreddits, communities, platforms]
-- **Week 4**: Growth — [specific tactics]
-
 RULES:
-- The ENTIRE output IS the prompt the founder pastes into Lovable/Cursor/Claude
+- The ENTIRE output IS the prompt the founder pastes into Lovable/Cursor/Claude to get a WORKING app with landing pages
 - Use real table names, real route paths, real component names — no placeholders
 - SQL must be valid PostgreSQL. Code blocks must be properly formatted
-- No filler, no "consider this" — only actionable specs
-- Self-contained: a builder agent reading this alone can build the entire MVP
+- No filler, no "consider this", no launch checklists — only buildable specs
+- Self-contained: a builder agent reading this alone can build the entire MVP with landing pages
 - Reference ${incumbent.name} throughout to keep disruptive positioning clear
 - Total length: 2000-3000 words`;
 
