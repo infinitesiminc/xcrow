@@ -182,6 +182,11 @@ export type Database = {
           description: string | null
           detected_ats_platform: string | null
           employee_range: string | null
+          enriched_at: string | null
+          enrichment_confidence: string | null
+          estimated_arr: string | null
+          estimated_employees: string | null
+          estimated_funding: string | null
           external_id: string | null
           founded_year: number | null
           funding_stage: string | null
@@ -206,6 +211,11 @@ export type Database = {
           description?: string | null
           detected_ats_platform?: string | null
           employee_range?: string | null
+          enriched_at?: string | null
+          enrichment_confidence?: string | null
+          estimated_arr?: string | null
+          estimated_employees?: string | null
+          estimated_funding?: string | null
           external_id?: string | null
           founded_year?: number | null
           funding_stage?: string | null
@@ -230,6 +240,11 @@ export type Database = {
           description?: string | null
           detected_ats_platform?: string | null
           employee_range?: string | null
+          enriched_at?: string | null
+          enrichment_confidence?: string | null
+          estimated_arr?: string | null
+          estimated_employees?: string | null
+          estimated_funding?: string | null
           external_id?: string | null
           founded_year?: number | null
           funding_stage?: string | null
