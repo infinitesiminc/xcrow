@@ -151,6 +151,21 @@ export default function Disrupt() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [verticalStats]);
 
+  // Aggregate agent scores per vertical for chart
+  const verticalScoreData = useMemo(() => {
+    if (!verticalStats) return [];
+    return verticalStats
+      .filter(v => v.sub_verticals.some(sv => sv.agentScore))
+      .map(v => {
+        const scored = v.sub_verticals.filter(sv => sv.agentScore);
+        const avg = scored.length ? Math.round(scored.reduce((s, sv) => s + (sv.agentScore?.agent_score || 0), 0) / scored.length) : 0;
+        const max = scored.length ? Math.max(...scored.map(sv => sv.agentScore?.agent_score || 0)) : 0;
+        const highPotential = scored.filter(sv => (sv.agentScore?.agent_score || 0) >= 80).length;
+        return { name: v.name, avg, max, count: scored.length, highPotential, id: v.id };
+      })
+      .sort((a, b) => b.avg - a.avg);
+  }, [verticalStats]);
+
   const openDeepDive = (niche: FlatNiche) => {
     setSelectedNiche(niche);
     setPhase("deepdive");
