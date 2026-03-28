@@ -677,6 +677,7 @@ async function streamAI(apiKey: string, systemPrompt: string, messages: any[]) {
         ...messages,
       ],
       stream: true,
+      max_tokens: 8192,
     }),
   });
 
