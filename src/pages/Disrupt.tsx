@@ -652,7 +652,7 @@ export default function Disrupt() {
                         {copied ? "Copied!" : "Copy Master Prompt"}
                       </Button>
                       <Button onClick={restart} variant="outline" size="sm" className="gap-1.5 w-full font-cinzel tracking-wider" style={{ borderColor: "hsl(var(--filigree) / 0.3)" }}>
-                        <Rocket className="w-3.5 h-3.5" /> Scout Another Target
+                        <Rocket className="w-3.5 h-3.5" /> Find Another Niche
                       </Button>
                     </div>
                   )}
