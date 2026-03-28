@@ -155,7 +155,10 @@ export default function Disrupt() {
   const verticalScoreData = useMemo(() => {
     if (!verticalStats) return [];
     return verticalStats
-      .filter(v => v.sub_verticals.some(sv => sv.agentScore))
+      .filter(v => {
+        const scored = v.sub_verticals.filter(sv => sv.agentScore);
+        return scored.length >= 3;
+      })
       .map(v => {
         const scored = v.sub_verticals.filter(sv => sv.agentScore);
         const avg = scored.length ? Math.round(scored.reduce((s, sv) => s + (sv.agentScore?.agent_score || 0), 0) / scored.length) : 0;
