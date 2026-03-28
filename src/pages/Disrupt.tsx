@@ -521,11 +521,11 @@ export default function Disrupt() {
 
                   {/* Verdict */}
                   {as.agent_verdict && !hasPrompt && (
-                    <Card className="bg-card/40 border-border/30 mb-3">
+                    <Card className="mb-3 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
                       <CardContent className="p-3 flex gap-2.5">
-                        <Bot className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+                        <Bot className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--sentinel))" }} />
                         <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">AI Analysis</p>
+                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Oracle's Verdict</p>
                           <p className="text-xs text-foreground/80 leading-relaxed">{as.agent_verdict}</p>
                         </div>
                       </CardContent>
