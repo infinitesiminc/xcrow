@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Target, Shield, DollarSign, Users, Lightbulb, Building2 } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Target, Shield, DollarSign, Users, Lightbulb, Building2, Eye } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVerticalMap } from "@/hooks/use-vertical-map";
+import { useVerticalMap, type WhitespaceLabel } from "@/hooks/use-vertical-map";
+import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Phase = "browse" | "preview" | "generating" | "result";
 type IncumbentWithCluster = DisruptionIncumbent & { clusterName: string; clusterEmoji: string; clusterColor: string };
@@ -43,6 +45,8 @@ export default function Disrupt() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
+  const [showWhitespace, setShowWhitespace] = useState(false);
+  const [activeSubVertical, setActiveSubVertical] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const openPreview = (inc: IncumbentWithCluster) => {
@@ -152,6 +156,13 @@ export default function Disrupt() {
     ? INDUSTRY_CLUSTERS.filter(c => c.id === activeCluster)
     : INDUSTRY_CLUSTERS;
 
+  const whitespaceColor: Record<WhitespaceLabel, string> = {
+    open: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
+    "low-competition": "text-amber-400 border-amber-400/40 bg-amber-400/10",
+    crowded: "text-muted-foreground border-border/40 bg-muted/20",
+  };
+  const whitespaceEmoji: Record<WhitespaceLabel, string> = { open: "🟢", "low-competition": "🟡", crowded: "🔴" };
+
   // ── BROWSE PHASE ──
   if (phase === "browse") {
     return (
@@ -171,9 +182,9 @@ export default function Disrupt() {
           </div>
 
           <div className="max-w-5xl mx-auto px-4 mb-6">
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap items-center gap-2 justify-center">
               <button
-                onClick={() => setActiveCluster(null)}
+                onClick={() => { setActiveCluster(null); setActiveSubVertical(null); }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === null ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
               >
                 All
@@ -181,72 +192,127 @@ export default function Disrupt() {
               {INDUSTRY_CLUSTERS.map(c => (
                 <button
                   key={c.id}
-                  onClick={() => setActiveCluster(activeCluster === c.id ? null : c.id)}
+                  onClick={() => { setActiveCluster(activeCluster === c.id ? null : c.id); setActiveSubVertical(null); }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === c.id ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
                 >
                   {c.emoji} {c.name}
                 </button>
               ))}
+              <span className="w-px h-5 bg-border/50 mx-1" />
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-[10px] font-medium text-muted-foreground">Whitespace</span>
+                <Switch checked={showWhitespace} onCheckedChange={setShowWhitespace} className="scale-75" />
+              </label>
             </div>
           </div>
 
           <div className="max-w-6xl mx-auto px-4 pb-16">
-            {filteredClusters.map(cluster => (
-              <div key={cluster.id} className="mb-8">
-                <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                  <span>{cluster.emoji}</span> {cluster.name}
-                  {(() => {
-                    const vs = verticalStats?.find(v => v.id === cluster.id);
-                    if (!vs) return null;
-                    return (
+            {filteredClusters.map(cluster => {
+              const vs = verticalStats?.find(v => v.id === cluster.id);
+              const subVerticals = vs?.sub_verticals || [];
+              const visibleSubs = showWhitespace ? subVerticals.filter(s => s.whitespace !== "crowded") : subVerticals;
+
+              // Filter incumbents by selected sub-vertical
+              const filteredIncumbents = activeSubVertical
+                ? cluster.incumbents.filter(inc => {
+                    const sv = subVerticals.find(s => s.name === activeSubVertical);
+                    return sv?.companies.some(c => c.name === inc.name);
+                  })
+                : cluster.incumbents;
+
+              return (
+                <div key={cluster.id} className="mb-8">
+                  <h2 className="text-sm font-semibold text-foreground/90 mb-2 flex items-center gap-2">
+                    <span>{cluster.emoji}</span> {cluster.name}
+                    {vs && (
                       <span className="flex items-center gap-1.5 ml-1">
                         <Badge variant="secondary" className="text-[9px] h-4 px-1.5 gap-0.5">
-                          <Building2 className="w-2.5 h-2.5" /> {vs.counts.total} companies
+                          <Building2 className="w-2.5 h-2.5" /> {vs.counts.total}
                         </Badge>
                         <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-destructive border-destructive/50 font-semibold">
-                          {vs.counts.incumbent} incumbents
+                          {vs.counts.incumbent} inc
                         </Badge>
                         <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-primary border-primary/50 font-semibold">
-                          {vs.counts.disruptor} disruptors
+                          {vs.counts.disruptor} dis
                         </Badge>
                       </span>
-                    );
-                  })()}
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {cluster.incumbents.map(inc => (
-                    <motion.div key={inc.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Card
-                        className="cursor-pointer bg-card/60 border-border/40 hover:border-primary/40 hover:bg-card/80 transition-all group"
-                        onClick={() => openPreview({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji, clusterColor: cluster.color })}
+                    )}
+                  </h2>
+
+                  {/* Sub-vertical pills */}
+                  {subVerticals.length > 1 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      <button
+                        onClick={() => setActiveSubVertical(null)}
+                        className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${!activeSubVertical ? "bg-primary/20 text-primary border border-primary/30" : "bg-muted/20 text-muted-foreground border border-border/30 hover:bg-muted/40"}`}
                       >
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-1">
-                            <h3 className="font-bold text-foreground text-lg leading-tight group-hover:text-primary transition-colors">
-                              {inc.name}
-                            </h3>
-                            <Badge variant="outline" className="text-[9px] shrink-0 ml-2" style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}>
-                              {inc.vector}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[10px] text-muted-foreground">{inc.age}</span>
-                            <span className="text-[10px] text-muted-foreground/40">·</span>
-                            <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[9px] h-4 px-1.5">
-                              {inc.status}
-                            </Badge>
-                            <span className="text-[10px] text-muted-foreground/40">·</span>
-                            <span className="text-[10px] font-semibold text-foreground/80">{inc.valuation}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">{inc.vulnerability}</p>
-                          <p className="text-[10px] text-primary/80 font-medium line-clamp-1">💡 {inc.asymmetricAngle.slice(0, 80)}…</p>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
+                        All niches
+                      </button>
+                      {(showWhitespace ? visibleSubs : subVerticals).map(sv => (
+                        <button
+                          key={sv.name}
+                          onClick={() => setActiveSubVertical(activeSubVertical === sv.name ? null : sv.name)}
+                          className={`px-2 py-1 rounded text-[10px] font-medium transition-colors border ${
+                            activeSubVertical === sv.name
+                              ? "bg-primary/20 text-primary border-primary/30"
+                              : whitespaceColor[sv.whitespace]
+                          }`}
+                        >
+                          {whitespaceEmoji[sv.whitespace]} {sv.name}
+                          <span className="ml-1 opacity-70">{sv.counts.incumbent}i/{sv.counts.disruptor}d</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {filteredIncumbents.map(inc => {
+                      // Find sub-vertical context for this incumbent
+                      const incSv = activeSubVertical
+                        ? subVerticals.find(s => s.name === activeSubVertical)
+                        : subVerticals.find(s => s.companies.some(c => c.name === inc.name));
+
+                      return (
+                        <motion.div key={inc.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                          <Card
+                            className="cursor-pointer bg-card/60 border-border/40 hover:border-primary/40 hover:bg-card/80 transition-all group"
+                            onClick={() => openPreview({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji, clusterColor: cluster.color })}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between mb-1">
+                                <h3 className="font-bold text-foreground text-lg leading-tight group-hover:text-primary transition-colors">
+                                  {inc.name}
+                                </h3>
+                                <Badge variant="outline" className="text-[9px] shrink-0 ml-2" style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}>
+                                  {inc.vector}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] text-muted-foreground">{inc.age}</span>
+                                <span className="text-[10px] text-muted-foreground/40">·</span>
+                                <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[9px] h-4 px-1.5">
+                                  {inc.status}
+                                </Badge>
+                                <span className="text-[10px] text-muted-foreground/40">·</span>
+                                <span className="text-[10px] font-semibold text-foreground/80">{inc.valuation}</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">{inc.vulnerability}</p>
+                              <p className="text-[10px] text-primary/80 font-medium line-clamp-1">💡 {inc.asymmetricAngle.slice(0, 80)}…</p>
+                              {incSv && (
+                                <p className="text-[9px] text-muted-foreground/70 mt-1.5 border-t border-border/20 pt-1.5">
+                                  {whitespaceEmoji[incSv.whitespace]} {incSv.name} · {incSv.counts.incumbent} incumbent{incSv.counts.incumbent !== 1 ? "s" : ""} · {incSv.counts.disruptor} disruptor{incSv.counts.disruptor !== 1 ? "s" : ""}
+                                </p>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         <Footer />
