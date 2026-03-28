@@ -30,55 +30,72 @@ TARGET TO DISRUPT:
 - Existing Challengers: ${incumbent.existingDisruptor || "None known"}
 - Vertical: ${cluster.name} ${cluster.emoji}
 
-OUTPUT A SINGLE MASTER PROMPT with these sections:
+OUTPUT A SINGLE MASTER PROMPT optimized for AI builder agents. Use these EXACT section headings and formats:
 
-## 🎯 Product Vision
-One paragraph: what you're building, who it's for, why now. Reference the incumbent by name and the specific pain point you're solving.
+## 🎯 Product Vision & Target User
+One paragraph: what you're building, who it's for (specific persona with job title, company size, daily frustration), why now. Reference ${incumbent.name} by name. End with a single sentence value prop.
 
-## 👤 Target User
-Specific persona with job title, company size, daily frustration, and what they currently pay the incumbent.
-
-## ✅ MVP Feature Set (Week 1)
-Numbered list of 5-7 core features. Each feature: one sentence describing what it does + how AI powers it. These should be BUILDABLE in a weekend with an AI coding agent.
+## ✅ MVP Feature Set
+Numbered list of 5-7 features as acceptance criteria:
+1. **Feature Name** — User can [action], system does [behavior], result is [outcome]. AI-powered: [yes/no].
 
 ## 🚫 NOT in MVP
-3-4 features to explicitly defer. Prevents scope creep.
+Bullet list of 3-4 features to explicitly defer.
 
 ## 🗄️ Database Schema
-Exact table definitions with columns, types, and relationships. Use PostgreSQL syntax. Include: users, the core domain tables, and any AI-related tables (prompts, generations, etc).
+Write actual PostgreSQL CREATE TABLE statements. Include: users/profiles, core domain tables, AI-related tables. Add column types, constraints, foreign keys, and indexes. Example format:
+\`\`\`sql
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+\`\`\`
 
-## 🔌 API Routes / Edge Functions
-List each backend endpoint: method, path, what it does, auth requirements. Keep it to 6-10 endpoints max.
+## 🔌 API Routes & Edge Functions
+Use a markdown table:
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| POST | /api/generate | Generates X from Y | Required |
 
-## 🎨 UI Pages & Components
-List each page with its route, key components, and layout description. Include:
-- Landing/marketing page
-- Auth (signup/login)
-- Main dashboard
-- 2-3 core feature pages
-- Settings
+## 🎨 UI Pages & Component Tree
+Use route → component hierarchy:
+- \`/\` → \`<LandingPage>\` → [\`<Hero>\`, \`<Features>\`, \`<Pricing>\`, \`<CTA>\`]
+- \`/dashboard\` → \`<DashboardLayout>\` → [\`<MetricsGrid>\`, \`<ActivityFeed>\`]
+Include: landing, auth, dashboard, 2-3 core feature pages, settings.
 
 ## 🤖 AI Integration Points
-For each AI-powered feature: what model to use, what the prompt looks like, input/output format. Be specific about which tasks are AI-automated vs manual.
+For each AI feature, specify as a function signature:
+- **Function**: \`generateX(input: InputType): OutputType\`
+- **Model**: gemini-2.5-flash / gpt-5-mini
+- **Prompt template**: "Given {input}, produce {output} in {format}"
+- **Trigger**: user clicks X / automatic on Y
 
 ## 💰 Monetization
-Pricing tiers (Free/Pro/Enterprise) with specific prices and feature gates. Reference how this undercuts the incumbent's pricing.
+JSON-like pricing config:
+\`\`\`
+Free: $0/mo — [feature list, limits]
+Pro: $X/mo — [feature list, limits]  
+Enterprise: $Y/mo — [feature list]
+\`\`\`
+Reference how this undercuts ${incumbent.name}'s pricing (${incumbent.pricingModel}).
 
-## 🚀 Launch Checklist (30 days)
-Week-by-week plan with specific actions:
-- Week 1: Build MVP features (list each)
-- Week 2: Beta testing tasks
-- Week 3: Launch channels (name specific subreddits, communities, platforms)
-- Week 4: Growth tactics
+## 🚀 30-Day Launch Checklist
+Week-by-week with specific actions:
+- **Week 1**: Build [list each MVP feature]
+- **Week 2**: Beta testing — [specific tasks]
+- **Week 3**: Launch on [specific subreddits, communities, platforms]
+- **Week 4**: Growth — [specific tactics]
 
 RULES:
-- Write the ENTIRE output as if it IS the prompt the founder will paste into an AI builder
-- Be extremely specific — real table names, real route paths, real component names
+- The ENTIRE output IS the prompt the founder pastes into Lovable/Cursor/Claude
+- Use real table names, real route paths, real component names — no placeholders
+- SQL must be valid PostgreSQL. Code blocks must be properly formatted
 - No filler, no "consider this" — only actionable specs
-- Use markdown formatting throughout
-- The prompt should be self-contained — a builder agent reading it should be able to build the entire MVP
-- Reference the incumbent by name throughout to keep the disruptive positioning clear
-- Total length: 1500-2500 words`;
+- Self-contained: a builder agent reading this alone can build the entire MVP
+- Reference ${incumbent.name} throughout to keep disruptive positioning clear
+- Total length: 2000-3000 words`;
 
       return streamAI(LOVABLE_API_KEY, systemPrompt, [
         { role: "user", content: `Generate a complete master builder prompt for an AI-powered startup that disrupts ${incumbent.name} in the ${cluster.name} vertical.` },
