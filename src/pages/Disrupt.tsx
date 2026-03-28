@@ -309,7 +309,7 @@ export default function Disrupt() {
                 <div className="relative flex-1 min-w-[200px] max-w-xs">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <Input
-                    placeholder="Scout for niches, workflows…"
+                    placeholder="Search niches, workflows…"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="pl-8 h-8 text-xs border-border/30"
