@@ -246,8 +246,8 @@ export default function Disrupt() {
         <title>{phase === "generating" ? "Generating..." : phase === "result" ? `Disrupt ${savedName}` : `Disrupt ${inc?.name}`} — Software Factory | Xcrow</title>
       </Helmet>
       <Navbar />
-      <div className="min-h-screen bg-background pt-20">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+      <div className="min-h-screen bg-background pt-16">
+        <div className="max-w-6xl mx-auto px-4 py-2">
           <button
             onClick={hasPrompt ? restart : () => setPhase("browse")}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
