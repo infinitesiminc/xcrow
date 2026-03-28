@@ -566,7 +566,7 @@ export default function Disrupt() {
                         <div className="space-y-2">
                           {niche.companies.filter(c => c.role === "incumbent").length > 0 && (
                             <div>
-                              <p className="text-[10px] font-medium text-destructive/80 mb-1">Incumbents</p>
+                              <p className="text-[10px] font-medium mb-1" style={{ color: "hsl(var(--destructive) / 0.8)" }}>🏰 Fortified Incumbents</p>
                               <div className="flex flex-wrap gap-1">
                                 {niche.companies.filter(c => c.role === "incumbent").map(c => (
                                   <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-destructive/20 text-foreground/70">
