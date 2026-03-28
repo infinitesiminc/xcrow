@@ -8,6 +8,10 @@ export interface VerticalCompany {
   description: string | null;
   employee_range: string | null;
   logo_url: string | null;
+  estimated_arr: string | null;
+  estimated_employees: string | null;
+  estimated_funding: string | null;
+  enrichment_confidence: string | null;
   role: "incumbent" | "disruptor" | "transitioning";
 }
 
@@ -39,7 +43,7 @@ export function useVerticalMap() {
     queryFn: async (): Promise<VerticalStats[]> => {
       const { data, error } = await supabase
         .from("company_vertical_map")
-        .select("vertical_id, vertical_name, sub_vertical, role, companies(id, name, industry, description, employee_range, logo_url)")
+        .select("vertical_id, vertical_name, sub_vertical, role, companies(id, name, industry, description, employee_range, logo_url, estimated_arr, estimated_employees, estimated_funding, enrichment_confidence)")
         .order("vertical_id");
 
       if (error) throw error;

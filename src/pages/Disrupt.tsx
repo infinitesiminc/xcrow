@@ -297,6 +297,33 @@ export default function Disrupt() {
                                 <span className="text-[10px] text-muted-foreground/40">·</span>
                                 <span className="text-[10px] font-semibold text-foreground/80">{inc.valuation}</span>
                               </div>
+
+                              {/* Enriched metrics row */}
+                              {(() => {
+                                const svCompany = subVerticals.flatMap(s => s.companies).find(c => c.name === inc.name);
+                                const hasMetrics = svCompany && (svCompany.estimated_arr || svCompany.estimated_funding || svCompany.estimated_employees);
+                                if (!hasMetrics) return null;
+                                return (
+                                  <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {svCompany.estimated_arr && (
+                                      <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 text-emerald-500 border-emerald-500/30">
+                                        <DollarSign className="w-2.5 h-2.5" /> {svCompany.estimated_arr}
+                                      </Badge>
+                                    )}
+                                    {svCompany.estimated_employees && (
+                                      <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 text-blue-400 border-blue-400/30">
+                                        <Users className="w-2.5 h-2.5" /> {svCompany.estimated_employees}
+                                      </Badge>
+                                    )}
+                                    {svCompany.estimated_funding && (
+                                      <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 text-amber-400 border-amber-400/30">
+                                        <Rocket className="w-2.5 h-2.5" /> {svCompany.estimated_funding}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+
                               <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">{inc.vulnerability}</p>
                               <p className="text-[10px] text-primary/80 font-medium line-clamp-1">💡 {inc.asymmetricAngle.slice(0, 80)}…</p>
                               {incSv && (
