@@ -203,14 +203,22 @@ export default function Disrupt() {
                         onClick={() => openPreview({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji, clusterColor: cluster.color })}
                       >
                         <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{inc.name}</h3>
-                              <p className="text-[10px] text-muted-foreground">{inc.age}</p>
-                            </div>
-                            <Badge variant="outline" className="text-[9px] shrink-0" style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}>
+                          <div className="flex items-start justify-between mb-1">
+                            <h3 className="font-bold text-foreground text-lg leading-tight group-hover:text-primary transition-colors">
+                              {inc.name}
+                            </h3>
+                            <Badge variant="outline" className="text-[9px] shrink-0 ml-2" style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}>
                               {inc.vector}
                             </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[10px] text-muted-foreground">{inc.age}</span>
+                            <span className="text-[10px] text-muted-foreground/40">·</span>
+                            <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[9px] h-4 px-1.5">
+                              {inc.status}
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground/40">·</span>
+                            <span className="text-[10px] font-semibold text-foreground/80">{inc.valuation}</span>
                           </div>
                           <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">{inc.vulnerability}</p>
                           <p className="text-[10px] text-primary/80 font-medium line-clamp-1">💡 {inc.asymmetricAngle.slice(0, 80)}…</p>
