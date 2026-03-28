@@ -512,7 +512,7 @@ export default function Disrupt() {
                       <CardContent className="p-3 flex gap-2.5">
                         <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Battle Thesis</p>
+                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Startup Thesis</p>
                           <p className={`text-foreground leading-relaxed ${hasPrompt ? "text-[11px]" : "text-sm"}`}>{as.agent_play}</p>
                         </div>
                       </CardContent>
