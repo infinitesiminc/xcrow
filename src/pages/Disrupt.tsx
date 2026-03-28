@@ -1,32 +1,33 @@
-import { useState, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { INDUSTRY_CLUSTERS, type DisruptionIncumbent } from "@/data/disruption-incumbents";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Target, Shield, DollarSign, Users, Lightbulb, Building2, Eye } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, Search, Bot, TrendingUp, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVerticalMap, type WhitespaceLabel, type VerticalStats } from "@/hooks/use-vertical-map";
-import { Switch } from "@/components/ui/switch";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useVerticalMap, type WhitespaceLabel, type SubVertical, type VerticalStats } from "@/hooks/use-vertical-map";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
-type Phase = "browse" | "preview" | "generating" | "result";
-type IncumbentWithCluster = DisruptionIncumbent & { clusterName: string; clusterEmoji: string; clusterColor: string };
+type Phase = "browse" | "deepdive" | "generating" | "result";
 
 const FACTORY_RESULT_KEY = "sf-master-prompt";
 
 interface SavedResult {
-  incumbentId: number;
-  incumbentName: string;
+  nicheName: string;
+  verticalName: string;
   prompt: string;
+}
+
+interface FlatNiche extends SubVertical {
+  verticalId: number;
+  verticalName: string;
 }
 
 function loadResult(): SavedResult | null {
@@ -36,29 +37,77 @@ function loadResult(): SavedResult | null {
   } catch { return null; }
 }
 
+const whitespaceColor: Record<WhitespaceLabel, string> = {
+  open: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
+  "low-competition": "text-amber-400 border-amber-400/40 bg-amber-400/10",
+  crowded: "text-muted-foreground border-border/40 bg-muted/20",
+};
+const whitespaceLabel: Record<WhitespaceLabel, string> = { open: "Open", "low-competition": "Low Competition", crowded: "Crowded" };
+
 export default function Disrupt() {
   const isMobile = useIsMobile();
-  const { data: verticalStats } = useVerticalMap();
+  const { data: verticalStats, isLoading } = useVerticalMap();
   const saved = loadResult();
   const [phase, setPhase] = useState<Phase>(saved ? "result" : "browse");
-  const [selectedIncumbent, setSelectedIncumbent] = useState<IncumbentWithCluster | null>(null);
+  const [selectedNiche, setSelectedNiche] = useState<FlatNiche | null>(null);
   const [masterPrompt, setMasterPrompt] = useState(saved?.prompt || "");
-  const [savedName, setSavedName] = useState(saved?.incumbentName || "");
+  const [savedNiche, setSavedNiche] = useState(saved?.nicheName || "");
+  const [savedVertical, setSavedVertical] = useState(saved?.verticalName || "");
   const [isStreaming, setIsStreaming] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activeCluster, setActiveCluster] = useState<number | null>(null);
-  const [showWhitespace, setShowWhitespace] = useState(false);
-  const [activeSubVertical, setActiveSubVertical] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [verticalFilter, setVerticalFilter] = useState<number | null>(null);
+  const [minScore, setMinScore] = useState(50);
   const abortRef = useRef<AbortController | null>(null);
 
-  const openPreview = (inc: IncumbentWithCluster) => {
-    setSelectedIncumbent(inc);
-    setPhase("preview");
+  // Flatten all sub-verticals into a single ranked list
+  const allNiches = useMemo<FlatNiche[]>(() => {
+    if (!verticalStats) return [];
+    const niches: FlatNiche[] = [];
+    for (const v of verticalStats) {
+      for (const sv of v.sub_verticals) {
+        if (sv.agentScore) {
+          niches.push({ ...sv, verticalId: v.id, verticalName: v.name });
+        }
+      }
+    }
+    // Sort by agent score descending
+    return niches.sort((a, b) => (b.agentScore?.agent_score || 0) - (a.agentScore?.agent_score || 0));
+  }, [verticalStats]);
+
+  // Filter niches
+  const filteredNiches = useMemo(() => {
+    let result = allNiches;
+    if (verticalFilter !== null) result = result.filter(n => n.verticalId === verticalFilter);
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(n =>
+        n.name.toLowerCase().includes(q) ||
+        n.verticalName.toLowerCase().includes(q) ||
+        n.agentScore?.agent_play?.toLowerCase().includes(q) ||
+        n.agentScore?.automatable_workflows.some(w => w.name.toLowerCase().includes(q))
+      );
+    }
+    if (minScore > 0) result = result.filter(n => (n.agentScore?.agent_score || 0) >= minScore);
+    return result;
+  }, [allNiches, verticalFilter, search, minScore]);
+
+  // Get unique verticals for filter
+  const verticals = useMemo(() => {
+    if (!verticalStats) return [];
+    return verticalStats
+      .filter(v => v.sub_verticals.some(sv => sv.agentScore))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [verticalStats]);
+
+  const openDeepDive = (niche: FlatNiche) => {
+    setSelectedNiche(niche);
+    setPhase("deepdive");
   };
 
   const confirmGenerate = async () => {
-    if (!selectedIncumbent) return;
-    const inc = selectedIncumbent;
+    if (!selectedNiche?.agentScore) return;
+    const niche = selectedNiche;
     setPhase("generating");
     setMasterPrompt("");
     setIsStreaming(true);
@@ -73,20 +122,20 @@ export default function Disrupt() {
           method: "POST",
           headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
           body: JSON.stringify({
-            action: "master-prompt",
+            action: "niche-prompt",
             payload: {
-              incumbent: {
-                name: inc.name,
-                vulnerability: inc.vulnerability,
-                asymmetricAngle: inc.asymmetricAngle,
-                beachheadNiche: inc.beachheadNiche,
-                disruptorModel: inc.disruptorModel,
-                vector: inc.vector,
-                aiDisruptionThesis: inc.aiDisruptionThesis,
-                pricingModel: inc.pricingModel,
-                existingDisruptor: inc.existingDisruptor,
+              niche: {
+                name: niche.name,
+                verticalName: niche.verticalName,
+                agentPlay: niche.agentScore?.agent_play,
+                agentScore: niche.agentScore?.agent_score,
+                agentVerdict: niche.agentScore?.agent_verdict,
+                workflows: niche.agentScore?.automatable_workflows || [],
+                workflowTypes: niche.agentScore?.workflow_types || [],
+                whitespace: niche.whitespace,
+                incumbents: niche.companies.filter(c => c.role === "incumbent").map(c => c.name),
+                disruptors: niche.companies.filter(c => c.role === "disruptor").map(c => c.name),
               },
-              cluster: { name: inc.clusterName, emoji: inc.clusterEmoji },
             },
           }),
           signal: controller.signal,
@@ -123,16 +172,17 @@ export default function Disrupt() {
       }
 
       setPhase("result");
-      setSavedName(inc.name);
+      setSavedNiche(niche.name);
+      setSavedVertical(niche.verticalName);
       localStorage.setItem(FACTORY_RESULT_KEY, JSON.stringify({
-        incumbentId: inc.id,
-        incumbentName: inc.name,
+        nicheName: niche.name,
+        verticalName: niche.verticalName,
         prompt: fullText,
       }));
     } catch (e: any) {
       if (e.name !== "AbortError") {
         toast.error("Failed to generate. Try again.");
-        setPhase("preview");
+        setPhase("deepdive");
       }
     } finally {
       setIsStreaming(false);
@@ -143,8 +193,9 @@ export default function Disrupt() {
     localStorage.removeItem(FACTORY_RESULT_KEY);
     setPhase("browse");
     setMasterPrompt("");
-    setSelectedIncumbent(null);
-    setSavedName("");
+    setSelectedNiche(null);
+    setSavedNiche("");
+    setSavedVertical("");
   };
 
   const copyPrompt = () => {
@@ -154,325 +205,154 @@ export default function Disrupt() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const filteredClusters = activeCluster !== null
-    ? INDUSTRY_CLUSTERS.filter(c => c.id === activeCluster)
-    : INDUSTRY_CLUSTERS;
-
-  const whitespaceColor: Record<WhitespaceLabel, string> = {
-    open: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
-    "low-competition": "text-amber-400 border-amber-400/40 bg-amber-400/10",
-    crowded: "text-muted-foreground border-border/40 bg-muted/20",
+  // Score color
+  const scoreColor = (score: number) => {
+    if (score >= 80) return "text-emerald-400";
+    if (score >= 60) return "text-amber-400";
+    return "text-muted-foreground";
   };
-  const whitespaceEmoji: Record<WhitespaceLabel, string> = { open: "🟢", "low-competition": "🟡", crowded: "🔴" };
+
+  const scoreBg = (score: number) => {
+    if (score >= 80) return "bg-emerald-500/10 border-emerald-500/30";
+    if (score >= 60) return "bg-amber-500/10 border-amber-500/30";
+    return "bg-muted/20 border-border/30";
+  };
 
   // ── BROWSE PHASE ──
   if (phase === "browse") {
     return (
       <>
         <Helmet>
-          <title>Software Factory — Pick a Giant to Disrupt | Xcrow</title>
-          <meta name="description" content="Choose a software incumbent to disrupt. AI generates a complete builder prompt — paste it into Lovable or Cursor to launch your startup." />
+          <title>Software Factory — Find AI-Native Opportunities | Xcrow</title>
+          <meta name="description" content="Discover high-potential software niches ripe for AI agent disruption. Get a complete builder prompt to launch your startup." />
         </Helmet>
         <Navbar />
         <div className="min-h-screen bg-background pt-20">
           <div className="text-center px-4 pt-8 pb-6 max-w-2xl mx-auto">
-            <div className="text-4xl mb-3">🏭</div>
-            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">Software Factory</h1>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Pick a software giant to disrupt. AI generates a master prompt you can paste into any builder agent to launch your startup.
+            <div className="text-4xl mb-3">🤖</div>
+            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">AI Agent Opportunity Finder</h1>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Software niches ranked by AI agent disruption potential. Find where autonomous agents can replace entire workflows, then generate a builder prompt to launch.
             </p>
           </div>
 
+          {/* Filters */}
           <div className="max-w-5xl mx-auto px-4 mb-6">
-            <div className="flex flex-wrap items-center gap-2 justify-center">
-              <button
-                onClick={() => { setActiveCluster(null); setActiveSubVertical(null); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === null ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[200px] max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search niches, workflows…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-8 h-8 text-xs bg-muted/20 border-border/30"
+                />
+              </div>
+              <select
+                value={verticalFilter ?? ""}
+                onChange={e => setVerticalFilter(e.target.value ? Number(e.target.value) : null)}
+                className="h-8 text-xs rounded-md border border-border/30 bg-muted/20 px-2 text-foreground"
               >
-                All
-              </button>
-              {INDUSTRY_CLUSTERS.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => { setActiveCluster(activeCluster === c.id ? null : c.id); setActiveSubVertical(null); }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCluster === c.id ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
-                >
-                  {c.emoji} {c.name}
-                </button>
-              ))}
-              <span className="w-px h-5 bg-border/50 mx-1" />
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-[10px] font-medium text-muted-foreground">Whitespace</span>
-                <Switch checked={showWhitespace} onCheckedChange={setShowWhitespace} className="scale-75" />
-              </label>
+                <option value="">All Verticals</option>
+                {verticals.map(v => (
+                  <option key={v.id} value={v.id}>{v.name}</option>
+                ))}
+              </select>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-muted-foreground">Min score:</span>
+                {[0, 50, 70, 85].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setMinScore(s)}
+                    className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${minScore === s ? "bg-primary text-primary-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/40"}`}
+                  >
+                    {s === 0 ? "All" : `${s}+`}
+                  </button>
+                ))}
+              </div>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              {filteredNiches.length} niches across {new Set(filteredNiches.map(n => n.verticalId)).size} verticals
+            </p>
           </div>
 
+          {/* Niche Grid */}
           <div className="max-w-6xl mx-auto px-4 pb-16">
-          {(showWhitespace
-            ? [...filteredClusters].sort((a, b) => {
-                const vsA = verticalStats?.find(v => v.id === a.id);
-                const vsB = verticalStats?.find(v => v.id === b.id);
-                return (vsB?.opportunityScore || 0) - (vsA?.opportunityScore || 0);
-              })
-            : filteredClusters
-          ).map(cluster => {
-              const vs = verticalStats?.find(v => v.id === cluster.id);
-              const subVerticals = vs?.sub_verticals || [];
-              const visibleSubs = showWhitespace ? subVerticals.filter(s => s.whitespace !== "crowded") : subVerticals;
+            {isLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : filteredNiches.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground text-sm">
+                No niches match your filters. Try broadening your search.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {filteredNiches.map(niche => {
+                  const as = niche.agentScore!;
+                  const incumbentCount = niche.companies.filter(c => c.role === "incumbent").length;
+                  const disruptorCount = niche.companies.filter(c => c.role === "disruptor").length;
 
-              // Filter incumbents by selected sub-vertical
-              const filteredIncumbents = activeSubVertical
-                ? cluster.incumbents.filter(inc => {
-                    const sv = subVerticals.find(s => s.name === activeSubVertical);
-                    return sv?.companies.some(c => c.name === inc.name);
-                  })
-                : cluster.incumbents;
-
-              return (
-                <div key={cluster.id} className="mb-8">
-                  <h2 className="text-sm font-semibold text-foreground/90 mb-2 flex items-center gap-2">
-                    <span>{cluster.emoji}</span> {cluster.name}
-                    {vs && (
-                      <span className="flex items-center gap-1.5 ml-1">
-                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 gap-0.5">
-                          <Building2 className="w-2.5 h-2.5" /> {vs.counts.total}
-                        </Badge>
-                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-destructive border-destructive/50 font-semibold">
-                          {vs.counts.incumbent} inc
-                        </Badge>
-                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-primary border-primary/50 font-semibold">
-                          {vs.counts.disruptor} dis
-                        </Badge>
-                      </span>
-                    )}
-                  </h2>
-
-                  {/* Opportunity Scorecard */}
-                  {vs && vs.opportunityScore > 0 && (
-                    <Collapsible>
-                      <CollapsibleTrigger className="w-full">
-                        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20 border border-border/30 mb-3 text-left hover:bg-muted/30 transition-colors">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] font-semibold text-foreground/80">Opportunity Score</span>
-                              <span className="text-xs font-bold text-primary">{vs.opportunityScore.toFixed(1)}/10</span>
-                              <Progress value={vs.opportunityScore * 10} className="h-1.5 w-16 bg-muted/40" />
-                              {vs.agentScore && (
-                                <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 border-violet-500/40 text-violet-400">
-                                  🤖 Agent: {vs.agentScore.agent_score}/100
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
-                              <span>🟢 {vs.sub_verticals.filter(s => s.whitespace === "open").length} open</span>
-                              <span>🟡 {vs.sub_verticals.filter(s => s.whitespace === "low-competition").length} low-comp</span>
-                              <span>🔴 {vs.sub_verticals.filter(s => s.whitespace === "crowded").length} crowded</span>
-                            </div>
-                          </div>
-                          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="p-3 rounded-lg bg-muted/10 border border-border/20 mb-3 space-y-2">
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
-                            <div className="flex flex-col">
-                              <span className="text-muted-foreground">Incumbents</span>
-                              <span className="font-semibold text-foreground">{vs.counts.incumbent}</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-muted-foreground">Disruptors</span>
-                              <span className="font-semibold text-foreground">{vs.disruptorMaturity.count} (avg: {vs.disruptorMaturity.avgFunding})</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-muted-foreground">Avg Disruptor ARR</span>
-                              <span className="font-semibold text-foreground">{vs.disruptorMaturity.avgArr}</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-muted-foreground">Avg Team Size</span>
-                              <span className="font-semibold text-foreground">{vs.disruptorMaturity.avgSize}</span>
-                            </div>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground/80 italic">{vs.verdict}</p>
-                          {vs.agentScore && (
-                            <div className="pt-2 border-t border-border/20 space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-semibold text-foreground/80">🤖 AI Agent Vulnerability</span>
-                                <Progress value={vs.agentScore.agent_score} className="h-1.5 w-20 bg-muted/40" />
-                                <span className="text-[10px] font-bold text-violet-400">{vs.agentScore.agent_score}/100</span>
-                              </div>
-                              {vs.agentScore.agent_verdict && (
-                                <p className="text-[10px] text-violet-400/80 italic">{vs.agentScore.agent_verdict}</p>
-                              )}
-                              {vs.agentScore.key_opportunities.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                  {vs.agentScore.key_opportunities.map((opp, i) => (
-                                    <Badge key={i} variant="outline" className="text-[8px] h-4 px-1.5 border-violet-500/20 text-violet-400/70">
-                                      {opp}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  )}
-
-                  {/* Sub-vertical pills */}
-                  {subVerticals.length > 1 && (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      <button
-                        onClick={() => setActiveSubVertical(null)}
-                        className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${!activeSubVertical ? "bg-primary/20 text-primary border border-primary/30" : "bg-muted/20 text-muted-foreground border border-border/30 hover:bg-muted/40"}`}
+                  return (
+                    <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                      <Card
+                        className={`cursor-pointer border transition-all group hover:border-primary/40 hover:bg-card/80 ${scoreBg(as.agent_score)}`}
+                        onClick={() => openDeepDive(niche)}
                       >
-                        All niches
-                      </button>
-                      {(showWhitespace ? visibleSubs : subVerticals).map(sv => (
-                        <button
-                          key={sv.name}
-                          onClick={() => setActiveSubVertical(activeSubVertical === sv.name ? null : sv.name)}
-                          className={`px-2 py-1 rounded text-[10px] font-medium transition-colors border ${
-                            activeSubVertical === sv.name
-                              ? "bg-primary/20 text-primary border-primary/30"
-                              : whitespaceColor[sv.whitespace]
-                          }`}
-                        >
-                          {whitespaceEmoji[sv.whitespace]} {sv.name}
-                          <span className="ml-1 opacity-70">{sv.counts.incumbent}i/{sv.counts.disruptor}d</span>
-                          {sv.agentScore && (
-                            <span className="ml-1 text-violet-400">🤖{sv.agentScore.agent_score}</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Sub-vertical workflow breakdown */}
-                  {activeSubVertical && (() => {
-                    const selectedSv = subVerticals.find(s => s.name === activeSubVertical);
-                    if (!selectedSv?.agentScore) return null;
-                    const as = selectedSv.agentScore;
-                    return (
-                      <div className="p-3 rounded-lg bg-violet-500/5 border border-violet-500/20 mb-3 space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-semibold text-foreground/80">🤖 Agent Score: {as.agent_score}/100</span>
-                          <Progress value={as.agent_score} className="h-1.5 w-20 bg-muted/40" />
-                          {as.workflow_types.map(wt => (
-                            <Badge key={wt} variant="outline" className="text-[8px] h-4 px-1.5 border-violet-500/20 text-violet-400/70">
-                              {wt}
+                        <CardContent className="p-4">
+                          {/* Score + Niche name */}
+                          <div className="flex items-start gap-3 mb-2">
+                            <div className={`text-2xl font-bold tabular-nums leading-none ${scoreColor(as.agent_score)}`}>
+                              {as.agent_score}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-foreground text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                                {niche.name}
+                              </h3>
+                              <span className="text-[10px] text-muted-foreground">{niche.verticalName}</span>
+                            </div>
+                            <Badge variant="outline" className={`text-[9px] h-5 px-1.5 shrink-0 ${whitespaceColor[niche.whitespace]}`}>
+                              {whitespaceLabel[niche.whitespace]}
                             </Badge>
-                          ))}
-                        </div>
-                        {as.agent_verdict && (
-                          <p className="text-[10px] text-violet-400/80 italic">{as.agent_verdict}</p>
-                        )}
-                        {as.agent_play && (
-                          <div className="flex items-start gap-1.5 p-2 rounded bg-violet-500/10 border border-violet-500/15">
-                            <Lightbulb className="w-3 h-3 text-violet-400 mt-0.5 shrink-0" />
-                            <span className="text-[10px] font-medium text-violet-300">{as.agent_play}</span>
                           </div>
-                        )}
-                        {as.automatable_workflows.length > 0 && (
-                          <div className="space-y-1.5">
-                            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Automatable Workflows</span>
-                            {as.automatable_workflows.map((wf, i) => (
-                              <div key={i} className="flex items-start gap-2 text-[10px]">
-                                <Badge variant="outline" className={`text-[8px] h-4 px-1.5 shrink-0 ${
-                                  wf.automation_level === "full" ? "text-emerald-400 border-emerald-500/30" :
-                                  wf.automation_level === "partial" ? "text-amber-400 border-amber-500/30" :
-                                  "text-blue-400 border-blue-500/30"
-                                }`}>
-                                  {wf.automation_level === "full" ? "⚡ Full" : wf.automation_level === "partial" ? "🔄 Partial" : "🤝 Augmented"}
-                                </Badge>
-                                <div>
-                                  <span className="font-medium text-foreground/80">{wf.name}</span>
-                                  <span className="text-muted-foreground ml-1">— {wf.description}</span>
-                                </div>
-                              </div>
+
+                          {/* Agent Play */}
+                          {as.agent_play && (
+                            <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-2 mb-2">
+                              💡 {as.agent_play}
+                            </p>
+                          )}
+
+                          {/* Workflow tags */}
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {as.automatable_workflows.slice(0, 3).map((wf, i) => (
+                              <Badge key={i} variant="outline" className={`text-[8px] h-4 px-1.5 ${
+                                wf.automation_level === "full" ? "text-emerald-400 border-emerald-500/20" :
+                                wf.automation_level === "partial" ? "text-amber-400 border-amber-500/20" :
+                                "text-blue-400 border-blue-500/20"
+                              }`}>
+                                {wf.automation_level === "full" ? "⚡" : wf.automation_level === "partial" ? "🔄" : "🤝"} {wf.name}
+                              </Badge>
                             ))}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })()}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {filteredIncumbents.map(inc => {
-                      // Find sub-vertical context for this incumbent
-                      const incSv = activeSubVertical
-                        ? subVerticals.find(s => s.name === activeSubVertical)
-                        : subVerticals.find(s => s.companies.some(c => c.name === inc.name));
-
-                      return (
-                        <motion.div key={inc.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                          <Card
-                            className="cursor-pointer bg-card/60 border-border/40 hover:border-primary/40 hover:bg-card/80 transition-all group"
-                            onClick={() => openPreview({ ...inc, clusterName: cluster.name, clusterEmoji: cluster.emoji, clusterColor: cluster.color })}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between mb-1">
-                                <h3 className="font-bold text-foreground text-lg leading-tight group-hover:text-primary transition-colors">
-                                  {inc.name}
-                                </h3>
-                                <Badge variant="outline" className="text-[9px] shrink-0 ml-2" style={{ borderColor: `hsl(${cluster.color} / 0.4)`, color: `hsl(${cluster.color})` }}>
-                                  {inc.vector}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[10px] text-muted-foreground">{inc.age}</span>
-                                <span className="text-[10px] text-muted-foreground/40">·</span>
-                                <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[9px] h-4 px-1.5">
-                                  {inc.status}
-                                </Badge>
-                                <span className="text-[10px] text-muted-foreground/40">·</span>
-                                <span className="text-[10px] font-semibold text-foreground/80">{inc.valuation}</span>
-                              </div>
-
-                              {/* Enriched metrics row */}
-                              {(() => {
-                                const svCompany = subVerticals.flatMap(s => s.companies).find(c => c.name === inc.name);
-                                const hasMetrics = svCompany && (svCompany.estimated_arr || svCompany.estimated_funding || svCompany.estimated_employees);
-                                if (!hasMetrics) return null;
-                                return (
-                                  <div className="flex flex-wrap gap-1.5 mb-2">
-                                    {svCompany.estimated_arr && (
-                                      <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 text-emerald-500 border-emerald-500/30">
-                                        <DollarSign className="w-2.5 h-2.5" /> {svCompany.estimated_arr}
-                                      </Badge>
-                                    )}
-                                    {svCompany.estimated_employees && (
-                                      <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 text-blue-400 border-blue-400/30">
-                                        <Users className="w-2.5 h-2.5" /> {svCompany.estimated_employees}
-                                      </Badge>
-                                    )}
-                                    {svCompany.estimated_funding && (
-                                      <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 text-amber-400 border-amber-400/30">
-                                        <Rocket className="w-2.5 h-2.5" /> {svCompany.estimated_funding}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                );
-                              })()}
-
-                              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">{inc.vulnerability}</p>
-                              <p className="text-[10px] text-primary/80 font-medium line-clamp-1">💡 {inc.asymmetricAngle.slice(0, 80)}…</p>
-                              {incSv && (
-                                <p className="text-[9px] text-muted-foreground/70 mt-1.5 border-t border-border/20 pt-1.5">
-                                  {whitespaceEmoji[incSv.whitespace]} {incSv.name} · {incSv.counts.incumbent} incumbent{incSv.counts.incumbent !== 1 ? "s" : ""} · {incSv.counts.disruptor} disruptor{incSv.counts.disruptor !== 1 ? "s" : ""}
-                                </p>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+                          {/* Competitive density */}
+                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border/20 pt-2">
+                            <span>{incumbentCount} incumbent{incumbentCount !== 1 ? "s" : ""}</span>
+                            <span>{disruptorCount} disruptor{disruptorCount !== 1 ? "s" : ""}</span>
+                            <div className="flex gap-1 ml-auto">
+                              {as.workflow_types.slice(0, 2).map(wt => (
+                                <span key={wt} className="text-[9px] text-muted-foreground/60">{wt}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
         <Footer />
@@ -480,14 +360,15 @@ export default function Disrupt() {
     );
   }
 
-  // ── PREVIEW / GENERATING / RESULT (unified) ──
-  const inc = selectedIncumbent;
+  // ── DEEP DIVE / GENERATING / RESULT ──
+  const niche = selectedNiche;
+  const as = niche?.agentScore;
   const hasPrompt = phase === "generating" || phase === "result";
 
   return (
     <>
       <Helmet>
-        <title>{phase === "generating" ? "Generating..." : phase === "result" ? `Disrupt ${savedName}` : `Disrupt ${inc?.name}`} — Software Factory | Xcrow</title>
+        <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Builder Prompt` : `${niche?.name} — Deep Dive`} | Xcrow</title>
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-16">
@@ -496,58 +377,148 @@ export default function Disrupt() {
             onClick={hasPrompt ? restart : () => setPhase("browse")}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "Pick another" : "Back to targets"}
+            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "Find another niche" : "Back to opportunities"}
           </button>
 
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* LEFT: Incumbent Intel */}
-            {inc && (
-              <div className={`shrink-0 ${hasPrompt ? "lg:w-72" : "lg:w-full max-w-2xl mx-auto"}`}>
+            {/* LEFT: Niche Intel */}
+            {niche && as && (
+              <div className={`shrink-0 ${hasPrompt ? "lg:w-80" : "lg:w-full max-w-2xl mx-auto"}`}>
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                  {/* Header */}
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">{inc.clusterEmoji}</span>
-                      <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${inc.clusterColor} / 0.4)`, color: `hsl(${inc.clusterColor})` }}>
-                        {inc.clusterName}
+                      <Badge variant="outline" className="text-[10px]">{niche.verticalName}</Badge>
+                      <Badge variant="outline" className={`text-[10px] ${whitespaceColor[niche.whitespace]}`}>
+                        {whitespaceLabel[niche.whitespace]}
                       </Badge>
                     </div>
                     <h1 className={`font-bold font-cinzel text-foreground mb-1 ${hasPrompt ? "text-lg" : "text-2xl"}`}>
-                      Disrupt {inc.name}
+                      {niche.name}
                     </h1>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] text-muted-foreground">{inc.age}</span>
-                      <span className="text-[10px] text-muted-foreground/40">·</span>
-                      <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[9px] h-4 px-1.5">{inc.status}</Badge>
-                      <span className="text-[10px] text-muted-foreground/40">·</span>
-                      <span className="text-[10px] font-semibold text-foreground/80">{inc.valuation}</span>
+                    <div className="flex items-center gap-3">
+                      <div className={`text-3xl font-bold tabular-nums ${scoreColor(as.agent_score)}`}>
+                        {as.agent_score}<span className="text-sm font-normal text-muted-foreground">/100</span>
+                      </div>
+                      <Progress value={as.agent_score} className="h-2 flex-1 bg-muted/40" />
                     </div>
                   </div>
 
-                  <div className={`space-y-2 ${hasPrompt ? "mb-4" : "mb-6"}`}>
-                    <InfoCard icon={<Target className="w-3.5 h-3.5 text-destructive" />} label="Vulnerability" content={inc.vulnerability} compact={hasPrompt} />
-                    <InfoCard icon={<Zap className="w-3.5 h-3.5 text-primary" />} label="AI Disruption Thesis" content={inc.aiDisruptionThesis} compact={hasPrompt} />
-                    <InfoCard icon={<Lightbulb className="w-3.5 h-3.5 text-yellow-500" />} label="Asymmetric Angle" content={inc.asymmetricAngle} compact={hasPrompt} />
-                    <InfoCard icon={<Users className="w-3.5 h-3.5 text-blue-400" />} label="Beachhead Niche" content={inc.beachheadNiche} compact={hasPrompt} />
-                    <InfoCard icon={<DollarSign className="w-3.5 h-3.5 text-emerald-400" />} label="Disruptor Model" content={inc.disruptorModel} compact={hasPrompt} />
-                    {inc.existingDisruptor && (
-                      <InfoCard icon={<Shield className="w-3.5 h-3.5 text-orange-400" />} label="Challengers" content={inc.existingDisruptor} compact={hasPrompt} />
-                    )}
-                  </div>
+                  {/* Agent Play - the thesis */}
+                  {as.agent_play && (
+                    <Card className="bg-primary/5 border-primary/20 mb-3">
+                      <CardContent className="p-3 flex gap-2.5">
+                        <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Startup Thesis</p>
+                          <p className={`text-foreground leading-relaxed ${hasPrompt ? "text-[11px]" : "text-sm"}`}>{as.agent_play}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-                  {/* CTA when no prompt yet */}
-                  {phase === "preview" && (
+                  {/* Verdict */}
+                  {as.agent_verdict && !hasPrompt && (
+                    <Card className="bg-card/40 border-border/30 mb-3">
+                      <CardContent className="p-3 flex gap-2.5">
+                        <Bot className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">AI Analysis</p>
+                          <p className="text-xs text-foreground/80 leading-relaxed">{as.agent_verdict}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Automatable Workflows */}
+                  {!hasPrompt && as.automatable_workflows.length > 0 && (
+                    <Card className="bg-card/40 border-border/30 mb-3">
+                      <CardContent className="p-3">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Automatable Workflows</p>
+                        <div className="space-y-2">
+                          {as.automatable_workflows.map((wf, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <Badge variant="outline" className={`text-[8px] h-5 px-1.5 shrink-0 mt-0.5 ${
+                                wf.automation_level === "full" ? "text-emerald-400 border-emerald-500/30" :
+                                wf.automation_level === "partial" ? "text-amber-400 border-amber-500/30" :
+                                "text-blue-400 border-blue-500/30"
+                              }`}>
+                                {wf.automation_level === "full" ? "⚡ Full" : wf.automation_level === "partial" ? "🔄 Partial" : "🤝 Augmented"}
+                              </Badge>
+                              <div className="min-w-0">
+                                <p className="text-xs font-medium text-foreground/90">{wf.name}</p>
+                                <p className="text-[10px] text-muted-foreground leading-relaxed">{wf.description}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Competitive Landscape */}
+                  {!hasPrompt && (
+                    <Card className="bg-card/40 border-border/30 mb-4">
+                      <CardContent className="p-3">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Competitive Landscape</p>
+                        <div className="space-y-2">
+                          {niche.companies.filter(c => c.role === "incumbent").length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-medium text-destructive/80 mb-1">Incumbents</p>
+                              <div className="flex flex-wrap gap-1">
+                                {niche.companies.filter(c => c.role === "incumbent").map(c => (
+                                  <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-destructive/20 text-foreground/70">
+                                    {c.name}
+                                    {c.estimated_employees && <span className="ml-1 text-muted-foreground">· {c.estimated_employees}</span>}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {niche.companies.filter(c => c.role === "disruptor").length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-medium text-primary/80 mb-1">Existing Disruptors</p>
+                              <div className="flex flex-wrap gap-1">
+                                {niche.companies.filter(c => c.role === "disruptor").map(c => (
+                                  <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-primary/20 text-foreground/70">
+                                    {c.name}
+                                    {c.estimated_funding && <span className="ml-1 text-muted-foreground">· {c.estimated_funding}</span>}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {niche.companies.filter(c => c.role === "transitioning").length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-medium text-amber-400/80 mb-1">Transitioning</p>
+                              <div className="flex flex-wrap gap-1">
+                                {niche.companies.filter(c => c.role === "transitioning").map(c => (
+                                  <Badge key={c.id} variant="outline" className="text-[9px] h-5 px-2 border-amber-500/20 text-foreground/70">
+                                    {c.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* CTA */}
+                  {phase === "deepdive" && (
                     <>
                       <Card className="bg-muted/20 border-border/30 mb-4">
                         <CardContent className="p-3">
-                          <h3 className="text-[10px] font-semibold text-foreground mb-2">What AI generates:</h3>
+                          <h3 className="text-[10px] font-semibold text-foreground mb-2">AI generates a complete spec:</h3>
                           <div className="grid grid-cols-2 gap-1.5">
                             {[
-                              { emoji: "🎯", label: "Vision & user" },
+                              { emoji: "🎯", label: "Vision & target user" },
                               { emoji: "✅", label: "MVP features" },
                               { emoji: "🗄️", label: "DB schema" },
                               { emoji: "🔌", label: "API routes" },
                               { emoji: "🎨", label: "UI & pages" },
-                              { emoji: "🤖", label: "AI integration" },
+                              { emoji: "🤖", label: "AI agent integration" },
                               { emoji: "💰", label: "Monetization" },
                             ].map(item => (
                               <div key={item.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
@@ -567,7 +538,6 @@ export default function Disrupt() {
                     </>
                   )}
 
-                  {/* Copy CTA when result ready */}
                   {phase === "result" && (
                     <div className="space-y-2">
                       <Button onClick={copyPrompt} size="sm" className="gap-1.5 w-full">
@@ -575,7 +545,7 @@ export default function Disrupt() {
                         {copied ? "Copied!" : "Copy Master Prompt"}
                       </Button>
                       <Button onClick={restart} variant="outline" size="sm" className="gap-1.5 w-full">
-                        <Rocket className="w-3.5 h-3.5" /> Disrupt Another
+                        <Rocket className="w-3.5 h-3.5" /> Find Another Niche
                       </Button>
                     </div>
                   )}
@@ -603,7 +573,7 @@ export default function Disrupt() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                            <Loader2 className="w-4 h-4 animate-spin" /> Initializing factory…
+                            <Loader2 className="w-4 h-4 animate-spin" /> Analyzing niche…
                           </div>
                         )}
                       </div>
@@ -617,19 +587,5 @@ export default function Disrupt() {
       </div>
       <Footer />
     </>
-  );
-}
-
-function InfoCard({ icon, label, content, compact }: { icon: React.ReactNode; label: string; content: string; compact?: boolean }) {
-  return (
-    <Card className="bg-card/40 border-border/30">
-      <CardContent className={`${compact ? "p-2" : "p-3"} flex gap-2.5`}>
-        <div className="mt-0.5 shrink-0">{icon}</div>
-        <div className="min-w-0">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{label}</p>
-          <p className={`text-foreground leading-relaxed ${compact ? "text-[11px] line-clamp-2" : "text-xs"}`}>{content}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
