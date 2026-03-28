@@ -471,7 +471,7 @@ export default function Disrupt() {
             className="flex items-center gap-1.5 text-xs hover:text-foreground transition-colors mb-6 font-cinzel tracking-wider"
             style={{ color: "hsl(var(--filigree))" }}
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "⚔️ Scout another target" : "🏰 Back to The Forge"}
+            <ArrowLeft className="w-3.5 h-3.5" /> {hasPrompt ? "Find another niche" : "Back to opportunities"}
           </button>
 
           <div className="flex flex-col lg:flex-row gap-6">
