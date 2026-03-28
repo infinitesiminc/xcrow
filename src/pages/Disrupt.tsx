@@ -508,11 +508,11 @@ export default function Disrupt() {
 
                   {/* Agent Play - the thesis */}
                   {as.agent_play && (
-                    <Card className="bg-primary/5 border-primary/20 mb-3">
+                    <Card className="mb-3 border" style={{ background: "hsl(var(--primary) / 0.06)", borderColor: "hsl(var(--primary) / 0.2)" }}>
                       <CardContent className="p-3 flex gap-2.5">
                         <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Startup Thesis</p>
+                          <p className="text-[10px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-0.5" style={{ color: "hsl(var(--filigree))" }}>Battle Thesis</p>
                           <p className={`text-foreground leading-relaxed ${hasPrompt ? "text-[11px]" : "text-sm"}`}>{as.agent_play}</p>
                         </div>
                       </CardContent>
