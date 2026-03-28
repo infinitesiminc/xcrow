@@ -247,7 +247,7 @@ export default function Disrupt() {
       </Helmet>
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-4">
           <button
             onClick={hasPrompt ? restart : () => setPhase("browse")}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
