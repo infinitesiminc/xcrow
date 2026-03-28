@@ -248,7 +248,7 @@ export default function Skills() {
                         <p className="text-sm text-muted-foreground mb-3">
                           {groupIdx === 2 ? "Feeling inspired? Start conquering these skills now." : "Almost at the end — your territory awaits."}
                         </p>
-                        <Button variant="outline" size="sm" onClick={() => window.location.href = "/map"}>
+                        <Button variant="outline" size="sm" onClick={() => window.location.href = "/upskill"}>
                           <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Go to World Map
                         </Button>
                       </motion.div>
