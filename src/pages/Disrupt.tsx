@@ -307,7 +307,6 @@ export default function Disrupt() {
         <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : "Xcrow Founder — One Prompt to Launch Your AI Startup"} | Xcrow</title>
         <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
       </Helmet>
-        </Helmet>
         <Navbar />
         <div className="min-h-screen pt-20" style={{ background: "hsl(var(--background))" }}>
           {/* ── Hero Banner ── */}
