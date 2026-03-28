@@ -188,6 +188,7 @@ export function useVerticalMap() {
 
       if (mapResult.error) throw mapResult.error;
       const agentScores = agentResult.data || [];
+      const svAgentScores = svAgentResult.data || [];
 
       const verticals: Record<number, VerticalStats> = {};
       for (const row of mapResult.data || []) {
