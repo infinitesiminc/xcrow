@@ -119,7 +119,7 @@ const App = () => (
             <Routes>
               {/* Public B2C routes */}
               <Route path="/" element={<HomeDashboard />} />
-              <Route path="/map" element={<><Navbar /><MapPage /></>} />
+              <Route path="/upskill" element={<><Navbar /><MapPage /></>} />
               <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
@@ -128,7 +128,7 @@ const App = () => (
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/card-styles" element={<Navigate to="/" replace />} />
               <Route path="/l2-formats" element={<Navigate to="/" replace />} />
-              <Route path="/journey" element={<Navigate to="/map" replace />} />
+              <Route path="/journey" element={<Navigate to="/upskill" replace />} />
               <Route path="/students" element={<Students />} />
               
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
@@ -153,10 +153,10 @@ const App = () => (
               <Route path="/skills" element={<SkillsCodex />} />
               <Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />
                <Route path="/investors" element={<Investors />} />
-              <Route path="/disrupt" element={<><Disrupt /></>} />
-              <Route path="/founder" element={<Navigate to="/disrupt" replace />} />
+              <Route path="/founder" element={<><Disrupt /></>} />
+              <Route path="/disrupt" element={<Navigate to="/founder" replace />} />
               <Route path="/leadgen" element={<><Leadgen /></>} />
-              <Route path="/upskill" element={<Navigate to="/map" replace />} />
+              <Route path="/map" element={<Navigate to="/upskill" replace />} />
               <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               <Route path="/tools" element={<Navigate to="/" replace />} />
               <Route path="/org-stack" element={<Navigate to="/" replace />} />

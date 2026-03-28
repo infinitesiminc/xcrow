@@ -526,7 +526,7 @@ function CTASection() {
         </p>
         <Button
           size="lg"
-          onClick={() => navigate("/map")}
+          onClick={() => navigate("/upskill")}
           className="font-['Cinzel'] font-semibold gap-2"
         >
           Enter the World Map

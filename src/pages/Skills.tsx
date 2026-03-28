@@ -177,7 +177,7 @@ export default function Skills() {
                 <Sparkles className="h-5 w-5 text-primary shrink-0" />
                 <p className="text-sm text-foreground font-medium">Ready to start mastering these skills? Open your World Map and claim your first territory.</p>
               </div>
-              <Button size="sm" onClick={() => window.location.href = "/map"} className="shrink-0">
+              <Button size="sm" onClick={() => window.location.href = "/upskill"} className="shrink-0">
                 Open World Map <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
@@ -248,7 +248,7 @@ export default function Skills() {
                         <p className="text-sm text-muted-foreground mb-3">
                           {groupIdx === 2 ? "Feeling inspired? Start conquering these skills now." : "Almost at the end — your territory awaits."}
                         </p>
-                        <Button variant="outline" size="sm" onClick={() => window.location.href = "/map"}>
+                        <Button variant="outline" size="sm" onClick={() => window.location.href = "/upskill"}>
                           <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Go to World Map
                         </Button>
                       </motion.div>
@@ -268,7 +268,7 @@ export default function Skills() {
             <p className="text-muted-foreground mb-6">
               Every skill here is a castle you can claim. Open the World Map and begin your first quest.
             </p>
-            <Button size="lg" onClick={() => window.location.href = "/map"} className="text-base px-8"
+            <Button size="lg" onClick={() => window.location.href = "/upskill"} className="text-base px-8"
               style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.25)" }}>
               <Sparkles className="h-5 w-5 mr-2" /> Enter the World Map
             </Button>
