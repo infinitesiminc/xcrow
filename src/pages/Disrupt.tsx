@@ -264,7 +264,15 @@ export default function Disrupt() {
                   </Badge>
                 </div>
                 <h1 className="text-2xl font-bold font-cinzel text-foreground mb-1">Disrupt {inc.name}</h1>
-                <p className="text-xs text-muted-foreground">{inc.age} old · {inc.pricingModel}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{inc.age}</span>
+                  <span className="text-xs text-muted-foreground/40">·</span>
+                  <Badge variant={inc.status === "Public" ? "secondary" : "outline"} className="text-[10px]">{inc.status}</Badge>
+                  <span className="text-xs text-muted-foreground/40">·</span>
+                  <span className="text-xs font-semibold text-foreground/80">{inc.valuation}</span>
+                  <span className="text-xs text-muted-foreground/40">·</span>
+                  <span className="text-xs text-muted-foreground">{inc.pricingModel}</span>
+                </div>
               </div>
 
               {/* Intel Cards */}
