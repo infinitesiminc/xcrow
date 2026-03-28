@@ -8,6 +8,10 @@ export interface VerticalCompany {
   description: string | null;
   employee_range: string | null;
   logo_url: string | null;
+  estimated_arr: string | null;
+  estimated_employees: string | null;
+  estimated_funding: string | null;
+  enrichment_confidence: string | null;
   role: "incumbent" | "disruptor" | "transitioning";
 }
 
