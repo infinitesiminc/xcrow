@@ -38,6 +38,14 @@ export interface AgentScore {
   workflow_types: string[];
 }
 
+export interface SubVerticalAgentScore {
+  agent_score: number;
+  agent_verdict: string | null;
+  automatable_workflows: { name: string; automation_level: string; description: string }[];
+  agent_play: string | null;
+  workflow_types: string[];
+}
+
 export interface VerticalStats {
   id: number;
   name: string;
