@@ -93,6 +93,7 @@ export default function Disrupt() {
   const [minScore, setMinScore] = useState(50);
   const [savedNiches, setSavedNiches] = useState<SavedNiche[]>(loadSavedNiches);
   const abortRef = useRef<AbortController | null>(null);
+  const [showChart, setShowChart] = useState(false);
 
   const toggleSave = (niche: FlatNiche, e?: React.MouseEvent) => {
     e?.stopPropagation();
