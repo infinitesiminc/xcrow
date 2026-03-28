@@ -48,7 +48,11 @@ Write actual PostgreSQL CREATE TABLE statements. Include: users/profiles, core d
 - Use \`user_id UUID NOT NULL\` for ownership (do NOT reference auth.users — keep it framework-agnostic)
 - Enable RLS on every table: \`ALTER TABLE x ENABLE ROW LEVEL SECURITY;\`
 - Add RLS policies for every table that has RLS enabled (never enable RLS without a policy)
+- NEVER use \`USING (true)\` in RLS policies — every policy MUST scope access to the owning user via \`user_id = auth.uid()\` or through a parent table join
+- For child tables (e.g. tasks belonging to projects), scope access through the parent: \`USING (project_id IN (SELECT id FROM projects WHERE user_id = auth.uid()))\`
+- The ONLY exception for public access is published content pages: \`FOR SELECT USING (is_published = true)\`
 - Add a policy for public read access on published content (e.g. landing pages)
+- For auth page components, say "Auth (email/password signup and login)" — do NOT reference specific social login providers
 Example format:
 \`\`\`sql
 CREATE TABLE projects (
@@ -59,6 +63,16 @@ CREATE TABLE projects (
 );
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own projects" ON projects FOR ALL USING (user_id = auth.uid());
+
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
+  title TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage tasks via project ownership" ON tasks FOR ALL USING (project_id IN (SELECT id FROM projects WHERE user_id = auth.uid()));
 \`\`\`
 
 ## 🔌 API Routes & Edge Functions
