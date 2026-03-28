@@ -41,8 +41,6 @@ export default function Disrupt() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
-  const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  const [showFullPrompt, setShowFullPrompt] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const openPreview = (inc: IncumbentWithCluster) => {
