@@ -273,7 +273,7 @@ export default function Disrupt() {
     return (
       <>
         <Helmet>
-          <title>The Forge — One Prompt to Launch Your AI Startup | Xcrow</title>
+          <title>Xcrow Founder — One Prompt to Launch Your AI Startup | Xcrow</title>
           <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
         </Helmet>
         <Navbar />
