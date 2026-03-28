@@ -68,10 +68,9 @@ Include: landing, auth, dashboard, 2-3 core feature pages, settings.
 ## 🤖 AI Integration Points
 For each AI feature, specify as a function signature:
 - **Function**: \`generateX(input: InputType): OutputType\`
-- **Model**: Any LLM (GPT, Gemini, Claude — builder will use its default)
 - **Prompt template**: "Given {input}, produce {output} in {format}"
 - **Trigger**: user clicks X / automatic on Y
-Do NOT reference specific model versions — keep it model-agnostic so any AI builder can implement it.
+CRITICAL: Do NOT mention ANY specific AI model names (no GPT, no Claude, no Gemini, no OpenAI, no Anthropic). Say "LLM" or "AI model" only. The builder agent will wire its own model. This prompt must be 100% builder-tool-neutral.
 
 ## 💰 Monetization
 JSON-like pricing config:
