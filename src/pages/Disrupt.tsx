@@ -875,54 +875,116 @@ export default function Disrupt() {
                         </Card>
                       )}
 
-                      {/* Competitive Landscape */}
-                      {!hasPrompt && (
-                        <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
-                          <CardContent className="p-4">
-                            <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-3" style={{ color: "hsl(var(--filigree))" }}>Competitive Landscape</p>
-                            <div className="space-y-3">
-                              {niche.companies.filter(c => c.role === "incumbent").length > 0 && (
-                                <div>
-                                  <p className="text-[11px] font-medium mb-1.5" style={{ color: "hsl(var(--destructive) / 0.8)" }}>Incumbents</p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {niche.companies.filter(c => c.role === "incumbent").map(c => (
-                                      <Badge key={c.id} variant="outline" className="text-[11px] h-6 px-2 border-destructive/20 text-foreground/70">
-                                        {c.name}
-                                        {c.estimated_employees && <span className="ml-1 text-muted-foreground">· {c.estimated_employees}</span>}
-                                      </Badge>
-                                    ))}
+                      {/* Opportunity Map — XY scatter */}
+                      {!hasPrompt && niche.companies.length > 0 && (() => {
+                        // Parse employee string to numeric scale 1-5
+                        const empScale = (s: string | null): number => {
+                          if (!s) return 1;
+                          const n = parseInt(s.replace(/[^0-9]/g, "")) || 0;
+                          if (n >= 1000) return 5;
+                          if (n >= 200) return 4;
+                          if (n >= 50) return 3;
+                          if (n >= 10) return 2;
+                          return 1;
+                        };
+                        // Parse funding to AI-readiness proxy (higher funding = more resources but less agile)
+                        const fundingToAgility = (f: string | null, role: string): number => {
+                          if (role === "incumbent") return 1 + Math.random() * 1.5; // low agility
+                          if (!f) return 3 + Math.random();
+                          const fl = f.toLowerCase();
+                          if (fl.includes("seed") || fl.includes("pre")) return 4 + Math.random() * 0.8;
+                          if (fl.includes("series a") || fl.includes("a")) return 3.5 + Math.random() * 0.5;
+                          if (fl.includes("series b") || fl.includes("b")) return 3 + Math.random() * 0.5;
+                          if (fl.includes("series c") || fl.includes("c") || fl.includes("public")) return 2 + Math.random();
+                          return 3 + Math.random();
+                        };
+
+                        const dots = niche.companies.slice(0, 8).map(c => ({
+                          name: c.name,
+                          role: c.role,
+                          x: empScale(c.estimated_employees),
+                          y: fundingToAgility(c.estimated_funding, c.role),
+                          size: c.role === "incumbent" ? 10 : 7,
+                        }));
+
+                        // Your agent — small team, max AI agility
+                        const agentDot = { name: "Your Agent", role: "agent" as const, x: 1, y: 5, size: 9 };
+
+                        const roleColor = (role: string) => {
+                          if (role === "agent") return "hsl(var(--primary))";
+                          if (role === "incumbent") return "hsl(var(--destructive) / 0.6)";
+                          if (role === "disruptor") return "hsl(var(--success) / 0.7)";
+                          return "hsl(var(--warning) / 0.7)";
+                        };
+
+                        const chartW = 480;
+                        const chartH = 220;
+                        const pad = { top: 20, right: 20, bottom: 28, left: 36 };
+                        const plotW = chartW - pad.left - pad.right;
+                        const plotH = chartH - pad.top - pad.bottom;
+                        const allDots = [...dots, agentDot];
+                        const cx = (v: number) => pad.left + ((v - 0.5) / 5.5) * plotW;
+                        const cy = (v: number) => pad.top + plotH - ((v - 0.5) / 5.5) * plotH;
+
+                        return (
+                          <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                            <CardContent className="p-4">
+                              <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-3" style={{ color: "hsl(var(--filigree))" }}>Opportunity Map</p>
+                              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ maxHeight: 220 }}>
+                                {/* Grid */}
+                                {[1,2,3,4,5].map(i => (
+                                  <line key={`gx${i}`} x1={cx(i)} x2={cx(i)} y1={pad.top} y2={pad.top + plotH} stroke="hsl(var(--border) / 0.15)" strokeDasharray="3,3" />
+                                ))}
+                                {[1,2,3,4,5].map(i => (
+                                  <line key={`gy${i}`} x1={pad.left} x2={pad.left + plotW} y1={cy(i)} y2={cy(i)} stroke="hsl(var(--border) / 0.15)" strokeDasharray="3,3" />
+                                ))}
+
+                                {/* Ideal zone highlight */}
+                                <rect x={cx(0.5)} y={cy(5.5)} width={cx(2.5) - cx(0.5)} height={cy(3) - cy(5.5)} rx={6} fill="hsl(var(--primary) / 0.06)" stroke="hsl(var(--primary) / 0.15)" strokeDasharray="4,4" />
+                                <text x={cx(1.5)} y={cy(5.2)} textAnchor="middle" fontSize={9} fill="hsl(var(--primary) / 0.5)" fontFamily="inherit">Sweet Spot</text>
+
+                                {/* Axis labels */}
+                                <text x={pad.left + plotW / 2} y={chartH - 4} textAnchor="middle" fontSize={10} fill="hsl(var(--muted-foreground))">Team Size →</text>
+                                <text x={10} y={pad.top + plotH / 2} textAnchor="middle" fontSize={10} fill="hsl(var(--muted-foreground))" transform={`rotate(-90, 10, ${pad.top + plotH / 2})`}>AI Agility →</text>
+
+                                {/* Company dots */}
+                                {allDots.map((d, i) => (
+                                  <g key={i}>
+                                    {d.role === "agent" && (
+                                      <circle cx={cx(d.x)} cy={cy(d.y)} r={16} fill="hsl(var(--primary) / 0.1)" className="animate-pulse" />
+                                    )}
+                                    <circle cx={cx(d.x)} cy={cy(d.y)} r={d.size} fill={roleColor(d.role)} stroke={d.role === "agent" ? "hsl(var(--primary))" : "none"} strokeWidth={d.role === "agent" ? 2 : 0} />
+                                    <text
+                                      x={cx(d.x)}
+                                      y={cy(d.y) - d.size - 4}
+                                      textAnchor="middle"
+                                      fontSize={d.role === "agent" ? 11 : 9}
+                                      fontWeight={d.role === "agent" ? 700 : 500}
+                                      fill={d.role === "agent" ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.7)"}
+                                    >
+                                      {d.name}
+                                    </text>
+                                  </g>
+                                ))}
+                              </svg>
+
+                              {/* Legend */}
+                              <div className="flex items-center justify-center gap-4 mt-2">
+                                {[
+                                  { label: "Your Agent", color: "hsl(var(--primary))" },
+                                  { label: "Incumbents", color: "hsl(var(--destructive) / 0.6)" },
+                                  { label: "Disruptors", color: "hsl(var(--success) / 0.7)" },
+                                ].map(l => (
+                                  <div key={l.label} className="flex items-center gap-1.5">
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} />
+                                    <span className="text-[10px] text-muted-foreground">{l.label}</span>
                                   </div>
-                                </div>
-                              )}
-                              {niche.companies.filter(c => c.role === "disruptor").length > 0 && (
-                                <div>
-                                  <p className="text-[11px] font-medium text-primary/80 mb-1.5">Disruptors</p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {niche.companies.filter(c => c.role === "disruptor").map(c => (
-                                      <Badge key={c.id} variant="outline" className="text-[11px] h-6 px-2 border-primary/20 text-foreground/70">
-                                        {c.name}
-                                        {c.estimated_funding && <span className="ml-1 text-muted-foreground">· {c.estimated_funding}</span>}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              {niche.companies.filter(c => c.role === "transitioning").length > 0 && (
-                                <div>
-                                  <p className="text-[11px] font-medium text-amber-400/80 mb-1.5">Transitioning</p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {niche.companies.filter(c => c.role === "transitioning").map(c => (
-                                      <Badge key={c.id} variant="outline" className="text-[11px] h-6 px-2 border-amber-500/20 text-foreground/70">
-                                        {c.name}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )}
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })()}
 
                       {/* Master Prompt output */}
                       {hasPrompt && (
