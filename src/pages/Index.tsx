@@ -18,7 +18,7 @@ const PRODUCTS = [
     tagline: "Master 183 AI skills. Own your career.",
     description: "AI-powered skill gap analysis, gamified quests, and territory conquest. Built for students and professionals navigating the AI economy.",
     icon: Map,
-    route: "/map",
+    route: "/upskill",
     cta: "Start Your Mission",
     color: "from-emerald-500/20 to-emerald-500/5",
     border: "border-emerald-500/30 hover:border-emerald-500/60",
