@@ -31,6 +31,13 @@ export interface DisruptorMaturity {
   count: number;
 }
 
+export interface AgentScore {
+  agent_score: number;
+  agent_verdict: string | null;
+  key_opportunities: string[];
+  workflow_types: string[];
+}
+
 export interface VerticalStats {
   id: number;
   name: string;
@@ -39,6 +46,7 @@ export interface VerticalStats {
   opportunityScore: number;
   disruptorMaturity: DisruptorMaturity;
   verdict: string;
+  agentScore?: AgentScore;
 }
 
 function computeWhitespace(counts: { incumbent: number; disruptor: number }): WhitespaceLabel {
