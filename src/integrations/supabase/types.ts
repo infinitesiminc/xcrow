@@ -2228,6 +2228,45 @@ export type Database = {
           },
         ]
       }
+      subvertical_agent_scores: {
+        Row: {
+          agent_play: string | null
+          agent_score: number
+          agent_verdict: string | null
+          automatable_workflows: Json | null
+          id: string
+          scored_at: string
+          sub_vertical: string
+          vertical_id: number
+          vertical_name: string
+          workflow_types: string[] | null
+        }
+        Insert: {
+          agent_play?: string | null
+          agent_score?: number
+          agent_verdict?: string | null
+          automatable_workflows?: Json | null
+          id?: string
+          scored_at?: string
+          sub_vertical: string
+          vertical_id: number
+          vertical_name: string
+          workflow_types?: string[] | null
+        }
+        Update: {
+          agent_play?: string | null
+          agent_score?: number
+          agent_verdict?: string | null
+          automatable_workflows?: Json | null
+          id?: string
+          scored_at?: string
+          sub_vertical?: string
+          vertical_id?: number
+          vertical_name?: string
+          workflow_types?: string[] | null
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
