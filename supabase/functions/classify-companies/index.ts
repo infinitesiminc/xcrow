@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
         .select("id, name, industry, description, employee_range, founded_year, funding_stage")
         .not("industry", "is", null)
         .order("name")
-        .limit(500);
+        .limit(200);
 
       if (!companies?.length) {
         return new Response(JSON.stringify({ classified: 0, skipped: 0 }), {
