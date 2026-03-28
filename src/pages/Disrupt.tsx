@@ -273,68 +273,94 @@ export default function Disrupt() {
     return (
       <>
         <Helmet>
-          <title>Xcrow Founder — One Prompt to Launch Your AI Startup | Xcrow</title>
+          <title>The Forge — One Prompt to Launch Your AI Startup | Xcrow</title>
           <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
         </Helmet>
         <Navbar />
-        <div className="min-h-screen bg-background pt-20">
-          <div className="text-center px-4 pt-8 pb-6 max-w-2xl mx-auto">
-            <div className="text-4xl mb-3">⚡</div>
-            <h1 className="text-2xl md:text-3xl font-bold font-cinzel text-foreground mb-2">One Prompt. One Founder. Ship It.</h1>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Pick a high-opportunity niche below. We'll generate a single <span className="text-foreground font-medium">Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your startup today.
-            </p>
+        <div className="min-h-screen pt-20" style={{ background: "hsl(var(--background))" }}>
+          {/* ── Hero Banner ── */}
+          <div className="relative text-center px-4 pt-10 pb-8 max-w-3xl mx-auto overflow-hidden">
+            {/* Stone texture overlay */}
+            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" viewBox=\"0 0 40 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"%23fff\" fill-opacity=\"0.4\"%3E%3Cpath d=\"M0 0h20v20H0zM20 20h20v20H20z\"/%3E%3C/g%3E%3C/svg%3E')" }} />
+            {/* Filigree glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree-glow) / 0.6), transparent)" }} />
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+              <div className="text-5xl mb-4">⚔️</div>
+              <h1 className="text-3xl md:text-4xl font-bold font-cinzel text-foreground mb-3 tracking-wide">
+                The Forge
+              </h1>
+              <p className="text-base font-cinzel tracking-wide mb-2" style={{ color: "hsl(var(--filigree))" }}>
+                One Prompt. One Founder. Ship It.
+              </p>
+              <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                Choose your battlefield below. The Forge will craft a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Scroll</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your venture.
+              </p>
+            </motion.div>
+
+            {/* Bottom filigree */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.3), transparent)" }} />
           </div>
 
-          {/* Filters */}
+          {/* ── Filters (styled as parchment bar) ── */}
           <div className="max-w-5xl mx-auto px-4 mb-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative flex-1 min-w-[200px] max-w-xs">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input
-                  placeholder="Search niches, workflows…"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="pl-8 h-8 text-xs bg-muted/20 border-border/30"
-                />
+            <div className="rounded-lg p-3 border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative flex-1 min-w-[200px] max-w-xs">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Scout for niches, workflows…"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="pl-8 h-8 text-xs border-border/30"
+                    style={{ background: "hsl(var(--background))" }}
+                  />
+                </div>
+                <select
+                  value={verticalFilter ?? ""}
+                  onChange={e => setVerticalFilter(e.target.value ? Number(e.target.value) : null)}
+                  className="h-8 text-xs rounded-md border px-2 text-foreground"
+                  style={{ borderColor: "hsl(var(--filigree) / 0.2)", background: "hsl(var(--background))" }}
+                >
+                  <option value="">All Kingdoms</option>
+                  {verticals.map(v => (
+                    <option key={v.id} value={v.id}>{v.name}</option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree))" }}>Threat Level:</span>
+                  {[0, 50, 70, 85].map(s => (
+                    <button
+                      key={s}
+                      onClick={() => setMinScore(s)}
+                      className={`px-2.5 py-1 rounded text-[10px] font-medium transition-all border ${
+                        minScore === s
+                          ? "text-primary-foreground border-primary/50"
+                          : "text-muted-foreground hover:text-foreground border-border/30"
+                      }`}
+                      style={minScore === s ? { background: "hsl(var(--primary))", boxShadow: "0 0 12px hsl(var(--primary) / 0.3)" } : { background: "hsl(var(--background))" }}
+                    >
+                      {s === 0 ? "All" : `${s}+`}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <select
-                value={verticalFilter ?? ""}
-                onChange={e => setVerticalFilter(e.target.value ? Number(e.target.value) : null)}
-                className="h-8 text-xs rounded-md border border-border/30 bg-muted/20 px-2 text-foreground"
-              >
-                <option value="">All Verticals</option>
-                {verticals.map(v => (
-                  <option key={v.id} value={v.id}>{v.name}</option>
-                ))}
-              </select>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-muted-foreground">Min score:</span>
-                {[0, 50, 70, 85].map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setMinScore(s)}
-                    className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${minScore === s ? "bg-primary text-primary-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/40"}`}
-                  >
-                    {s === 0 ? "All" : `${s}+`}
-                  </button>
-                ))}
-              </div>
+              <p className="text-[10px] mt-2 font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.6)" }}>
+                {filteredNiches.length} targets scouted across {new Set(filteredNiches.map(n => n.verticalId)).size} kingdoms
+              </p>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-2">
-              {filteredNiches.length} niches across {new Set(filteredNiches.map(n => n.verticalId)).size} verticals
-            </p>
           </div>
 
-          {/* Niche Grid */}
+          {/* ── Niche Grid (RPG cards) ── */}
           <div className="max-w-6xl mx-auto px-4 pb-16">
             {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <Loader2 className="w-6 h-6 animate-spin" style={{ color: "hsl(var(--filigree-glow))" }} />
+                <p className="text-xs font-cinzel tracking-wider text-muted-foreground">Scouting the realm…</p>
               </div>
             ) : filteredNiches.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground text-sm">
-                No niches match your filters. Try broadening your search.
+              <div className="text-center py-16 text-sm font-cinzel text-muted-foreground">
+                No territories match your scout parameters. Broaden your search, adventurer.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -342,52 +368,60 @@ export default function Disrupt() {
                   const as = niche.agentScore!;
                   const incumbentCount = niche.companies.filter(c => c.role === "incumbent").length;
                   const disruptorCount = niche.companies.filter(c => c.role === "disruptor").length;
+                  const scoreGlow = as.agent_score >= 80 ? "hsl(var(--success) / 0.15)" : as.agent_score >= 60 ? "hsl(var(--warning) / 0.12)" : "transparent";
 
                   return (
-                    <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="h-full">
+                    <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
                       <Card
-                        className={`cursor-pointer border transition-all group hover:border-primary/40 hover:bg-card/80 h-full flex flex-col ${scoreBg(as.agent_score)}`}
+                        className="cursor-pointer border transition-all group h-full flex flex-col overflow-hidden"
                         onClick={() => openDeepDive(niche)}
+                        style={{
+                          background: `linear-gradient(135deg, hsl(var(--card)), hsl(var(--surface-stone)))`,
+                          borderColor: "hsl(var(--filigree) / 0.15)",
+                          boxShadow: `0 0 20px ${scoreGlow}, inset 0 1px 0 hsl(var(--emboss-light))`,
+                        }}
                       >
                         <CardContent className="p-4 flex flex-col flex-1">
                           {/* Score + Niche name */}
                           <div className="flex items-start gap-3 mb-2">
-                            <div className={`text-2xl font-bold tabular-nums leading-none ${scoreColor(as.agent_score)}`}>
+                            <div
+                              className="text-2xl font-bold tabular-nums leading-none font-cinzel"
+                              style={{ color: as.agent_score >= 80 ? "hsl(var(--success))" : as.agent_score >= 60 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))", textShadow: as.agent_score >= 80 ? "0 0 8px hsl(var(--success) / 0.4)" : "none" }}
+                            >
                               {as.agent_score}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-foreground text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                              <h3 className="font-semibold text-foreground text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
                                 {niche.name}
                               </h3>
-                              <span className="text-[10px] text-muted-foreground">{niche.verticalName}</span>
+                              <span className="text-[10px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
                             </div>
                             <Badge variant="outline" className={`text-[9px] h-5 px-1.5 shrink-0 ${whitespaceColor[niche.whitespace]}`}>
-                              {whitespaceLabel[niche.whitespace]}
+                              {niche.whitespace === "open" ? "🏴 Open" : niche.whitespace === "low-competition" ? "⚔️ Contested" : "🛡️ Fortified"}
                             </Badge>
                           </div>
 
                           {/* Agent Play */}
                           <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-2 mb-2 min-h-[2.75rem]">
-                            💡 {as.agent_play || "Emerging opportunity for AI-native disruption"}
+                            💡 {as.agent_play || "Uncharted territory — ripe for conquest"}
                           </p>
 
                           {/* Workflow tags */}
                           <div className="flex flex-wrap gap-1 mb-2 min-h-[1.5rem]">
                             {as.automatable_workflows.slice(0, 3).map((wf, i) => (
-                              <Badge key={i} variant="outline" className={`text-[8px] h-4 px-1.5 ${
-                                wf.automation_level === "full" ? "text-emerald-400 border-emerald-500/20" :
-                                wf.automation_level === "partial" ? "text-amber-400 border-amber-500/20" :
-                                "text-blue-400 border-blue-500/20"
-                              }`}>
+                              <Badge key={i} variant="outline" className="text-[8px] h-4 px-1.5" style={{
+                                borderColor: wf.automation_level === "full" ? "hsl(var(--success) / 0.3)" : wf.automation_level === "partial" ? "hsl(var(--warning) / 0.3)" : "hsl(var(--neon-blue) / 0.3)",
+                                color: wf.automation_level === "full" ? "hsl(var(--success))" : wf.automation_level === "partial" ? "hsl(var(--warning))" : "hsl(var(--neon-blue))",
+                              }}>
                                 {wf.automation_level === "full" ? "⚡" : wf.automation_level === "partial" ? "🔄" : "🤝"} {wf.name}
                               </Badge>
                             ))}
                           </div>
 
-                          {/* Footer with save/share */}
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground border-t border-border/20 pt-2 mt-auto">
-                            <span>{incumbentCount} incumbents</span>
-                            <span>· {disruptorCount} disruptors</span>
+                          {/* Footer */}
+                          <div className="flex items-center gap-2 text-[10px] border-t pt-2 mt-auto" style={{ borderColor: "hsl(var(--filigree) / 0.1)", color: "hsl(var(--muted-foreground))" }}>
+                            <span>🏰 {incumbentCount}</span>
+                            <span>· ⚔️ {disruptorCount}</span>
                             <div className="flex gap-1 ml-auto">
                               <button
                                 onClick={(e) => toggleSave(niche, e)}
