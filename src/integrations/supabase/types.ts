@@ -256,6 +256,47 @@ export type Database = {
           },
         ]
       }
+      company_vertical_map: {
+        Row: {
+          classified_at: string
+          company_id: string
+          confidence: number | null
+          id: string
+          role: string
+          sub_vertical: string | null
+          vertical_id: number
+          vertical_name: string
+        }
+        Insert: {
+          classified_at?: string
+          company_id: string
+          confidence?: number | null
+          id?: string
+          role?: string
+          sub_vertical?: string | null
+          vertical_id: number
+          vertical_name: string
+        }
+        Update: {
+          classified_at?: string
+          company_id?: string
+          confidence?: number | null
+          id?: string
+          role?: string
+          sub_vertical?: string | null
+          vertical_id?: number
+          vertical_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_vertical_map_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_workspaces: {
         Row: {
           created_at: string
