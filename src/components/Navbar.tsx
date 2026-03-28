@@ -69,7 +69,7 @@ export default function Navbar() {
       ]
     : [
         { label: "Upskill", path: "/upskill", icon: Map },
-        { label: "Founder", path: "/founder", icon: Swords },
+        { label: "Agent Launcher", path: "/agentlauncher", icon: Swords },
         { label: "Leadgen", path: "/leadgen", icon: Compass },
       ];
 

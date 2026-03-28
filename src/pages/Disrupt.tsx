@@ -319,10 +319,10 @@ export default function Disrupt() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               <div className="text-5xl mb-4">🚀</div>
               <h1 className="text-3xl md:text-4xl font-bold font-cinzel text-foreground mb-3 tracking-wide">
-                Xcrow Founder
+                Agent Launcher
               </h1>
               <p className="text-base font-cinzel tracking-wide mb-2" style={{ color: "hsl(var(--filigree))" }}>
-                One Prompt. One Founder. Ship It.
+                One Prompt. One Agent. Ship It.
               </p>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
                 Pick a high-opportunity niche below. We'll generate a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your startup.
