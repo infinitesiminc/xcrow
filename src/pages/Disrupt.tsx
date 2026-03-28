@@ -484,7 +484,7 @@ export default function Disrupt() {
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="outline" className="text-[10px]" style={{ borderColor: "hsl(var(--filigree) / 0.3)", color: "hsl(var(--filigree))" }}>{niche.verticalName}</Badge>
                       <Badge variant="outline" className={`text-[10px] ${whitespaceColor[niche.whitespace]}`}>
-                        {niche.whitespace === "open" ? "🏴 Open" : niche.whitespace === "low-competition" ? "⚔️ Contested" : "🛡️ Fortified"}
+                        {niche.whitespace === "open" ? "Open" : niche.whitespace === "low-competition" ? "Low Competition" : "Crowded"}
                       </Badge>
                       <div className="flex gap-1 ml-auto">
                         <button onClick={() => toggleSave(niche)} className="p-1.5 rounded-md hover:bg-muted/40 transition-colors" title={isNicheSaved(niche) ? "Remove from saved" : "Save opportunity"}>
