@@ -420,8 +420,8 @@ export default function Disrupt() {
 
                           {/* Footer */}
                           <div className="flex items-center gap-2 text-[10px] border-t pt-2 mt-auto" style={{ borderColor: "hsl(var(--filigree) / 0.1)", color: "hsl(var(--muted-foreground))" }}>
-                            <span>🏰 {incumbentCount}</span>
-                            <span>· ⚔️ {disruptorCount}</span>
+                            <span>{incumbentCount} incumbents</span>
+                            <span>· {disruptorCount} disruptors</span>
                             <div className="flex gap-1 ml-auto">
                               <button
                                 onClick={(e) => toggleSave(niche, e)}
