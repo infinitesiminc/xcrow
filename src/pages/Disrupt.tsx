@@ -376,14 +376,14 @@ export default function Disrupt() {
   );
 }
 
-function InfoCard({ icon, label, content }: { icon: React.ReactNode; label: string; content: string }) {
+function InfoCard({ icon, label, content, compact }: { icon: React.ReactNode; label: string; content: string; compact?: boolean }) {
   return (
     <Card className="bg-card/40 border-border/30">
-      <CardContent className="p-3 flex gap-3">
+      <CardContent className={`${compact ? "p-2" : "p-3"} flex gap-2.5`}>
         <div className="mt-0.5 shrink-0">{icon}</div>
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{label}</p>
-          <p className="text-xs text-foreground leading-relaxed">{content}</p>
+          <p className={`text-foreground leading-relaxed ${compact ? "text-[11px] line-clamp-2" : "text-xs"}`}>{content}</p>
         </div>
       </CardContent>
     </Card>
