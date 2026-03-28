@@ -2445,6 +2445,36 @@ export type Database = {
         }
         Relationships: []
       }
+      vertical_agent_scores: {
+        Row: {
+          agent_score: number
+          agent_verdict: string | null
+          key_opportunities: string[] | null
+          scored_at: string
+          vertical_id: number
+          vertical_name: string
+          workflow_types: string[] | null
+        }
+        Insert: {
+          agent_score?: number
+          agent_verdict?: string | null
+          key_opportunities?: string[] | null
+          scored_at?: string
+          vertical_id: number
+          vertical_name: string
+          workflow_types?: string[] | null
+        }
+        Update: {
+          agent_score?: number
+          agent_verdict?: string | null
+          key_opportunities?: string[] | null
+          scored_at?: string
+          vertical_id?: number
+          vertical_name?: string
+          workflow_types?: string[] | null
+        }
+        Relationships: []
+      }
       workspace_members: {
         Row: {
           id: string
