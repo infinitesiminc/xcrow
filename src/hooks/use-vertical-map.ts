@@ -22,6 +22,7 @@ export interface SubVertical {
   companies: VerticalCompany[];
   counts: { incumbent: number; disruptor: number; transitioning: number };
   whitespace: WhitespaceLabel;
+  agentScore?: SubVerticalAgentScore;
 }
 
 export interface DisruptorMaturity {
@@ -35,6 +36,14 @@ export interface AgentScore {
   agent_score: number;
   agent_verdict: string | null;
   key_opportunities: string[];
+  workflow_types: string[];
+}
+
+export interface SubVerticalAgentScore {
+  agent_score: number;
+  agent_verdict: string | null;
+  automatable_workflows: { name: string; automation_level: string; description: string }[];
+  agent_play: string | null;
   workflow_types: string[];
 }
 
@@ -164,7 +173,7 @@ export function useVerticalMap() {
   return useQuery({
     queryKey: ["vertical-map"],
     queryFn: async (): Promise<VerticalStats[]> => {
-      const [mapResult, agentResult] = await Promise.all([
+      const [mapResult, agentResult, svAgentResult] = await Promise.all([
         supabase
           .from("company_vertical_map")
           .select("vertical_id, vertical_name, sub_vertical, role, companies(id, name, industry, description, employee_range, logo_url, estimated_arr, estimated_employees, estimated_funding, enrichment_confidence)")
@@ -172,10 +181,14 @@ export function useVerticalMap() {
         supabase
           .from("vertical_agent_scores")
           .select("vertical_id, agent_score, agent_verdict, key_opportunities, workflow_types"),
+        supabase
+          .from("subvertical_agent_scores")
+          .select("vertical_id, sub_vertical, agent_score, agent_verdict, automatable_workflows, agent_play, workflow_types"),
       ]);
 
       if (mapResult.error) throw mapResult.error;
       const agentScores = agentResult.data || [];
+      const svAgentScores = svAgentResult.data || [];
 
       const verticals: Record<number, VerticalStats> = {};
       for (const row of mapResult.data || []) {
@@ -216,6 +229,17 @@ export function useVerticalMap() {
       for (const v of Object.values(verticals)) {
         for (const sv of v.sub_verticals) {
           sv.whitespace = computeWhitespace(sv.counts);
+          // Attach sub-vertical agent score
+          const svAs = svAgentScores.find(a => a.vertical_id === v.id && a.sub_vertical === sv.name);
+          if (svAs) {
+            sv.agentScore = {
+              agent_score: svAs.agent_score,
+              agent_verdict: svAs.agent_verdict,
+              automatable_workflows: (svAs.automatable_workflows as any[]) || [],
+              agent_play: svAs.agent_play,
+              workflow_types: svAs.workflow_types || [],
+            };
+          }
         }
         const order: Record<WhitespaceLabel, number> = { open: 0, "low-competition": 1, crowded: 2 };
         v.sub_verticals.sort((a, b) => order[a.whitespace] - order[b.whitespace]);

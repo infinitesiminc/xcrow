@@ -342,10 +342,62 @@ export default function Disrupt() {
                         >
                           {whitespaceEmoji[sv.whitespace]} {sv.name}
                           <span className="ml-1 opacity-70">{sv.counts.incumbent}i/{sv.counts.disruptor}d</span>
+                          {sv.agentScore && (
+                            <span className="ml-1 text-violet-400">🤖{sv.agentScore.agent_score}</span>
+                          )}
                         </button>
                       ))}
                     </div>
                   )}
+
+                  {/* Sub-vertical workflow breakdown */}
+                  {activeSubVertical && (() => {
+                    const selectedSv = subVerticals.find(s => s.name === activeSubVertical);
+                    if (!selectedSv?.agentScore) return null;
+                    const as = selectedSv.agentScore;
+                    return (
+                      <div className="p-3 rounded-lg bg-violet-500/5 border border-violet-500/20 mb-3 space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-semibold text-foreground/80">🤖 Agent Score: {as.agent_score}/100</span>
+                          <Progress value={as.agent_score} className="h-1.5 w-20 bg-muted/40" />
+                          {as.workflow_types.map(wt => (
+                            <Badge key={wt} variant="outline" className="text-[8px] h-4 px-1.5 border-violet-500/20 text-violet-400/70">
+                              {wt}
+                            </Badge>
+                          ))}
+                        </div>
+                        {as.agent_verdict && (
+                          <p className="text-[10px] text-violet-400/80 italic">{as.agent_verdict}</p>
+                        )}
+                        {as.agent_play && (
+                          <div className="flex items-start gap-1.5 p-2 rounded bg-violet-500/10 border border-violet-500/15">
+                            <Lightbulb className="w-3 h-3 text-violet-400 mt-0.5 shrink-0" />
+                            <span className="text-[10px] font-medium text-violet-300">{as.agent_play}</span>
+                          </div>
+                        )}
+                        {as.automatable_workflows.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Automatable Workflows</span>
+                            {as.automatable_workflows.map((wf, i) => (
+                              <div key={i} className="flex items-start gap-2 text-[10px]">
+                                <Badge variant="outline" className={`text-[8px] h-4 px-1.5 shrink-0 ${
+                                  wf.automation_level === "full" ? "text-emerald-400 border-emerald-500/30" :
+                                  wf.automation_level === "partial" ? "text-amber-400 border-amber-500/30" :
+                                  "text-blue-400 border-blue-500/30"
+                                }`}>
+                                  {wf.automation_level === "full" ? "⚡ Full" : wf.automation_level === "partial" ? "🔄 Partial" : "🤝 Augmented"}
+                                </Badge>
+                                <div>
+                                  <span className="font-medium text-foreground/80">{wf.name}</span>
+                                  <span className="text-muted-foreground ml-1">— {wf.description}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {filteredIncumbents.map(inc => {
