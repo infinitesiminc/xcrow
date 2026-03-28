@@ -160,16 +160,6 @@ export default function Index() {
             transition={{ duration: 0.6 }}
             className="text-center mb-14"
           >
-            {/* Logo with glow ring */}
-            <div className="relative inline-block mb-6">
-              <div className="absolute inset-0 rounded-full bg-[hsl(var(--filigree-glow)/0.3)] blur-xl scale-150" />
-              <img
-                src={xcrowLogo}
-                alt="Xcrow"
-                className="h-20 w-20 relative crow-glow drop-shadow-[0_0_20px_hsl(var(--filigree-glow)/0.5)]"
-              />
-            </div>
-
             <h1
               className="text-4xl md:text-5xl font-bold text-foreground mb-3 tracking-wide"
               style={{ fontFamily: "'Cinzel', serif" }}
