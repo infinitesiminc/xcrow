@@ -133,9 +133,10 @@ export default function Index() {
             style={{
               background: `linear-gradient(180deg, 
                 transparent 0%, 
-                hsl(var(--background) / 0.2) 25%, 
-                hsl(var(--background) / 0.7) 50%, 
-                hsl(var(--background)) 70%)`,
+                transparent 40%,
+                hsl(var(--background) / 0.4) 55%, 
+                hsl(var(--background) / 0.85) 68%, 
+                hsl(var(--background)) 78%)`,
             }}
           />
         </div>
