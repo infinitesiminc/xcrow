@@ -346,7 +346,7 @@ export default function Disrupt() {
                 </div>
               </div>
               <p className="text-[10px] mt-2 font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.6)" }}>
-                {filteredNiches.length} targets scouted across {new Set(filteredNiches.map(n => n.verticalId)).size} kingdoms
+                {filteredNiches.length} opportunities across {new Set(filteredNiches.map(n => n.verticalId)).size} verticals
               </p>
             </div>
           </div>
