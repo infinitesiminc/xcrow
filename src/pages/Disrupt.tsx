@@ -397,7 +397,7 @@ export default function Disrupt() {
                               <span className="text-[10px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
                             </div>
                             <Badge variant="outline" className={`text-[9px] h-5 px-1.5 shrink-0 ${whitespaceColor[niche.whitespace]}`}>
-                              {niche.whitespace === "open" ? "🏴 Open" : niche.whitespace === "low-competition" ? "⚔️ Contested" : "🛡️ Fortified"}
+                              {niche.whitespace === "open" ? "Open" : niche.whitespace === "low-competition" ? "Low Competition" : "Crowded"}
                             </Badge>
                           </div>
 
