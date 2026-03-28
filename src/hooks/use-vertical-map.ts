@@ -22,6 +22,7 @@ export interface SubVertical {
   companies: VerticalCompany[];
   counts: { incumbent: number; disruptor: number; transitioning: number };
   whitespace: WhitespaceLabel;
+  agentScore?: SubVerticalAgentScore;
 }
 
 export interface DisruptorMaturity {
