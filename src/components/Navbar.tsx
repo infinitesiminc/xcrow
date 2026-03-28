@@ -61,8 +61,8 @@ export default function Navbar() {
 
   const navItems = user
     ? [
-        { label: "Upskill", path: "/map", icon: Map },
-        { label: "Founder", path: "/disrupt", icon: Swords },
+        { label: "Upskill", path: "/upskill", icon: Map },
+        { label: "Founder", path: "/founder", icon: Swords },
         { label: "Leadgen", path: "/leadgen", icon: Compass },
         { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
         ...(isSchoolAdmin ? [{ label: "School", path: "/school", icon: GraduationCap }] : []),
