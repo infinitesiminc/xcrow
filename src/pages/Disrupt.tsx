@@ -91,6 +91,24 @@ export default function Disrupt() {
   const [search, setSearch] = useState("");
   const [verticalFilter, setVerticalFilter] = useState<number | null>(null);
   const [minScore, setMinScore] = useState(50);
+  const [savedNiches, setSavedNiches] = useState<SavedNiche[]>(loadSavedNiches);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const toggleSave = (niche: FlatNiche, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const key = nicheKey(niche);
+    setSavedNiches(prev => {
+      const exists = prev.some(s => s.key === key);
+      const next = exists
+        ? prev.filter(s => s.key !== key)
+        : [...prev, { key, name: niche.name, verticalName: niche.verticalName, agentScore: niche.agentScore?.agent_score || 0, agentPlay: niche.agentScore?.agent_play || "", savedAt: new Date().toISOString() }];
+      localStorage.setItem(SAVED_NICHES_KEY, JSON.stringify(next));
+      toast.success(exists ? "Removed from saved" : "Saved opportunity!");
+      return next;
+    });
+  };
+
+  const isNicheSaved = (niche: FlatNiche) => savedNiches.some(s => s.key === nicheKey(niche));
   const abortRef = useRef<AbortController | null>(null);
 
   // Flatten all sub-verticals into a single ranked list
