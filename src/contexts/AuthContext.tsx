@@ -53,6 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   schoolId: null,
   isSchoolAdmin: false,
   isPro: false,
+  isLauncherPro: false,
   refreshProfile: async () => {},
   refreshSubscription: async () => {},
   signOut: async () => {},
