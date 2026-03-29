@@ -507,6 +507,8 @@ export default function Disrupt() {
                           boxShadow: `0 0 20px ${scoreGlow}, inset 0 1px 0 hsl(var(--emboss-light))`,
                         }}
                       >
+                        {/* AI-generated hero banner */}
+                        <AgentCardImage nicheName={niche.name} verticalName={niche.verticalName} className="h-16 -mb-2 rounded-t-lg" />
                         <CardContent className="p-4 flex flex-col flex-1">
                           {/* Agent avatar row — large icon makes it visually obvious */}
                           <div className="flex items-center gap-3 mb-3">
