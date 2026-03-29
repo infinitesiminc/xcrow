@@ -368,8 +368,8 @@ export default function Disrupt() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 pt-16 pb-4">
               <div className="flex justify-center mb-4">
-                <Badge className="text-[12px] px-3 py-1 gap-1.5 rounded-full border" style={{ background: "hsl(var(--primary) / 0.15)", borderColor: "hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}>
-                  <Rocket className="w-3.5 h-3.5" /> AI Startup Discovery Engine
+                <Badge className="text-[12px] px-3 py-1 gap-1.5 rounded-full border" style={{ background: "hsl(var(--primary) / 0.15)", borderColor: "hsl(var(--primary) / 0.4)", color: "white" }}>
+                  <Rocket className="w-3.5 h-3.5 text-white" /> AI Startup Discovery Engine
                 </Badge>
               </div>
               <h1 className="text-3xl md:text-5xl font-bold font-cinzel text-foreground mb-3 tracking-wide drop-shadow-lg">
@@ -575,7 +575,7 @@ export default function Disrupt() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-foreground text-[13px] leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
+                              <h3 className="font-semibold text-foreground text-[15px] leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
                                 {niche.name}
                               </h3>
                               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
