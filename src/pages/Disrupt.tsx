@@ -13,7 +13,7 @@ import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Buil
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVerticalMap, type WhitespaceLabel, type SubVertical, type VerticalStats } from "@/hooks/use-vertical-map";
+import { useVerticalMap, type WhitespaceLabel, type SubVertical, type SubVerticalAgentScore, type VerticalCompany, type VerticalStats } from "@/hooks/use-vertical-map";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 
