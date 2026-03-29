@@ -349,7 +349,19 @@ export default function Disrupt() {
     <>
       <Helmet>
         <title>{phase === "generating" ? "Generating…" : phase === "result" ? `${savedNiche} — Master Prompt` : "Agent Launcher — Build AI Agents with One Prompt"} | Xcrow</title>
-        <meta name="description" content="Pick a software niche. Get one AI-generated builder prompt. Paste it into any AI coding tool and ship your MVP — no co-founder needed." />
+        <meta name="description" content="333 scored niches. One AI-generated builder prompt. Pick a market gap, generate a production-ready MVP spec, and ship your AI agent startup — no co-founder needed." />
+        <meta property="og:title" content="Agent Launcher — Build AI Agents with One Prompt" />
+        <meta property="og:description" content="333 scored niches. One AI-generated builder prompt. Ship your AI agent startup — no co-founder needed." />
+        <meta property="og:image" content="https://xcrow.ai/og-agent-launcher.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://xcrow.ai/agentlauncher" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Agent Launcher — Build AI Agents with One Prompt" />
+        <meta name="twitter:description" content="333 scored niches. One AI-generated builder prompt. Ship your AI agent startup." />
+        <meta name="twitter:image" content="https://xcrow.ai/og-agent-launcher.jpg" />
+        <link rel="canonical" href="https://xcrow.ai/agentlauncher" />
       </Helmet>
         <Navbar />
         <div className="min-h-screen pt-20" style={{ background: "hsl(var(--background))" }}>
