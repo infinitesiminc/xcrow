@@ -87,39 +87,54 @@ serve(async (req) => {
     const batchSize = 8;
     const results: { vertical_id: number; vertical_name: string; sub_vertical: string; company_id: string; company_name: string; role: string }[] = [];
 
-    // Build compact company registry for AI context
-    const companyRegistry = uniquePool.slice(0, 800).map(c => 
-      `${c.name} | ${c.industry || "?"} | ${c.description?.slice(0, 80) || "?"} | ${c.estimated_employees || c.employee_range || "?"} employees | ${c.estimated_funding || "?"}`
-    ).join("\n");
+    // Build compact company registry — split into large (incumbents) and small (disruptors)
+    const largeCompanies = uniquePool.filter(c => {
+      const emp = c.estimated_employees || c.employee_range || "";
+      const funding = c.estimated_funding || "";
+      return emp.includes("1000") || emp.includes("5000") || emp.includes("10000") || 
+             funding.toLowerCase().includes("public") || funding.toLowerCase().includes("series c") ||
+             funding.toLowerCase().includes("series d") || funding.toLowerCase().includes("ipo") ||
+             funding.toLowerCase().includes("late");
+    });
+    const smallCompanies = uniquePool.filter(c => !largeCompanies.includes(c));
+
+    const formatCompany = (c: any) => 
+      `${c.name} | ${c.industry || "?"} | ${c.description?.slice(0, 60) || "?"} | ${c.estimated_employees || c.employee_range || "?"}`;
+
+    const incumbentRegistry = largeCompanies.slice(0, 400).map(formatCompany).join("\n");
+    const disruptorRegistry = smallCompanies.slice(0, 600).map(formatCompany).join("\n");
 
     for (let i = 0; i < incomplete.length; i += batchSize) {
       const batch = incomplete.slice(i, i + batchSize);
 
       const nicheDescriptions = batch.map(n => {
         const missing = [];
-        if (n.incumbents.length === 0) missing.push("NEEDS INCUMBENT (large established company)");
-        if (n.disruptors.length === 0) missing.push("NEEDS DISRUPTOR (startup/challenger)");
+        if (n.incumbents.length === 0) missing.push("NEEDS INCUMBENT");
+        if (n.disruptors.length === 0) missing.push("NEEDS DISRUPTOR");
         return `Niche: "${n.sub_vertical}" (vertical: ${n.vertical_name})
-  Existing incumbents: ${n.incumbents.map(c => c.name).join(", ") || "NONE"}
-  Existing disruptors: ${n.disruptors.map(c => c.name).join(", ") || "NONE"}
+  Has incumbents: ${n.incumbents.map(c => c.name).join(", ") || "NONE"}
+  Has disruptors: ${n.disruptors.map(c => c.name).join(", ") || "NONE"}
   Missing: ${missing.join(", ")}`;
       }).join("\n\n");
 
-      const prompt = `Given these software market niches that are missing either an incumbent or disruptor, find the BEST matching company from the registry below.
+      const prompt = `Match companies to these software niches. Each niche needs either an incumbent or disruptor (or both).
 
 RULES:
-- An INCUMBENT is a large, established company (e.g. Salesforce, Oracle, SAP, Microsoft, Google)
-- A DISRUPTOR is a startup or newer challenger innovating in the space
-- Pick companies whose description/industry clearly relates to the niche
-- If no perfect match exists, pick the closest relevant company
-- Each company can be assigned to multiple niches if relevant
-- ONLY use company names that appear EXACTLY in the registry below
+- INCUMBENT = large established company that operates in this space (even if it's just one product line). Think Salesforce, Oracle, SAP, Microsoft, Google, Adobe, Workday, ServiceNow, etc.
+- DISRUPTOR = startup or newer company challenging the status quo
+- A company can serve multiple niches — e.g. Salesforce is incumbent in CRM, Sales Enablement, Marketing Automation
+- You MUST use company names EXACTLY as they appear in the registries below
+- For each niche, provide at least one assignment for the missing role
+- Prefer high-confidence matches but any reasonable match is better than none
 
-NICHES TO FILL:
+NICHES:
 ${nicheDescriptions}
 
-COMPANY REGISTRY:
-${companyRegistry}`;
+LARGE COMPANIES (potential incumbents):
+${incumbentRegistry}
+
+STARTUPS/CHALLENGERS (potential disruptors):
+${disruptorRegistry}`;
 
       const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
