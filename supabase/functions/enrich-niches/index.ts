@@ -72,30 +72,16 @@ serve(async (req) => {
       });
     }
 
-    // 3. Get unmapped companies (potential pool)
-    const { data: unmapped, error: unmapErr } = await supabase
+    // 3. Get ALL companies as potential pool — prioritize large/known ones
+    const { data: allCompanies, error: poolErr } = await supabase
       .from("companies")
       .select("id, name, description, industry, employee_range, estimated_employees, estimated_funding")
-      .not("id", "in", `(${(mapData || []).map(r => r.company_id).filter(Boolean).join(",")})`)
-      .limit(1000);
-    if (unmapErr) console.error("Unmapped query error:", unmapErr);
+      .order("name")
+      .limit(3000);
+    if (poolErr) console.error("Pool query error:", poolErr);
 
-    // Also get all mapped companies for potential cross-mapping
-    const { data: allCompanies } = await supabase
-      .from("companies")
-      .select("id, name, description, industry, employee_range, estimated_employees, estimated_funding")
-      .limit(2000);
-
-    const companyPool = [...(unmapped || []), ...(allCompanies || [])];
-    // Deduplicate
-    const seenIds = new Set<string>();
-    const uniquePool = companyPool.filter(c => {
-      if (seenIds.has(c.id)) return false;
-      seenIds.add(c.id);
-      return true;
-    });
-
-    console.log(`Company pool: ${uniquePool.length} unique companies`);
+    const uniquePool = allCompanies || [];
+    console.log(`Company pool: ${uniquePool.length} companies`);
 
     // 4. Process in batches via AI
     const batchSize = 8;
