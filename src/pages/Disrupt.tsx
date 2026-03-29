@@ -1300,11 +1300,26 @@ export default function Disrupt() {
                                 {phase === "generating" ? "Generating…" : "Master Prompt"}
                               </h3>
                             </div>
-                            <div className="p-5">
+                            <div className="p-5 relative">
                               {masterPrompt ? (
-                                <div className="prose prose-sm prose-invert max-w-none text-[13px] leading-relaxed">
-                                  <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+                                <div className={`prose prose-sm prose-invert max-w-none text-[13px] leading-relaxed ${!canGenerate && phase === "result" ? "blur-sm select-none" : ""}`}>
+                                  <ReactMarkdown>{canGenerate ? masterPrompt : masterPrompt.slice(0, 600) + "\n\n..."}</ReactMarkdown>
                                 </div>
+                              ) : null}
+                              {masterPrompt && !canGenerate && phase === "result" && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/60 backdrop-blur-sm rounded-lg">
+                                  <Lock className="w-8 h-8" style={{ color: "hsl(var(--territory-strategic))" }} />
+                                  <p className="text-sm font-cinzel font-semibold text-foreground">Subscribe to view & copy</p>
+                                  <Button
+                                    onClick={handleLauncherCheckout}
+                                    disabled={loadingCheckout}
+                                    className="gap-1.5 font-cinzel"
+                                    style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--territory-strategic)))" }}
+                                  >
+                                    <Crown className="w-3.5 h-3.5" /> {loadingCheckout ? "Loading…" : "Unlock — $200/mo"}
+                                  </Button>
+                                </div>
+                              )}
                               ) : (
                                 <div className="flex items-center gap-2 text-[13px] font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
                                   <Loader2 className="w-4 h-4 animate-spin" /> Generating your master prompt…
