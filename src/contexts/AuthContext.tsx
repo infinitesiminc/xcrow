@@ -34,6 +34,7 @@ interface AuthContextType {
   schoolId: string | null;
   isSchoolAdmin: boolean;
   isPro: boolean;
+  isLauncherPro: boolean;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
   signOut: () => Promise<void>;
