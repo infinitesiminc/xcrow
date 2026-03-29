@@ -426,35 +426,58 @@ export default function Disrupt() {
                     style={{ background: "hsl(var(--background))" }}
                   />
                 </div>
-                {/* Vertical pills row */}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  <button
-                    onClick={() => setVerticalFilter(null)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border ${
-                      verticalFilter === null
-                        ? "text-primary-foreground border-primary/50"
-                        : "text-muted-foreground hover:text-foreground border-border/30"
-                    }`}
-                    style={verticalFilter === null ? { background: "hsl(var(--primary))", boxShadow: "0 0 10px hsl(var(--primary) / 0.25)" } : { background: "hsl(var(--background))" }}
-                  >
-                    All
-                  </button>
-                  {verticals.map(v => (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree))" }}>Min Score:</span>
+                  {[0, 50, 70, 85].map(s => (
                     <button
-                      key={v.id}
-                      onClick={() => setVerticalFilter(verticalFilter === v.id ? null : v.id)}
-                      className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border whitespace-nowrap ${
-                        verticalFilter === v.id
+                      key={s}
+                      onClick={() => setMinScore(s)}
+                      className={`px-2.5 py-1 rounded text-[10px] font-medium transition-all border ${
+                        minScore === s
                           ? "text-primary-foreground border-primary/50"
                           : "text-muted-foreground hover:text-foreground border-border/30"
                       }`}
-                      style={verticalFilter === v.id ? { background: "hsl(var(--primary))", boxShadow: "0 0 10px hsl(var(--primary) / 0.25)" } : { background: "hsl(var(--background))" }}
+                      style={minScore === s ? { background: "hsl(var(--primary))", boxShadow: "0 0 12px hsl(var(--primary) / 0.3)" } : { background: "hsl(var(--background))" }}
                     >
-                      {v.name}
-                      <span className="ml-1 opacity-60">{v.count}</span>
+                      {s === 0 ? "All" : `${s}+`}
                     </button>
                   ))}
                 </div>
+              </div>
+              {/* Vertical pills */}
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <button
+                  onClick={() => setVerticalFilter(null)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border ${
+                    verticalFilter === null
+                      ? "text-primary-foreground border-primary/50"
+                      : "text-muted-foreground hover:text-foreground border-border/30"
+                  }`}
+                  style={verticalFilter === null ? { background: "hsl(var(--primary))", boxShadow: "0 0 10px hsl(var(--primary) / 0.25)" } : { background: "hsl(var(--background))" }}
+                >
+                  All
+                </button>
+                {verticals.map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => setVerticalFilter(verticalFilter === v.id ? null : v.id)}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border whitespace-nowrap ${
+                      verticalFilter === v.id
+                        ? "text-primary-foreground border-primary/50"
+                        : "text-muted-foreground hover:text-foreground border-border/30"
+                    }`}
+                    style={verticalFilter === v.id ? { background: "hsl(var(--primary))", boxShadow: "0 0 10px hsl(var(--primary) / 0.25)" } : { background: "hsl(var(--background))" }}
+                  >
+                    {v.name}
+                    <span className="ml-1 opacity-60">{v.count}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] mt-2 font-cinzel tracking-wider" style={{ color: "hsl(var(--filigree) / 0.6)" }}>
+                {filteredNiches.length} opportunities across {new Set(filteredNiches.map(n => n.verticalId)).size} verticals
+              </p>
+            </div>
+          </div>
 
           {/* ── Niche Grid ── */}
           <div className="max-w-6xl mx-auto px-4 pb-16">
