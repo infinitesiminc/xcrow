@@ -366,14 +366,19 @@ export default function Disrupt() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full z-10" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree-glow) / 0.6), transparent)" }} />
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 pt-16 pb-4">
+              <div className="flex justify-center mb-4">
+                <Badge className="text-[12px] px-3 py-1 gap-1.5 rounded-full border" style={{ background: "hsl(var(--primary) / 0.15)", borderColor: "hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}>
+                  <Rocket className="w-3.5 h-3.5" /> AI Startup Discovery Engine
+                </Badge>
+              </div>
               <h1 className="text-3xl md:text-5xl font-bold font-cinzel text-foreground mb-3 tracking-wide drop-shadow-lg">
                 Agent Launcher
               </h1>
               <p className="text-base md:text-lg font-cinzel tracking-wide mb-2 drop-shadow-md" style={{ color: "hsl(var(--filigree))" }}>
-                One Prompt. One Agent. Ship It.
+                Find a niche. Get a builder prompt. Ship an AI agent.
               </p>
-              <p className="text-[13px] text-foreground/80 max-w-lg mx-auto leading-relaxed drop-shadow-sm">
-                Pick a high-opportunity niche below. We'll generate a single <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> — paste it into Lovable, Cursor, or any AI coding tool and launch your agent.
+              <p className="text-[13px] text-foreground/70 max-w-xl mx-auto leading-relaxed drop-shadow-sm">
+                We score every software niche by how vulnerable it is to an autonomous AI agent. Pick one, and we generate a complete <span className="font-medium" style={{ color: "hsl(var(--filigree))" }}>Master Builder Prompt</span> you can paste into Lovable, Cursor, or any AI coding tool to launch your startup.
               </p>
             </motion.div>
 
