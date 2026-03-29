@@ -171,6 +171,11 @@ export default function Disrupt() {
       );
     }
     if (minScore > 0) result = result.filter(n => (n.agentScore?.agent_score || 0) >= minScore);
+    // Require at least 1 incumbent + 1 disruptor for a convincing opportunity
+    result = result.filter(n =>
+      n.companies.filter(c => c.role === "incumbent").length >= 1 &&
+      n.companies.filter(c => c.role === "disruptor").length >= 1
+    );
     return result;
   }, [allNiches, verticalFilter, search, minScore]);
 
