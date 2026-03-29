@@ -148,6 +148,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Check Stripe subscription (B2C)
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (!error && data?.subscribed && data?.product_id) {
+        if (LAUNCHER_PRODUCT_IDS.has(data.product_id)) {
+          setIsLauncherPro(true);
+        }
         if (PRO_PRODUCT_IDS.has(data.product_id)) {
           setPlan("pro");
           setSubscriptionEnd(data.subscription_end ?? null);
@@ -155,6 +158,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
+      setIsLauncherPro(prev => {
+        // Keep launcher status if already detected above
+        return prev;
+      });
       setPlan("free");
       setSubscriptionEnd(null);
       setSchoolName(null);
