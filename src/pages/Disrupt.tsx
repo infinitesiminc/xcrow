@@ -72,6 +72,35 @@ function shareNiche(niche: { name: string; verticalName: string; agentScore?: { 
   }
 }
 
+// Integration pattern classification
+type IntegrationPattern = "api-first" | "embedded-widget" | "full-replacement" | "pipeline" | "rpa-bridge" | "messaging-hook";
+
+const INTEGRATION_PATTERNS: Record<IntegrationPattern, { label: string; icon: string; description: string; color: string }> = {
+  "api-first": { label: "API-First", icon: "🔌", description: "Connects via webhooks & REST APIs to existing tools", color: "hsl(var(--neon-blue))" },
+  "embedded-widget": { label: "Embedded Widget", icon: "🧩", description: "Drop-in component customers add to their existing app", color: "hsl(var(--primary))" },
+  "full-replacement": { label: "Full Replacement", icon: "🏗️", description: "Standalone SaaS that replaces the incumbent entirely", color: "hsl(var(--success))" },
+  "pipeline": { label: "Scheduled Pipeline", icon: "⏱️", description: "Autonomous cron jobs that run without human intervention", color: "hsl(var(--warning))" },
+  "rpa-bridge": { label: "RPA Bridge", icon: "🤖", description: "Automates legacy systems without APIs via browser control", color: "hsl(var(--destructive))" },
+  "messaging-hook": { label: "Messaging Hook", icon: "💬", description: "Monitors email, Slack, or support queues and acts autonomously", color: "hsl(var(--filigree))" },
+};
+
+function inferIntegrationPattern(niche: { agentScore?: SubVerticalAgentScore | null; whitespace: WhitespaceLabel; companies: VerticalCompany[] }): IntegrationPattern {
+  const as = niche.agentScore;
+  if (!as) return "api-first";
+  const wfNames = as.automatable_workflows.map(w => w.name.toLowerCase()).join(" ");
+  const fullAutoRatio = as.automatable_workflows.filter(w => w.automation_level === "full").length / Math.max(as.automatable_workflows.length, 1);
+  const incumbentCount = niche.companies.filter(c => c.role === "incumbent").length;
+
+  // Heuristics based on workflow names and market structure
+  if (wfNames.includes("email") || wfNames.includes("message") || wfNames.includes("chat") || wfNames.includes("notification") || wfNames.includes("outreach")) return "messaging-hook";
+  if (wfNames.includes("schedule") || wfNames.includes("batch") || wfNames.includes("reconcil") || wfNames.includes("monitor") || wfNames.includes("scan")) return "pipeline";
+  if (wfNames.includes("embed") || wfNames.includes("widget") || wfNames.includes("plugin")) return "embedded-widget";
+  if (wfNames.includes("legacy") || wfNames.includes("migrat")) return "rpa-bridge";
+  if (fullAutoRatio >= 0.7 && incumbentCount >= 3) return "full-replacement";
+  if (fullAutoRatio >= 0.5 && as.agent_score >= 75) return "full-replacement";
+  return "api-first";
+}
+
 const whitespaceColor: Record<WhitespaceLabel, string> = {
   open: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
   "low-competition": "text-amber-400 border-amber-400/40 bg-amber-400/10",
