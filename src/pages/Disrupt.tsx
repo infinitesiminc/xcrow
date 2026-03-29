@@ -524,6 +524,8 @@ export default function Disrupt() {
                   const incumbentCount = niche.companies.filter(c => c.role === "incumbent").length;
                   const disruptorCount = niche.companies.filter(c => c.role === "disruptor").length;
                   const scoreGlow = as.agent_score >= 80 ? "hsl(var(--success) / 0.15)" : as.agent_score >= 60 ? "hsl(var(--warning) / 0.12)" : "transparent";
+                  const pattern = inferIntegrationPattern(niche);
+                  const patternInfo = INTEGRATION_PATTERNS[pattern];
 
                   return (
                     <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
