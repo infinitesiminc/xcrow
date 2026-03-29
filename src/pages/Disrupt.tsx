@@ -469,7 +469,7 @@ export default function Disrupt() {
                     style={verticalFilter === v.id ? { background: "hsl(var(--primary))", boxShadow: "0 0 10px hsl(var(--primary) / 0.25)" } : { background: "hsl(var(--background))" }}
                   >
                     {v.name}
-                    <span className="ml-1 opacity-60">{v.count}</span>
+                    <span className="ml-1 opacity-60">{v.sub_verticals.filter(sv => sv.agentScore).length}</span>
                   </button>
                 ))}
               </div>
