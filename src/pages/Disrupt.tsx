@@ -231,6 +231,7 @@ export default function Disrupt() {
   };
 
   const confirmGenerate = async () => {
+    if (!canGenerate) { handleLauncherCheckout(); return; }
     if (!selectedNiche?.agentScore) return;
     const niche = selectedNiche;
     setPhase("generating");
