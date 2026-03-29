@@ -1074,7 +1074,7 @@ export default function Disrupt() {
                       )}
 
                       {/* Opportunity Map — XY scatter */}
-                      {!hasPrompt && niche.companies.length > 0 && (() => {
+                      {!hasPrompt && niche.companies.filter(c => c.role === "incumbent").length >= 1 && niche.companies.filter(c => c.role === "disruptor").length >= 1 && (() => {
                         const empScale = (s: string | null): number => {
                           if (!s) return 1;
                           const n = parseInt(s.replace(/[^0-9]/g, "")) || 0;
