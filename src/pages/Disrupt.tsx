@@ -1004,8 +1004,8 @@ export default function Disrupt() {
                       {/* Founder Opportunity Brief */}
                       {as.agent_verdict && !hasPrompt && (() => {
                         const score = as.agent_score ?? 0;
-                        const incCount = selectedNiche?.incumbents?.length ?? 0;
-                        const disCount = selectedNiche?.disruptors?.length ?? 0;
+                        const incCount = selectedNiche?.counts?.incumbent ?? 0;
+                        const disCount = selectedNiche?.counts?.disruptor ?? 0;
                         const wfs = as.automatable_workflows || [];
                         const fullAuto = wfs.filter((w: any) => w.automation_level === "full").length;
                         const totalWfs = wfs.length;
