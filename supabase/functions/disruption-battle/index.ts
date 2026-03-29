@@ -130,6 +130,8 @@ RULES:
       const incumbentList = (niche.incumbents || []).join(", ") || "None identified";
       const disruptorList = (niche.disruptors || []).join(", ") || "None yet";
       const workflowList = (niche.workflows || []).map((w: any) => `- ${w.name} (${w.automation_level}): ${w.description}`).join("\n");
+      const integrationPattern = niche.integrationPattern || "api-first";
+      const integrationDesc = niche.integrationDescription || "Connects via webhooks & REST APIs to existing tools";
 
       const systemPrompt = `You are a world-class AI startup architect. A solo founder has identified a software niche with high AI agent disruption potential. Generate a SINGLE, COMPLETE builder prompt they can paste directly into an AI coding agent (Lovable, Cursor, Replit) to build a working MVP.
 
@@ -140,6 +142,7 @@ NICHE OPPORTUNITY:
 - Whitespace Status: ${niche.whitespace}
 - Startup Thesis: ${niche.agentPlay}
 - AI Analysis: ${niche.agentVerdict}
+- Integration Pattern: ${integrationPattern} — ${integrationDesc}
 
 COMPETITIVE LANDSCAPE:
 - Incumbents: ${incumbentList}
