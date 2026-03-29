@@ -9,13 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3, Cpu, Wand2, ArrowRight, Clock, DollarSign, Users, ArrowRightLeft } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3, Cpu, Wand2, ArrowRight, Clock, DollarSign, Users, ArrowRightLeft, Lock, Crown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useVerticalMap, type WhitespaceLabel, type SubVertical, type SubVerticalAgentScore, type VerticalCompany, type VerticalStats } from "@/hooks/use-vertical-map";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { STRIPE_PRICES } from "@/lib/stripe-config";
 
 type Phase = "browse" | "deepdive" | "generating" | "result";
 
