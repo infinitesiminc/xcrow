@@ -235,6 +235,8 @@ export default function Disrupt() {
                 whitespace: niche.whitespace,
                 incumbents: niche.companies.filter(c => c.role === "incumbent").map(c => c.name),
                 disruptors: niche.companies.filter(c => c.role === "disruptor").map(c => c.name),
+                integrationPattern: inferIntegrationPattern(niche),
+                integrationDescription: INTEGRATION_PATTERNS[inferIntegrationPattern(niche)].description,
               },
             },
           }),
