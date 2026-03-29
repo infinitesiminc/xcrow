@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [schoolName, setSchoolName] = useState<string | null>(null);
   const [schoolId, setSchoolId] = useState<string | null>(null);
   const [isSchoolAdmin, setIsSchoolAdmin] = useState(false);
+  const [isLauncherPro, setIsLauncherPro] = useState(false);
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
   const isPro = plan === "pro" || plan === "school" || isSuperAdmin;
