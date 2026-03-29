@@ -13,7 +13,7 @@ import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Buil
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVerticalMap, type WhitespaceLabel, type SubVertical, type VerticalStats } from "@/hooks/use-vertical-map";
+import { useVerticalMap, type WhitespaceLabel, type SubVertical, type SubVerticalAgentScore, type VerticalCompany, type VerticalStats } from "@/hooks/use-vertical-map";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 
@@ -70,6 +70,35 @@ function shareNiche(niche: { name: string; verticalName: string; agentScore?: { 
     navigator.clipboard.writeText(`${text}\n${url}`);
     toast.success("Opportunity link copied!");
   }
+}
+
+// Integration pattern classification
+type IntegrationPattern = "api-first" | "embedded-widget" | "full-replacement" | "pipeline" | "rpa-bridge" | "messaging-hook";
+
+const INTEGRATION_PATTERNS: Record<IntegrationPattern, { label: string; icon: string; description: string; color: string }> = {
+  "api-first": { label: "API-First", icon: "🔌", description: "Connects via webhooks & REST APIs to existing tools", color: "hsl(var(--neon-blue))" },
+  "embedded-widget": { label: "Embedded Widget", icon: "🧩", description: "Drop-in component customers add to their existing app", color: "hsl(var(--primary))" },
+  "full-replacement": { label: "Full Replacement", icon: "🏗️", description: "Standalone SaaS that replaces the incumbent entirely", color: "hsl(var(--success))" },
+  "pipeline": { label: "Scheduled Pipeline", icon: "⏱️", description: "Autonomous cron jobs that run without human intervention", color: "hsl(var(--warning))" },
+  "rpa-bridge": { label: "RPA Bridge", icon: "🤖", description: "Automates legacy systems without APIs via browser control", color: "hsl(var(--destructive))" },
+  "messaging-hook": { label: "Messaging Hook", icon: "💬", description: "Monitors email, Slack, or support queues and acts autonomously", color: "hsl(var(--filigree))" },
+};
+
+function inferIntegrationPattern(niche: { agentScore?: SubVerticalAgentScore | null; whitespace: WhitespaceLabel; companies: VerticalCompany[] }): IntegrationPattern {
+  const as = niche.agentScore;
+  if (!as) return "api-first";
+  const wfNames = as.automatable_workflows.map(w => w.name.toLowerCase()).join(" ");
+  const fullAutoRatio = as.automatable_workflows.filter(w => w.automation_level === "full").length / Math.max(as.automatable_workflows.length, 1);
+  const incumbentCount = niche.companies.filter(c => c.role === "incumbent").length;
+
+  // Heuristics based on workflow names and market structure
+  if (wfNames.includes("email") || wfNames.includes("message") || wfNames.includes("chat") || wfNames.includes("notification") || wfNames.includes("outreach")) return "messaging-hook";
+  if (wfNames.includes("schedule") || wfNames.includes("batch") || wfNames.includes("reconcil") || wfNames.includes("monitor") || wfNames.includes("scan")) return "pipeline";
+  if (wfNames.includes("embed") || wfNames.includes("widget") || wfNames.includes("plugin")) return "embedded-widget";
+  if (wfNames.includes("legacy") || wfNames.includes("migrat")) return "rpa-bridge";
+  if (fullAutoRatio >= 0.7 && incumbentCount >= 3) return "full-replacement";
+  if (fullAutoRatio >= 0.5 && as.agent_score >= 75) return "full-replacement";
+  return "api-first";
 }
 
 const whitespaceColor: Record<WhitespaceLabel, string> = {
@@ -206,6 +235,8 @@ export default function Disrupt() {
                 whitespace: niche.whitespace,
                 incumbents: niche.companies.filter(c => c.role === "incumbent").map(c => c.name),
                 disruptors: niche.companies.filter(c => c.role === "disruptor").map(c => c.name),
+                integrationPattern: inferIntegrationPattern(niche),
+                integrationDescription: INTEGRATION_PATTERNS[inferIntegrationPattern(niche)].description,
               },
             },
           }),
@@ -495,6 +526,8 @@ export default function Disrupt() {
                   const incumbentCount = niche.companies.filter(c => c.role === "incumbent").length;
                   const disruptorCount = niche.companies.filter(c => c.role === "disruptor").length;
                   const scoreGlow = as.agent_score >= 80 ? "hsl(var(--success) / 0.15)" : as.agent_score >= 60 ? "hsl(var(--warning) / 0.12)" : "transparent";
+                  const pattern = inferIntegrationPattern(niche);
+                  const patternInfo = INTEGRATION_PATTERNS[pattern];
 
                   return (
                     <motion.div key={`${niche.verticalId}-${niche.name}`} whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
@@ -539,11 +572,14 @@ export default function Disrupt() {
                               <h3 className="font-semibold text-foreground text-[13px] leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
                                 {niche.name}
                               </h3>
-                              <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                 <span className="text-[11px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
                                 {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
                                   <Badge variant="outline" className={`text-[11px] h-5 px-1.5 ${sig.color}`}>{sig.label}</Badge>
                                 ); })()}
+                                <Badge variant="outline" className="text-[10px] h-5 px-1.5" style={{ borderColor: `${patternInfo.color}40`, color: patternInfo.color }}>
+                                  {patternInfo.icon} {patternInfo.label}
+                                </Badge>
                               </div>
                             </div>
                             <div
@@ -797,6 +833,106 @@ export default function Disrupt() {
                               <div className="h-6" style={{ background: "linear-gradient(to bottom, transparent, hsl(var(--card)))" }} />
                             </div>
                           </div>
+                        );
+                      })()}
+
+                      {/* Integration Pattern */}
+                      {!hasPrompt && (() => {
+                        const pattern = inferIntegrationPattern(niche);
+                        const info = INTEGRATION_PATTERNS[pattern];
+                        const allPatterns: IntegrationPattern[] = ["api-first", "embedded-widget", "full-replacement", "pipeline", "messaging-hook", "rpa-bridge"];
+                        return (
+                          <Card className="border overflow-hidden" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <ArrowRightLeft className="w-4 h-4" style={{ color: "hsl(var(--filigree))" }} />
+                                <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em]" style={{ color: "hsl(var(--filigree))" }}>
+                                  Integration Pattern
+                                </p>
+                              </div>
+                              {/* Recommended pattern */}
+                              <div className="rounded-lg border p-3 mb-3" style={{ borderColor: `${info.color}30`, background: `${info.color}08` }}>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <span className="text-lg">{info.icon}</span>
+                                  <span className="text-[13px] font-semibold text-foreground">{info.label}</span>
+                                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto" style={{ borderColor: `${info.color}40`, color: info.color }}>Recommended</Badge>
+                                </div>
+                                <p className="text-[12px] text-foreground/70 leading-relaxed">{info.description}</p>
+                              </div>
+                              {/* How it works */}
+                              <p className="text-[11px] text-muted-foreground mb-2 font-medium">How your agent connects to real workflows:</p>
+                              <div className="space-y-1.5">
+                                {pattern === "api-first" && [
+                                  "Exposes REST endpoints that CRMs, ERPs, and tools call via webhook",
+                                  "Receives events → processes with AI → returns structured results",
+                                  "Zero-install for customers — works with their existing stack",
+                                ].map((step, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-[11px] font-mono shrink-0" style={{ color: info.color }}>{i + 1}.</span>
+                                    <p className="text-[11px] text-foreground/70">{step}</p>
+                                  </div>
+                                ))}
+                                {pattern === "full-replacement" && [
+                                  "Users sign up at your SaaS dashboard — no incumbent needed",
+                                  "AI handles core workflows end-to-end autonomously",
+                                  "Migration tools import data from legacy platforms",
+                                ].map((step, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-[11px] font-mono shrink-0" style={{ color: info.color }}>{i + 1}.</span>
+                                    <p className="text-[11px] text-foreground/70">{step}</p>
+                                  </div>
+                                ))}
+                                {pattern === "messaging-hook" && [
+                                  "Monitors inboxes, Slack channels, or support queues 24/7",
+                                  "AI triages, drafts responses, or takes action autonomously",
+                                  "Escalates to humans only for edge cases — handles 80%+ alone",
+                                ].map((step, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-[11px] font-mono shrink-0" style={{ color: info.color }}>{i + 1}.</span>
+                                    <p className="text-[11px] text-foreground/70">{step}</p>
+                                  </div>
+                                ))}
+                                {pattern === "pipeline" && [
+                                  "Scheduled cron jobs run autonomously (hourly, daily, or on-event)",
+                                  "Pulls data from multiple sources → AI processes → outputs results",
+                                  "Dashboard shows pipeline status, errors, and human-review queue",
+                                ].map((step, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-[11px] font-mono shrink-0" style={{ color: info.color }}>{i + 1}.</span>
+                                    <p className="text-[11px] text-foreground/70">{step}</p>
+                                  </div>
+                                ))}
+                                {pattern === "embedded-widget" && [
+                                  "Customers embed a JS snippet or React component in their app",
+                                  "Widget connects to your API — handles AI logic server-side",
+                                  "White-label ready — adapts to customer's brand automatically",
+                                ].map((step, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-[11px] font-mono shrink-0" style={{ color: info.color }}>{i + 1}.</span>
+                                    <p className="text-[11px] text-foreground/70">{step}</p>
+                                  </div>
+                                ))}
+                                {pattern === "rpa-bridge" && [
+                                  "Browser automation (Playwright/Puppeteer) drives legacy system UIs",
+                                  "AI reads screens, fills forms, and extracts data without APIs",
+                                  "Bridges the gap until incumbents offer proper integrations",
+                                ].map((step, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-[11px] font-mono shrink-0" style={{ color: info.color }}>{i + 1}.</span>
+                                    <p className="text-[11px] text-foreground/70">{step}</p>
+                                  </div>
+                                ))}
+                              </div>
+                              {/* Other patterns */}
+                              <div className="flex flex-wrap gap-1.5 mt-3 pt-2.5 border-t" style={{ borderColor: "hsl(var(--filigree) / 0.1)" }}>
+                                <span className="text-[10px] text-muted-foreground mr-1">Also possible:</span>
+                                {allPatterns.filter(p => p !== pattern).slice(0, 3).map(p => {
+                                  const pi = INTEGRATION_PATTERNS[p];
+                                  return <span key={p} className="text-[10px] text-foreground/50">{pi.icon} {pi.label}</span>;
+                                })}
+                              </div>
+                            </CardContent>
+                          </Card>
                         );
                       })()}
 

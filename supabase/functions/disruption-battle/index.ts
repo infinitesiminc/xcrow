@@ -130,6 +130,8 @@ RULES:
       const incumbentList = (niche.incumbents || []).join(", ") || "None identified";
       const disruptorList = (niche.disruptors || []).join(", ") || "None yet";
       const workflowList = (niche.workflows || []).map((w: any) => `- ${w.name} (${w.automation_level}): ${w.description}`).join("\n");
+      const integrationPattern = niche.integrationPattern || "api-first";
+      const integrationDesc = niche.integrationDescription || "Connects via webhooks & REST APIs to existing tools";
 
       const systemPrompt = `You are a world-class AI startup architect. A solo founder has identified a software niche with high AI agent disruption potential. Generate a SINGLE, COMPLETE builder prompt they can paste directly into an AI coding agent (Lovable, Cursor, Replit) to build a working MVP.
 
@@ -140,6 +142,7 @@ NICHE OPPORTUNITY:
 - Whitespace Status: ${niche.whitespace}
 - Startup Thesis: ${niche.agentPlay}
 - AI Analysis: ${niche.agentVerdict}
+- Integration Pattern: ${integrationPattern} — ${integrationDesc}
 
 COMPETITIVE LANDSCAPE:
 - Incumbents: ${incumbentList}
@@ -194,6 +197,16 @@ For each AI feature, specify as a function signature:
 - **Automation level**: Full / Partial / Augmented
 Map each integration point to the automatable workflows. This is an AI-AGENT-NATIVE product — the AI should be doing the heavy lifting, not just assisting.
 CRITICAL: Do NOT mention ANY specific AI model names. Say "LLM" or "AI model" only. This prompt must be 100% builder-tool-neutral.
+
+## 🔗 Integration Architecture
+The recommended integration pattern is **${integrationPattern}** (${integrationDesc}).
+Describe how the agent connects to real-world workflows:
+- **Inbound triggers**: What events/data sources trigger the agent (webhooks, cron schedules, message listeners, embedded script events)
+- **Processing pipeline**: How the agent processes inputs (AI steps, validation, enrichment, decisions)
+- **Outbound actions**: What the agent does after processing (API calls to external systems, notifications, database updates, UI updates)
+- **Error handling**: How failures are surfaced (retry queues, dead letter queues, human escalation rules)
+- Include a simple ASCII flow diagram showing: Trigger → Agent Core → Output
+Make this section concrete for the "${niche.name}" domain — reference specific systems the target user already uses.
 
 ## 💰 Monetization
 JSON-like pricing config:
