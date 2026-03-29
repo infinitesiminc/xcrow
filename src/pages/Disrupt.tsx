@@ -1341,22 +1341,50 @@ export default function Disrupt() {
                             </div>
                           </CardContent>
                         </Card>
-                        <Button
-                          onClick={confirmGenerate}
-                          size="lg"
-                          className="gap-2 w-full font-cinzel tracking-wider"
-                          style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
-                        >
-                          <Rocket className="w-4 h-4" /> Generate Master Prompt
-                        </Button>
+                        {canGenerate ? (
+                          <Button
+                            onClick={confirmGenerate}
+                            size="lg"
+                            className="gap-2 w-full font-cinzel tracking-wider"
+                            style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
+                          >
+                            <Rocket className="w-4 h-4" /> Generate Master Prompt
+                          </Button>
+                        ) : (
+                          <div className="space-y-2">
+                            <Button
+                              onClick={handleLauncherCheckout}
+                              size="lg"
+                              disabled={loadingCheckout}
+                              className="gap-2 w-full font-cinzel tracking-wider"
+                              style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--territory-strategic)))", boxShadow: "0 0 24px hsl(var(--territory-strategic) / 0.3)" }}
+                            >
+                              <Crown className="w-4 h-4" /> {loadingCheckout ? "Loading…" : "Unlock — $200/mo"}
+                            </Button>
+                            <p className="text-[10px] text-center text-muted-foreground">
+                              Unlimited master prompts · Cancel anytime
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                     {phase === "result" && (
                       <div className="flex gap-2">
-                        <Button onClick={copyPrompt} className="gap-1.5 flex-1 font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
-                          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                          {copied ? "Copied!" : "Copy Master Prompt"}
-                        </Button>
+                        {canGenerate ? (
+                          <Button onClick={copyPrompt} className="gap-1.5 flex-1 font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
+                            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copied ? "Copied!" : "Copy Master Prompt"}
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleLauncherCheckout}
+                            disabled={loadingCheckout}
+                            className="gap-1.5 flex-1 font-cinzel tracking-wider"
+                            style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--territory-strategic)))", boxShadow: "0 0 16px hsl(var(--territory-strategic) / 0.3)" }}
+                          >
+                            <Lock className="w-3.5 h-3.5" /> {loadingCheckout ? "Loading…" : "Unlock to Copy — $200/mo"}
+                          </Button>
+                        )}
                         <Button onClick={restart} variant="outline" className="gap-1.5 font-cinzel tracking-wider" style={{ borderColor: "hsl(var(--filigree) / 0.3)" }}>
                           <Rocket className="w-3.5 h-3.5" /> New
                         </Button>
