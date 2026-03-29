@@ -1320,7 +1320,7 @@ export default function Disrupt() {
                                   </Button>
                                 </div>
                               )}
-                              ) : (
+                              {!masterPrompt && (
                                 <div className="flex items-center gap-2 text-[13px] font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
                                   <Loader2 className="w-4 h-4 animate-spin" /> Generating your master prompt…
                                 </div>
