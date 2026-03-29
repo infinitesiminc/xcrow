@@ -1001,18 +1001,45 @@ export default function Disrupt() {
                         );
                       })()}
 
-                      {/* AI Analysis */}
-                      {as.agent_verdict && !hasPrompt && (
-                        <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
-                          <CardContent className="p-4 flex gap-3">
-                            <Bot className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "hsl(var(--sentinel))" }} />
-                            <div>
-                              <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--filigree))" }}>AI Analysis</p>
-                              <p className="text-[13px] text-foreground/80 leading-relaxed">{as.agent_verdict}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )}
+                      {/* Founder Opportunity Brief */}
+                      {as.agent_verdict && !hasPrompt && (() => {
+                        const score = as.agent_score ?? 0;
+                        const incCount = selectedNiche?.incumbents?.length ?? 0;
+                        const disCount = selectedNiche?.disruptors?.length ?? 0;
+                        const wfs = as.automatable_workflows || [];
+                        const fullAuto = wfs.filter((w: any) => w.automation_level === "full").length;
+                        const totalWfs = wfs.length;
+
+                        const urgency = score >= 80
+                          ? "This market is wide open for an AI-native play."
+                          : score >= 60
+                          ? "There's a real gap here if you move fast."
+                          : "This is a slower burn — but defensible if you nail the niche.";
+
+                        const competitive = incCount > 0 && disCount === 0
+                          ? `${incCount} legacy player${incCount > 1 ? "s" : ""} dominate this space and none have shipped an autonomous agent yet — you'd be first.`
+                          : incCount > 0 && disCount > 0
+                          ? `${incCount} incumbent${incCount > 1 ? "s" : ""} and only ${disCount} AI-native entrant${disCount > 1 ? "s" : ""} — the field is still early enough to win.`
+                          : "No clear incumbents — this is greenfield territory for a solo founder.";
+
+                        const automation = totalWfs > 0
+                          ? `${fullAuto} of ${totalWfs} core workflows can be fully automated by your agent from day one — that's your MVP scope.`
+                          : "";
+
+                        return (
+                          <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                            <CardContent className="p-4 flex gap-3">
+                              <Rocket className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "hsl(var(--sentinel))" }} />
+                              <div>
+                                <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: "hsl(var(--filigree))" }}>Why You Should Build This</p>
+                                <p className="text-[13px] text-foreground/90 leading-relaxed font-medium mb-1.5">{urgency}</p>
+                                <p className="text-[12px] text-foreground/70 leading-relaxed mb-1">{competitive}</p>
+                                {automation && <p className="text-[12px] text-foreground/70 leading-relaxed">{automation}</p>}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })()}
 
                       {/* Automatable Workflows */}
                       {!hasPrompt && as.automatable_workflows.length > 0 && (
