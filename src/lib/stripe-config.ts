@@ -1,5 +1,6 @@
 export const STRIPE_PRICES = {
   CHAMPION_MONTHLY: "price_1TEvG0GqMIbud5Ha8h085MFj",
+  LAUNCHER_PRO_MONTHLY: "price_1TGBpxGqMIbud5HalJIv0Uos",
   // Legacy prices (kept for existing subscribers)
   STUDENT_PRO_MONTHLY: "price_1TChXtGqMIbud5Ha7Rubrrg9",
   PRO_MONTHLY: "price_1TAtnDGqMIbud5HaWJVNIAkP",
@@ -9,6 +10,7 @@ export const STRIPE_PRICES = {
 
 export const STRIPE_PRODUCTS = {
   CHAMPION: "prod_UDLxu72XQjm88j",
+  LAUNCHER_PRO: "prod_UEfAjOLyjvupBA",
   // Legacy products
   STUDENT_PRO: "prod_UB3fASll4IYr6C",
   PRO_MONTHLY: "prod_U9CBP2Xq5KOXG4",
@@ -22,6 +24,11 @@ export const PRO_PRODUCT_IDS = new Set([
   STRIPE_PRODUCTS.STUDENT_PRO,
   STRIPE_PRODUCTS.PRO_MONTHLY,
   STRIPE_PRODUCTS.PRO_ANNUAL,
+]);
+
+/** Product IDs that grant launcher access */
+export const LAUNCHER_PRODUCT_IDS = new Set([
+  STRIPE_PRODUCTS.LAUNCHER_PRO,
 ]);
 
 export type PlanTier = "free" | "pro" | "school";

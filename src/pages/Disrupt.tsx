@@ -9,13 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3, Cpu, Wand2, ArrowRight, Clock, DollarSign, Users, ArrowRightLeft } from "lucide-react";
+import { Copy, Check, Rocket, ArrowLeft, Loader2, Sparkles, Zap, Lightbulb, Building2, ChevronDown, ChevronUp, Search, Bot, TrendingUp, X, Bookmark, BookmarkCheck, Share2, BarChart3, Cpu, Wand2, ArrowRight, Clock, DollarSign, Users, ArrowRightLeft, Lock, Crown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useVerticalMap, type WhitespaceLabel, type SubVertical, type SubVerticalAgentScore, type VerticalCompany, type VerticalStats } from "@/hooks/use-vertical-map";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { STRIPE_PRICES } from "@/lib/stripe-config";
 
 type Phase = "browse" | "deepdive" | "generating" | "result";
 
@@ -110,6 +113,7 @@ const whitespaceLabel: Record<WhitespaceLabel, string> = { open: "Open", "low-co
 
 export default function Disrupt() {
   const isMobile = useIsMobile();
+  const { user, isLauncherPro, isSuperAdmin, openAuthModal } = useAuth();
   const { data: verticalStats, isLoading } = useVerticalMap();
   const saved = loadResult();
   const [phase, setPhase] = useState<Phase>(saved ? "result" : "browse");
@@ -125,6 +129,26 @@ export default function Disrupt() {
   const [savedNiches, setSavedNiches] = useState<SavedNiche[]>(loadSavedNiches);
   const abortRef = useRef<AbortController | null>(null);
   const [showChart, setShowChart] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
+
+  const canGenerate = isLauncherPro || isSuperAdmin;
+
+  const handleLauncherCheckout = async () => {
+    if (!user) { openAuthModal(); return; }
+    setLoadingCheckout(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: STRIPE_PRICES.LAUNCHER_PRO_MONTHLY },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast.error("Failed to start checkout. Try again.");
+    } finally {
+      setLoadingCheckout(false);
+    }
+  };
 
   const toggleSave = (niche: FlatNiche, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -207,6 +231,7 @@ export default function Disrupt() {
   };
 
   const confirmGenerate = async () => {
+    if (!canGenerate) { handleLauncherCheckout(); return; }
     if (!selectedNiche?.agentScore) return;
     const niche = selectedNiche;
     setPhase("generating");
@@ -1275,12 +1300,27 @@ export default function Disrupt() {
                                 {phase === "generating" ? "Generating…" : "Master Prompt"}
                               </h3>
                             </div>
-                            <div className="p-5">
+                            <div className="p-5 relative">
                               {masterPrompt ? (
-                                <div className="prose prose-sm prose-invert max-w-none text-[13px] leading-relaxed">
-                                  <ReactMarkdown>{masterPrompt}</ReactMarkdown>
+                                <div className={`prose prose-sm prose-invert max-w-none text-[13px] leading-relaxed ${!canGenerate && phase === "result" ? "blur-sm select-none" : ""}`}>
+                                  <ReactMarkdown>{canGenerate ? masterPrompt : masterPrompt.slice(0, 600) + "\n\n..."}</ReactMarkdown>
                                 </div>
-                              ) : (
+                              ) : null}
+                              {masterPrompt && !canGenerate && phase === "result" && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/60 backdrop-blur-sm rounded-lg">
+                                  <Lock className="w-8 h-8" style={{ color: "hsl(var(--territory-strategic))" }} />
+                                  <p className="text-sm font-cinzel font-semibold text-foreground">Subscribe to view & copy</p>
+                                  <Button
+                                    onClick={handleLauncherCheckout}
+                                    disabled={loadingCheckout}
+                                    className="gap-1.5 font-cinzel"
+                                    style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--territory-strategic)))" }}
+                                  >
+                                    <Crown className="w-3.5 h-3.5" /> {loadingCheckout ? "Loading…" : "Unlock — $200/mo"}
+                                  </Button>
+                                </div>
+                              )}
+                              {!masterPrompt && (
                                 <div className="flex items-center gap-2 text-[13px] font-cinzel" style={{ color: "hsl(var(--filigree))" }}>
                                   <Loader2 className="w-4 h-4 animate-spin" /> Generating your master prompt…
                                 </div>
@@ -1317,22 +1357,50 @@ export default function Disrupt() {
                             </div>
                           </CardContent>
                         </Card>
-                        <Button
-                          onClick={confirmGenerate}
-                          size="lg"
-                          className="gap-2 w-full font-cinzel tracking-wider"
-                          style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
-                        >
-                          <Rocket className="w-4 h-4" /> Generate Master Prompt
-                        </Button>
+                        {canGenerate ? (
+                          <Button
+                            onClick={confirmGenerate}
+                            size="lg"
+                            className="gap-2 w-full font-cinzel tracking-wider"
+                            style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
+                          >
+                            <Rocket className="w-4 h-4" /> Generate Master Prompt
+                          </Button>
+                        ) : (
+                          <div className="space-y-2">
+                            <Button
+                              onClick={handleLauncherCheckout}
+                              size="lg"
+                              disabled={loadingCheckout}
+                              className="gap-2 w-full font-cinzel tracking-wider"
+                              style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--territory-strategic)))", boxShadow: "0 0 24px hsl(var(--territory-strategic) / 0.3)" }}
+                            >
+                              <Crown className="w-4 h-4" /> {loadingCheckout ? "Loading…" : "Unlock — $200/mo"}
+                            </Button>
+                            <p className="text-[10px] text-center text-muted-foreground">
+                              Unlimited master prompts · Cancel anytime
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                     {phase === "result" && (
                       <div className="flex gap-2">
-                        <Button onClick={copyPrompt} className="gap-1.5 flex-1 font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
-                          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                          {copied ? "Copied!" : "Copy Master Prompt"}
-                        </Button>
+                        {canGenerate ? (
+                          <Button onClick={copyPrompt} className="gap-1.5 flex-1 font-cinzel tracking-wider" style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.25)" }}>
+                            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copied ? "Copied!" : "Copy Master Prompt"}
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleLauncherCheckout}
+                            disabled={loadingCheckout}
+                            className="gap-1.5 flex-1 font-cinzel tracking-wider"
+                            style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--territory-strategic)))", boxShadow: "0 0 16px hsl(var(--territory-strategic) / 0.3)" }}
+                          >
+                            <Lock className="w-3.5 h-3.5" /> {loadingCheckout ? "Loading…" : "Unlock to Copy — $200/mo"}
+                          </Button>
+                        )}
                         <Button onClick={restart} variant="outline" className="gap-1.5 font-cinzel tracking-wider" style={{ borderColor: "hsl(var(--filigree) / 0.3)" }}>
                           <Rocket className="w-3.5 h-3.5" /> New
                         </Button>

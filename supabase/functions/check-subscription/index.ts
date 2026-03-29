@@ -69,13 +69,14 @@ serve(async (req) => {
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
-      limit: 1,
+      limit: 10,
     });
 
     const hasActiveSub = subscriptions.data.length > 0;
     let productId = null;
     let priceId = null;
     let subscriptionEnd = null;
+    const allProductIds: string[] = [];
 
     if (hasActiveSub) {
       const sub = subscriptions.data[0];
@@ -83,12 +84,18 @@ serve(async (req) => {
       productId = sub.items.data[0].price.product;
       priceId = sub.items.data[0].price.id;
       logStep("Active subscription found", { productId, priceId, subscriptionEnd });
+      // Collect all product IDs across subscriptions
+      for (const s of subscriptions.data) {
+        for (const item of s.items.data) {
+          allProductIds.push(item.price.product as string);
+        }
+      }
     } else {
       logStep("No active subscription");
     }
 
     return new Response(
-      JSON.stringify({ subscribed: hasActiveSub, product_id: productId, price_id: priceId, subscription_end: subscriptionEnd }),
+      JSON.stringify({ subscribed: hasActiveSub, product_id: productId, price_id: priceId, subscription_end: subscriptionEnd, all_product_ids: allProductIds }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error) {

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import AuthModal from "@/components/AuthModal";
-import { PRO_PRODUCT_IDS, type PlanTier } from "@/lib/stripe-config";
+import { PRO_PRODUCT_IDS, LAUNCHER_PRODUCT_IDS, type PlanTier } from "@/lib/stripe-config";
 
 const SUPERADMIN_IDS = [
   "7be41055-be68-4cab-b63c-f3b0c483e6eb",
@@ -34,6 +34,7 @@ interface AuthContextType {
   schoolId: string | null;
   isSchoolAdmin: boolean;
   isPro: boolean;
+  isLauncherPro: boolean;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -52,6 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   schoolId: null,
   isSchoolAdmin: false,
   isPro: false,
+  isLauncherPro: false,
   refreshProfile: async () => {},
   refreshSubscription: async () => {},
   signOut: async () => {},
@@ -71,6 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [schoolName, setSchoolName] = useState<string | null>(null);
   const [schoolId, setSchoolId] = useState<string | null>(null);
   const [isSchoolAdmin, setIsSchoolAdmin] = useState(false);
+  const [isLauncherPro, setIsLauncherPro] = useState(false);
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
   const isPro = plan === "pro" || plan === "school" || isSuperAdmin;
@@ -144,12 +147,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Check Stripe subscription (B2C)
       const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (!error && data?.subscribed && data?.product_id) {
-        if (PRO_PRODUCT_IDS.has(data.product_id)) {
+      if (!error && data?.subscribed) {
+        const allIds: string[] = data.all_product_ids || (data.product_id ? [data.product_id] : []);
+        const hasLauncher = allIds.some((id) => (LAUNCHER_PRODUCT_IDS as Set<string>).has(id));
+        const hasPro = allIds.some((id) => (PRO_PRODUCT_IDS as Set<string>).has(id));
+        setIsLauncherPro(hasLauncher);
+        if (hasPro) {
           setPlan("pro");
           setSubscriptionEnd(data.subscription_end ?? null);
           return;
         }
+      } else {
+        setIsLauncherPro(false);
       }
 
       setPlan("free");
@@ -242,7 +251,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user, session, loading, profile, isSuperAdmin,
-      plan, subscriptionEnd, schoolName, schoolId, isSchoolAdmin, isPro,
+      plan, subscriptionEnd, schoolName, schoolId, isSchoolAdmin, isPro, isLauncherPro,
       refreshProfile, refreshSubscription, signOut, openAuthModal,
     }}>
       {children}
