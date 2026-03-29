@@ -113,6 +113,7 @@ const whitespaceLabel: Record<WhitespaceLabel, string> = { open: "Open", "low-co
 
 export default function Disrupt() {
   const isMobile = useIsMobile();
+  const { user, isLauncherPro, isSuperAdmin, openAuthModal } = useAuth();
   const { data: verticalStats, isLoading } = useVerticalMap();
   const saved = loadResult();
   const [phase, setPhase] = useState<Phase>(saved ? "result" : "browse");
@@ -128,6 +129,26 @@ export default function Disrupt() {
   const [savedNiches, setSavedNiches] = useState<SavedNiche[]>(loadSavedNiches);
   const abortRef = useRef<AbortController | null>(null);
   const [showChart, setShowChart] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
+
+  const canGenerate = isLauncherPro || isSuperAdmin;
+
+  const handleLauncherCheckout = async () => {
+    if (!user) { openAuthModal(); return; }
+    setLoadingCheckout(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: STRIPE_PRICES.LAUNCHER_PRO_MONTHLY },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast.error("Failed to start checkout. Try again.");
+    } finally {
+      setLoadingCheckout(false);
+    }
+  };
 
   const toggleSave = (niche: FlatNiche, e?: React.MouseEvent) => {
     e?.stopPropagation();
