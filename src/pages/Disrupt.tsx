@@ -570,11 +570,14 @@ export default function Disrupt() {
                               <h3 className="font-semibold text-foreground text-[13px] leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
                                 {niche.name}
                               </h3>
-                              <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                 <span className="text-[11px]" style={{ color: "hsl(var(--filigree))" }}>{niche.verticalName}</span>
                                 {(() => { const sig = opportunitySignal(niche.whitespace, as.agent_score); return (
                                   <Badge variant="outline" className={`text-[11px] h-5 px-1.5 ${sig.color}`}>{sig.label}</Badge>
                                 ); })()}
+                                <Badge variant="outline" className="text-[10px] h-5 px-1.5" style={{ borderColor: `${patternInfo.color}40`, color: patternInfo.color }}>
+                                  {patternInfo.icon} {patternInfo.label}
+                                </Badge>
                               </div>
                             </div>
                             <div
