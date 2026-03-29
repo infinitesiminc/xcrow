@@ -575,7 +575,7 @@ export default function Disrupt() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-foreground text-[13px] leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
+                              <h3 className="font-semibold text-foreground text-[15px] leading-tight group-hover:text-primary transition-colors line-clamp-1 font-cinzel">
                                 {niche.name}
                               </h3>
                               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
