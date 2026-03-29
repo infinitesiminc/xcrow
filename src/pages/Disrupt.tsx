@@ -1075,7 +1075,6 @@ export default function Disrupt() {
 
                       {/* Opportunity Map — XY scatter */}
                       {!hasPrompt && niche.companies.length > 0 && (() => {
-                        // Parse employee string to numeric scale 1-5
                         const empScale = (s: string | null): number => {
                           if (!s) return 1;
                           const n = parseInt(s.replace(/[^0-9]/g, "")) || 0;
@@ -1085,9 +1084,8 @@ export default function Disrupt() {
                           if (n >= 10) return 2;
                           return 1;
                         };
-                        // Parse funding to AI-readiness proxy (higher funding = more resources but less agile)
                         const fundingToAgility = (f: string | null, role: string): number => {
-                          if (role === "incumbent") return 1 + Math.random() * 1.5; // low agility
+                          if (role === "incumbent") return 1 + Math.random() * 1.5;
                           if (!f) return 3 + Math.random();
                           const fl = f.toLowerCase();
                           if (fl.includes("seed") || fl.includes("pre")) return 4 + Math.random() * 0.8;
@@ -1105,8 +1103,7 @@ export default function Disrupt() {
                           size: c.role === "incumbent" ? 10 : 7,
                         }));
 
-                        // Your agent — small team, max AI agility
-                        const agentDot = { name: "Your Agent", role: "agent" as const, x: 1, y: 5, size: 9 };
+                        const agentDot = { name: "Your Agent", role: "agent" as const, x: 0.8, y: 5.2, size: 9 };
 
                         const roleColor = (role: string) => {
                           if (role === "agent") return "hsl(var(--primary))";
@@ -1116,65 +1113,147 @@ export default function Disrupt() {
                         };
 
                         const chartW = 480;
-                        const chartH = 220;
-                        const pad = { top: 20, right: 20, bottom: 28, left: 36 };
+                        const chartH = 260;
+                        const pad = { top: 24, right: 20, bottom: 32, left: 40 };
                         const plotW = chartW - pad.left - pad.right;
                         const plotH = chartH - pad.top - pad.bottom;
                         const allDots = [...dots, agentDot];
-                        const cx = (v: number) => pad.left + ((v - 0.5) / 5.5) * plotW;
-                        const cy = (v: number) => pad.top + plotH - ((v - 0.5) / 5.5) * plotH;
+                        const cx = (v: number) => pad.left + ((v - 0) / 6) * plotW;
+                        const cy = (v: number) => pad.top + plotH - ((v - 0) / 6) * plotH;
+
+                        const incumbents = dots.filter(d => d.role === "incumbent");
+                        const disruptors = dots.filter(d => d.role === "disruptor");
+                        const avgIncX = incumbents.length > 0 ? incumbents.reduce((s, d) => s + d.x, 0) / incumbents.length : 4;
+                        const avgIncY = incumbents.length > 0 ? incumbents.reduce((s, d) => s + d.y, 0) / incumbents.length : 1.5;
+
+                        // Narrative insight
+                        const topIncumbent = incumbents.sort((a, b) => b.x - a.x)[0];
+                        const narrativeText = topIncumbent
+                          ? `${topIncumbent.name} has ${topIncumbent.x >= 4 ? "1,000+" : topIncumbent.x >= 3 ? "50-200" : "10-50"} employees doing what one AI agent could automate.`
+                          : disruptors.length > 0
+                          ? `${disruptors.length} disruptor${disruptors.length > 1 ? "s" : ""} competing — but none fully autonomous.`
+                          : "No competitors yet — first-mover advantage.";
 
                         return (
-                          <Card className="border" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
-                            <CardContent className="p-4">
-                              <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em] mb-3" style={{ color: "hsl(var(--filigree))" }}>Opportunity Map</p>
-                              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ maxHeight: 220 }}>
+                          <Card className="border overflow-hidden" style={{ background: "hsl(var(--surface-stone))", borderColor: "hsl(var(--filigree) / 0.15)" }}>
+                            <CardContent className="p-4 pb-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-[11px] font-cinzel font-semibold uppercase tracking-[0.15em]" style={{ color: "hsl(var(--filigree))" }}>Competitive Landscape</p>
+                                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: "hsl(var(--primary) / 0.12)", color: "hsl(var(--primary))" }}>
+                                  {incumbents.length + disruptors.length} players mapped
+                                </span>
+                              </div>
+
+                              {/* Narrative insight bar */}
+                              <div className="flex items-start gap-2 mb-3 p-2.5 rounded-lg" style={{ background: "hsl(var(--primary) / 0.06)", border: "1px solid hsl(var(--primary) / 0.1)" }}>
+                                <Zap className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                                <p className="text-[11px] leading-[1.5] text-foreground/80">{narrativeText}</p>
+                              </div>
+
+                              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ maxHeight: 260 }}>
+                                <defs>
+                                  <radialGradient id="agentGlow" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
+                                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                                  </radialGradient>
+                                  <linearGradient id="dangerZone" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity="0.06" />
+                                    <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity="0.02" />
+                                  </linearGradient>
+                                  <linearGradient id="sweetZone" x1="0" y1="1" x2="1" y2="0">
+                                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.08" />
+                                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+                                  </linearGradient>
+                                </defs>
+
+                                {/* Quadrant zones */}
+                                {/* Bottom-right: Danger zone (big team, low agility) */}
+                                <rect x={cx(3)} y={cy(3)} width={cx(6) - cx(3)} height={cy(0) - cy(3)} rx={6} fill="url(#dangerZone)" stroke="hsl(var(--destructive) / 0.1)" strokeDasharray="4,4" />
+                                <text x={cx(4.5)} y={cy(0.4)} textAnchor="middle" fontSize={8} fill="hsl(var(--destructive) / 0.4)" fontWeight={600}>SLOW &amp; BLOATED</text>
+
+                                {/* Top-left: Sweet spot (small team, high agility) */}
+                                <rect x={cx(0)} y={cy(6)} width={cx(2.5) - cx(0)} height={cy(3.5) - cy(6)} rx={6} fill="url(#sweetZone)" stroke="hsl(var(--primary) / 0.15)" strokeDasharray="4,4" />
+                                <text x={cx(1.25)} y={cy(5.6)} textAnchor="middle" fontSize={8} fill="hsl(var(--primary) / 0.6)" fontWeight={600}>AI-NATIVE</text>
+                                <text x={cx(1.25)} y={cy(5.6) + 11} textAnchor="middle" fontSize={7} fill="hsl(var(--primary) / 0.4)">SWEET SPOT</text>
+
+                                {/* Top-right label */}
+                                <text x={cx(4.5)} y={cy(5.6)} textAnchor="middle" fontSize={7} fill="hsl(var(--muted-foreground) / 0.3)">WELL-FUNDED &amp; AGILE</text>
+
+                                {/* Bottom-left label */}
+                                <text x={cx(1.25)} y={cy(0.4)} textAnchor="middle" fontSize={7} fill="hsl(var(--muted-foreground) / 0.3)">NICHE &amp; RIGID</text>
+
                                 {/* Grid */}
                                 {[1,2,3,4,5].map(i => (
-                                  <line key={`gx${i}`} x1={cx(i)} x2={cx(i)} y1={pad.top} y2={pad.top + plotH} stroke="hsl(var(--border) / 0.15)" strokeDasharray="3,3" />
+                                  <line key={`gx${i}`} x1={cx(i)} x2={cx(i)} y1={pad.top} y2={pad.top + plotH} stroke="hsl(var(--border) / 0.1)" strokeDasharray="2,4" />
                                 ))}
                                 {[1,2,3,4,5].map(i => (
-                                  <line key={`gy${i}`} x1={pad.left} x2={pad.left + plotW} y1={cy(i)} y2={cy(i)} stroke="hsl(var(--border) / 0.15)" strokeDasharray="3,3" />
+                                  <line key={`gy${i}`} x1={pad.left} x2={pad.left + plotW} y1={cy(i)} y2={cy(i)} stroke="hsl(var(--border) / 0.1)" strokeDasharray="2,4" />
                                 ))}
 
-                                {/* Ideal zone highlight */}
-                                <rect x={cx(0.5)} y={cy(5.5)} width={cx(2.5) - cx(0.5)} height={cy(3) - cy(5.5)} rx={6} fill="hsl(var(--primary) / 0.06)" stroke="hsl(var(--primary) / 0.15)" strokeDasharray="4,4" />
-                                <text x={cx(1.5)} y={cy(5.2)} textAnchor="middle" fontSize={9} fill="hsl(var(--primary) / 0.5)" fontFamily="inherit">Sweet Spot</text>
+                                {/* Disruption arrow from avg incumbent to your agent */}
+                                {incumbents.length > 0 && (
+                                  <g opacity={0.3}>
+                                    <line
+                                      x1={cx(avgIncX)} y1={cy(avgIncY)}
+                                      x2={cx(agentDot.x) + 18} y2={cy(agentDot.y) + 12}
+                                      stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="6,4"
+                                      markerEnd="url(#arrowHead)"
+                                    />
+                                    <defs>
+                                      <marker id="arrowHead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                        <path d="M0,0 L8,3 L0,6" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" />
+                                      </marker>
+                                    </defs>
+                                  </g>
+                                )}
 
                                 {/* Axis labels */}
-                                <text x={pad.left + plotW / 2} y={chartH - 4} textAnchor="middle" fontSize={10} fill="hsl(var(--muted-foreground))">Team Size →</text>
-                                <text x={10} y={pad.top + plotH / 2} textAnchor="middle" fontSize={10} fill="hsl(var(--muted-foreground))" transform={`rotate(-90, 10, ${pad.top + plotH / 2})`}>AI Agility →</text>
+                                <text x={pad.left + plotW / 2} y={chartH - 6} textAnchor="middle" fontSize={10} fill="hsl(var(--muted-foreground) / 0.6)" fontWeight={500}>Team Size →</text>
+                                <text x={12} y={pad.top + plotH / 2} textAnchor="middle" fontSize={10} fill="hsl(var(--muted-foreground) / 0.6)" fontWeight={500} transform={`rotate(-90, 12, ${pad.top + plotH / 2})`}>AI Agility →</text>
 
-                                {/* Company dots */}
-                                {allDots.map((d, i) => (
+                                {/* Scale ticks */}
+                                <text x={cx(1)} y={chartH - 18} textAnchor="middle" fontSize={8} fill="hsl(var(--muted-foreground) / 0.3)">1-10</text>
+                                <text x={cx(3)} y={chartH - 18} textAnchor="middle" fontSize={8} fill="hsl(var(--muted-foreground) / 0.3)">50-200</text>
+                                <text x={cx(5)} y={chartH - 18} textAnchor="middle" fontSize={8} fill="hsl(var(--muted-foreground) / 0.3)">1000+</text>
+
+                                {/* Company dots — incumbents first, then disruptors, agent on top */}
+                                {[...incumbents, ...disruptors.map(d => ({...d})), agentDot].map((d, i) => (
                                   <g key={i}>
                                     {d.role === "agent" && (
-                                      <circle cx={cx(d.x)} cy={cy(d.y)} r={16} fill="hsl(var(--primary) / 0.1)" className="animate-pulse" />
+                                      <>
+                                        <circle cx={cx(d.x)} cy={cy(d.y)} r={28} fill="url(#agentGlow)" />
+                                        <circle cx={cx(d.x)} cy={cy(d.y)} r={16} fill="hsl(var(--primary) / 0.08)" className="animate-pulse" />
+                                      </>
                                     )}
-                                    <circle cx={cx(d.x)} cy={cy(d.y)} r={d.size} fill={roleColor(d.role)} stroke={d.role === "agent" ? "hsl(var(--primary))" : "none"} strokeWidth={d.role === "agent" ? 2 : 0} />
+                                    <circle
+                                      cx={cx(d.x)} cy={cy(d.y)} r={d.size}
+                                      fill={roleColor(d.role)}
+                                      stroke={d.role === "agent" ? "hsl(var(--primary))" : "hsl(var(--background) / 0.5)"}
+                                      strokeWidth={d.role === "agent" ? 2.5 : 1}
+                                    />
                                     <text
                                       x={cx(d.x)}
-                                      y={cy(d.y) - d.size - 4}
+                                      y={cy(d.y) - d.size - 5}
                                       textAnchor="middle"
                                       fontSize={d.role === "agent" ? 11 : 9}
                                       fontWeight={d.role === "agent" ? 700 : 500}
-                                      fill={d.role === "agent" ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.7)"}
+                                      fill={d.role === "agent" ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.65)"}
                                     >
-                                      {d.name}
+                                      {d.name.length > 16 ? d.name.slice(0, 14) + "…" : d.name}
                                     </text>
                                   </g>
                                 ))}
                               </svg>
 
                               {/* Legend */}
-                              <div className="flex items-center justify-center gap-4 mt-2">
+                              <div className="flex items-center justify-center gap-5 mt-1">
                                 {[
-                                  { label: "Your Agent", color: "hsl(var(--primary))" },
-                                  { label: "Incumbents", color: "hsl(var(--destructive) / 0.6)" },
-                                  { label: "Disruptors", color: "hsl(var(--success) / 0.7)" },
+                                  { label: "Your Agent", color: "hsl(var(--primary))", icon: "◆" },
+                                  { label: "Incumbents", color: "hsl(var(--destructive) / 0.6)", icon: "●" },
+                                  { label: "Disruptors", color: "hsl(var(--success) / 0.7)", icon: "●" },
                                 ].map(l => (
                                   <div key={l.label} className="flex items-center gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} />
+                                    <span style={{ color: l.color, fontSize: 10 }}>{l.icon}</span>
                                     <span className="text-[10px] text-muted-foreground">{l.label}</span>
                                   </div>
                                 ))}
