@@ -693,8 +693,10 @@ export default function Disrupt() {
                         const workflows = as.automatable_workflows.slice(0, 4);
                         const incumbents = niche.companies.filter(c => c.role === "incumbent").slice(0, 3);
                         const agentName = niche.name.replace(/\s*(Software|Platform|Tools|Solutions|Management)\s*/gi, "").trim();
+                        const agentCacheKey = `agent-card-${niche.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "")}`;
+                        const heroImgUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/sim-images/${agentCacheKey}.png`;
                         return (
-                          <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.3)" }}>
+                          <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--filigree) / 0.2)", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.3), 0 0 0 1px hsl(var(--filigree) / 0.05)" }}>
                             {/* Fake browser chrome */}
                             <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ background: "hsl(var(--muted) / 0.3)", borderColor: "hsl(var(--border) / 0.3)" }}>
                               <div className="flex gap-1.5">
@@ -703,30 +705,54 @@ export default function Disrupt() {
                                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(var(--success) / 0.5)" }} />
                               </div>
                               <div className="flex-1 mx-4 h-5 rounded-md flex items-center px-2 text-[10px] text-muted-foreground" style={{ background: "hsl(var(--background) / 0.5)" }}>
-                                {agentName.toLowerCase().replace(/\s+/g, "")}.ai
+                                🔒 {agentName.toLowerCase().replace(/\s+/g, "")}.ai
                               </div>
                             </div>
 
                             {/* Landing page content */}
                             <div style={{ background: "linear-gradient(180deg, hsl(var(--background)), hsl(var(--card)))" }}>
-                              {/* Hero section */}
-                              <div className="px-6 pt-8 pb-6 text-center">
-                                <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] border mb-4" style={{ background: "hsl(var(--primary) / 0.08)", borderColor: "hsl(var(--primary) / 0.2)", color: "hsl(var(--primary))" }}>
-                                  <Bot className="w-3 h-3" />
-                                  AI-Powered Agent
-                                </div>
-                                <h3 className="text-xl font-bold text-foreground leading-tight mb-2">
-                                  {agentName} on Autopilot
-                                </h3>
-                                <p className="text-[13px] text-muted-foreground leading-relaxed max-w-sm mx-auto mb-5">
-                                  {as.agent_play}
-                                </p>
-                                <div className="flex justify-center gap-2">
-                                  <div className="px-4 py-2 rounded-lg text-[12px] font-semibold text-primary-foreground" style={{ background: "hsl(var(--primary))" }}>
-                                    Start Free Trial
+                              {/* Hero section with AI image background */}
+                              <div className="relative overflow-hidden">
+                                <img
+                                  src={heroImgUrl}
+                                  alt=""
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                  style={{ opacity: 0.25, filter: "blur(1px) saturate(1.3)" }}
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                />
+                                <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, hsl(var(--background) / 0.5) 0%, hsl(var(--background) / 0.85) 70%, hsl(var(--background)) 100%)" }} />
+                                <div className="relative px-6 pt-10 pb-8 text-center">
+                                  <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] border mb-4" style={{ background: "hsl(var(--primary) / 0.12)", borderColor: "hsl(var(--primary) / 0.25)", color: "hsl(var(--primary))" }}>
+                                    <Bot className="w-3 h-3" />
+                                    AI-Powered Agent
                                   </div>
-                                  <div className="px-4 py-2 rounded-lg text-[12px] font-medium border text-foreground/70" style={{ borderColor: "hsl(var(--border))" }}>
-                                    Watch Demo
+                                  <h3 className="text-xl font-bold text-foreground leading-tight mb-2 font-cinzel">
+                                    {agentName} on Autopilot
+                                  </h3>
+                                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-sm mx-auto mb-6">
+                                    {as.agent_play}
+                                  </p>
+                                  <div className="flex justify-center gap-2">
+                                    <div className="px-5 py-2.5 rounded-lg text-[12px] font-semibold text-primary-foreground" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", boxShadow: "0 4px 14px hsl(var(--primary) / 0.3)" }}>
+                                      Start Free Trial →
+                                    </div>
+                                    <div className="px-5 py-2.5 rounded-lg text-[12px] font-medium border text-foreground/70 backdrop-blur-sm" style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card) / 0.5)" }}>
+                                      Watch Demo
+                                    </div>
+                                  </div>
+
+                                  {/* Trust strip */}
+                                  <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t" style={{ borderColor: "hsl(var(--filigree) / 0.1)" }}>
+                                    {[
+                                      { icon: <Users className="w-3 h-3" />, text: "500+ teams" },
+                                      { icon: <Zap className="w-3 h-3" />, text: "99.9% uptime" },
+                                      { icon: <Clock className="w-3 h-3" />, text: "Setup in 5min" },
+                                    ].map((item, i) => (
+                                      <div key={i} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                        {item.icon}
+                                        {item.text}
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
                               </div>
@@ -736,11 +762,12 @@ export default function Disrupt() {
                                 <p className="text-[10px] font-cinzel uppercase tracking-widest text-center mb-3" style={{ color: "hsl(var(--filigree))" }}>What It Automates</p>
                                 <div className="grid grid-cols-2 gap-2">
                                   {workflows.map((wf, i) => (
-                                    <div key={i} className="rounded-lg border p-3 flex items-start gap-2.5" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border) / 0.5)" }}>
-                                      <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{
-                                        background: wf.automation_level === "full" ? "hsl(var(--success) / 0.1)" : wf.automation_level === "partial" ? "hsl(var(--warning) / 0.1)" : "hsl(var(--primary) / 0.1)",
+                                    <div key={i} className="rounded-lg border p-3 flex items-start gap-2.5 transition-colors" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border) / 0.5)" }}>
+                                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{
+                                        background: wf.automation_level === "full" ? "hsl(var(--success) / 0.12)" : wf.automation_level === "partial" ? "hsl(var(--warning) / 0.12)" : "hsl(var(--primary) / 0.12)",
+                                        boxShadow: wf.automation_level === "full" ? "0 0 8px hsl(var(--success) / 0.15)" : "none",
                                       }}>
-                                        {wf.automation_level === "full" ? <Zap className="w-3.5 h-3.5" style={{ color: "hsl(var(--success))" }} /> : wf.automation_level === "partial" ? <Cpu className="w-3.5 h-3.5" style={{ color: "hsl(var(--warning))" }} /> : <Wand2 className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />}
+                                        {wf.automation_level === "full" ? <Zap className="w-4 h-4" style={{ color: "hsl(var(--success))" }} /> : wf.automation_level === "partial" ? <Cpu className="w-4 h-4" style={{ color: "hsl(var(--warning))" }} /> : <Wand2 className="w-4 h-4" style={{ color: "hsl(var(--primary))" }} />}
                                       </div>
                                       <div className="min-w-0">
                                         <p className="text-[11px] font-medium text-foreground leading-tight truncate">{wf.name}</p>
@@ -757,9 +784,9 @@ export default function Disrupt() {
                                   <p className="text-[10px] text-center text-muted-foreground mb-2">Replaces legacy tools like</p>
                                   <div className="flex justify-center gap-3">
                                     {incumbents.map(c => (
-                                      <div key={c.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] text-foreground/50" style={{ borderColor: "hsl(var(--border) / 0.3)", background: "hsl(var(--muted) / 0.15)" }}>
+                                      <div key={c.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[11px] text-foreground/50" style={{ borderColor: "hsl(var(--border) / 0.3)", background: "hsl(var(--muted) / 0.15)" }}>
                                         <Building2 className="w-3 h-3" />
-                                        <span className="line-through decoration-muted-foreground/40">{c.name}</span>
+                                        <span className="line-through decoration-destructive/40">{c.name}</span>
                                       </div>
                                     ))}
                                   </div>
