@@ -245,7 +245,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user, session, loading, profile, isSuperAdmin,
-      plan, subscriptionEnd, schoolName, schoolId, isSchoolAdmin, isPro,
+      plan, subscriptionEnd, schoolName, schoolId, isSchoolAdmin, isPro, isLauncherPro,
       refreshProfile, refreshSubscription, signOut, openAuthModal,
     }}>
       {children}
