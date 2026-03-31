@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -12,6 +10,35 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+async function aiCall(prompt: string, userContent: string) {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: prompt },
+        { role: "user", content: userContent },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("AI gateway error:", res.status, err);
+    throw new Error(`AI call failed: ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data?.choices?.[0]?.message?.content || "";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -22,7 +49,7 @@ Deno.serve(async (req) => {
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!firecrawlKey) return json({ success: false, error: "Firecrawl not configured" }, 500);
 
-    // --- Step 1: Scrape user's website to understand their business ---
+    // --- Step 1: Scrape user's website ---
     let formattedUrl = website.trim();
     if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
 
@@ -45,57 +72,34 @@ Deno.serve(async (req) => {
     const siteContent = scrapeData?.data?.markdown || scrapeData?.markdown || "";
 
     if (!siteContent) {
-      console.error("Scrape returned no content:", scrapeData);
+      console.error("Scrape returned no content:", JSON.stringify(scrapeData).slice(0, 300));
       return json({ success: false, error: "Could not read your website. Check the URL." }, 400);
     }
 
     console.log("Site content length:", siteContent.length);
 
-    // --- Step 2: Use AI to extract ICP and build search queries ---
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // --- Step 2: AI extracts ICP and builds search queries ---
+    const icpText = await aiCall(
+      `You are a lead generation expert. Analyze the website content and generate exactly 3 search queries to find potential customers/buyers for this business. 
 
-    // Use Lovable AI via gateway
-    const aiRes = await fetch(`${supabaseUrl}/functions/v1/ai-gateway`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `You are a lead generation expert. Analyze the website content and generate exactly 3 search queries to find potential customers/buyers for this business. 
-
-Return JSON ONLY (no markdown):
+Return JSON ONLY (no markdown fences):
 {
   "company_summary": "one sentence about what this company does",
   "icp": "one sentence describing their ideal customer",
   "search_queries": ["query 1", "query 2", "query 3"]
 }
 
-Make queries specific — include job titles, industries, company types that would BUY from this business. Example: "VP Marketing SaaS companies hiring" or "ecommerce founders looking for logistics solutions".`,
-          },
-          {
-            role: "user",
-            content: `Website: ${formattedUrl}\n\nContent:\n${siteContent.slice(0, 4000)}`,
-          },
-        ],
-      }),
-    });
+Make queries specific — include job titles, industries, company types that would BUY from this business.`,
+      `Website: ${formattedUrl}\n\nContent:\n${siteContent.slice(0, 4000)}`
+    );
 
-    const aiData = await aiRes.json();
-    const aiText = aiData?.choices?.[0]?.message?.content || "";
-    console.log("AI ICP response:", aiText.slice(0, 500));
+    console.log("AI ICP response:", icpText.slice(0, 500));
 
     let icpData: { company_summary: string; icp: string; search_queries: string[] };
     try {
-      const cleaned = aiText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const cleaned = icpText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       icpData = JSON.parse(cleaned);
     } catch {
-      // Fallback queries
       const domain = new URL(formattedUrl).hostname.replace("www.", "");
       icpData = {
         company_summary: `Business at ${domain}`,
@@ -108,7 +112,7 @@ Make queries specific — include job titles, industries, company types that wou
       };
     }
 
-    // --- Step 3: Search for leads using Firecrawl search ---
+    // --- Step 3: Firecrawl search for leads ---
     console.log("Searching with queries:", icpData.search_queries);
 
     const allResults: any[] = [];
@@ -135,26 +139,16 @@ Make queries specific — include job titles, industries, company types that wou
 
     console.log("Total search results:", allResults.length);
 
-    // --- Step 4: Use AI to extract structured leads from search results ---
+    // --- Step 4: AI extracts structured leads ---
     const searchSummary = allResults
       .slice(0, 10)
-      .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDescription: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 500)}`)
+      .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 500)}`)
       .join("\n---\n");
 
-    const extractRes = await fetch(`${supabaseUrl}/functions/v1/ai-gateway`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `You are a lead extraction expert. From the search results, extract up to 5 real people who could be potential customers for the business described.
+    const extractText = await aiCall(
+      `You are a lead extraction expert. From the search results, extract up to 5 real people who could be potential customers for the business described.
 
-Return JSON ONLY (no markdown):
+Return JSON ONLY (no markdown fences):
 {
   "leads": [
     {
@@ -162,30 +156,21 @@ Return JSON ONLY (no markdown):
       "title": "Job Title",
       "company": "Company Name",
       "email": "email@example.com or null",
-      "phone": "phone number or null", 
-      "linkedin": "linkedin profile URL or null",
-      "twitter": "twitter/X profile URL or null"
+      "phone": "phone number or null",
+      "linkedin": "https://linkedin.com/in/username or null",
+      "twitter": "https://x.com/username or null"
     }
   ]
 }
 
 Rules:
-- Only include REAL people with real names (not generic contacts)
-- Include as many contact details as you can find
-- Prioritize decision-makers (founders, VPs, directors, managers)
-- If you can't find 5, return what you have
-- LinkedIn URLs should be full URLs like https://linkedin.com/in/username`,
-          },
-          {
-            role: "user",
-            content: `Business: ${icpData.company_summary}\nICP: ${icpData.icp}\n\nSearch Results:\n${searchSummary}`,
-          },
-        ],
-      }),
-    });
+- Only include REAL people with real names
+- Prioritize decision-makers (founders, VPs, directors)
+- Include as many contact details as possible
+- If you can't find 5, return what you have`,
+      `Business: ${icpData.company_summary}\nICP: ${icpData.icp}\n\nSearch Results:\n${searchSummary}`
+    );
 
-    const extractData = await extractRes.json();
-    const extractText = extractData?.choices?.[0]?.message?.content || "";
     console.log("Extract response:", extractText.slice(0, 500));
 
     let leads: any[] = [];
@@ -194,13 +179,11 @@ Rules:
       const parsed = JSON.parse(cleaned);
       leads = parsed.leads || [];
     } catch {
-      console.error("Failed to parse leads");
+      console.error("Failed to parse leads JSON");
       leads = [];
     }
 
-    // Cap at 5
     leads = leads.slice(0, 5);
-
     console.log(`Returning ${leads.length} leads`);
 
     return json({ success: true, leads, icp: icpData.icp });
