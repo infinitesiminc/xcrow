@@ -45,6 +45,21 @@ function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 }
 
+function LeadAvatar({ lead }: { lead: Lead }) {
+  const [imgError, setImgError] = useState(false);
+  const photoUrl = getLeadPhotoUrl(lead);
+  if (photoUrl && !imgError) {
+    return (
+      <img src={photoUrl} alt="" className="w-9 h-9 rounded-full object-cover shrink-0 bg-muted" onError={() => setImgError(true)} />
+    );
+  }
+  return (
+    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
+      {getInitials(lead.name)}
+    </div>
+  );
+}
+
 type ChatItem =
   | { type: "user"; content: string }
   | { type: "assistant"; content: string }
