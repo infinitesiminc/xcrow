@@ -293,7 +293,7 @@ export default function Leadgen() {
                       <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
                         <Bot className="w-3.5 h-3.5 text-primary" />
                       </div>
-                      <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] text-sm prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
+                      <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] text-sm prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 [&_ul]:list-decimal [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
                         <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
                       </div>
                     </div>
