@@ -134,6 +134,45 @@ async function enrichWithApollo(
   return enriched;
 }
 
+async function scrapeTeamPages(website: string, firecrawlKey: string): Promise<string> {
+  const teamPaths = ["/about", "/team", "/about-us", "/our-team", "/people", "/leadership"];
+  let teamContent = "";
+  
+  for (const path of teamPaths.slice(0, 3)) {
+    try {
+      const url = website.replace(/\/$/, "") + path;
+      const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${firecrawlKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
+      });
+      const data = await res.json();
+      const md = data?.data?.markdown || data?.markdown || "";
+      if (md.length > 100) {
+        teamContent += `\n[TEAM PAGE: ${url}]\n${md.slice(0, 2000)}\n`;
+        break; // found a good team page
+      }
+    } catch {}
+  }
+  return teamContent;
+}
+
+async function searchGoogleMaps(queries: string[], firecrawlKey: string): Promise<any[]> {
+  const results: any[] = [];
+  for (const query of queries.slice(0, 2)) {
+    try {
+      const res = await fetch("https://api.firecrawl.dev/v1/search", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${firecrawlKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ query: `${query} site:google.com/maps OR site:yelp.com phone email`, limit: 5 }),
+      });
+      const data = await res.json();
+      results.push(...(data?.data || []));
+    } catch {}
+  }
+  return results;
+}
+
 async function executeLeadSearch(
   args: { website: string; icp_summary: string; search_queries: string[] },
   firecrawlKey: string,
@@ -143,16 +182,17 @@ async function executeLeadSearch(
   let formattedUrl = args.website.trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
 
-  // Search for leads using Firecrawl
+  // 1. Scrape target company team pages for real names
+  console.log("Scraping team pages...");
+  const teamContent = await scrapeTeamPages(formattedUrl, firecrawlKey);
+
+  // 2. Web search for leads
   const allResults: any[] = [];
   for (const query of args.search_queries.slice(0, 4)) {
     try {
       const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${firecrawlKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${firecrawlKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({ query: `${query} contact email linkedin`, limit: 5 }),
       });
       const searchData = await searchRes.json();
@@ -162,30 +202,39 @@ async function executeLeadSearch(
     }
   }
 
-  // AI extraction
+  // 3. Google Maps / local listings search
+  console.log("Searching local listings...");
+  const mapsQueries = args.search_queries.slice(0, 2).map(q => q + " phone contact");
+  const mapsResults = await searchGoogleMaps(mapsQueries, firecrawlKey);
+
+  // 4. AI extraction with all sources combined
   const searchSummary = allResults
     .slice(0, 12)
     .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 500)}`)
     .join("\n---\n");
 
+  const mapsSummary = mapsResults
+    .slice(0, 6)
+    .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 400)}`)
+    .join("\n---\n");
+
+  const combinedContext = `## Web Search Results:\n${searchSummary}\n\n## Company Team Page:\n${teamContent}\n\n## Local/Maps Listings:\n${mapsSummary}`;
+
   const extractRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "Content-Type": "application/json",
-    },
+    headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages: [
         {
           role: "system",
-          content: `Extract up to 5 real leads from search results. Return JSON only (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","email":"email or null","phone":"phone or null","linkedin":"url or null","twitter":"url or null","summary":"1-2 sentence summary of who this person is and their background","reason":"1-2 sentence explanation of why they are a strong lead for this ICP"}]}
-Only include REAL people. Prioritize decision-makers. Every lead MUST have summary and reason fields.`,
+          content: `Extract up to 5 real leads from the combined search results, team pages, and local listings. Return JSON only (no markdown fences):
+{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","email":"email or null","phone":"phone or null","linkedin":"url or null","twitter":"url or null","website":"company or personal website or null","source":"where you found this lead (team page, web search, maps listing, etc.)","summary":"1-2 sentence summary of who this person is and their background","reason":"1-2 sentence explanation of why they are a strong lead for this ICP"}]}
+Only include REAL people with verifiable details. Prioritize leads where you found phone numbers or emails directly. Every lead MUST have summary and reason fields.`,
         },
         {
           role: "user",
-          content: `ICP: ${args.icp_summary}\n\nSearch Results:\n${searchSummary}`,
+          content: `ICP: ${args.icp_summary}\n\n${combinedContext}`,
         },
       ],
     }),

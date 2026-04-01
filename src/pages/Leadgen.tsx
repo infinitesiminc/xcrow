@@ -20,6 +20,8 @@ interface Lead {
   phone?: string;
   linkedin?: string;
   twitter?: string;
+  website?: string;
+  source?: string;
   summary?: string;
   reason?: string;
 }
@@ -274,9 +276,19 @@ export default function Leadgen() {
                             {l.reason && (
                               <p className="text-xs text-primary/80 mt-1 font-medium">💡 {l.reason}</p>
                             )}
+                            {l.source && (
+                              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30 text-muted-foreground">
+                                {l.source}
+                              </Badge>
+                            )}
                             <div className="flex gap-3 mt-1.5 flex-wrap">
                               {l.email && <span className="text-xs text-muted-foreground">📧 {l.email}</span>}
                               {l.phone && <span className="text-xs text-muted-foreground">📱 {l.phone}</span>}
+                              {l.website && (
+                                <a href={l.website.startsWith("http") ? l.website : `https://${l.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary">
+                                  🌐 {l.website.replace(/^https?:\/\//, "").slice(0, 30)}
+                                </a>
+                              )}
                               {l.twitter && (
                                 <a href={l.twitter} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary">
                                   🐦 Twitter
