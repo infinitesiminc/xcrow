@@ -59,7 +59,8 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - ALWAYS proactively advise on which lead types close deals fastest — don't just ask, GUIDE
 - If the user gives vague answers, help them be more specific with examples
 - Once you have enough info (at minimum: website + who they sell to + geography), you may propose running the search
-- ALWAYS call run_lead_search when the user confirms the ICP — never just describe leads`;
+- ALWAYS call run_lead_search when the user confirms the ICP — never just describe leads
+- When the user asks to "scale", "find more", "get more leads", or similar — call run_lead_search again with scale=true and generate 5-8 DIFFERENT, DIVERSE search queries targeting new companies, sub-niches, and adjacent areas that were NOT covered in previous searches`;
 
 const TOOLS = [
   {
