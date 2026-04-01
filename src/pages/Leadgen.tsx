@@ -1,22 +1,16 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Target, Mail, Bot, ArrowRight, Check, Globe, Phone, Loader2, ExternalLink, Send } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { Send, Bot, User, ExternalLink, Loader2, MessageSquare } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
-const FEATURES = [
-  { icon: Globe, title: "Paste Your Website", desc: "We scrape your site to understand your product, market, and ideal customer profile." },
-  { icon: Bot, title: "AI Lead Discovery", desc: "Our agents search the web and find 5 high-fit prospects matching your ICP." },
-  { icon: Target, title: "Contact Details", desc: "Get social profiles, emails, and phone numbers — ready to reach out." },
-  { icon: Send, title: "Delivered to WhatsApp", desc: "Leads are sent directly to your WhatsApp — no login, no dashboard." },
-];
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 
 interface Lead {
   name: string;
@@ -28,60 +22,156 @@ interface Lead {
   twitter?: string;
 }
 
+type ChatItem =
+  | { type: "user"; content: string }
+  | { type: "assistant"; content: string }
+  | { type: "leads"; leads: Lead[] };
+
+const GREETING: ChatItem = {
+  type: "assistant",
+  content:
+    "Hey! 👋 I'm your lead gen assistant. I'll help you find high-quality prospects tailored to your business.\n\n**To get started, what's your company website?**",
+};
+
 export default function Leadgen() {
-  const [phone, setPhone] = useState("");
-  const [website, setWebsite] = useState("");
-  const [step, setStep] = useState<"input" | "processing" | "done">("input");
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<ChatItem[]>([GREETING]);
+  const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [userPhone, setUserPhone] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const formatPhone = (raw: string) => {
-    const digits = raw.replace(/[^0-9+]/g, "");
-    return digits.startsWith("+") ? digits : `+${digits}`;
-  };
+  const scrollToBottom = useCallback(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!phone.trim() || !website.trim()) return;
+  useEffect(() => {
+    scrollToBottom();
+  }, [items, scrollToBottom]);
 
-    const formattedPhone = formatPhone(phone);
-    if (formattedPhone.length < 10) {
-      toast.error("Please enter a valid phone number with country code");
-      return;
-    }
+  const sendMessage = async () => {
+    const text = input.trim();
+    if (!text || isStreaming) return;
 
-    setLoading(true);
-    setStep("processing");
+    const userItem: ChatItem = { type: "user", content: text };
+    const allItems = [...items, userItem];
+    setItems(allItems);
+    setInput("");
+    setIsStreaming(true);
+
+    let assistantSoFar = "";
 
     try {
-      const { data, error } = await supabase.functions.invoke("leadgen-scout", {
-        body: { website: website.trim(), phone: formattedPhone },
+      const apiMessages = allItems
+        .filter((it): it is ChatItem & { type: "user" | "assistant" } => it.type !== "leads")
+        .map((m) => ({ role: m.type, content: m.content }));
+
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: apiMessages }),
       });
 
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || "Failed to find leads");
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        setItems((prev) => [
+          ...prev,
+          { type: "assistant", content: (err as any).error || "Something went wrong. Please try again." },
+        ]);
+        setIsStreaming(false);
+        return;
+      }
 
-      const foundLeads: Lead[] = data.leads || [];
-      setLeads(foundLeads);
-      setStep("done");
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
 
-      // Build WhatsApp message
-      const msg = buildWhatsAppMessage(foundLeads, website.trim());
-      const waUrl = `https://wa.me/${formattedPhone.replace("+", "")}?text=${encodeURIComponent(msg)}`;
-      window.open(waUrl, "_blank");
+      const upsert = (chunk: string) => {
+        assistantSoFar += chunk;
+        setItems((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.type === "assistant") {
+            return prev.map((m, i) => (i === prev.length - 1 && m.type === "assistant" ? { ...m, content: assistantSoFar } : m));
+          }
+          return [...prev, { type: "assistant", content: assistantSoFar }];
+        });
+      };
 
-      toast.success(`${foundLeads.length} leads found and sent to WhatsApp!`);
-    } catch (err: any) {
-      console.error("Leadgen error:", err);
-      toast.error(err.message || "Something went wrong");
-      setStep("input");
-    } finally {
-      setLoading(false);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+
+        let newlineIdx: number;
+        while ((newlineIdx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, newlineIdx);
+          buf = buf.slice(newlineIdx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "leads" && parsed.leads) {
+              setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]);
+              continue;
+            }
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) upsert(content);
+          } catch {
+            buf = line + "\n" + buf;
+            break;
+          }
+        }
+      }
+
+      // Flush
+      if (buf.trim()) {
+        for (let raw of buf.split("\n")) {
+          if (!raw) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          if (!raw.startsWith("data: ")) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "leads" && parsed.leads) {
+              setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]);
+              continue;
+            }
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) upsert(content);
+          } catch {}
+        }
+      }
+    } catch (e) {
+      console.error("Chat error:", e);
+      setItems((prev) => [...prev, { type: "assistant", content: "Connection error. Please try again." }]);
     }
+
+    setIsStreaming(false);
   };
 
-  const buildWhatsAppMessage = (leads: Lead[], site: string) => {
-    let msg = `🎯 *Xcrow Scout — Leads for ${site}*\n\n`;
+  const sendToWhatsApp = (leads: Lead[]) => {
+    const phone = userPhone.replace(/[^0-9]/g, "");
+    if (!phone || phone.length < 10) {
+      // Ask for phone via prompt
+      const num = window.prompt("Enter your WhatsApp number (with country code, e.g. 16261234567):");
+      if (!num) return;
+      setUserPhone(num);
+      openWA(leads, num.replace(/[^0-9]/g, ""));
+      return;
+    }
+    openWA(leads, phone);
+  };
+
+  const openWA = (leads: Lead[], phone: string) => {
+    let msg = `🎯 *Xcrow Scout — Your Leads*\n\n`;
     leads.forEach((l, i) => {
       msg += `*${i + 1}. ${l.name}*`;
       if (l.title) msg += ` — ${l.title}`;
@@ -94,188 +184,155 @@ export default function Leadgen() {
       msg += "\n";
     });
     msg += "_Powered by Xcrow Scout_";
-    return msg;
-  };
-
-  const resendToWhatsApp = () => {
-    const formattedPhone = formatPhone(phone);
-    const msg = buildWhatsAppMessage(leads, website.trim());
-    const waUrl = `https://wa.me/${formattedPhone.replace("+", "")}?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, "_blank");
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   return (
     <>
       <Helmet>
-        <title>Xcrow Scout — AI Lead Gen via WhatsApp</title>
-        <meta name="description" content="Paste your website, get 5 qualified leads delivered to your WhatsApp. No login required." />
+        <title>Xcrow Scout — AI Lead Gen Chat</title>
+        <meta name="description" content="Chat with AI to build your ideal customer profile and discover qualified leads instantly." />
       </Helmet>
       <Navbar />
-      <div className="min-h-screen bg-background pt-20">
-        {/* Hero */}
-        <div className="max-w-3xl mx-auto px-4 pt-12 pb-16 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Badge variant="outline" className="mb-4 text-xs border-primary/30 text-primary">
-              Free — 5 Leads Instantly
-            </Badge>
-            <h1 className="text-4xl md:text-5xl font-bold font-cinzel text-foreground mb-4 leading-tight">
-              Paste your website,<br />get leads on WhatsApp
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
-              Our AI scrapes your site, understands your ideal customer,
-              and delivers 5 qualified prospects straight to your WhatsApp — in under 60 seconds.
-            </p>
+      <div className="flex flex-col h-screen pt-16">
+        {/* Header */}
+        <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+            <MessageSquare className="w-4.5 h-4.5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-sm font-semibold text-foreground">Xcrow Scout</h1>
+            <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
+          </div>
+          <Badge variant="outline" className="ml-auto text-[10px] border-primary/30 text-primary">
+            Free — 5 Leads
+          </Badge>
+        </div>
 
-            <AnimatePresence mode="wait">
-              {step === "input" && (
-                <motion.form
-                  key="form"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onSubmit={handleSubmit}
-                  className="max-w-md mx-auto space-y-3"
-                >
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="tel"
-                        placeholder="+1 626 123 4567"
-                        value={phone}
-                        onChange={e => setPhone(e.target.value)}
-                        required
-                        className="pl-9 bg-muted/20 border-border/40"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="url"
-                        placeholder="https://yourcompany.com"
-                        value={website}
-                        onChange={e => setWebsite(e.target.value)}
-                        required
-                        className="pl-9 bg-muted/20 border-border/40"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" disabled={loading} className="w-full gap-1.5">
-                    Find My Leads <ArrowRight className="w-4 h-4" />
-                  </Button>
-                  <p className="text-[11px] text-muted-foreground/60">
-                    No signup required. We don't store your number.
-                  </p>
-                </motion.form>
-              )}
-
-              {step === "processing" && (
+        {/* Messages */}
+        <ScrollArea className="flex-1 px-4">
+          <div className="max-w-2xl mx-auto py-6 space-y-4">
+            <AnimatePresence initial={false}>
+              {items.map((item, i) => (
                 <motion.div
-                  key="processing"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="max-w-md mx-auto"
-                >
-                  <Card className="bg-card/60 border-primary/20">
-                    <CardContent className="p-8 flex flex-col items-center gap-4">
-                      <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                      <div>
-                        <p className="font-semibold text-foreground">Scouting leads…</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Scraping your website → Analyzing ICP → Searching prospects
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-
-              {step === "done" && (
-                <motion.div
-                  key="done"
-                  initial={{ opacity: 0, y: 10 }}
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="max-w-lg mx-auto space-y-4"
+                  transition={{ duration: 0.2 }}
                 >
-                  <div className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary/10 border border-primary/30 text-primary font-medium">
-                    <Check className="w-5 h-5" /> {leads.length} leads sent to your WhatsApp
-                  </div>
+                  {item.type === "user" && (
+                    <div className="flex justify-end gap-2">
+                      <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2.5 max-w-[80%] text-sm">
+                        {item.content}
+                      </div>
+                      <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-1">
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="space-y-2 text-left">
-                    {leads.map((l, i) => (
-                      <Card key={i} className="bg-card/40 border-border/30">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <p className="font-semibold text-foreground text-sm">{l.name}</p>
-                              {(l.title || l.company) && (
-                                <p className="text-xs text-muted-foreground">
-                                  {l.title}{l.title && l.company ? " @ " : ""}{l.company}
-                                </p>
-                              )}
+                  {item.type === "assistant" && (
+                    <div className="flex gap-2">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                        <Bot className="w-3.5 h-3.5 text-primary" />
+                      </div>
+                      <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] text-sm prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
+                        <ReactMarkdown>{item.content}</ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
+
+                  {item.type === "leads" && (
+                    <div className="ml-9 space-y-2">
+                      {item.leads.map((l, j) => (
+                        <Card key={j} className="bg-card/60 border-primary/20">
+                          <CardContent className="p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="font-semibold text-foreground text-sm">{l.name}</p>
+                                {(l.title || l.company) && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {l.title}
+                                    {l.title && l.company ? " @ " : ""}
+                                    {l.company}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex gap-1.5 shrink-0">
+                                {l.linkedin && (
+                                  <a href={l.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                  </a>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex gap-1.5 shrink-0">
-                              {l.linkedin && (
-                                <a href={l.linkedin} target="_blank" rel="noopener" className="text-muted-foreground hover:text-primary transition-colors">
-                                  <ExternalLink className="w-3.5 h-3.5" />
+                            <div className="flex gap-3 mt-1.5 flex-wrap">
+                              {l.email && <span className="text-xs text-muted-foreground">📧 {l.email}</span>}
+                              {l.phone && <span className="text-xs text-muted-foreground">📱 {l.phone}</span>}
+                              {l.twitter && (
+                                <a href={l.twitter} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary">
+                                  🐦 Twitter
                                 </a>
                               )}
                             </div>
-                          </div>
-                          <div className="flex gap-3 mt-2 flex-wrap">
-                            {l.email && <span className="text-xs text-muted-foreground">📧 {l.email}</span>}
-                            {l.phone && <span className="text-xs text-muted-foreground">📱 {l.phone}</span>}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-2 justify-center pt-2">
-                    <Button variant="outline" size="sm" onClick={resendToWhatsApp} className="gap-1.5">
-                      <Send className="w-3.5 h-3.5" /> Resend to WhatsApp
-                    </Button>
-                    <Button size="sm" onClick={() => { setStep("input"); setLeads([]); }} className="gap-1.5">
-                      Scout Again <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 mt-2"
+                        onClick={() => sendToWhatsApp(item.leads)}
+                      >
+                        <Send className="w-3.5 h-3.5" /> Send to WhatsApp
+                      </Button>
+                    </div>
+                  )}
                 </motion.div>
-              )}
+              ))}
             </AnimatePresence>
-          </motion.div>
-        </div>
 
-        {/* Features */}
-        <div className="max-w-5xl mx-auto px-4 pb-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {FEATURES.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-              >
-                <Card className="bg-card/40 border-border/30 hover:border-primary/30 transition-colors h-full">
-                  <CardContent className="p-5 flex gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <f.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground text-sm mb-1">{f.title}</h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            {isStreaming && items[items.length - 1]?.type !== "assistant" && (
+              <div className="flex gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3">
+                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                </div>
+              </div>
+            )}
+
+            <div ref={bottomRef} />
           </div>
+        </ScrollArea>
+
+        {/* Input */}
+        <div className="border-t border-border/40 bg-card/30 px-4 py-3">
+          <form
+            className="max-w-2xl mx-auto flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendMessage();
+            }}
+          >
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message..."
+              disabled={isStreaming}
+              className="flex-1 bg-muted/20 border-border/40"
+              autoFocus
+            />
+            <Button type="submit" size="icon" disabled={isStreaming || !input.trim()}>
+              <Send className="w-4 h-4" />
+            </Button>
+          </form>
+          <p className="text-center text-[10px] text-muted-foreground/50 mt-2">
+            No signup required · Powered by AI
+          </p>
         </div>
       </div>
-      <Footer />
     </>
   );
 }
