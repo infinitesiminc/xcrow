@@ -533,6 +533,74 @@ export default function Leadgen() {
           </p>
         </div>
       </div>
+
+      {/* Email Draft Modal */}
+      <Dialog open={draftModalOpen} onOpenChange={setDraftModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-primary" />
+              Email to {draftLead?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          {draftLoading ? (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">AI is drafting your email...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">To</label>
+                <Input value={draftLead?.email || ""} disabled className="bg-muted/30 text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+                <Input
+                  value={draftSubject}
+                  onChange={(e) => setDraftSubject(e.target.value)}
+                  className="text-sm"
+                  placeholder="Email subject..."
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
+                <Textarea
+                  value={draftBody}
+                  onChange={(e) => setDraftBody(e.target.value)}
+                  className="text-sm min-h-[140px]"
+                  placeholder="Email body..."
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">CTA Button (optional)</label>
+                <Input
+                  value={draftCtaText}
+                  onChange={(e) => setDraftCtaText(e.target.value)}
+                  className="text-sm"
+                  placeholder="e.g. Schedule a Call"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" size="sm" onClick={() => setDraftModalOpen(false)} disabled={sending}>
+              <X className="w-3.5 h-3.5 mr-1" /> Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSendEmail}
+              disabled={draftLoading || sending || !draftSubject || !draftBody}
+              className="gap-1.5"
+            >
+              {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+              {sending ? "Sending..." : "Send Email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
