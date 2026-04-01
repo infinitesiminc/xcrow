@@ -67,11 +67,14 @@ const normalizeAssistantOptions = (text: string) => {
 };
 
 const formatAssistantMessage = (text: string) => {
-  const compact = text
+  let compact = text
     .replace(/\r\n/g, "\n")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n");
-  return normalizeAssistantOptions(compact);
+  compact = normalizeAssistantOptions(compact);
+  // Ensure blank line before first numbered item so markdown parses as <ol>
+  compact = compact.replace(/([^\n])\n(1[.)]\s)/g, "$1\n\n$2");
+  return compact;
 };
 
 const GREETING: ChatItem = {
