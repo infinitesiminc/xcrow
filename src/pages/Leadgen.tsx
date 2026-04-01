@@ -18,10 +18,13 @@ interface Lead {
   company?: string;
   email?: string;
   phone?: string;
+  phone_source?: string;
   linkedin?: string;
   twitter?: string;
   website?: string;
+  address?: string;
   source?: string;
+  email_confidence?: number;
   summary?: string;
   reason?: string;
 }
