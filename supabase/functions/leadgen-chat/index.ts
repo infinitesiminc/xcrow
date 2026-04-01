@@ -354,7 +354,8 @@ async function executeLeadSearch(
           role: "system",
           content: `Extract up to ${extractLimit} real leads from the combined search results, team pages, and local listings. Return JSON only (no markdown fences):
 {"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","email":"email or null","phone":"phone or null","linkedin":"url or null","twitter":"url or null","website":"company or personal website or null","source":"where you found this lead (team page, web search, maps listing, etc.)","summary":"1-2 sentence summary of who this person is and their background","reason":"1-2 sentence explanation of why they are a strong lead for this ICP"}]}
-Only include REAL people with verifiable details. Each lead must be from a DIFFERENT company. Prioritize leads where you found phone numbers or emails directly. Every lead MUST have summary and reason fields.`,
+Each lead must be from a DIFFERENT company. Prioritize leads where you found phone numbers or emails directly. Every lead MUST have summary and reason fields.
+If you find a business listing (e.g. from Yelp, Google Maps, BBB) but cannot identify a specific person's name, still include the lead — set "name" to the company name and set "title" to "Owner/Manager". Do NOT use "(Undisclosed)" as a name. We will resolve real contacts later via API enrichment.`,
         },
         {
           role: "user",
