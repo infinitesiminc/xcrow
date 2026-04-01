@@ -328,11 +328,10 @@ export default function Leadgen() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
-              disabled={isStreaming}
               className="flex-1 bg-muted/20 border-border/40"
               autoFocus
             />
-            <Button type="submit" size="icon" disabled={isStreaming || !input.trim()}>
+            <Button type="submit" size="icon" disabled={!input.trim()}>
               <Send className="w-4 h-4" />
             </Button>
           </form>
