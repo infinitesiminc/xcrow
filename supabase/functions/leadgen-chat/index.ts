@@ -37,7 +37,9 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - Suggest specific job titles and company types based on the lead type strategy chosen
 
 ### Phase 5: Targeting
-- Ask about target geography (cities, states, countries)
+- For **location-restricted** businesses: Ask about their exact service radius (city, county, metro area). Limit lead search to that geography.
+- For **globally serviceable** businesses: Ask if they have any geographic preferences or if they want to target worldwide. Suggest focusing on high-density markets first.
+- For **hybrid** businesses: Ask which services are local vs. remote, then tailor geography accordingly.
 - Ask about any other qualifying criteria (budget, urgency, tech stack, etc.)
 
 ### Phase 6: Confirmation
