@@ -317,6 +317,54 @@ Only include REAL people with verifiable details. Prioritize leads where you fou
     const parsed = JSON.parse(cleaned);
     let leads = (parsed.leads || []).slice(0, 5);
 
+    // Cross-check leads against Google Maps listings for verified phone/address
+    console.log("Cross-checking", leads.length, "leads against Google Maps...");
+    for (const lead of leads) {
+      if (lead.phone && lead.email) continue;
+      if (!lead.company) continue;
+      try {
+        const mapsQuery = `${lead.company} ${args.search_queries[0]?.match(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*/)?.[0] || ""} phone address`;
+        const res = await fetch("https://api.firecrawl.dev/v1/search", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${firecrawlKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ query: `"${lead.company}" phone number address site:google.com/maps OR site:yelp.com OR site:bbb.org`, limit: 3 }),
+        });
+        const data = await res.json();
+        const results = data?.data || [];
+        
+        // Extract phone numbers and addresses from results
+        const combined = results.map((r: any) => `${r.title || ""} ${r.description || ""} ${(r.markdown || "").slice(0, 500)}`).join(" ");
+        
+        // Phone regex: matches US phone formats
+        if (!lead.phone) {
+          const phoneMatch = combined.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
+          if (phoneMatch) {
+            lead.phone = phoneMatch[0];
+            lead.phone_source = "google_maps";
+            console.log(`Maps: found phone for ${lead.company}: ${phoneMatch[0]}`);
+          }
+        }
+        
+        // Extract address if present
+        if (!lead.address) {
+          const addressMatch = combined.match(/\d+\s+[A-Z][a-zA-Z\s]+(?:St|Ave|Blvd|Dr|Rd|Ln|Way|Ct|Pl|Pkwy|Hwy)[.,]?\s*(?:Suite|Ste|#|Unit)?\s*\d*[.,]?\s*[A-Z][a-z]+[.,]?\s*[A-Z]{2}\s*\d{5}/);
+          if (addressMatch) {
+            lead.address = addressMatch[0];
+          }
+        }
+
+        // Extract website if not present
+        if (!lead.website) {
+          const urlMatch = combined.match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.[a-z]{2,})/i);
+          if (urlMatch && !urlMatch[0].includes("google") && !urlMatch[0].includes("yelp") && !urlMatch[0].includes("bbb")) {
+            lead.website = urlMatch[0];
+          }
+        }
+      } catch (e) {
+        console.error("Maps cross-check failed for", lead.company, e);
+      }
+    }
+
     // Enrich with Apollo for verified email/phone
     if (apolloKey && leads.length > 0) {
       console.log("Enriching", leads.length, "leads with Apollo People Match...");
