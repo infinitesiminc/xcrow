@@ -1320,6 +1320,47 @@ export type Database = {
           },
         ]
       }
+      outreach_log: {
+        Row: {
+          body: string | null
+          channel: string
+          id: string
+          lead_id: string
+          sent_at: string
+          status: string
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          channel?: string
+          id?: string
+          lead_id: string
+          sent_at?: string
+          status?: string
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          channel?: string
+          id?: string
+          lead_id?: string
+          sent_at?: string
+          status?: string
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_log_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "saved_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_config: {
         Row: {
           description: string | null
@@ -1488,6 +1529,69 @@ export type Database = {
           referral_code?: string
           referred_user_id?: string
           referrer_id?: string
+        }
+        Relationships: []
+      }
+      saved_leads: {
+        Row: {
+          address: string | null
+          company: string | null
+          created_at: string
+          email: string | null
+          email_confidence: string | null
+          id: string
+          linkedin: string | null
+          name: string
+          phone: string | null
+          photo_url: string | null
+          reason: string | null
+          source: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          summary: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          email_confidence?: string | null
+          id?: string
+          linkedin?: string | null
+          name: string
+          phone?: string | null
+          photo_url?: string | null
+          reason?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          summary?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          email_confidence?: string | null
+          id?: string
+          linkedin?: string | null
+          name?: string
+          phone?: string | null
+          photo_url?: string | null
+          reason?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          summary?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -2801,7 +2905,7 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
-      [_ in never]: never
+      lead_status: "new" | "contacted" | "replied" | "won" | "lost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2928,6 +3032,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      lead_status: ["new", "contacted", "replied", "won", "lost"],
+    },
   },
 } as const
