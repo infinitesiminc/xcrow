@@ -626,8 +626,8 @@ Deno.serve(async (req) => {
 
           // Send summary message
           const summaryContent = leads.length > 0
-            ? `Found **${leads.length} leads** matching your ICP! 🎉\n\nWant me to:\n1. Send these to your WhatsApp\n2. Refine the search criteria\n3. Search for more leads in a different region`
-            : "I couldn't find strong matches this time. Would you like to:\n1. Broaden the search criteria\n2. Try different job titles or industries\n3. Search in a different region";
+            ? `Found **${leads.length} leads** with verified contact details matching your ICP! 🎉\n\nEvery lead includes at least an email or phone number.\n\nWhat would you like to do next?\n\n1. **Send to WhatsApp** — Get these leads delivered to your phone instantly\n2. **Refine search** — Adjust criteria for better matches\n3. **Search another region** — Expand to a new geography`
+            : "I couldn't find leads with verified contact info this time. Let's try a different approach:\n\n1. **Broaden criteria** — Widen the job titles or company size\n2. **Try different industries** — Target adjacent verticals\n3. **Search another region** — Try a different city or state";
 
           const summaryMsg = { choices: [{ delta: { content: summaryContent } }] };
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(summaryMsg)}\n\n`));
