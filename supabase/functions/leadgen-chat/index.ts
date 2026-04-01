@@ -149,6 +149,59 @@ async function enrichWithApollo(
   return enriched;
 }
 
+async function enrichWithHunter(leads: any[], hunterKey: string): Promise<any[]> {
+  for (const lead of leads) {
+    if (lead.email) continue; // already has email
+    if (!lead.name || !lead.company) continue;
+
+    try {
+      // Try domain-based email finder
+      // First get company domain
+      let domain = "";
+      if (lead.website) {
+        domain = lead.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      } else {
+        // Use Hunter's domain search to find company domain
+        const domainRes = await fetch(
+          `https://api.hunter.io/v2/domain-search?company=${encodeURIComponent(lead.company)}&limit=1&api_key=${hunterKey}`
+        );
+        if (domainRes.ok) {
+          const domainData = await domainRes.json();
+          domain = domainData?.data?.domain || "";
+        }
+      }
+
+      if (!domain) continue;
+
+      const parts = lead.name.trim().split(/\s+/);
+      const firstName = parts[0] || "";
+      const lastName = parts.slice(1).join(" ") || "";
+
+      const finderRes = await fetch(
+        `https://api.hunter.io/v2/email-finder?domain=${encodeURIComponent(domain)}&first_name=${encodeURIComponent(firstName)}&last_name=${encodeURIComponent(lastName)}&api_key=${hunterKey}`
+      );
+
+      if (finderRes.ok) {
+        const finderData = await finderRes.json();
+        const email = finderData?.data?.email;
+        const score = finderData?.data?.score || 0;
+        if (email && score >= 50) {
+          lead.email = email;
+          lead.email_confidence = score;
+          console.log(`Hunter found email for ${lead.name}: ${email} (score: ${score})`);
+        }
+        // Also grab phone if available
+        if (!lead.phone && finderData?.data?.phone_number) {
+          lead.phone = finderData.data.phone_number;
+        }
+      }
+    } catch (e) {
+      console.error("Hunter enrichment error for", lead.name, e);
+    }
+  }
+  return leads;
+}
+
 async function scrapeTeamPages(website: string, firecrawlKey: string): Promise<string> {
   const teamPaths = ["/about", "/team", "/about-us", "/our-team", "/people", "/leadership"];
   let teamContent = "";
