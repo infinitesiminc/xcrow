@@ -32,6 +32,17 @@ interface Lead {
   email_confidence?: number;
   summary?: string;
   reason?: string;
+  photo_url?: string;
+}
+
+function getLeadPhotoUrl(lead: Lead): string | null {
+  if (lead.photo_url) return lead.photo_url;
+  if (lead.email) return `https://www.gravatar.com/avatar/${lead.email.trim().toLowerCase()}?d=404&s=80`;
+  return null;
+}
+
+function getInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 }
 
 type ChatItem =
