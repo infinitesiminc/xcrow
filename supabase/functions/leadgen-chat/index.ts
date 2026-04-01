@@ -311,7 +311,7 @@ async function executeLeadSearch(
 
   // 2. Web search for leads
   const allResults: any[] = [];
-  for (const query of args.search_queries.slice(0, 4)) {
+  for (const query of args.search_queries.slice(0, maxQueries)) {
     try {
       const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
         method: "POST",
