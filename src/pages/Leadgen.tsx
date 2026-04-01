@@ -205,8 +205,8 @@ export default function Leadgen() {
     }
   };
 
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessage = async (overrideText?: string) => {
+    const text = (overrideText || input).trim();
     if (!text || isStreaming) return;
 
     const userItem: ChatItem = { type: "user", content: text };
