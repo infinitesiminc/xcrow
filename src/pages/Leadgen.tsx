@@ -464,14 +464,16 @@ export default function Leadgen() {
                           </CardContent>
                         </Card>
                       ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 mt-2"
-                        onClick={() => sendToWhatsApp(item.leads)}
-                      >
-                        <Send className="w-3.5 h-3.5" /> Send to WhatsApp
-                      </Button>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={() => sendToWhatsApp(item.leads)}
+                        >
+                          <Send className="w-3.5 h-3.5" /> Send to WhatsApp
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </motion.div>
