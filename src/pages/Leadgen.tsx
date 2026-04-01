@@ -95,11 +95,21 @@ const GREETING: ChatItem = {
 };
 
 export default function Leadgen() {
+  const { user, profile, openAuthModal } = useAuth();
   const [items, setItems] = useState<ChatItem[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [userPhone, setUserPhone] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Email draft state
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  const [draftLead, setDraftLead] = useState<Lead | null>(null);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftBody, setDraftBody] = useState("");
+  const [draftCtaText, setDraftCtaText] = useState("");
+  const [sending, setSending] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -108,6 +118,92 @@ export default function Leadgen() {
   useEffect(() => {
     scrollToBottom();
   }, [items, scrollToBottom]);
+
+  const handleDraftEmail = async (lead: Lead) => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    if (!lead.email) {
+      toast.error("This lead has no email address.");
+      return;
+    }
+    setDraftLead(lead);
+    setDraftModalOpen(true);
+    setDraftLoading(true);
+    setDraftSubject("");
+    setDraftBody("");
+    setDraftCtaText("");
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/draft-outreach`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            lead: {
+              name: lead.name,
+              title: lead.title,
+              company: lead.company,
+              email: lead.email,
+              reason: lead.reason,
+              summary: lead.summary,
+            },
+            senderInfo: {
+              name: profile?.displayName || user.email?.split("@")[0],
+              company: profile?.company || "",
+              website: "",
+            },
+          }),
+        }
+      );
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Failed to draft");
+      setDraftSubject(data.draft.subject || "");
+      setDraftBody(data.draft.body || "");
+      setDraftCtaText(data.draft.ctaText || "");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to generate draft");
+      setDraftModalOpen(false);
+    } finally {
+      setDraftLoading(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!draftLead?.email || !draftSubject || !draftBody) return;
+    setSending(true);
+    try {
+      const id = crypto.randomUUID();
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "lead-outreach",
+          recipientEmail: draftLead.email,
+          idempotencyKey: `outreach-${id}`,
+          templateData: {
+            recipientName: draftLead.name,
+            senderName: profile?.displayName || user?.email?.split("@")[0],
+            senderCompany: profile?.company || "",
+            emailBody: draftBody,
+            ctaText: draftCtaText || undefined,
+            ctaUrl: "",
+            subject: draftSubject,
+          },
+        },
+      });
+      if (error) throw error;
+      toast.success(`Email sent to ${draftLead.email}`);
+      setDraftModalOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send email");
+    } finally {
+      setSending(false);
+    }
+  };
 
   const sendMessage = async () => {
     const text = input.trim();
