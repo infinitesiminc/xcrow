@@ -59,14 +59,15 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - ALWAYS proactively advise on which lead types close deals fastest — don't just ask, GUIDE
 - If the user gives vague answers, help them be more specific with examples
 - Once you have enough info (at minimum: website + who they sell to + geography), you may propose running the search
-- ALWAYS call run_lead_search when the user confirms the ICP — never just describe leads`;
+- ALWAYS call run_lead_search when the user confirms the ICP — never just describe leads
+- When the user asks to "scale", "find more", "get more leads", or similar — call run_lead_search again with scale=true and generate 5-8 DIFFERENT, DIVERSE search queries targeting new companies, sub-niches, and adjacent areas that were NOT covered in previous searches`;
 
 const TOOLS = [
   {
     type: "function",
     function: {
       name: "run_lead_search",
-      description: "Execute lead search using the confirmed ICP. Call this when the user has confirmed their ideal customer profile.",
+      description: "Execute lead search using the confirmed ICP. Call this when the user has confirmed their ideal customer profile or wants to find more/scale leads.",
       parameters: {
         type: "object",
         properties: {
@@ -75,8 +76,9 @@ const TOOLS = [
           search_queries: {
             type: "array",
             items: { type: "string" },
-            description: "3-5 specific search queries to find leads matching this ICP",
+            description: "5-8 specific, DIVERSE search queries to find leads matching this ICP. Each query should target a DIFFERENT company, region, or sub-niche to maximize unique results.",
           },
+          scale: { type: "boolean", description: "Set to true when the user wants MORE leads (scaling up). This widens search limits to find 10-15+ leads instead of 5." },
         },
         required: ["website", "icp_summary", "search_queries"],
         additionalProperties: false,
@@ -290,12 +292,17 @@ async function searchGoogleMaps(queries: string[], firecrawlKey: string): Promis
 }
 
 async function executeLeadSearch(
-  args: { website: string; icp_summary: string; search_queries: string[] },
+  args: { website: string; icp_summary: string; search_queries: string[]; scale?: boolean },
   firecrawlKey: string,
   lovableKey: string,
   apolloKey: string | null,
   hunterKey: string | null,
 ): Promise<any[]> {
+  const isScale = args.scale === true;
+  const maxQueries = isScale ? 8 : 4;
+  const searchLimit = isScale ? 8 : 5;
+  const extractLimit = isScale ? 15 : 5;
+  const mapsQueryCount = isScale ? 4 : 2;
   let formattedUrl = args.website.trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
 
@@ -305,12 +312,12 @@ async function executeLeadSearch(
 
   // 2. Web search for leads
   const allResults: any[] = [];
-  for (const query of args.search_queries.slice(0, 4)) {
+  for (const query of args.search_queries.slice(0, maxQueries)) {
     try {
       const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
         method: "POST",
         headers: { Authorization: `Bearer ${firecrawlKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ query: `${query} contact email linkedin`, limit: 5 }),
+        body: JSON.stringify({ query: `${query} contact email linkedin`, limit: searchLimit }),
       });
       const searchData = await searchRes.json();
       allResults.push(...(searchData?.data || []));
@@ -321,17 +328,17 @@ async function executeLeadSearch(
 
   // 3. Google Maps / local listings search
   console.log("Searching local listings...");
-  const mapsQueries = args.search_queries.slice(0, 2).map(q => q + " phone contact");
+  const mapsQueries = args.search_queries.slice(0, mapsQueryCount).map(q => q + " phone contact");
   const mapsResults = await searchGoogleMaps(mapsQueries, firecrawlKey);
 
   // 4. AI extraction with all sources combined
   const searchSummary = allResults
-    .slice(0, 12)
+    .slice(0, isScale ? 20 : 12)
     .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 500)}`)
     .join("\n---\n");
 
   const mapsSummary = mapsResults
-    .slice(0, 6)
+    .slice(0, isScale ? 12 : 6)
     .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 400)}`)
     .join("\n---\n");
 
@@ -345,9 +352,9 @@ async function executeLeadSearch(
       messages: [
         {
           role: "system",
-          content: `Extract up to 5 real leads from the combined search results, team pages, and local listings. Return JSON only (no markdown fences):
+          content: `Extract up to ${extractLimit} real leads from the combined search results, team pages, and local listings. Return JSON only (no markdown fences):
 {"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","email":"email or null","phone":"phone or null","linkedin":"url or null","twitter":"url or null","website":"company or personal website or null","source":"where you found this lead (team page, web search, maps listing, etc.)","summary":"1-2 sentence summary of who this person is and their background","reason":"1-2 sentence explanation of why they are a strong lead for this ICP"}]}
-Only include REAL people with verifiable details. Prioritize leads where you found phone numbers or emails directly. Every lead MUST have summary and reason fields.`,
+Only include REAL people with verifiable details. Each lead must be from a DIFFERENT company. Prioritize leads where you found phone numbers or emails directly. Every lead MUST have summary and reason fields.`,
         },
         {
           role: "user",
@@ -363,7 +370,7 @@ Only include REAL people with verifiable details. Prioritize leads where you fou
   try {
     const cleaned = extractText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
-    let leads = (parsed.leads || []).slice(0, 5);
+    let leads = (parsed.leads || []).slice(0, extractLimit);
 
     // Cross-check leads against Google Maps listings for verified phone/address
     console.log("Cross-checking", leads.length, "leads against Google Maps...");
