@@ -34,47 +34,53 @@ type ChatItem =
   | { type: "assistant"; content: string }
   | { type: "leads"; leads: Lead[] };
 
-const hasNumberedOptions = (text: string) => /^\s*\d+[.)]\s+\S+/m.test(text);
-
-const normalizeAssistantOptions = (text: string) => {
+/**
+ * Ensure options are always numbered and properly formatted for markdown.
+ * Handles: unnumbered bold options, bullet lists, and already-numbered items.
+ * Guarantees a blank line before the first numbered item so ReactMarkdown
+ * renders an <ol> instead of inline text.
+ */
+const formatAssistantMessage = (text: string): string => {
   if (!text) return text;
 
-  const lines = text.split("\n");
-  const optionLineRe = /^(?:[-*•]\s*)?(?:\d+[.)]\s*)?(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+.+$/;
-  const optionIndexes = lines
-    .map((line, index) => ({ line: line.trim(), index }))
-    .filter(({ line }) => optionLineRe.test(line))
-    .map(({ index }) => index);
-
-  if (optionIndexes.length >= 2) {
-    let n = 1;
-    for (const index of optionIndexes) {
-      const cleaned = lines[index].trim().replace(/^[-*•]\s*/, "").replace(/^\d+[.)]\s*/, "");
-      const parts = cleaned.match(/^(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+(.+)$/);
-      lines[index] = `${n++}. ${parts ? `${parts[1].trim()} — ${parts[2].trim()}` : cleaned}`;
-    }
-    return lines.join("\n");
-  }
-
-  if (hasNumberedOptions(text)) return text;
-
-  const inlineOptionRe = /(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+([^\n]+?)(?=(?:\s+(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+)|$)/g;
-  const matches = [...text.matchAll(inlineOptionRe)];
-  if (matches.length < 2) return text;
-
-  let n = 0;
-  return text.replace(inlineOptionRe, (_, title, desc) => `\n${++n}. ${String(title).trim()} — ${String(desc).trim()}`);
-};
-
-const formatAssistantMessage = (text: string) => {
-  let compact = text
+  let result = text
     .replace(/\r\n/g, "\n")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n");
-  compact = normalizeAssistantOptions(compact);
-  // Ensure blank line before first numbered item so markdown parses as <ol>
-  compact = compact.replace(/([^\n])\n(1[.)]\s)/g, "$1\n\n$2");
-  return compact;
+
+  const lines = result.split("\n");
+  // Detect option-like lines: bold or capitalized text followed by em-dash/dash and description
+  const optionRe = /^(?:[-*•]\s*)?(?:\d+[.)]\s*)?(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|--)\s+.+$/;
+  
+  const optionIndexes: number[] = [];
+  lines.forEach((line, i) => {
+    if (optionRe.test(line.trim())) optionIndexes.push(i);
+  });
+
+  if (optionIndexes.length >= 2) {
+    let n = 1;
+    for (const idx of optionIndexes) {
+      const cleaned = lines[idx].trim()
+        .replace(/^[-*•]\s*/, "")
+        .replace(/^\d+[.)]\s*/, "");
+      lines[idx] = `${n++}. ${cleaned}`;
+    }
+
+    // Ensure blank line before first option so markdown creates <ol>
+    const firstIdx = optionIndexes[0];
+    if (firstIdx > 0 && lines[firstIdx - 1].trim() !== "") {
+      lines.splice(firstIdx, 0, "");
+    }
+    // Ensure blank line after last option
+    const lastIdx = optionIndexes[optionIndexes.length - 1] + (firstIdx > 0 && lines[firstIdx - 1]?.trim() === "" ? 1 : 0);
+    if (lastIdx < lines.length - 1 && lines[lastIdx + 1]?.trim() !== "") {
+      lines.splice(lastIdx + 1, 0, "");
+    }
+
+    result = lines.join("\n");
+  }
+
+  return result;
 };
 
 const GREETING: ChatItem = {
