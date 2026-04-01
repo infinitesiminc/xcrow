@@ -20,6 +20,8 @@ interface Lead {
   phone?: string;
   linkedin?: string;
   twitter?: string;
+  summary?: string;
+  reason?: string;
 }
 
 type ChatItem =
@@ -266,6 +268,12 @@ export default function Leadgen() {
                                 )}
                               </div>
                             </div>
+                            {l.summary && (
+                              <p className="text-xs text-muted-foreground mt-1.5 italic">{l.summary}</p>
+                            )}
+                            {l.reason && (
+                              <p className="text-xs text-primary/80 mt-1 font-medium">💡 {l.reason}</p>
+                            )}
                             <div className="flex gap-3 mt-1.5 flex-wrap">
                               {l.email && <span className="text-xs text-muted-foreground">📧 {l.email}</span>}
                               {l.phone && <span className="text-xs text-muted-foreground">📱 {l.phone}</span>}
