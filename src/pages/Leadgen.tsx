@@ -6,9 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, ExternalLink, Loader2, MessageSquare } from "lucide-react";
+import { Send, Bot, User, ExternalLink, Loader2, MessageSquare, Mail, Sparkles, Check, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 
