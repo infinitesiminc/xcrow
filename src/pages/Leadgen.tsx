@@ -34,6 +34,36 @@ type ChatItem =
   | { type: "assistant"; content: string }
   | { type: "leads"; leads: Lead[] };
 
+const hasNumberedOptions = (text: string) => /^\s*\d+[.)]\s+/m.test(text);
+
+const normalizeAssistantOptions = (text: string) => {
+  if (!text || hasNumberedOptions(text)) return text;
+
+  // 1) Line-based options: "Option Name — description"
+  const lines = text.split("\n");
+  const optionLineRe = /^(?:[-*]\s+)?(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()\s]{2,90})\s+[—-]\s+.+$/;
+  const optionIndexes = lines
+    .map((line, index) => ({ line: line.trim(), index }))
+    .filter(({ line }) => optionLineRe.test(line))
+    .map(({ index }) => index);
+
+  if (optionIndexes.length >= 2) {
+    let n = 1;
+    for (const index of optionIndexes) {
+      lines[index] = `${n++}. ${lines[index].trim().replace(/^[-*]\s*/, "")}`;
+    }
+    return lines.join("\n");
+  }
+
+  // 2) Inline options in a paragraph, convert each match into a numbered line
+  const inlineOptionRe = /(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()\s]{2,90})\s+[—-]\s+[^\n]+?(?=(?:\s+(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()\s]{2,90})\s+[—-]\s+)|$)/g;
+  const matches = [...text.matchAll(inlineOptionRe)];
+  if (matches.length < 2) return text;
+
+  let n = 0;
+  return text.replace(inlineOptionRe, (match) => `\n${++n}. ${match.trim()}`);
+};
+
 const GREETING: ChatItem = {
   type: "assistant",
   content:
@@ -97,12 +127,13 @@ export default function Leadgen() {
 
       const upsert = (chunk: string) => {
         assistantSoFar += chunk;
+        const normalizedContent = normalizeAssistantOptions(assistantSoFar);
         setItems((prev) => {
           const last = prev[prev.length - 1];
           if (last?.type === "assistant") {
-            return prev.map((m, i) => (i === prev.length - 1 && m.type === "assistant" ? { ...m, content: assistantSoFar } : m));
+            return prev.map((m, i) => (i === prev.length - 1 && m.type === "assistant" ? { ...m, content: normalizedContent } : m));
           }
-          return [...prev, { type: "assistant", content: assistantSoFar }];
+          return [...prev, { type: "assistant", content: normalizedContent }];
         });
       };
 
