@@ -369,7 +369,7 @@ Only include REAL people with verifiable details. Each lead must be from a DIFFE
   try {
     const cleaned = extractText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
-    let leads = (parsed.leads || []).slice(0, 5);
+    let leads = (parsed.leads || []).slice(0, extractLimit);
 
     // Cross-check leads against Google Maps listings for verified phone/address
     console.log("Cross-checking", leads.length, "leads against Google Maps...");
