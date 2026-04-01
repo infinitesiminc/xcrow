@@ -483,9 +483,7 @@ export default function Leadgen() {
                           size="sm"
                           className="gap-1.5 text-xs"
                           onClick={() => {
-                            const msg = `Find more leads like these — same industry, same profile type. Scale to 20+ results.`;
-                            setInput(msg);
-                            setTimeout(() => sendMessage(), 100);
+                            sendMessage("Find more leads like these — same industry, same profile type. Scale to 20+ results.");
                           }}
                         >
                           <Search className="w-3.5 h-3.5" /> Scale Lead List
