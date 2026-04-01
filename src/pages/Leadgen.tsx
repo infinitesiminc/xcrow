@@ -417,15 +417,18 @@ export default function Leadgen() {
                         <Card key={j} className="bg-card/60 border-primary/20">
                           <CardContent className="p-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <p className="font-semibold text-foreground text-sm">{l.name}</p>
-                                {(l.title || l.company) && (
-                                  <p className="text-xs text-muted-foreground">
-                                    {l.title}
-                                    {l.title && l.company ? " @ " : ""}
-                                    {l.company}
-                                  </p>
-                                )}
+                              <div className="flex items-start gap-2.5">
+                                <LeadAvatar lead={l} />
+                                <div>
+                                  <p className="font-semibold text-foreground text-sm">{l.name}</p>
+                                  {(l.title || l.company) && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {l.title}
+                                      {l.title && l.company ? " @ " : ""}
+                                      {l.company}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex gap-1.5 shrink-0">
                                 {l.linkedin && (
