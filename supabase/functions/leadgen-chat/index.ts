@@ -323,6 +323,15 @@ Only include REAL people with verifiable details. Prioritize leads where you fou
       leads = await enrichWithApollo(leads, apolloKey);
     }
 
+    // Fallback: enrich remaining leads with Hunter.io
+    if (hunterKey && leads.length > 0) {
+      const needsEmail = leads.filter(l => !l.email).length;
+      if (needsEmail > 0) {
+        console.log("Enriching", needsEmail, "leads with Hunter.io...");
+        leads = await enrichWithHunter(leads, hunterKey);
+      }
+    }
+
     return leads;
   } catch {
     console.error("Failed to parse leads");
