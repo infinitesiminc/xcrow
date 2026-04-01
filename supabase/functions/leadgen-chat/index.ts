@@ -316,7 +316,7 @@ async function executeLeadSearch(
       const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
         method: "POST",
         headers: { Authorization: `Bearer ${firecrawlKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ query: `${query} contact email linkedin`, limit: 5 }),
+        body: JSON.stringify({ query: `${query} contact email linkedin`, limit: searchLimit }),
       });
       const searchData = await searchRes.json();
       allResults.push(...(searchData?.data || []));
