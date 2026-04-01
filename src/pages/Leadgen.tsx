@@ -286,7 +286,19 @@ export default function Leadgen() {
                             )}
                             <div className="flex gap-3 mt-1.5 flex-wrap">
                               {l.email && <span className="text-xs text-muted-foreground">📧 {l.email}</span>}
-                              {l.phone && <span className="text-xs text-muted-foreground">📱 {l.phone}</span>}
+                              {l.phone && (
+                                <span className="text-xs text-muted-foreground">
+                                  📱 {l.phone}
+                                  {l.phone_source === "google_maps" && <span className="text-[9px] ml-1 text-primary/60">(Maps ✓)</span>}
+                                </span>
+                              )}
+                              {l.email && (
+                                <span className="text-xs text-muted-foreground">
+                                  📧 {l.email}
+                                  {l.email_confidence && <span className="text-[9px] ml-1 text-primary/60">({l.email_confidence}%)</span>}
+                                </span>
+                              )}
+                              {l.address && <span className="text-xs text-muted-foreground">📍 {l.address}</span>}
                               {l.website && (
                                 <a href={l.website.startsWith("http") ? l.website : `https://${l.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary">
                                   🌐 {l.website.replace(/^https?:\/\//, "").slice(0, 30)}
