@@ -477,11 +477,23 @@ export default function Leadgen() {
                         </Card>
                       ))}
 
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={() => {
+                            const msg = `Find more leads like these — same industry, same profile type. Scale to 20+ results.`;
+                            setInput(msg);
+                            setTimeout(() => sendMessage(), 100);
+                          }}
+                        >
+                          <Search className="w-3.5 h-3.5" /> Scale Lead List
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="gap-1.5"
+                          className="gap-1.5 text-xs"
                           onClick={() => sendToWhatsApp(item.leads)}
                         >
                           <Send className="w-3.5 h-3.5" /> Send to WhatsApp
