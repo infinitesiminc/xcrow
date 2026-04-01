@@ -350,7 +350,8 @@ Deno.serve(async (req) => {
 
       console.log("Executing lead search:", JSON.stringify(args).slice(0, 300));
 
-      const leads = await executeLeadSearch(args, firecrawlKey, LOVABLE_API_KEY);
+      const apolloKey = Deno.env.get("APOLLO_API_KEY") || null;
+      const leads = await executeLeadSearch(args, firecrawlKey, LOVABLE_API_KEY, apolloKey);
 
       // Build SSE response with a searching message + lead results
       const encoder = new TextEncoder();
