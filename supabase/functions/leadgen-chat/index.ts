@@ -417,7 +417,53 @@ Only include REAL people with verifiable details. Prioritize leads where you fou
       }
     }
 
-    return leads;
+    // Filter: only return leads with at least email or phone
+    const contactable = leads.filter((l: any) => l.email || l.phone);
+    const dropped = leads.length - contactable.length;
+    if (dropped > 0) {
+      console.log(`Filtered out ${dropped} leads without email or phone. Keeping ${contactable.length}.`);
+    }
+
+    // If we lost too many, try Hunter domain-search on remaining companies for extra contacts
+    if (contactable.length < 3 && hunterKey) {
+      const companiesWithoutContacts = leads
+        .filter((l: any) => !l.email && !l.phone && l.company)
+        .slice(0, 3);
+      for (const lead of companiesWithoutContacts) {
+        try {
+          // Try Hunter domain search for company-level emails
+          let domain = lead.website?.replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "";
+          if (!domain) {
+            const domainRes = await fetch(
+              `https://api.hunter.io/v2/domain-search?company=${encodeURIComponent(lead.company)}&limit=3&api_key=${hunterKey}`
+            );
+            if (domainRes.ok) {
+              const dd = await domainRes.json();
+              domain = dd?.data?.domain || "";
+              // Pick the first person from domain search results
+              const emails = dd?.data?.emails || [];
+              if (emails.length > 0) {
+                const top = emails[0];
+                lead.email = top.value;
+                lead.email_confidence = top.confidence;
+                lead.name = lead.name || `${top.first_name || ""} ${top.last_name || ""}`.trim() || lead.name;
+                lead.title = lead.title || top.position || null;
+                console.log(`Hunter domain-search fallback: ${lead.email} for ${lead.company}`);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Hunter domain fallback error for", lead.company, e);
+        }
+        if (lead.email || lead.phone) contactable.push(lead);
+      }
+    }
+
+    if (contactable.length === 0) {
+      console.log("No leads with contact info found after all enrichment.");
+    }
+
+    return contactable;
   } catch {
     console.error("Failed to parse leads");
     return [];
