@@ -45,6 +45,7 @@ const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard.tsx"));
 const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
 const Disrupt = lazy(() => import("./pages/Disrupt.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 
 
 // Admin (lazy)
@@ -157,6 +158,7 @@ const App = () => (
               <Route path="/founder" element={<Navigate to="/agentlauncher" replace />} />
               <Route path="/disrupt" element={<Navigate to="/agentlauncher" replace />} />
               <Route path="/leadgen" element={<><Leadgen /></>} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/map" element={<Navigate to="/upskill" replace />} />
               <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               <Route path="/tools" element={<Navigate to="/" replace />} />

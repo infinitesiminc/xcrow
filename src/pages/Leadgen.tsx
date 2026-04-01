@@ -6,9 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, ExternalLink, Loader2, MessageSquare } from "lucide-react";
+import { Send, Bot, User, ExternalLink, Loader2, MessageSquare, Mail, Sparkles, Check, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 
@@ -90,11 +95,21 @@ const GREETING: ChatItem = {
 };
 
 export default function Leadgen() {
+  const { user, profile, openAuthModal } = useAuth();
   const [items, setItems] = useState<ChatItem[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [userPhone, setUserPhone] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Email draft state
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  const [draftLead, setDraftLead] = useState<Lead | null>(null);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftBody, setDraftBody] = useState("");
+  const [draftCtaText, setDraftCtaText] = useState("");
+  const [sending, setSending] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -103,6 +118,92 @@ export default function Leadgen() {
   useEffect(() => {
     scrollToBottom();
   }, [items, scrollToBottom]);
+
+  const handleDraftEmail = async (lead: Lead) => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    if (!lead.email) {
+      toast.error("This lead has no email address.");
+      return;
+    }
+    setDraftLead(lead);
+    setDraftModalOpen(true);
+    setDraftLoading(true);
+    setDraftSubject("");
+    setDraftBody("");
+    setDraftCtaText("");
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/draft-outreach`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            lead: {
+              name: lead.name,
+              title: lead.title,
+              company: lead.company,
+              email: lead.email,
+              reason: lead.reason,
+              summary: lead.summary,
+            },
+            senderInfo: {
+              name: profile?.displayName || user.email?.split("@")[0],
+              company: profile?.company || "",
+              website: "",
+            },
+          }),
+        }
+      );
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Failed to draft");
+      setDraftSubject(data.draft.subject || "");
+      setDraftBody(data.draft.body || "");
+      setDraftCtaText(data.draft.ctaText || "");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to generate draft");
+      setDraftModalOpen(false);
+    } finally {
+      setDraftLoading(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!draftLead?.email || !draftSubject || !draftBody) return;
+    setSending(true);
+    try {
+      const id = crypto.randomUUID();
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "lead-outreach",
+          recipientEmail: draftLead.email,
+          idempotencyKey: `outreach-${id}`,
+          templateData: {
+            recipientName: draftLead.name,
+            senderName: profile?.displayName || user?.email?.split("@")[0],
+            senderCompany: profile?.company || "",
+            emailBody: draftBody,
+            ctaText: draftCtaText || undefined,
+            ctaUrl: "",
+            subject: draftSubject,
+          },
+        },
+      });
+      if (error) throw error;
+      toast.success(`Email sent to ${draftLead.email}`);
+      setDraftModalOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send email");
+    } finally {
+      setSending(false);
+    }
+  };
 
   const sendMessage = async () => {
     const text = input.trim();
@@ -360,17 +461,32 @@ export default function Leadgen() {
                                 </a>
                               )}
                             </div>
+                            {l.email && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1.5 mt-2 text-xs"
+                                onClick={() => handleDraftEmail(l)}
+                              >
+                                <Mail className="w-3 h-3" />
+                                <Sparkles className="w-3 h-3" />
+                                Draft Email
+                              </Button>
+                            )}
                           </CardContent>
                         </Card>
                       ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 mt-2"
-                        onClick={() => sendToWhatsApp(item.leads)}
-                      >
-                        <Send className="w-3.5 h-3.5" /> Send to WhatsApp
-                      </Button>
+
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={() => sendToWhatsApp(item.leads)}
+                        >
+                          <Send className="w-3.5 h-3.5" /> Send to WhatsApp
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -417,6 +533,74 @@ export default function Leadgen() {
           </p>
         </div>
       </div>
+
+      {/* Email Draft Modal */}
+      <Dialog open={draftModalOpen} onOpenChange={setDraftModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-primary" />
+              Email to {draftLead?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          {draftLoading ? (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">AI is drafting your email...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">To</label>
+                <Input value={draftLead?.email || ""} disabled className="bg-muted/30 text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+                <Input
+                  value={draftSubject}
+                  onChange={(e) => setDraftSubject(e.target.value)}
+                  className="text-sm"
+                  placeholder="Email subject..."
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
+                <Textarea
+                  value={draftBody}
+                  onChange={(e) => setDraftBody(e.target.value)}
+                  className="text-sm min-h-[140px]"
+                  placeholder="Email body..."
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">CTA Button (optional)</label>
+                <Input
+                  value={draftCtaText}
+                  onChange={(e) => setDraftCtaText(e.target.value)}
+                  className="text-sm"
+                  placeholder="e.g. Schedule a Call"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" size="sm" onClick={() => setDraftModalOpen(false)} disabled={sending}>
+              <X className="w-3.5 h-3.5 mr-1" /> Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSendEmail}
+              disabled={draftLoading || sending || !draftSubject || !draftBody}
+              className="gap-1.5"
+            >
+              {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+              {sending ? "Sending..." : "Send Email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
