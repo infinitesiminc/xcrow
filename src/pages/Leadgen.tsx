@@ -32,6 +32,32 @@ interface Lead {
   email_confidence?: number;
   summary?: string;
   reason?: string;
+  photo_url?: string;
+}
+
+function getLeadPhotoUrl(lead: Lead): string | null {
+  if (lead.photo_url) return lead.photo_url;
+  if (lead.email) return `https://www.gravatar.com/avatar/${lead.email.trim().toLowerCase()}?d=404&s=80`;
+  return null;
+}
+
+function getInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+}
+
+function LeadAvatar({ lead }: { lead: Lead }) {
+  const [imgError, setImgError] = useState(false);
+  const photoUrl = getLeadPhotoUrl(lead);
+  if (photoUrl && !imgError) {
+    return (
+      <img src={photoUrl} alt="" className="w-9 h-9 rounded-full object-cover shrink-0 bg-muted" onError={() => setImgError(true)} />
+    );
+  }
+  return (
+    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
+      {getInitials(lead.name)}
+    </div>
+  );
 }
 
 type ChatItem =
@@ -406,15 +432,18 @@ export default function Leadgen() {
                         <Card key={j} className="bg-card/60 border-primary/20">
                           <CardContent className="p-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <p className="font-semibold text-foreground text-sm">{l.name}</p>
-                                {(l.title || l.company) && (
-                                  <p className="text-xs text-muted-foreground">
-                                    {l.title}
-                                    {l.title && l.company ? " @ " : ""}
-                                    {l.company}
-                                  </p>
-                                )}
+                              <div className="flex items-start gap-2.5">
+                                <LeadAvatar lead={l} />
+                                <div>
+                                  <p className="font-semibold text-foreground text-sm">{l.name}</p>
+                                  {(l.title || l.company) && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {l.title}
+                                      {l.title && l.company ? " @ " : ""}
+                                      {l.company}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex gap-1.5 shrink-0">
                                 {l.linkedin && (
