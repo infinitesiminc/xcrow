@@ -74,6 +74,29 @@ const TOOLS = [
   },
 ];
 
+function enforceNumberedOptions(content: string): string {
+  if (!content) return content;
+
+  const lines = content.split("\n");
+  const optionLikeLine = /^\s*(?!\d+[.)]\s)(?![-*]\s)(\*\*[^*]+\*\*|[A-Z][^\n—-]{2,90})\s+[—-]\s+.+$/;
+
+  const candidateIndexes = lines
+    .map((line, index) => ({ line: line.trim(), index }))
+    .filter(({ line }) => optionLikeLine.test(line))
+    .map(({ index }) => index);
+
+  if (candidateIndexes.length < 2) return content;
+
+  let optionNumber = 1;
+  for (const idx of candidateIndexes) {
+    const trimmed = lines[idx].trim();
+    lines[idx] = `${optionNumber}. ${trimmed.replace(/^[-*]\s*/, "")}`;
+    optionNumber += 1;
+  }
+
+  return lines.join("\n");
+}
+
 async function scrapeWebsite(url: string, firecrawlKey: string): Promise<string> {
   let formattedUrl = url.trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
@@ -543,8 +566,8 @@ Deno.serve(async (req) => {
 
           // Send summary message
           const summaryContent = leads.length > 0
-            ? `Found **${leads.length} leads** matching your ICP! 🎉\n\nWant me to:\n- Send these to your WhatsApp?\n- Refine the search criteria?\n- Search for more leads in a different region?`
-            : "I couldn't find strong matches this time. Would you like to:\n- Broaden the search criteria?\n- Try different job titles or industries?\n- Search in a different region?";
+            ? `Found **${leads.length} leads** matching your ICP! 🎉\n\nWant me to:\n1. Send these to your WhatsApp\n2. Refine the search criteria\n3. Search for more leads in a different region`
+            : "I couldn't find strong matches this time. Would you like to:\n1. Broaden the search criteria\n2. Try different job titles or industries\n3. Search in a different region";
 
           const summaryMsg = { choices: [{ delta: { content: summaryContent } }] };
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(summaryMsg)}\n\n`));
@@ -558,13 +581,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // No tool call — stream the collected content as SSE
+    // No tool call — enforce numbered options, then stream as SSE
+    const normalizedContent = enforceNumberedOptions(fullContent);
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {
-        for (const chunk of rawChunks) {
-          controller.enqueue(encoder.encode(chunk + "\n\n"));
-        }
+        const normalizedMsg = { choices: [{ delta: { content: normalizedContent } }] };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(normalizedMsg)}\n\n`));
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));
         controller.close();
       },
