@@ -36,7 +36,7 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - Ask about target industries or verticals
 - Suggest specific job titles and company types based on the lead type strategy chosen
 
-### Phase 4: Targeting
+### Phase 5: Targeting
 - Ask about target geography (cities, states, countries)
 - Ask about any other qualifying criteria (budget, urgency, tech stack, etc.)
 
