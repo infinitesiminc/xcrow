@@ -1,68 +1,77 @@
 
 
-## Sub-Vertical Deduplication Audit
+# Transform /leadgen into AI-Guided ICP Chat
 
-### Findings
+## What We're Building
 
-Total unique sub-verticals: **~600** across 19 verticals. Many are near-duplicates created by the AI classifier treating minor wording differences as distinct niches. Here are the worst offenders:
+Replace the current form-based leadgen page with a conversational chat interface where AI guides the user step-by-step through ICP building before running lead discovery. The chat collects context iteratively (business URL, target market, buyer persona, geography) to produce higher-quality search queries.
+
+## Architecture
 
 ```text
-Vertical                  SVs   Estimated after dedup   Reduction
-Healthcare & Wellness     88    ~30                     66%
-Marketing & Analytics     75    ~25                     67%
-E-commerce & Payments     58    ~22                     62%
-Accounting & Finance      53    ~20                     62%
-CRM & Sales               38    ~12                     68%
-HR & Recruiting           38    ~12                     68%
+┌─────────────────────────────────┐
+│  /leadgen (Chat UI)             │
+│  ┌───────────────────────────┐  │
+│  │ AI: "What's your website?"│  │
+│  │ User: "example.com"       │  │
+│  │ AI: "Who do you sell to?" │  │
+│  │ User: "SMB restaurant..." │  │
+│  │ AI: "What region?"        │  │
+│  │ ...                       │  │
+│  │ AI: "Here are 5 leads..." │  │
+│  └───────────────────────────┘  │
+│  [input bar]                    │
+└─────────────────────────────────┘
+        │
+        ▼ SSE stream
+┌─────────────────────────────────┐
+│ leadgen-scout edge function     │
+│ - Accepts full conversation     │
+│ - AI determines next step       │
+│ - When ICP is complete:         │
+│   scrape → search → extract     │
+│ - Streams responses back        │
+└─────────────────────────────────┘
 ```
 
-### Specific Duplicate Clusters (examples)
+## Plan
 
-**CRM & Sales** — 38 → ~12:
-- AI Sales Agent / AI Sales Assistant / AI Sales Associate / AI Sales Development → **"AI Sales Agent"**
-- AI Outbound Sales Automation / AI Sales Outbound Automation → **"Outbound Sales Automation"**
-- AI Sales Lead Generation / AI Sales Prospecting / AI Prospect List Generation / Lead Generation & Intent Signals → **"Lead Generation"**
-- AI Outbound Phone Operations / AI Outbound Voice Agents (Financial Services) / AI SMS/Voice Sales Assistant → **"Voice Sales Agent"**
-- Enterprise CRM / SMB CRM / Sales CRM / Open-Source CRM / Personal CRM / AI CRM Automation → **"CRM Platform"**
-- Staffing dupes pattern repeats in **HR**: Staffing & Recruiting / Staffing & Recruiting Platform / Staffing & Recruitment / Staffing & Recruitment Software (4 identical entries)
+### 1. Create new edge function `leadgen-chat`
+- Accepts `{ messages: {role, content}[] }` (full conversation history)
+- System prompt instructs AI to act as a lead gen consultant who guides through 4 phases:
+  1. **Business Understanding** — ask for website, scrape it, confirm what the business does
+  2. **Buyer Persona** — who buys (job titles, company size, industry)
+  3. **Targeting** — geography, budget tier, urgency signals
+  4. **Confirmation** — summarize ICP, ask user to confirm before searching
+- Uses tool calling: when AI decides ICP is complete, it calls a `run_lead_search` tool that triggers the Firecrawl pipeline (reusing existing logic)
+- Streams responses via SSE for real-time chat feel
+- Returns lead results as a special SSE event `{ type: "leads", leads: [...] }`
 
-**Healthcare** — 88 → ~30:
-- AI Drug Discovery / AI-powered Drug Discovery → identical
-- Telehealth × 7 variants (by specialty) → **"Telehealth"** + **"Specialty Telehealth"**
-- Healthcare Revenue Cycle Management / Healthcare Revenue Cycle Automation / AI Revenue Cycle Management → one
-- Medical Billing / Medical Billing Automation / AI Patient Billing & Collections → one
-- 4 Mental Health variants → one
+### 2. Rewrite `src/pages/Leadgen.tsx` as a chat page
+- Full-screen chat layout (similar to existing `HomepageChat` / `UnifiedChatDock` patterns)
+- Message list with user/assistant bubbles, markdown rendering for AI responses
+- Input bar at bottom with send button
+- Initial AI greeting message auto-sent on mount
+- When `leads` event arrives, render lead cards inline in the chat
+- Keep WhatsApp delivery as an optional action button on the lead cards
+- Phone number collected conversationally (AI asks when leads are ready to deliver)
 
-**Finance** — 53 → ~20:
-- FinOps × 4 (Analytics, Automation, AI/Cloud Cost, AI FinOps Automation) → one
-- Neobank × 4 (Latin America, Budgeting, Expats, Inclusive) → one
-- Accounting × 5 (AI, Cloud, Free, SMB, Bookkeeping & Tax) → one
+### 3. Keep existing `leadgen-scout` as internal utility
+- Extract the scrape → search → extract pipeline into a helper called by `leadgen-chat`
+- No changes to Firecrawl logic itself
 
-### Approach: AI-Powered Merge via Edge Function
+## Technical Details
 
-Build a `dedup-subverticals` edge function that:
+**Edge function (`leadgen-chat/index.ts`)**:
+- Model: `google/gemini-3-flash-preview` for fast conversational responses
+- System prompt encodes the 4-phase ICP flow with clear transition rules
+- Tool definition: `run_lead_search(website, icp_summary, search_queries)` — triggered by AI when ready
+- On tool call: execute Firecrawl pipeline, return leads as structured SSE event
+- Streams all other responses as standard OpenAI-compatible SSE
 
-1. **Fetches** all distinct `(vertical_id, sub_vertical)` grouped by vertical
-2. **Sends each vertical's list** to Gemini with a structured tool call: "Group these sub-verticals into canonical clusters. Return `{ clusters: [{ canonical_name, members[] }] }`"
-3. **Executes SQL updates** — for each cluster, picks the canonical name and runs `UPDATE company_vertical_map SET sub_vertical = $canonical WHERE sub_vertical = ANY($members) AND vertical_id = $vid`
-4. **Cleans up** `subvertical_agent_scores` — deletes orphaned rows and re-maps scored entries to new canonical names
-
-### Plan
-
-1. **Create edge function** `supabase/functions/dedup-subverticals/index.ts`
-   - Iterates verticals one at a time
-   - AI call per vertical to cluster sub-verticals
-   - Updates `company_vertical_map.sub_vertical` in-place
-   - Deletes orphaned `subvertical_agent_scores` rows
-   - Returns summary: `{ vertical, before, after, merged[] }`
-
-2. **No UI changes needed** — the hook and cards will automatically show fewer, cleaner niches after the data is merged
-
-### Technical Details
-
-- Single new file: `supabase/functions/dedup-subverticals/index.ts`
-- Uses service role key for direct DB updates
-- Rate-limited AI calls (one per vertical, 19 calls total)
-- Idempotent — safe to run multiple times
-- No migration needed — updating existing column values only
+**Frontend (`Leadgen.tsx`)**:
+- State: `messages[]`, `leads[]`, `isStreaming`
+- SSE parsing reuses existing patterns from `ChatContext.tsx`
+- Lead cards rendered inline with contact details + WhatsApp send button
+- No authentication required (public access)
 
