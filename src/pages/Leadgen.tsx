@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, ExternalLink, Loader2, MessageSquare, Mail, Sparkles, Check, X } from "lucide-react";
+import { Send, Bot, User, ExternalLink, Loader2, MessageSquare, Mail, Sparkles, Check, X, Search } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -205,8 +205,8 @@ export default function Leadgen() {
     }
   };
 
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessage = async (overrideText?: string) => {
+    const text = (overrideText || input).trim();
     if (!text || isStreaming) return;
 
     const userItem: ChatItem = { type: "user", content: text };
@@ -477,11 +477,21 @@ export default function Leadgen() {
                         </Card>
                       ))}
 
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={() => {
+                            sendMessage("Find more leads like these — same industry, same profile type. Scale to 20+ results.");
+                          }}
+                        >
+                          <Search className="w-3.5 h-3.5" /> Scale Lead List
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="gap-1.5"
+                          className="gap-1.5 text-xs"
                           onClick={() => sendToWhatsApp(item.leads)}
                         >
                           <Send className="w-3.5 h-3.5" /> Send to WhatsApp
