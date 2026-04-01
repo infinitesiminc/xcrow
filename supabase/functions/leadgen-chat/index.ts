@@ -246,6 +246,7 @@ async function executeLeadSearch(
   firecrawlKey: string,
   lovableKey: string,
   apolloKey: string | null,
+  hunterKey: string | null,
 ): Promise<any[]> {
   let formattedUrl = args.website.trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
