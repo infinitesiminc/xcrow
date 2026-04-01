@@ -327,7 +327,7 @@ async function executeLeadSearch(
 
   // 3. Google Maps / local listings search
   console.log("Searching local listings...");
-  const mapsQueries = args.search_queries.slice(0, 2).map(q => q + " phone contact");
+  const mapsQueries = args.search_queries.slice(0, mapsQueryCount).map(q => q + " phone contact");
   const mapsResults = await searchGoogleMaps(mapsQueries, firecrawlKey);
 
   // 4. AI extraction with all sources combined
