@@ -66,7 +66,7 @@ const TOOLS = [
     type: "function",
     function: {
       name: "run_lead_search",
-      description: "Execute lead search using the confirmed ICP. Call this when the user has confirmed their ideal customer profile.",
+      description: "Execute lead search using the confirmed ICP. Call this when the user has confirmed their ideal customer profile or wants to find more/scale leads.",
       parameters: {
         type: "object",
         properties: {
@@ -75,8 +75,9 @@ const TOOLS = [
           search_queries: {
             type: "array",
             items: { type: "string" },
-            description: "3-5 specific search queries to find leads matching this ICP",
+            description: "5-8 specific, DIVERSE search queries to find leads matching this ICP. Each query should target a DIFFERENT company, region, or sub-niche to maximize unique results.",
           },
+          scale: { type: "boolean", description: "Set to true when the user wants MORE leads (scaling up). This widens search limits to find 10-15+ leads instead of 5." },
         },
         required: ["website", "icp_summary", "search_queries"],
         additionalProperties: false,
