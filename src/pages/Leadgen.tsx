@@ -20,6 +20,8 @@ interface Lead {
   phone?: string;
   linkedin?: string;
   twitter?: string;
+  website?: string;
+  source?: string;
   summary?: string;
   reason?: string;
 }
