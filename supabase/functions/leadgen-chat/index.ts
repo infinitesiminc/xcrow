@@ -40,7 +40,7 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - Ask about target geography (cities, states, countries)
 - Ask about any other qualifying criteria (budget, urgency, tech stack, etc.)
 
-### Phase 5: Confirmation
+### Phase 6: Confirmation
 - Summarize the complete ICP in a clear bullet list including the chosen lead type strategy
 - Ask the user to confirm or adjust
 - Once confirmed, call the run_lead_search tool
