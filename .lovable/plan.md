@@ -1,77 +1,63 @@
 
 
-# Transform /leadgen into AI-Guided ICP Chat
+# Lead CRM Dashboard — Design Plan
 
-## What We're Building
-
-Replace the current form-based leadgen page with a conversational chat interface where AI guides the user step-by-step through ICP building before running lead discovery. The chat collects context iteratively (business URL, target market, buyer persona, geography) to produce higher-quality search queries.
+## Overview
+Add a persistent Lead CRM dashboard accessible from `/leadgen` when the user is signed in. Currently, leads only exist in-memory during a chat session — they disappear on refresh. The dashboard will persist leads to the database and provide a CRM-like interface for managing outreach.
 
 ## Architecture
 
 ```text
-┌─────────────────────────────────┐
-│  /leadgen (Chat UI)             │
-│  ┌───────────────────────────┐  │
-│  │ AI: "What's your website?"│  │
-│  │ User: "example.com"       │  │
-│  │ AI: "Who do you sell to?" │  │
-│  │ User: "SMB restaurant..." │  │
-│  │ AI: "What region?"        │  │
-│  │ ...                       │  │
-│  │ AI: "Here are 5 leads..." │  │
-│  └───────────────────────────┘  │
-│  [input bar]                    │
-└─────────────────────────────────┘
-        │
-        ▼ SSE stream
-┌─────────────────────────────────┐
-│ leadgen-scout edge function     │
-│ - Accepts full conversation     │
-│ - AI determines next step       │
-│ - When ICP is complete:         │
-│   scrape → search → extract     │
-│ - Streams responses back        │
-└─────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  /leadgen (signed in)                            │
+│  ┌──────────┐  ┌────────────────────────────────┐│
+│  │ Sidebar   │  │  Tab View                     ││
+│  │           │  │  [Pipeline] [Chat] [Activity]  ││
+│  │ • Pipeline│  │                                ││
+│  │ • Chat    │  │  Pipeline tab:                 ││
+│  │ • Activity│  │  KPI cards (total, emailed,    ││
+│  │           │  │  replied, conversion %)        ││
+│  │           │  │  Lead table with status,       ││
+│  │           │  │  filters, bulk actions         ││
+│  │           │  │                                ││
+│  │           │  │  Chat tab:                     ││
+│  │           │  │  (existing chat + panel UI)    ││
+│  │           │  │                                ││
+│  │           │  │  Activity tab:                 ││
+│  │           │  │  Email send log + timestamps   ││
+│  └──────────┘  └────────────────────────────────┘│
+└──────────────────────────────────────────────────┘
 ```
 
-## Plan
+## Step-by-step
 
-### 1. Create new edge function `leadgen-chat`
-- Accepts `{ messages: {role, content}[] }` (full conversation history)
-- System prompt instructs AI to act as a lead gen consultant who guides through 4 phases:
-  1. **Business Understanding** — ask for website, scrape it, confirm what the business does
-  2. **Buyer Persona** — who buys (job titles, company size, industry)
-  3. **Targeting** — geography, budget tier, urgency signals
-  4. **Confirmation** — summarize ICP, ask user to confirm before searching
-- Uses tool calling: when AI decides ICP is complete, it calls a `run_lead_search` tool that triggers the Firecrawl pipeline (reusing existing logic)
-- Streams responses via SSE for real-time chat feel
-- Returns lead results as a special SSE event `{ type: "leads", leads: [...] }`
+### 1. Create `saved_leads` database table
+New migration with columns: `id`, `user_id`, `name`, `title`, `company`, `email`, `phone`, `linkedin`, `website`, `address`, `source`, `email_confidence`, `summary`, `reason`, `photo_url`, `status` (enum: new/contacted/replied/won/lost), `created_at`, `updated_at`. RLS: users can CRUD their own leads only.
 
-### 2. Rewrite `src/pages/Leadgen.tsx` as a chat page
-- Full-screen chat layout (similar to existing `HomepageChat` / `UnifiedChatDock` patterns)
-- Message list with user/assistant bubbles, markdown rendering for AI responses
-- Input bar at bottom with send button
-- Initial AI greeting message auto-sent on mount
-- When `leads` event arrives, render lead cards inline in the chat
-- Keep WhatsApp delivery as an optional action button on the lead cards
-- Phone number collected conversationally (AI asks when leads are ready to deliver)
+### 2. Create `outreach_log` table
+Tracks each email/action per lead: `id`, `user_id`, `lead_id` (FK to saved_leads), `channel` (email/sms), `subject`, `body`, `sent_at`, `status` (sent/opened/bounced). RLS: users own rows only.
 
-### 3. Keep existing `leadgen-scout` as internal utility
-- Extract the scrape → search → extract pipeline into a helper called by `leadgen-chat`
-- No changes to Firecrawl logic itself
+### 3. Auto-save leads from chat
+When leads arrive in the chat stream, upsert them into `saved_leads` (deduplicate on user_id + email + company). This replaces the in-memory-only accumulation.
 
-## Technical Details
+### 4. Build `LeadgenDashboard` component
+A tabbed layout replacing the current full-page chat:
+- **Pipeline tab**: KPI stat cards (total leads, contacted, reply rate) + a searchable/filterable table of all saved leads with status badges, quick actions (draft email, change status), and bulk export (CSV).
+- **Chat tab**: The existing chat + side panel UI, now persisting discovered leads automatically.
+- **Activity tab**: Chronological log of all outreach actions pulled from `outreach_log`.
 
-**Edge function (`leadgen-chat/index.ts`)**:
-- Model: `google/gemini-3-flash-preview` for fast conversational responses
-- System prompt encodes the 4-phase ICP flow with clear transition rules
-- Tool definition: `run_lead_search(website, icp_summary, search_queries)` — triggered by AI when ready
-- On tool call: execute Firecrawl pipeline, return leads as structured SSE event
-- Streams all other responses as standard OpenAI-compatible SSE
+### 5. Update `Leadgen.tsx` routing
+Signed-in users see the dashboard with tabs. Signed-out users see the existing chat-only experience (or auth prompt).
 
-**Frontend (`Leadgen.tsx`)**:
-- State: `messages[]`, `leads[]`, `isStreaming`
-- SSE parsing reuses existing patterns from `ChatContext.tsx`
-- Lead cards rendered inline with contact details + WhatsApp send button
-- No authentication required (public access)
+### 6. Wire email sending to `outreach_log`
+After `handleSendEmail` succeeds, insert a row into `outreach_log` linking the lead_id, subject, body, and timestamp.
+
+## Files to create/edit
+- **New migration**: `saved_leads` + `outreach_log` tables with RLS
+- **New**: `src/components/leadgen/LeadgenDashboard.tsx` — tabbed layout
+- **New**: `src/components/leadgen/LeadPipeline.tsx` — KPI cards + lead table
+- **New**: `src/components/leadgen/ActivityLog.tsx` — outreach history
+- **Edit**: `src/pages/Leadgen.tsx` — integrate dashboard for authed users
+- **Edit**: `src/components/leadgen/LeadCard.tsx` — add status selector
+- **Edit**: `src/components/leadgen/LeadsPanel.tsx` — save leads on arrival
 
