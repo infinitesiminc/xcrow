@@ -291,12 +291,17 @@ async function searchGoogleMaps(queries: string[], firecrawlKey: string): Promis
 }
 
 async function executeLeadSearch(
-  args: { website: string; icp_summary: string; search_queries: string[] },
+  args: { website: string; icp_summary: string; search_queries: string[]; scale?: boolean },
   firecrawlKey: string,
   lovableKey: string,
   apolloKey: string | null,
   hunterKey: string | null,
 ): Promise<any[]> {
+  const isScale = args.scale === true;
+  const maxQueries = isScale ? 8 : 4;
+  const searchLimit = isScale ? 8 : 5;
+  const extractLimit = isScale ? 15 : 5;
+  const mapsQueryCount = isScale ? 4 : 2;
   let formattedUrl = args.website.trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
 
