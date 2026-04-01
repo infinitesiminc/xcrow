@@ -20,6 +20,8 @@ interface Lead {
   phone?: string;
   linkedin?: string;
   twitter?: string;
+  summary?: string;
+  reason?: string;
 }
 
 type ChatItem =

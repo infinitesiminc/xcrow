@@ -121,8 +121,8 @@ async function executeLeadSearch(
         {
           role: "system",
           content: `Extract up to 5 real leads from search results. Return JSON only (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","email":"email or null","phone":"phone or null","linkedin":"url or null","twitter":"url or null"}]}
-Only include REAL people. Prioritize decision-makers.`,
+{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","email":"email or null","phone":"phone or null","linkedin":"url or null","twitter":"url or null","summary":"1-2 sentence summary of who this person is and their background","reason":"1-2 sentence explanation of why they are a strong lead for this ICP"}]}
+Only include REAL people. Prioritize decision-makers. Every lead MUST have summary and reason fields.`,
         },
         {
           role: "user",
