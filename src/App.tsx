@@ -158,6 +158,7 @@ const App = () => (
               <Route path="/founder" element={<Navigate to="/agentlauncher" replace />} />
               <Route path="/disrupt" element={<Navigate to="/agentlauncher" replace />} />
               <Route path="/leadgen" element={<><Leadgen /></>} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/map" element={<Navigate to="/upskill" replace />} />
               <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               <Route path="/tools" element={<Navigate to="/" replace />} />
