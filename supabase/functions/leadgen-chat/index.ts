@@ -74,11 +74,20 @@ const TOOLS = [
   },
 ];
 
+function normalizeResponseText(content: string): string {
+  if (!content) return content;
+  return content
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function enforceNumberedOptions(content: string): string {
   if (!content) return content;
 
   const lines = content.split("\n");
-  const optionLikeLine = /^\s*(?!\d+[.)]\s)(?![-*]\s)(\*\*[^*]+\*\*|[A-Z][^\n—-]{2,90})\s+[—-]\s+.+$/;
+  const optionLikeLine = /^(?:[-*•]\s*)?(?:\d+[.)]\s*)?(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+.+$/;
 
   const candidateIndexes = lines
     .map((line, index) => ({ line: line.trim(), index }))
@@ -89,12 +98,17 @@ function enforceNumberedOptions(content: string): string {
 
   let optionNumber = 1;
   for (const idx of candidateIndexes) {
-    const trimmed = lines[idx].trim();
-    lines[idx] = `${optionNumber}. ${trimmed.replace(/^[-*]\s*/, "")}`;
+    const cleaned = lines[idx].trim().replace(/^[-*•]\s*/, "").replace(/^\d+[.)]\s*/, "");
+    const parts = cleaned.match(/^(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+(.+)$/);
+    lines[idx] = `${optionNumber}. ${parts ? `${parts[1].trim()} — ${parts[2].trim()}` : cleaned}`;
     optionNumber += 1;
   }
 
   return lines.join("\n");
+}
+
+function formatAssistantResponse(content: string): string {
+  return enforceNumberedOptions(normalizeResponseText(content));
 }
 
 async function scrapeWebsite(url: string, firecrawlKey: string): Promise<string> {
@@ -582,7 +596,7 @@ Deno.serve(async (req) => {
     }
 
     // No tool call — enforce numbered options, then stream as SSE
-    const normalizedContent = enforceNumberedOptions(fullContent);
+    const normalizedContent = formatAssistantResponse(fullContent);
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {

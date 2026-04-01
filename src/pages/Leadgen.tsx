@@ -34,14 +34,13 @@ type ChatItem =
   | { type: "assistant"; content: string }
   | { type: "leads"; leads: Lead[] };
 
-const hasNumberedOptions = (text: string) => /^\s*\d+[.)]\s+/m.test(text);
+const hasNumberedOptions = (text: string) => /^\s*\d+[.)]\s+\S+/m.test(text);
 
 const normalizeAssistantOptions = (text: string) => {
-  if (!text || hasNumberedOptions(text)) return text;
+  if (!text) return text;
 
-  // 1) Line-based options: "Option Name — description"
   const lines = text.split("\n");
-  const optionLineRe = /^(?:[-*]\s+)?(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()\s]{2,90})\s+[—-]\s+.+$/;
+  const optionLineRe = /^(?:[-*•]\s*)?(?:\d+[.)]\s*)?(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+.+$/;
   const optionIndexes = lines
     .map((line, index) => ({ line: line.trim(), index }))
     .filter(({ line }) => optionLineRe.test(line))
@@ -50,18 +49,29 @@ const normalizeAssistantOptions = (text: string) => {
   if (optionIndexes.length >= 2) {
     let n = 1;
     for (const index of optionIndexes) {
-      lines[index] = `${n++}. ${lines[index].trim().replace(/^[-*]\s*/, "")}`;
+      const cleaned = lines[index].trim().replace(/^[-*•]\s*/, "").replace(/^\d+[.)]\s*/, "");
+      const parts = cleaned.match(/^(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+(.+)$/);
+      lines[index] = `${n++}. ${parts ? `${parts[1].trim()} — ${parts[2].trim()}` : cleaned}`;
     }
     return lines.join("\n");
   }
 
-  // 2) Inline options in a paragraph, convert each match into a numbered line
-  const inlineOptionRe = /(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()\s]{2,90})\s+[—-]\s+[^\n]+?(?=(?:\s+(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()\s]{2,90})\s+[—-]\s+)|$)/g;
+  if (hasNumberedOptions(text)) return text;
+
+  const inlineOptionRe = /(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+([^\n]+?)(?=(?:\s+(?:\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|-|:)\s+)|$)/g;
   const matches = [...text.matchAll(inlineOptionRe)];
   if (matches.length < 2) return text;
 
   let n = 0;
-  return text.replace(inlineOptionRe, (match) => `\n${++n}. ${match.trim()}`);
+  return text.replace(inlineOptionRe, (_, title, desc) => `\n${++n}. ${String(title).trim()} — ${String(desc).trim()}`);
+};
+
+const formatAssistantMessage = (text: string) => {
+  const compact = text
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n");
+  return normalizeAssistantOptions(compact);
 };
 
 const GREETING: ChatItem = {
@@ -127,7 +137,7 @@ export default function Leadgen() {
 
       const upsert = (chunk: string) => {
         assistantSoFar += chunk;
-        const normalizedContent = normalizeAssistantOptions(assistantSoFar);
+        const normalizedContent = formatAssistantMessage(assistantSoFar);
         setItems((prev) => {
           const last = prev[prev.length - 1];
           if (last?.type === "assistant") {
@@ -275,7 +285,7 @@ export default function Leadgen() {
                         <Bot className="w-3.5 h-3.5 text-primary" />
                       </div>
                       <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] text-sm prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
-                        <ReactMarkdown>{item.content}</ReactMarkdown>
+                        <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
                       </div>
                     </div>
                   )}
