@@ -332,12 +332,12 @@ async function executeLeadSearch(
 
   // 4. AI extraction with all sources combined
   const searchSummary = allResults
-    .slice(0, 12)
+    .slice(0, isScale ? 20 : 12)
     .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 500)}`)
     .join("\n---\n");
 
   const mapsSummary = mapsResults
-    .slice(0, 6)
+    .slice(0, isScale ? 12 : 6)
     .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 400)}`)
     .join("\n---\n");
 
