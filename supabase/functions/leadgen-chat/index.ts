@@ -76,10 +76,69 @@ async function scrapeWebsite(url: string, firecrawlKey: string): Promise<string>
   return data?.data?.markdown || data?.markdown || "";
 }
 
+async function enrichWithApollo(
+  leads: any[],
+  apolloKey: string,
+): Promise<any[]> {
+  const enriched = [];
+  for (const lead of leads) {
+    // Skip if already has email and phone
+    if (lead.email && lead.phone) {
+      enriched.push(lead);
+      continue;
+    }
+
+    try {
+      const body: Record<string, string> = {};
+      if (lead.linkedin) {
+        body.linkedin_url = lead.linkedin;
+      } else if (lead.name && lead.company) {
+        const parts = lead.name.trim().split(/\s+/);
+        body.first_name = parts[0] || "";
+        body.last_name = parts.slice(1).join(" ") || "";
+        body.organization_name = lead.company;
+      } else {
+        enriched.push(lead);
+        continue;
+      }
+
+      const res = await fetch("https://api.apollo.io/api/v1/people/match", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+          "X-Api-Key": apolloKey,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const person = data?.person;
+        if (person) {
+          lead.email = lead.email || person.email || null;
+          lead.phone = lead.phone || person.phone_numbers?.[0]?.sanitized_number || person.organization?.phone || null;
+          lead.linkedin = lead.linkedin || person.linkedin_url || null;
+          lead.title = lead.title || person.title || null;
+          lead.company = lead.company || person.organization?.name || null;
+        }
+      } else {
+        console.warn("Apollo match failed:", res.status, await res.text());
+      }
+    } catch (e) {
+      console.error("Apollo enrichment error for", lead.name, e);
+    }
+
+    enriched.push(lead);
+  }
+  return enriched;
+}
+
 async function executeLeadSearch(
   args: { website: string; icp_summary: string; search_queries: string[] },
   firecrawlKey: string,
   lovableKey: string,
+  apolloKey: string | null,
 ): Promise<any[]> {
   let formattedUrl = args.website.trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
@@ -138,7 +197,15 @@ Only include REAL people. Prioritize decision-makers. Every lead MUST have summa
   try {
     const cleaned = extractText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
-    return (parsed.leads || []).slice(0, 5);
+    let leads = (parsed.leads || []).slice(0, 5);
+
+    // Enrich with Apollo for verified email/phone
+    if (apolloKey && leads.length > 0) {
+      console.log("Enriching", leads.length, "leads with Apollo People Match...");
+      leads = await enrichWithApollo(leads, apolloKey);
+    }
+
+    return leads;
   } catch {
     console.error("Failed to parse leads");
     return [];
@@ -283,7 +350,8 @@ Deno.serve(async (req) => {
 
       console.log("Executing lead search:", JSON.stringify(args).slice(0, 300));
 
-      const leads = await executeLeadSearch(args, firecrawlKey, LOVABLE_API_KEY);
+      const apolloKey = Deno.env.get("APOLLO_API_KEY") || null;
+      const leads = await executeLeadSearch(args, firecrawlKey, LOVABLE_API_KEY, apolloKey);
 
       // Build SSE response with a searching message + lead results
       const encoder = new TextEncoder();
