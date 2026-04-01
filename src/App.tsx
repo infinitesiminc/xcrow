@@ -45,6 +45,7 @@ const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard.tsx"));
 const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
 const Disrupt = lazy(() => import("./pages/Disrupt.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 
 
 // Admin (lazy)
