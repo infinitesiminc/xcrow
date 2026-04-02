@@ -117,10 +117,6 @@ export default function Leadgen() {
     }
   }, [allLeads, user, upsertLeads]);
 
-  // Auto-show panel when first leads arrive
-  useEffect(() => {
-    if (allLeads.length > 0 && !showPanel) setShowPanel(true);
-  }, [allLeads.length, showPanel]);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
