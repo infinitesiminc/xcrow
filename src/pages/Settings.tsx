@@ -582,7 +582,7 @@ function ProfileSection({
                 <School className="h-3.5 w-3.5 text-muted-foreground" />
                 School / University
               </Label>
-              <SchoolAutocomplete value={schoolName} onChange={setSchoolName} />
+              <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford..." className="bg-muted/30" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
