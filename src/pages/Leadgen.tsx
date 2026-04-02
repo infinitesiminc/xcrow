@@ -408,7 +408,7 @@ export default function Leadgen() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 left-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-8rem)] bg-card border border-border/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-20 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-8rem)] bg-card border border-border/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Chat Header */}
             <div className="border-b border-border/40 bg-card/80 backdrop-blur px-4 py-2.5 flex items-center gap-3 shrink-0">
