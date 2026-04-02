@@ -132,6 +132,9 @@ function normalizeResponseText(content: string): string {
     .replace(/\r\n/g, "\n")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
+    // Strip raw tool-call artifacts that some models emit as inline text
+    .replace(/start_call:[\w.-]+:[\w_]+\{[\s\S]*?\}(?:\s*end_call)?/g, "")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
