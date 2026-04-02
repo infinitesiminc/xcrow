@@ -140,7 +140,7 @@ export default function Index() {
               className="text-4xl md:text-5xl font-bold text-foreground mb-3 tracking-wide"
               style={{ fontFamily: "'Cinzel', serif" }}
             >
-              AI-Powered ICP Research
+              One Website. Perfect Leads.
             </h1>
 
             <div className="flex items-center justify-center gap-3 my-4">
@@ -150,7 +150,7 @@ export default function Index() {
             </div>
 
             <p className="text-muted-foreground text-sm md:text-base max-w-lg mx-auto mb-8">
-              Enter your website. Our AI scrapes your business, maps your ideal customers, and fills your pipeline — all in seconds.
+              The only lead hunter that finds hyper-accurate prospects from a single website entry. Drop your URL — AI does the rest.
             </p>
 
             <form onSubmit={handleDiscover} className="flex gap-2 max-w-md mx-auto w-full">
