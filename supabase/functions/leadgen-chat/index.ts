@@ -774,6 +774,12 @@ Deno.serve(async (req) => {
       const hunterKey = Deno.env.get("HUNTER_API_KEY") || null;
       const leads = await executeLeadSearch(args, firecrawlKey, LOVABLE_API_KEY, apolloKey, hunterKey);
 
+      // Derive a short niche tag from the ICP summary (first ~60 chars, cleaned)
+      const nicheTag = (args.icp_summary || "General").replace(/[^\w\s,&-]/g, "").trim().slice(0, 80);
+      for (const lead of leads) {
+        lead.niche_tag = nicheTag;
+      }
+
       // Build SSE response with a searching message + lead results
       const encoder = new TextEncoder();
       const stream = new ReadableStream({

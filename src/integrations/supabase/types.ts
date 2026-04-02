@@ -1544,6 +1544,7 @@ export type Database = {
           lead_type: string
           linkedin: string | null
           name: string
+          niche_tag: string | null
           phone: string | null
           photo_url: string | null
           rating: number | null
@@ -1568,6 +1569,7 @@ export type Database = {
           lead_type?: string
           linkedin?: string | null
           name: string
+          niche_tag?: string | null
           phone?: string | null
           photo_url?: string | null
           rating?: number | null
@@ -1592,6 +1594,7 @@ export type Database = {
           lead_type?: string
           linkedin?: string | null
           name?: string
+          niche_tag?: string | null
           phone?: string | null
           photo_url?: string | null
           rating?: number | null

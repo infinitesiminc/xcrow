@@ -20,6 +20,7 @@ export interface Lead {
   summary?: string;
   reason?: string;
   photo_url?: string;
+  niche_tag?: string;
 }
 
 function getLeadPhotoUrl(lead: Lead): string | null {
