@@ -67,6 +67,7 @@ export default function Leadgen() {
   const [discoveryPhase, setDiscoveryPhase] = useState("");
   const [companySummary, setCompanySummary] = useState("");
   const [icpSummary, setIcpSummary] = useState("");
+  const [pagesScraped, setPagesScraped] = useState(0);
   const [hasDiscovered, setHasDiscovered] = useState(false);
 
   const {
