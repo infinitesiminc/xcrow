@@ -1324,6 +1324,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          icp_criteria: Json | null
           id: string
           label: string
           lead_count: number
@@ -1333,6 +1334,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          icp_criteria?: Json | null
           id?: string
           label: string
           lead_count?: number
@@ -1342,6 +1344,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          icp_criteria?: Json | null
           id?: string
           label?: string
           lead_count?: number

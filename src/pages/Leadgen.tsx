@@ -60,6 +60,8 @@ export default function Leadgen() {
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isFindingLeads, setIsFindingLeads] = useState(false);
+  const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const activeNicheRef = useRef<string | null>(null);
   activeNicheRef.current = activeNiche;
@@ -280,6 +282,55 @@ export default function Leadgen() {
     setIsStreaming(false);
   };
 
+  // ICP Action Handlers
+  const handleFindLeads = (niche: string) => {
+    if (!user) { openAuthModal(); return; }
+    setIsFindingLeads(true);
+    sendMessage(`Find more leads for the "${niche}" niche. Search for additional prospects matching this ICP.`).finally(() => setIsFindingLeads(false));
+  };
+
+  const handleEnrichLeads = async (niche: string) => {
+    if (!user) { openAuthModal(); return; }
+    setIsEnrichingLeads(true);
+    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && !l.email);
+    if (nicheLeads.length === 0) {
+      toast.info("All leads in this niche already have contact details.");
+      setIsEnrichingLeads(false);
+      return;
+    }
+    sendMessage(`Enrich contacts for leads in the "${niche}" niche — find email addresses and phone numbers for the ${nicheLeads.length} leads missing contact info.`).finally(() => setIsEnrichingLeads(false));
+  };
+
+  const handleScoreLeads = (niche: string) => {
+    if (!user) { openAuthModal(); return; }
+    sendMessage(`Score and rank the leads in the "${niche}" niche by ICP fit, deal readiness, and potential value.`);
+  };
+
+  const handleDraftAllOutreach = (niche: string) => {
+    if (!user) { openAuthModal(); return; }
+    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && l.email && l.status === "new");
+    if (nicheLeads.length === 0) {
+      toast.info("No uncontacted leads with emails in this niche.");
+      return;
+    }
+    // Draft for first lead as starting point
+    handleDraftEmail(nicheLeads[0]);
+  };
+
+  const handleExportNiche = (niche: string) => {
+    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche);
+    if (nicheLeads.length === 0) { toast.info("No leads to export in this niche."); return; }
+    const headers = ["Name", "Title", "Company", "Email", "Phone", "LinkedIn", "Status", "Source"];
+    const rows = nicheLeads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.status, l.source || ""]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-${niche.replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Chat items without leads (leads go to panel)
   const chatOnlyItems = items.filter(it => it.type !== "leads");
@@ -410,6 +461,13 @@ export default function Leadgen() {
             onSelectNiche={setActiveNiche}
             collapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
+            onFindLeads={handleFindLeads}
+            onEnrichLeads={handleEnrichLeads}
+            onScoreLeads={handleScoreLeads}
+            onDraftAll={handleDraftAllOutreach}
+            onExportNiche={handleExportNiche}
+            isFinding={isFindingLeads}
+            isEnriching={isEnrichingLeads}
           />
           <LeadgenDashboard
             leads={dashboardLeads}
