@@ -121,10 +121,6 @@ export default function Navbar() {
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
