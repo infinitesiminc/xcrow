@@ -1,63 +1,35 @@
 
 
-# Lead CRM Dashboard — Design Plan
+## Plan: Remove WhatsApp, Optimize Pipeline Lead Cards
 
-## Overview
-Add a persistent Lead CRM dashboard accessible from `/leadgen` when the user is signed in. Currently, leads only exist in-memory during a chat session — they disappear on refresh. The dashboard will persist leads to the database and provide a CRM-like interface for managing outreach.
+### Problem
+1. LeadsPanel still has WhatsApp button and "Scale" button — these are obsolete since leads now flow directly into the Pipeline
+2. Pipeline lead cards are minimal (just initials + name + status dropdown) — they should show person-level detail (title, company, email, phone, linkedin, reason)
+3. LeadsPanel component appears unused since the dashboard now shows leads directly in LeadPipeline
 
-## Architecture
+### Changes
 
-```text
-┌──────────────────────────────────────────────────┐
-│  /leadgen (signed in)                            │
-│  ┌──────────┐  ┌────────────────────────────────┐│
-│  │ Sidebar   │  │  Tab View                     ││
-│  │           │  │  [Pipeline] [Chat] [Activity]  ││
-│  │ • Pipeline│  │                                ││
-│  │ • Chat    │  │  Pipeline tab:                 ││
-│  │ • Activity│  │  KPI cards (total, emailed,    ││
-│  │           │  │  replied, conversion %)        ││
-│  │           │  │  Lead table with status,       ││
-│  │           │  │  filters, bulk actions         ││
-│  │           │  │                                ││
-│  │           │  │  Chat tab:                     ││
-│  │           │  │  (existing chat + panel UI)    ││
-│  │           │  │                                ││
-│  │           │  │  Activity tab:                 ││
-│  │           │  │  Email send log + timestamps   ││
-│  └──────────┘  └────────────────────────────────┘│
-└──────────────────────────────────────────────────┘
-```
+**1. Upgrade LeadPipeline lead cards (`src/components/leadgen/LeadPipeline.tsx`)**
+- Replace the current minimal card (initials circle + name + status dropdown) with a richer person card:
+  - Photo avatar (reuse `LeadAvatar` from LeadCard.tsx or inline the same logic)
+  - Name, title @ company
+  - Contact row: email, phone, linkedin link, website
+  - ICP reason line if present
+  - Source badge
+  - Status dropdown + Draft Email button (keep existing)
+- Remove the niche filter tabs at the top (redundant — the sidebar already filters by niche)
+- Keep KPI cards, search bar, status filter, and CSV export
 
-## Step-by-step
+**2. Remove LeadsPanel (`src/components/leadgen/LeadsPanel.tsx`)**
+- Delete the file — it's no longer used in the layout (LeadgenDashboard + NicheSidebar handle everything)
+- Remove any remaining imports of LeadsPanel from Leadgen.tsx if present
 
-### 1. Create `saved_leads` database table
-New migration with columns: `id`, `user_id`, `name`, `title`, `company`, `email`, `phone`, `linkedin`, `website`, `address`, `source`, `email_confidence`, `summary`, `reason`, `photo_url`, `status` (enum: new/contacted/replied/won/lost), `created_at`, `updated_at`. RLS: users can CRUD their own leads only.
+**3. Clean up Leadgen.tsx**
+- Remove any leftover WhatsApp-related code or state
+- Remove LeadsPanel import if still present
 
-### 2. Create `outreach_log` table
-Tracks each email/action per lead: `id`, `user_id`, `lead_id` (FK to saved_leads), `channel` (email/sms), `subject`, `body`, `sent_at`, `status` (sent/opened/bounced). RLS: users own rows only.
-
-### 3. Auto-save leads from chat
-When leads arrive in the chat stream, upsert them into `saved_leads` (deduplicate on user_id + email + company). This replaces the in-memory-only accumulation.
-
-### 4. Build `LeadgenDashboard` component
-A tabbed layout replacing the current full-page chat:
-- **Pipeline tab**: KPI stat cards (total leads, contacted, reply rate) + a searchable/filterable table of all saved leads with status badges, quick actions (draft email, change status), and bulk export (CSV).
-- **Chat tab**: The existing chat + side panel UI, now persisting discovered leads automatically.
-- **Activity tab**: Chronological log of all outreach actions pulled from `outreach_log`.
-
-### 5. Update `Leadgen.tsx` routing
-Signed-in users see the dashboard with tabs. Signed-out users see the existing chat-only experience (or auth prompt).
-
-### 6. Wire email sending to `outreach_log`
-After `handleSendEmail` succeeds, insert a row into `outreach_log` linking the lead_id, subject, body, and timestamp.
-
-## Files to create/edit
-- **New migration**: `saved_leads` + `outreach_log` tables with RLS
-- **New**: `src/components/leadgen/LeadgenDashboard.tsx` — tabbed layout
-- **New**: `src/components/leadgen/LeadPipeline.tsx` — KPI cards + lead table
-- **New**: `src/components/leadgen/ActivityLog.tsx` — outreach history
-- **Edit**: `src/pages/Leadgen.tsx` — integrate dashboard for authed users
-- **Edit**: `src/components/leadgen/LeadCard.tsx` — add status selector
-- **Edit**: `src/components/leadgen/LeadsPanel.tsx` — save leads on arrival
+### Files to Edit
+- `src/components/leadgen/LeadPipeline.tsx` — redesign lead cards with full person detail
+- `src/components/leadgen/LeadsPanel.tsx` — delete file
+- `src/pages/Leadgen.tsx` — remove dead imports/state
 
