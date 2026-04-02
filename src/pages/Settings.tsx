@@ -26,8 +26,6 @@ import {
   ExternalLink, Compass, Users, Copy, Gift,
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
-import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
-import InviteShareWidget from "@/components/InviteShareWidget";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
