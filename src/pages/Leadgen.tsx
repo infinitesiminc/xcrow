@@ -60,6 +60,9 @@ export default function Leadgen() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [userPhone, setUserPhone] = useState("");
   const [showPanel, setShowPanel] = useState(false);
+  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null }>>([]);
+  const [activeNiche, setActiveNiche] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // CRM hook
@@ -82,6 +85,18 @@ export default function Leadgen() {
   const [draftBody, setDraftBody] = useState("");
   const [draftCtaText, setDraftCtaText] = useState("");
   const [sending, setSending] = useState(false);
+
+  const sidebarNiches = useMemo(
+    () => localNiches.map((n, index) => ({
+      id: `local-${index}-${n.label}`,
+      label: n.label,
+      description: n.description,
+      status: "active",
+      lead_count: 0,
+      created_at: new Date().toISOString(),
+    })),
+    [localNiches]
+  );
 
   // Accumulate all leads from chat (in-memory for non-authed users)
   const allLeads = useMemo(() => {
@@ -209,7 +224,21 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "niches" && parsed.niches && user) { upsertNiches(parsed.niches); continue; }
+            if (parsed.type === "niches" && parsed.niches) {
+              setLocalNiches((prev) => {
+                const seen = new Set(prev.map((n) => n.label));
+                const merged = [...prev];
+                for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
+                  if (!seen.has(niche.label)) {
+                    seen.add(niche.label);
+                    merged.push({ label: niche.label, description: niche.description || null });
+                  }
+                }
+                return merged;
+              });
+              if (user) upsertNiches(parsed.niches);
+              continue;
+            }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) upsert(content);
@@ -225,7 +254,21 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "niches" && parsed.niches && user) { upsertNiches(parsed.niches); continue; }
+            if (parsed.type === "niches" && parsed.niches) {
+              setLocalNiches((prev) => {
+                const seen = new Set(prev.map((n) => n.label));
+                const merged = [...prev];
+                for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
+                  if (!seen.has(niche.label)) {
+                    seen.add(niche.label);
+                    merged.push({ label: niche.label, description: niche.description || null });
+                  }
+                }
+                return merged;
+              });
+              if (user) upsertNiches(parsed.niches);
+              continue;
+            }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) upsert(content);
@@ -267,6 +310,10 @@ export default function Leadgen() {
 
   // Chat items without leads (leads go to panel)
   const chatOnlyItems = items.filter(it => it.type !== "leads");
+  const filteredPanelLeads = useMemo(() => {
+    if (!activeNiche) return allLeads;
+    return allLeads.filter((lead) => (lead.niche_tag || "Uncategorized") === activeNiche);
+  }, [allLeads, activeNiche]);
 
   // Chat UI (shared between dashboard tab and standalone)
   const chatUI = (
@@ -346,7 +393,7 @@ export default function Leadgen() {
           >
             <div className="w-[360px] h-full">
               <LeadsPanel
-                leads={allLeads}
+                leads={filteredPanelLeads}
                 onDraftEmail={handleDraftEmail}
                 onScale={() => sendMessage("Find more leads like these — same industry, same profile type. Scale to 20+ results.")}
                 onWhatsApp={sendToWhatsApp}
@@ -358,51 +405,53 @@ export default function Leadgen() {
     </div>
   );
 
-  // Niche sidebar state (lifted to top level so it's visible across all tabs)
-  const [activeNiche, setActiveNiche] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const sidebarLeads = user ? savedLeads : filteredPanelLeads;
+  const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
 
-  // Signed-in users get the dashboard wrapper
-  const mainContent = user ? (
-    <div className="flex h-full">
+  // Main layout
+  const mainContent = (
+    <div className="flex h-full min-h-0">
       <NicheSidebar
-        leads={savedLeads}
-        savedNiches={savedNiches}
+        leads={user ? savedLeads : allLeads}
+        savedNiches={sidebarSavedNiches}
         activeNiche={activeNiche}
         onSelectNiche={setActiveNiche}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
       />
-      <LeadgenDashboard
-        leads={savedLeads}
-        outreach={outreach}
-        activeNiche={activeNiche}
-        onUpdateStatus={updateLeadStatus}
-        onDraftEmail={handleDraftEmail}
-        onExportCSV={exportCSV}
-        chatContent={chatUI}
-        defaultTab={savedLeads.length > 0 ? "pipeline" : "chat"}
-      />
-    </div>
-  ) : (
-    <>
-      {/* Header for non-authed */}
-      <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3 shrink-0">
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-          <MessageSquare className="w-4.5 h-4.5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-sm font-semibold text-foreground">Xcrow Scout</h1>
-          <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
-        </div>
-        <div className="ml-auto">
-          <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-            Free — 5 Leads
-          </Badge>
-        </div>
+
+      <div className="flex flex-col flex-1 min-w-0">
+        {!user && (
+          <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3 shrink-0">
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <MessageSquare className="w-4.5 h-4.5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold text-foreground">Xcrow Scout</h1>
+              <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
+            </div>
+            <div className="ml-auto">
+              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                Free — 5 Leads
+              </Badge>
+            </div>
+          </div>
+        )}
+
+        {user ? (
+          <LeadgenDashboard
+            leads={savedLeads}
+            outreach={outreach}
+            activeNiche={activeNiche}
+            onUpdateStatus={updateLeadStatus}
+            onDraftEmail={handleDraftEmail}
+            onExportCSV={exportCSV}
+            chatContent={chatUI}
+            defaultTab={savedLeads.length > 0 ? "pipeline" : "chat"}
+          />
+        ) : chatUI}
       </div>
-      {chatUI}
-    </>
+    </div>
   );
 
   return (
