@@ -57,7 +57,6 @@ export default function Leadgen() {
   const [items, setItems] = useState<ChatItem[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [userPhone, setUserPhone] = useState("");
   const [showPanel, setShowPanel] = useState(false);
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
