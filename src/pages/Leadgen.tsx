@@ -62,6 +62,7 @@ export default function Leadgen() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isFindingLeads, setIsFindingLeads] = useState(false);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
+  const [chatOpen, setChatOpen] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
   const activeNicheRef = useRef<string | null>(null);
   activeNicheRef.current = activeNiche;
@@ -370,90 +371,8 @@ export default function Leadgen() {
       </div>
 
       <div className="flex flex-1 min-h-0">
-        {/* LEFT COLUMN — Chat */}
-        <div className={`flex flex-col min-w-0 w-1/3 shrink-0 ${mobileView !== "chat" ? "hidden md:flex" : "flex"}`}>
-          {/* Header */}
-          <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3 shrink-0">
-            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageSquare className="w-4.5 h-4.5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold text-foreground">Xcrow Scout</h1>
-              <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
-            </div>
-            {!user && (
-              <div className="ml-auto">
-                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-                  Free — 5 Leads
-                </Badge>
-              </div>
-            )}
-          </div>
-
-          {/* Messages */}
-          <ScrollArea className="flex-1 px-4">
-            <div className="max-w-2xl mx-auto py-6 space-y-4">
-              <AnimatePresence initial={false}>
-                {chatOnlyItems.map((item, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                    {item.type === "user" && (
-                      <div className="flex justify-end gap-2">
-                        <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2.5 max-w-[80%] text-sm">{item.content}</div>
-                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-1">
-                          <User className="w-3.5 h-3.5 text-muted-foreground" />
-                        </div>
-                      </div>
-                    )}
-                    {item.type === "assistant" && (
-                      <div className="flex gap-2">
-                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                          <Bot className="w-3.5 h-3.5 text-primary" />
-                        </div>
-                        <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] text-sm prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 [&_ol]:list-decimal [&_ol]:pl-5">
-                          <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {allLeads.length > 0 && items[items.length - 1]?.type === "leads" && (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                    <Users className="w-3.5 h-3.5 text-primary" />
-                  </div>
-                  <div className="bg-primary/5 border border-primary/20 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-primary font-medium">
-                    ✨ {allLeads.length} lead{allLeads.length !== 1 ? "s" : ""} found — see results →
-                  </div>
-                </motion.div>
-              )}
-
-              {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
-                <div className="flex gap-2">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Bot className="w-3.5 h-3.5 text-primary" />
-                  </div>
-                  <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3">
-                    <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-                  </div>
-                </div>
-              )}
-              <div ref={bottomRef} />
-            </div>
-          </ScrollArea>
-
-          {/* Input */}
-          <div className="border-t border-border/40 bg-card/30 px-4 py-3 shrink-0">
-            <form className="max-w-2xl mx-auto flex gap-2" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
-              <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." className="flex-1 bg-muted/20 border-border/40" autoFocus />
-              <Button type="submit" size="icon" disabled={!input.trim()}><Send className="w-4 h-4" /></Button>
-            </form>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN — Niche Sidebar + Results */}
-        <div className={`flex flex-1 min-w-0 border-l border-border/40 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`}>
+        {/* FULL WIDTH — Niche Sidebar + Results */}
+        <div className={`flex flex-1 min-w-0 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`}>
           <NicheSidebar
             leads={user ? savedLeads : allLeads}
             savedNiches={sidebarSavedNiches}
@@ -479,6 +398,110 @@ export default function Leadgen() {
           />
         </div>
       </div>
+
+      {/* Floating Chat Dock */}
+      <AnimatePresence>
+        {chatOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-20 left-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-8rem)] bg-card border border-border/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          >
+            {/* Chat Header */}
+            <div className="border-b border-border/40 bg-card/80 backdrop-blur px-4 py-2.5 flex items-center gap-3 shrink-0">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                <MessageSquare className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xs font-semibold text-foreground">Xcrow Scout</h2>
+                <p className="text-[10px] text-muted-foreground">AI-guided lead discovery</p>
+              </div>
+              {!user && (
+                <Badge variant="outline" className="text-[9px] border-primary/30 text-primary mr-1">
+                  Free — 5 Leads
+                </Badge>
+              )}
+              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setChatOpen(false)}>
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 px-3">
+              <div className="py-4 space-y-3">
+                {chatOnlyItems.map((item, i) => (
+                  <div key={i}>
+                    {item.type === "user" && (
+                      <div className="flex justify-end gap-1.5">
+                        <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-3 py-2 max-w-[85%] text-xs">{item.content}</div>
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                          <User className="w-3 h-3 text-muted-foreground" />
+                        </div>
+                      </div>
+                    )}
+                    {item.type === "assistant" && (
+                      <div className="flex gap-1.5">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                          <Bot className="w-3 h-3 text-primary" />
+                        </div>
+                        <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-3 py-2 max-w-[85%] text-xs prose prose-xs dark:prose-invert prose-p:my-0.5 prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0 [&_ol]:list-decimal [&_ol]:pl-4">
+                          <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {allLeads.length > 0 && items[items.length - 1]?.type === "leads" && (
+                  <div className="flex gap-1.5">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Users className="w-3 h-3 text-primary" />
+                    </div>
+                    <div className="bg-primary/5 border border-primary/20 rounded-2xl rounded-bl-md px-3 py-2 text-xs text-primary font-medium">
+                      ✨ {allLeads.length} lead{allLeads.length !== 1 ? "s" : ""} found — see pipeline →
+                    </div>
+                  </div>
+                )}
+
+                {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
+                  <div className="flex gap-1.5">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Bot className="w-3 h-3 text-primary" />
+                    </div>
+                    <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-3 py-2.5">
+                      <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+                    </div>
+                  </div>
+                )}
+                <div ref={bottomRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Input */}
+            <div className="border-t border-border/40 bg-card/80 backdrop-blur px-3 py-2 shrink-0">
+              <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
+                <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." className="flex-1 bg-muted/20 border-border/40 h-8 text-xs" autoFocus />
+                <Button type="submit" size="icon" className="h-8 w-8" disabled={!input.trim()}><Send className="w-3.5 h-3.5" /></Button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FAB to open chat */}
+      {!chatOpen && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+          onClick={() => setChatOpen(true)}
+        >
+          <MessageSquare className="w-5 h-5" />
+          {isStreaming && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background animate-pulse" />}
+        </motion.button>
+      )}
     </div>
   );
 
