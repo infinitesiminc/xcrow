@@ -130,6 +130,70 @@ function formatAssistantResponse(content: string): string {
   return enforceNumberedOptions(normalizeResponseText(content));
 }
 
+async function scrapeGoogleMapsLink(url: string, apifyKey: string): Promise<string> {
+  // Extract place info from Google Maps URL using Apify
+  console.log("Scraping Google Maps link:", url);
+  
+  const actorUrl = `https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token=${apifyKey}&timeout=60&memory=256`;
+  
+  const res = await fetch(actorUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      startUrls: [{ url }],
+      maxCrawledPlacesPerSearch: 1,
+      language: "en",
+      scrapeContacts: true,
+      scrapeDirectories: true,
+    }),
+  });
+
+  if (!res.ok) {
+    console.error("Apify Google Maps scrape failed:", res.status);
+    return "";
+  }
+
+  const items = await res.json();
+  if (!Array.isArray(items) || items.length === 0) return "";
+
+  const place = items[0];
+  const parts = [
+    `Business Name: ${place.title || "Unknown"}`,
+    place.categoryName ? `Category: ${place.categoryName}` : "",
+    place.categories?.length ? `All Categories: ${place.categories.join(", ")}` : "",
+    place.address ? `Address: ${place.address}` : "",
+    place.city ? `City: ${place.city}` : "",
+    place.state ? `State: ${place.state}` : "",
+    place.countryCode ? `Country: ${place.countryCode}` : "",
+    place.phone ? `Phone: ${place.phone}` : "",
+    place.website ? `Website: ${place.website}` : "",
+    place.totalScore ? `Rating: ${place.totalScore}/5` : "",
+    place.reviewsCount ? `Reviews: ${place.reviewsCount}` : "",
+    place.description ? `Description: ${place.description}` : "",
+    place.openingHours?.length ? `Opening Hours: ${JSON.stringify(place.openingHours)}` : "",
+    place.additionalInfo ? `Additional Info: ${JSON.stringify(place.additionalInfo).slice(0, 500)}` : "",
+    place.price ? `Price Level: ${place.price}` : "",
+  ].filter(Boolean);
+
+  // Also scrape the business website if available
+  let websiteContent = "";
+  if (place.website) {
+    const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+    if (firecrawlKey) {
+      try {
+        websiteContent = await scrapeWebsite(place.website, firecrawlKey);
+        if (websiteContent) {
+          parts.push(`\n[BUSINESS WEBSITE CONTENT from ${place.website}]:\n${websiteContent.slice(0, 2000)}`);
+        }
+      } catch (e) {
+        console.error("Failed to scrape business website from Maps link:", e);
+      }
+    }
+  }
+
+  return parts.join("\n");
+}
+
 async function scrapeWebsite(url: string, firecrawlKey: string): Promise<string> {
   let formattedUrl = url.trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
