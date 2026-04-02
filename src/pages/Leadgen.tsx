@@ -451,35 +451,6 @@ export default function Leadgen() {
         {mainContent}
       </div>
 
-      {/* Mobile leads panel overlay */}
-      <AnimatePresence>
-        {showPanel && allLeads.length > 0 && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-y-0 right-0 w-[85vw] max-w-[360px] bg-background border-l border-border/40 z-40 md:hidden pt-16"
-          >
-            <div className="h-full relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 z-10 h-7 w-7"
-                onClick={() => setShowPanel(false)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-              <LeadsPanel
-                leads={allLeads}
-                onDraftEmail={handleDraftEmail}
-                onScale={() => { setShowPanel(false); sendMessage("Find more leads like these — same industry, same profile type. Scale to 20+ results."); }}
-                onWhatsApp={sendToWhatsApp}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Email Draft Modal */}
       <Dialog open={draftModalOpen} onOpenChange={setDraftModalOpen}>
