@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
           )
           .join("\n");
 
-        const prompt = `You are classifying software companies into verticals for a startup disruption tool.
+        const prompt = `You are classifying B2B companies into industry verticals for a lead generation tool.
 
 VERTICALS (use exact IDs):
 ${VERTICALS.map((v) => `${v.id}. ${v.name}`).join("\n")}
@@ -111,13 +111,13 @@ ${companyList}
 For each company, output a JSON array. Each element:
 {
   "idx": <1-based index>,
-  "vertical_id": <1-15 or null if not software>,
+  "vertical_id": <1-35>,
   "sub_vertical": "<specific niche within the vertical, e.g. 'Sales Engagement', 'Email Marketing', 'Cloud Monitoring'>",
   "role": "<'incumbent' if established/large player, 'disruptor' if AI-native/startup challenger, 'transitioning' if adapting>"
 }
 
 Rules:
-- Skip companies that are NOT software/SaaS businesses (set vertical_id to null)
+- Classify EVERY company into the best-fit vertical — do not skip any
 - "incumbent" = companies with 200+ employees or 10+ years old or large funding
 - "disruptor" = AI-native, small teams, recent founding, challenging incumbents
 - "transitioning" = mid-size companies adding AI capabilities
