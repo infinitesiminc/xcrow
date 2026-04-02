@@ -92,6 +92,32 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "register_niches",
+      description: "Register exploration branches/personas as navigable placeholders in the sidebar. Call this WHENEVER you present 2+ lead type, persona, or niche options to the user — BEFORE they choose. Each niche is saved so the user can revisit any branch later.",
+      parameters: {
+        type: "object",
+        properties: {
+          niches: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                label: { type: "string", description: "Short name for this niche/persona (e.g. 'Active Solopreneurs')" },
+                description: { type: "string", description: "1-2 sentence description of this lead type" },
+              },
+              required: ["label", "description"],
+            },
+            description: "List of niche/persona options being presented to the user",
+          },
+        },
+        required: ["niches"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
 function normalizeResponseText(content: string): string {
