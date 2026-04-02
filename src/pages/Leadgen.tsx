@@ -511,6 +511,15 @@ export default function Leadgen() {
         {/* Stats pills */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex items-center gap-3 bg-muted/40 rounded-lg px-3 py-1.5 border border-border/30">
+            {pagesScraped > 0 && (
+              <>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-muted-foreground">{pagesScraped}</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">Pages</p>
+                </div>
+                <div className="w-px h-6 bg-border/40" />
+              </>
+            )}
             <div className="text-center">
               <p className="text-sm font-bold text-primary">{verticalCount}</p>
               <p className="text-[10px] text-muted-foreground leading-none">Verticals</p>
@@ -535,7 +544,7 @@ export default function Leadgen() {
             variant="ghost"
             size="sm"
             className="text-xs gap-1 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); }}
+            onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
           >
             <ArrowRight className="w-3 h-3" />
             Re-analyze
