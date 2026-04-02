@@ -340,7 +340,19 @@ export default function Leadgen() {
     return allLeads.filter((lead) => (lead.niche_tag || "Uncategorized") === activeNiche);
   }, [allLeads, activeNiche]);
 
-  const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
+  const sidebarSavedNiches = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: typeof savedNiches = [];
+    // DB niches take priority
+    for (const n of (user ? savedNiches : [])) {
+      if (!seen.has(n.label)) { seen.add(n.label); merged.push(n); }
+    }
+    // Then local niches (only add if not already from DB)
+    for (const n of sidebarNiches) {
+      if (!seen.has(n.label)) { seen.add(n.label); merged.push(n); }
+    }
+    return merged;
+  }, [user, savedNiches, sidebarNiches]);
   // For non-authed users, convert in-memory leads to SavedLead shape for pipeline
   const dashboardLeads = useMemo(() => {
     if (user) return savedLeads;
