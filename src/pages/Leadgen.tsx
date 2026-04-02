@@ -405,11 +405,6 @@ export default function Leadgen() {
     </div>
   );
 
-  const filteredPanelLeads = useMemo(() => {
-    if (!activeNiche) return allLeads;
-    return allLeads.filter((lead) => (lead.niche_tag || "Uncategorized") === activeNiche);
-  }, [allLeads, activeNiche]);
-
   const sidebarLeads = user ? savedLeads : filteredPanelLeads;
   const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
 
