@@ -418,22 +418,6 @@ export default function Leadgen() {
 
   const [mobileView, setMobileView] = useState<"chat" | "results">("results");
 
-  const handleSeedFromLibrary = (niches: Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>) => {
-    setLocalNiches(niches);
-    if (user) {
-      upsertNiches(niches.map(n => ({
-        label: n.label,
-        description: n.description || "",
-        parent_label: n.parent_label,
-        niche_type: n.niche_type as any,
-      })));
-    }
-    setHasDiscovered(true);
-    setBrowseLibrary(false);
-    setCompanySummary(niches.find(n => n.niche_type === "vertical")?.label || "Industry ICP");
-    setIcpSummary("Seeded from Niche Library");
-    toast.success(`ICP seeded: ${niches.filter(n => n.niche_type === "vertical").length} vertical, ${niches.filter(n => n.niche_type === "segment").length} segments, ${niches.filter(n => n.niche_type === "persona").length} personas`);
-  };
 
   // Discovery hero (shown when no niches)
   const discoveryHero = (
