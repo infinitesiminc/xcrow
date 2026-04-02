@@ -178,7 +178,7 @@ export default function Index() {
             className="w-full max-w-4xl mx-auto"
           >
             <p className="text-center text-xs text-muted-foreground/70 mb-3 tracking-wide uppercase">
-              Powering ICP research across 3,700+ companies
+              Trusted across 3,700+ companies worldwide
             </p>
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
