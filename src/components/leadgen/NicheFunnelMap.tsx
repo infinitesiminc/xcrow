@@ -234,9 +234,52 @@ export function NicheFunnelMap({
         ))}
       </div>
 
-      {/* Tree layers */}
-      <div className="px-4 pb-3 space-y-1">
-        {visibleLayers.map((layer, layerIdx) => {
+      {/* Rail + Tree layers */}
+      <div className="flex">
+        {/* Hierarchy rail — always visible */}
+        <div className="flex flex-col items-center py-3 pl-3 pr-1 shrink-0 gap-0">
+          {LAYER_ORDER.map((type, i) => {
+            const config = LAYER_CONFIG[type];
+            const RailIcon = config.icon;
+            const isVisible = visibleLayers.some((l) => l.type === type);
+            const hasActiveInLayer = breadcrumbs.length > i;
+
+            return (
+              <div key={type} className="flex flex-col items-center">
+                {i > 0 && (
+                  <div className={cn(
+                    "w-px h-5 transition-colors",
+                    isVisible ? "bg-border/60" : "bg-border/20"
+                  )} />
+                )}
+                <div
+                  className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center transition-all relative group",
+                    hasActiveInLayer
+                      ? "bg-primary/10 ring-1 ring-primary/30"
+                      : isVisible
+                        ? "bg-muted/60"
+                        : "bg-muted/20"
+                  )}
+                  title={config.label}
+                >
+                  <RailIcon className={cn(
+                    "w-3.5 h-3.5 transition-colors",
+                    hasActiveInLayer ? config.color : isVisible ? "text-muted-foreground" : "text-muted-foreground/30"
+                  )} />
+                  {/* Tooltip */}
+                  <div className="absolute left-full ml-2 px-2 py-1 rounded-md bg-popover border border-border text-xs font-medium text-foreground whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-20 shadow-md">
+                    {config.label}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Map content */}
+        <div className="flex-1 px-3 pb-3 space-y-1 min-w-0">
+          {visibleLayers.map((layer, layerIdx) => {
           const config = LAYER_CONFIG[layer.type];
           const LayerIcon = config.icon;
           const isLastLayer = layerIdx === visibleLayers.length - 1;
@@ -331,7 +374,8 @@ export function NicheFunnelMap({
               </ScrollArea>
             </div>
           );
-        })}
+          })}
+        </div>
       </div>
 
       {/* Action bar for active niche */}
