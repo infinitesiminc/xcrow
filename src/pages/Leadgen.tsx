@@ -65,7 +65,9 @@ export default function Leadgen() {
   const {
     leads: savedLeads,
     outreach,
+    niches: savedNiches,
     upsertLeads,
+    upsertNiches,
     updateLeadStatus,
     logOutreach,
     exportCSV,
@@ -206,6 +208,7 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "niches" && parsed.niches && user) { upsertNiches(parsed.niches); continue; }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) upsert(content);
@@ -221,6 +224,7 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "niches" && parsed.niches && user) { upsertNiches(parsed.niches); continue; }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) upsert(content);
@@ -358,6 +362,7 @@ export default function Leadgen() {
     <LeadgenDashboard
       leads={savedLeads}
       outreach={outreach}
+      savedNiches={savedNiches}
       onUpdateStatus={updateLeadStatus}
       onDraftEmail={handleDraftEmail}
       onExportCSV={exportCSV}

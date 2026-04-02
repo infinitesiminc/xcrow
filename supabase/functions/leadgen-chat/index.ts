@@ -66,7 +66,8 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - If the user gives vague answers, help them be more specific with examples
 - Once you have enough info (at minimum: website + who they sell to + geography), you may propose running the search
 - ALWAYS call run_lead_search when the user confirms the ICP — never just describe leads
-- When the user asks to "scale", "find more", "get more leads", or similar — call run_lead_search again with scale=true and generate 5-8 DIFFERENT, DIVERSE search queries targeting new companies, sub-niches, and adjacent areas that were NOT covered in previous searches`;
+- When the user asks to "scale", "find more", "get more leads", or similar — call run_lead_search again with scale=true and generate 5-8 DIFFERENT, DIVERSE search queries targeting new companies, sub-niches, and adjacent areas that were NOT covered in previous searches
+- CRITICAL: Whenever you present 2+ lead type or persona options to the user, ALSO call register_niches with those options so they are saved as explorable branches. Do this BEFORE waiting for the user's choice.`;
 
 const TOOLS = [
   {
@@ -87,6 +88,32 @@ const TOOLS = [
           scale: { type: "boolean", description: "Set to true when the user wants MORE leads (scaling up). This widens search limits to find 10-15+ leads instead of 5." },
         },
         required: ["website", "icp_summary", "search_queries"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "register_niches",
+      description: "Register exploration branches/personas as navigable placeholders in the sidebar. Call this WHENEVER you present 2+ lead type, persona, or niche options to the user — BEFORE they choose. Each niche is saved so the user can revisit any branch later.",
+      parameters: {
+        type: "object",
+        properties: {
+          niches: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                label: { type: "string", description: "Short name for this niche/persona (e.g. 'Active Solopreneurs')" },
+                description: { type: "string", description: "1-2 sentence description of this lead type" },
+              },
+              required: ["label", "description"],
+            },
+            description: "List of niche/persona options being presented to the user",
+          },
+        },
+        required: ["niches"],
         additionalProperties: false,
       },
     },
@@ -749,8 +776,58 @@ Deno.serve(async (req) => {
       }
     }
 
-    // If there's a tool call, execute lead search and return results
-    if (hasToolCall && toolCallChunks[0]?.name === "run_lead_search") {
+    // Handle register_niches tool call — emit niches SSE event alongside any text
+    if (hasToolCall) {
+      // Collect all tool calls by index
+      const toolCalls = Object.values(toolCallChunks) as { name: string; args: string }[];
+      
+      let nichesToEmit: any[] = [];
+      let leadSearchArgs: any = null;
+
+      for (const tc of toolCalls) {
+        if (tc.name === "register_niches") {
+          try {
+            const parsed = JSON.parse(tc.args);
+            nichesToEmit = parsed.niches || [];
+          } catch (e) {
+            console.error("Failed to parse register_niches args:", e);
+          }
+        }
+        if (tc.name === "run_lead_search") {
+          try {
+            leadSearchArgs = JSON.parse(tc.args);
+          } catch (e) {
+            console.error("Failed to parse run_lead_search args:", e);
+          }
+        }
+      }
+
+      // If only register_niches (no lead search), stream text + niches event
+      if (!leadSearchArgs) {
+        const normalizedContent = formatAssistantResponse(fullContent);
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          start(controller) {
+            // Emit niches event first
+            if (nichesToEmit.length > 0) {
+              const nichesEvent = { type: "niches", niches: nichesToEmit };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(nichesEvent)}\n\n`));
+            }
+            // Then the text response
+            if (normalizedContent) {
+              const msg = { choices: [{ delta: { content: normalizedContent } }] };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(msg)}\n\n`));
+            }
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+          },
+        });
+        return new Response(stream, {
+          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+        });
+      }
+
+      // Lead search flow
       if (!firecrawlKey) {
         return new Response(JSON.stringify({ error: "Firecrawl not configured" }), {
           status: 500,
@@ -758,41 +835,32 @@ Deno.serve(async (req) => {
         });
       }
 
-      let args: any;
-      try {
-        args = JSON.parse(toolCallChunks[0].args);
-      } catch {
-        return new Response(JSON.stringify({ error: "Failed to parse tool call" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      console.log("Executing lead search:", JSON.stringify(args).slice(0, 300));
+      console.log("Executing lead search:", JSON.stringify(leadSearchArgs).slice(0, 300));
 
       const apolloKey = Deno.env.get("APOLLO_API_KEY") || null;
       const hunterKey = Deno.env.get("HUNTER_API_KEY") || null;
-      const leads = await executeLeadSearch(args, firecrawlKey, LOVABLE_API_KEY, apolloKey, hunterKey);
+      const leads = await executeLeadSearch(leadSearchArgs, firecrawlKey, LOVABLE_API_KEY, apolloKey, hunterKey);
 
-      // Derive a short niche tag from the ICP summary (first ~60 chars, cleaned)
-      const nicheTag = (args.icp_summary || "General").replace(/[^\w\s,&-]/g, "").trim().slice(0, 80);
+      const nicheTag = (leadSearchArgs.icp_summary || "General").replace(/[^\w\s,&-]/g, "").trim().slice(0, 80);
       for (const lead of leads) {
         lead.niche_tag = nicheTag;
       }
 
-      // Build SSE response with a searching message + lead results
       const encoder = new TextEncoder();
       const stream = new ReadableStream({
         start(controller) {
-          // Send a "searching..." text message
+          // Emit niches if any
+          if (nichesToEmit.length > 0) {
+            const nichesEvent = { type: "niches", niches: nichesToEmit };
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(nichesEvent)}\n\n`));
+          }
+
           const searchingMsg = { choices: [{ delta: { content: "🔍 Searching for leads matching your ICP...\n\n" } }] };
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(searchingMsg)}\n\n`));
 
-          // Send leads as special event
           const leadsEvent = { type: "leads", leads };
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(leadsEvent)}\n\n`));
 
-          // Send summary message
           const summaryContent = leads.length > 0
             ? `Found **${leads.length} leads** with verified contact details matching your ICP! 🎉\n\nEvery lead includes at least an email or phone number.\n\nWhat would you like to do next?\n\n1. **Send to WhatsApp** — Get these leads delivered to your phone instantly\n2. **Refine search** — Adjust criteria for better matches\n3. **Search another region** — Expand to a new geography`
             : "I couldn't find leads with verified contact info this time. Let's try a different approach:\n\n1. **Broaden criteria** — Widen the job titles or company size\n2. **Try different industries** — Target adjacent verticals\n3. **Search another region** — Try a different city or state";
