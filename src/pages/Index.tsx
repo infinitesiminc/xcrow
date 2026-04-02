@@ -1,13 +1,15 @@
 /**
- * Index — Leadgen-focused landing page with logo marquee social proof.
+ * Index — Leadgen-focused landing page with URL input + logo marquee.
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import heroImage from "@/assets/og-hero.png";
-import { ArrowRight, Target, Zap, Users, BarChart3 } from "lucide-react";
+import { ArrowRight, Target, Zap, Users, BarChart3, Globe, Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 
