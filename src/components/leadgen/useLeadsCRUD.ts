@@ -9,6 +9,7 @@ export interface SavedLead extends Lead {
   status: LeadStatus;
   created_at: string;
   updated_at: string;
+  niche_tag?: string;
 }
 
 export interface OutreachEntry {
