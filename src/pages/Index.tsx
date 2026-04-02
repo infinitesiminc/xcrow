@@ -92,8 +92,8 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — AI-Powered ICP Research & Lead Generation"
-        description="Enter your website and instantly map your ideal customer profile. AI agents discover, qualify, and reach out to high-intent prospects across 3,700+ companies."
+        title="Xcrow — Find Hyper-Accurate Leads From a Single Website"
+        description="The only lead hunter that turns one website into a full pipeline. Enter your URL — AI finds, qualifies, and delivers your perfect prospects in seconds."
         path="/"
       />
       <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
