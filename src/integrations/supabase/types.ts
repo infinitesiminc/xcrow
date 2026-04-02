@@ -1328,6 +1328,7 @@ export type Database = {
           id: string
           label: string
           lead_count: number
+          parent_label: string | null
           status: string
           user_id: string
         }
@@ -1338,6 +1339,7 @@ export type Database = {
           id?: string
           label: string
           lead_count?: number
+          parent_label?: string | null
           status?: string
           user_id: string
         }
@@ -1348,6 +1350,7 @@ export type Database = {
           id?: string
           label?: string
           lead_count?: number
+          parent_label?: string | null
           status?: string
           user_id?: string
         }

@@ -1,0 +1,1 @@
+ALTER TABLE public.leadgen_niches ADD COLUMN IF NOT EXISTS parent_label TEXT DEFAULT NULL;
