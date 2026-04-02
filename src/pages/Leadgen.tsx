@@ -310,6 +310,10 @@ export default function Leadgen() {
 
   // Chat items without leads (leads go to panel)
   const chatOnlyItems = items.filter(it => it.type !== "leads");
+  const filteredPanelLeads = useMemo(() => {
+    if (!activeNiche) return allLeads;
+    return allLeads.filter((lead) => (lead.niche_tag || "Uncategorized") === activeNiche);
+  }, [allLeads, activeNiche]);
 
   // Chat UI (shared between dashboard tab and standalone)
   const chatUI = (
