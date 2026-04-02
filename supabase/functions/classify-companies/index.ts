@@ -82,9 +82,9 @@ Deno.serve(async (req) => {
         (c: any) => !classifiedIds.has(c.id)
       );
 
-      // Process in batches of 30 using AI
+      // Process in batches using AI
       const BATCH_SIZE = 20;
-      const MAX_BATCHES = 3;
+      const MAX_BATCHES = 5;
       let totalClassified = 0;
       let totalSkipped = 0;
       let batchCount = 0;
