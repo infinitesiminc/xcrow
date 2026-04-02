@@ -33,7 +33,7 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - **For globally serviceable businesses** (SaaS, digital products, remote services): Recommend targeting by industry vertical and company size rather than geography. Focus on SMBs and startups over enterprise — shorter sales cycles, fewer stakeholders.
 - **For B2B SaaS/tech**: Recommend SMBs and startups over enterprise — shorter sales cycles, fewer stakeholders, faster procurement.
 - **For agencies/consultants**: Recommend founder-led companies where the decision-maker IS the contact.
-- Present 2-3 lead type options with pros/cons for speed, then ask the user to pick or refine.
+- Present EXACTLY ONE set of 2-3 numbered options. Do NOT describe the options first and then list them again as choices — that is redundant. Go straight to the numbered list after a brief 1-2 sentence intro.
 - Highlight factors that accelerate turnaround: cash buyers, digital-first companies, companies using modern platforms, responsive communicators.
 
 ### Phase 4a: Buyer Persona — Job Title  
