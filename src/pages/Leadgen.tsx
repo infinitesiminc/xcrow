@@ -373,19 +373,13 @@ export default function Leadgen() {
       <div className="flex flex-1 min-h-0">
         {/* FULL WIDTH — Niche Sidebar + Results */}
         <div className={`flex flex-1 min-w-0 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`}>
-          <NicheSidebar
-            leads={user ? savedLeads : allLeads}
-            savedNiches={sidebarSavedNiches}
-            activeNiche={activeNiche}
-            onSelectNiche={setActiveNiche}
-            collapsed={sidebarCollapsed}
-            onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
-          />
           <LeadgenDashboard
             leads={dashboardLeads}
             outreach={outreach}
             activeNiche={activeNiche}
-            activeNicheDescription={localNiches.find(n => n.label === activeNiche)?.description || savedNiches.find(n => n.label === activeNiche)?.description || null}
+            onSelectNiche={setActiveNiche}
+            nicheLeads={user ? savedLeads : allLeads}
+            savedNiches={sidebarSavedNiches}
             onUpdateStatus={updateLeadStatus}
             onDraftEmail={handleDraftEmail}
             onExportCSV={exportCSV}
