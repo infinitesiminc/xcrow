@@ -280,31 +280,6 @@ export default function Leadgen() {
     setIsStreaming(false);
   };
 
-  const sendToWhatsApp = (leads: Lead[]) => {
-    const phone = userPhone.replace(/[^0-9]/g, "");
-    if (!phone || phone.length < 10) {
-      const num = window.prompt("Enter your WhatsApp number (with country code, e.g. 16261234567):");
-      if (!num) return;
-      setUserPhone(num); openWA(leads, num.replace(/[^0-9]/g, "")); return;
-    }
-    openWA(leads, phone);
-  };
-
-  const openWA = (leads: Lead[], phone: string) => {
-    let msg = `🎯 *Xcrow Scout — Your Leads*\n\n`;
-    leads.forEach((l, i) => {
-      msg += `*${i + 1}. ${l.name}*`;
-      if (l.title) msg += ` — ${l.title}`;
-      if (l.company) msg += ` @ ${l.company}`;
-      msg += "\n";
-      if (l.email) msg += `📧 ${l.email}\n`;
-      if (l.phone) msg += `📱 ${l.phone}\n`;
-      if (l.linkedin) msg += `🔗 ${l.linkedin}\n`;
-      msg += "\n";
-    });
-    msg += "_Powered by Xcrow Scout_";
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
-  };
 
   // Chat items without leads (leads go to panel)
   const chatOnlyItems = items.filter(it => it.type !== "leads");
