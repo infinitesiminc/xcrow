@@ -224,7 +224,21 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "niches" && parsed.niches && user) { upsertNiches(parsed.niches); continue; }
+            if (parsed.type === "niches" && parsed.niches) {
+              setLocalNiches((prev) => {
+                const seen = new Set(prev.map((n) => n.label));
+                const merged = [...prev];
+                for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
+                  if (!seen.has(niche.label)) {
+                    seen.add(niche.label);
+                    merged.push({ label: niche.label, description: niche.description || null });
+                  }
+                }
+                return merged;
+              });
+              if (user) upsertNiches(parsed.niches);
+              continue;
+            }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) upsert(content);
@@ -240,7 +254,21 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "niches" && parsed.niches && user) { upsertNiches(parsed.niches); continue; }
+            if (parsed.type === "niches" && parsed.niches) {
+              setLocalNiches((prev) => {
+                const seen = new Set(prev.map((n) => n.label));
+                const merged = [...prev];
+                for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
+                  if (!seen.has(niche.label)) {
+                    seen.add(niche.label);
+                    merged.push({ label: niche.label, description: niche.description || null });
+                  }
+                }
+                return merged;
+              });
+              if (user) upsertNiches(parsed.niches);
+              continue;
+            }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) upsert(content);
