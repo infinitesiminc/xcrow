@@ -315,7 +315,7 @@ export default function Leadgen() {
 
       <div className="flex flex-1 min-h-0">
         {/* LEFT COLUMN — Chat */}
-        <div className={`flex flex-col flex-1 min-w-0 ${mobileView !== "chat" ? "hidden md:flex" : "flex"}`}>
+        <div className={`flex flex-col min-w-0 w-1/3 shrink-0 ${mobileView !== "chat" ? "hidden md:flex" : "flex"}`}>
           {/* Header */}
           <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3 shrink-0">
             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
