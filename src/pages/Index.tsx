@@ -80,6 +80,14 @@ const VALUE_PROPS = [
 
 export default function Index() {
   const navigate = useNavigate();
+  const [websiteUrl, setWebsiteUrl] = useState("");
+
+  const handleDiscover = (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = websiteUrl.trim();
+    if (!url) return;
+    navigate(`/leadgen?website=${encodeURIComponent(url)}`);
+  };
 
   return (
     <>
