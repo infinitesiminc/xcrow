@@ -153,13 +153,21 @@ export default function Index() {
               Enter your website. Our AI scrapes your business, maps your ideal customers, and fills your pipeline — all in seconds.
             </p>
 
-            <Button
-              size="lg"
-              className="gap-2 text-base px-8"
-              onClick={() => navigate("/leadgen")}
-            >
-              Start Mapping Your ICP <ArrowRight className="w-4 h-4" />
-            </Button>
+            <form onSubmit={handleDiscover} className="flex gap-2 max-w-md mx-auto w-full">
+              <div className="relative flex-1">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="yourcompany.com"
+                  className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
+                />
+              </div>
+              <Button type="submit" size="lg" className="h-12 px-6 gap-2" disabled={!websiteUrl.trim()}>
+                <Sparkles className="w-4 h-4" />
+                Map ICP
+              </Button>
+            </form>
           </motion.div>
 
           {/* Logo Marquee Social Proof */}
