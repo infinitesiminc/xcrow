@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LeadsPanel } from "@/components/leadgen/LeadsPanel";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
+import { NicheSidebar } from "@/components/leadgen/NicheSidebar";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import type { Lead } from "@/components/leadgen/LeadCard";
 
