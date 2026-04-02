@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LeadsPanel } from "@/components/leadgen/LeadsPanel";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
+import { NicheSidebar } from "@/components/leadgen/NicheSidebar";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import type { Lead } from "@/components/leadgen/LeadCard";
 
@@ -357,18 +358,32 @@ export default function Leadgen() {
     </div>
   );
 
+  // Niche sidebar state (lifted to top level so it's visible across all tabs)
+  const [activeNiche, setActiveNiche] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   // Signed-in users get the dashboard wrapper
   const mainContent = user ? (
-    <LeadgenDashboard
-      leads={savedLeads}
-      outreach={outreach}
-      savedNiches={savedNiches}
-      onUpdateStatus={updateLeadStatus}
-      onDraftEmail={handleDraftEmail}
-      onExportCSV={exportCSV}
-      chatContent={chatUI}
-      defaultTab={savedLeads.length > 0 ? "pipeline" : "chat"}
-    />
+    <div className="flex h-full">
+      <NicheSidebar
+        leads={savedLeads}
+        savedNiches={savedNiches}
+        activeNiche={activeNiche}
+        onSelectNiche={setActiveNiche}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
+      />
+      <LeadgenDashboard
+        leads={savedLeads}
+        outreach={outreach}
+        activeNiche={activeNiche}
+        onUpdateStatus={updateLeadStatus}
+        onDraftEmail={handleDraftEmail}
+        onExportCSV={exportCSV}
+        chatContent={chatUI}
+        defaultTab={savedLeads.length > 0 ? "pipeline" : "chat"}
+      />
+    </div>
   ) : (
     <>
       {/* Header for non-authed */}
