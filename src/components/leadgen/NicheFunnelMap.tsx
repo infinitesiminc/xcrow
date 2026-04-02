@@ -374,7 +374,8 @@ export function NicheFunnelMap({
               </ScrollArea>
             </div>
           );
-        })}
+          })}
+        </div>
       </div>
 
       {/* Action bar for active niche */}
