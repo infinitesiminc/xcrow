@@ -1539,12 +1539,16 @@ export type Database = {
           created_at: string
           email: string | null
           email_confidence: string | null
+          google_maps_url: string | null
           id: string
+          lead_type: string
           linkedin: string | null
           name: string
           phone: string | null
           photo_url: string | null
+          rating: number | null
           reason: string | null
+          reviews_count: number | null
           source: string | null
           status: Database["public"]["Enums"]["lead_status"]
           summary: string | null
@@ -1559,12 +1563,16 @@ export type Database = {
           created_at?: string
           email?: string | null
           email_confidence?: string | null
+          google_maps_url?: string | null
           id?: string
+          lead_type?: string
           linkedin?: string | null
           name: string
           phone?: string | null
           photo_url?: string | null
+          rating?: number | null
           reason?: string | null
+          reviews_count?: number | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           summary?: string | null
@@ -1579,12 +1587,16 @@ export type Database = {
           created_at?: string
           email?: string | null
           email_confidence?: string | null
+          google_maps_url?: string | null
           id?: string
+          lead_type?: string
           linkedin?: string | null
           name?: string
           phone?: string | null
           photo_url?: string | null
+          rating?: number | null
           reason?: string | null
+          reviews_count?: number | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           summary?: string | null
