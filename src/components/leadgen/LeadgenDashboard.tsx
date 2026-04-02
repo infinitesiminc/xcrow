@@ -48,6 +48,7 @@ export function LeadgenDashboard({
       {/* Niche sidebar */}
       <NicheSidebar
         leads={leads}
+        savedNiches={savedNiches}
         activeNiche={activeNiche}
         onSelectNiche={setActiveNiche}
         collapsed={sidebarCollapsed}
