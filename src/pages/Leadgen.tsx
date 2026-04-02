@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
-import { NicheSidebar } from "@/components/leadgen/NicheSidebar";
+
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import type { Lead } from "@/components/leadgen/LeadCard";
 
