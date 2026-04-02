@@ -57,10 +57,12 @@ export default function Leadgen() {
   const [items, setItems] = useState<ChatItem[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null }>>([]);
+  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const activeNicheRef = useRef<string | null>(null);
+  activeNicheRef.current = activeNiche;
 
   // CRM hook
   const {
@@ -91,6 +93,7 @@ export default function Leadgen() {
       status: "active",
       lead_count: 0,
       created_at: new Date().toISOString(),
+      parent_label: n.parent_label,
     })),
     [localNiches]
   );
@@ -221,10 +224,11 @@ export default function Leadgen() {
               setLocalNiches((prev) => {
                 const seen = new Set(prev.map((n) => n.label));
                 const merged = [...prev];
+                const parentLabel = activeNicheRef.current;
                 for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
                   if (!seen.has(niche.label)) {
                     seen.add(niche.label);
-                    merged.push({ label: niche.label, description: niche.description || null });
+                    merged.push({ label: niche.label, description: niche.description || null, parent_label: parentLabel });
                   }
                 }
                 return merged;
@@ -251,10 +255,11 @@ export default function Leadgen() {
               setLocalNiches((prev) => {
                 const seen = new Set(prev.map((n) => n.label));
                 const merged = [...prev];
+                const parentLabel = activeNicheRef.current;
                 for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
                   if (!seen.has(niche.label)) {
                     seen.add(niche.label);
-                    merged.push({ label: niche.label, description: niche.description || null });
+                    merged.push({ label: niche.label, description: niche.description || null, parent_label: parentLabel });
                   }
                 }
                 return merged;

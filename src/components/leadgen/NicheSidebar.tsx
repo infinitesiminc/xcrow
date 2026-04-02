@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Layers, Tag, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Layers, Tag, PanelLeftClose, PanelLeft, ChevronRight } from "lucide-react";
 import type { NicheEntry } from "./useLeadsCRUD";
 
 interface NicheLeadLike {
@@ -19,15 +19,16 @@ interface NicheSidebarProps {
   onToggleCollapse: () => void;
 }
 
-interface MergedNiche {
+interface TreeNiche {
   label: string;
   description: string | null;
   leadCount: number;
-  isPlaceholder: boolean; // true = from DB with 0 leads matched
+  isPlaceholder: boolean;
+  children: TreeNiche[];
 }
 
 export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNiche, collapsed, onToggleCollapse }: NicheSidebarProps) {
-  const mergedNiches = useMemo(() => {
+  const nicheTree = useMemo(() => {
     // Count leads per niche_tag
     const leadCountMap = new Map<string, number>();
     for (const l of leads) {
@@ -35,36 +36,68 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
       leadCountMap.set(tag, (leadCountMap.get(tag) || 0) + 1);
     }
 
-    // Start with saved niches from DB
-    const nicheMap = new Map<string, MergedNiche>();
+    // Build flat list with parent info
+    const allNiches = new Map<string, { label: string; description: string | null; parent: string | null; leadCount: number }>();
     for (const n of savedNiches) {
-      const count = leadCountMap.get(n.label) || 0;
-      nicheMap.set(n.label, {
+      allNiches.set(n.label, {
         label: n.label,
         description: n.description,
-        leadCount: count,
-        isPlaceholder: count === 0,
+        parent: n.parent_label || null,
+        leadCount: leadCountMap.get(n.label) || 0,
       });
     }
 
-    // Add any lead-derived niches not in savedNiches
+    // Add lead-derived niches not in saved
     for (const [tag, count] of leadCountMap) {
-      if (!nicheMap.has(tag)) {
-        nicheMap.set(tag, {
-          label: tag,
-          description: null,
-          leadCount: count,
-          isPlaceholder: false,
-        });
+      if (!allNiches.has(tag)) {
+        allNiches.set(tag, { label: tag, description: null, parent: null, leadCount: count });
       }
     }
 
-    return Array.from(nicheMap.values()).sort((a, b) => {
-      // Active niches with leads first, then placeholders
-      if (a.leadCount > 0 && b.leadCount === 0) return -1;
-      if (a.leadCount === 0 && b.leadCount > 0) return 1;
-      return b.leadCount - a.leadCount;
-    });
+    // Build tree
+    const rootNiches: TreeNiche[] = [];
+    const childrenMap = new Map<string, TreeNiche[]>();
+
+    for (const n of allNiches.values()) {
+      const node: TreeNiche = {
+        label: n.label,
+        description: n.description,
+        leadCount: n.leadCount,
+        isPlaceholder: n.leadCount === 0,
+        children: [],
+      };
+
+      if (n.parent) {
+        if (!childrenMap.has(n.parent)) childrenMap.set(n.parent, []);
+        childrenMap.get(n.parent)!.push(node);
+      } else {
+        rootNiches.push(node);
+      }
+    }
+
+    // Attach children
+    const attachChildren = (nodes: TreeNiche[]) => {
+      for (const node of nodes) {
+        node.children = childrenMap.get(node.label) || [];
+        attachChildren(node.children);
+      }
+    };
+    attachChildren(rootNiches);
+
+    // Sort: niches with leads first
+    const sortNodes = (nodes: TreeNiche[]) => {
+      nodes.sort((a, b) => {
+        const aTotal = a.leadCount + a.children.reduce((s, c) => s + c.leadCount, 0);
+        const bTotal = b.leadCount + b.children.reduce((s, c) => s + c.leadCount, 0);
+        if (aTotal > 0 && bTotal === 0) return -1;
+        if (aTotal === 0 && bTotal > 0) return 1;
+        return bTotal - aTotal;
+      });
+      for (const n of nodes) sortNodes(n.children);
+    };
+    sortNodes(rootNiches);
+
+    return rootNiches;
   }, [leads, savedNiches]);
 
   if (collapsed) {
@@ -74,7 +107,7 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
           <PanelLeft className="w-4 h-4" />
         </Button>
         <div className="flex flex-col items-center gap-2 mt-1">
-          {mergedNiches.slice(0, 8).map((n) => (
+          {nicheTree.slice(0, 8).map((n) => (
             <button
               key={n.label}
               onClick={() => onSelectNiche(activeNiche === n.label ? null : n.label)}
@@ -95,6 +128,53 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
       </div>
     );
   }
+
+  const renderNicheNode = (n: TreeNiche, depth: number) => {
+    const isActive = activeNiche === n.label;
+    const totalLeads = n.leadCount + n.children.reduce((s, c) => s + c.leadCount, 0);
+    const hasChildren = n.children.length > 0;
+
+    return (
+      <div key={n.label}>
+        <button
+          onClick={() => onSelectNiche(isActive ? null : n.label)}
+          className={cn(
+            "w-full flex items-center gap-2 py-2 rounded-md text-xs transition-colors text-left group",
+            isActive
+              ? "bg-primary/10 text-primary font-medium"
+              : n.isPlaceholder && !hasChildren
+                ? "text-muted-foreground/60 hover:bg-muted/30 hover:text-muted-foreground border border-dashed border-transparent hover:border-border/30"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          )}
+          style={{ paddingLeft: `${10 + depth * 12}px`, paddingRight: "10px" }}
+          title={n.description || undefined}
+        >
+          {hasChildren ? (
+            <ChevronRight className={cn("w-3 h-3 shrink-0 transition-transform", isActive && "rotate-90")} />
+          ) : (
+            <div className={cn(
+              "w-1.5 h-1.5 rounded-full shrink-0",
+              isActive ? "bg-primary" : n.isPlaceholder ? "bg-muted-foreground/20" : "bg-muted-foreground/30 group-hover:bg-muted-foreground/50"
+            )} />
+          )}
+          <span className="truncate flex-1">{n.label}</span>
+          {totalLeads > 0 ? (
+            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
+              {totalLeads}
+            </Badge>
+          ) : (
+            <span className="text-[9px] text-muted-foreground/40 italic shrink-0">explore</span>
+          )}
+        </button>
+        {/* Always show children */}
+        {hasChildren && (
+          <div className="ml-0">
+            {n.children.map((child) => renderNicheNode(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="w-56 border-r border-border/40 bg-card/20 flex flex-col shrink-0">
@@ -128,41 +208,10 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
             </Badge>
           </button>
 
-          {/* Individual niches */}
-          {mergedNiches.map((n) => {
-            const isActive = activeNiche === n.label;
+          {/* Tree */}
+          {nicheTree.map((n) => renderNicheNode(n, 0))}
 
-            return (
-              <button
-                key={n.label}
-                onClick={() => onSelectNiche(isActive ? null : n.label)}
-                className={cn(
-                  "w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs transition-colors text-left group",
-                  isActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : n.isPlaceholder
-                      ? "text-muted-foreground/60 hover:bg-muted/30 hover:text-muted-foreground border border-dashed border-transparent hover:border-border/30"
-                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                )}
-                title={n.description || undefined}
-              >
-                <div className={cn(
-                  "w-1.5 h-1.5 rounded-full shrink-0",
-                  isActive ? "bg-primary" : n.isPlaceholder ? "bg-muted-foreground/20" : "bg-muted-foreground/30 group-hover:bg-muted-foreground/50"
-                )} />
-                <span className="truncate flex-1">{n.label}</span>
-                {n.leadCount > 0 ? (
-                  <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
-                    {n.leadCount}
-                  </Badge>
-                ) : (
-                  <span className="text-[9px] text-muted-foreground/40 italic shrink-0">explore</span>
-                )}
-              </button>
-            );
-          })}
-
-          {mergedNiches.length === 0 && (
+          {nicheTree.length === 0 && (
             <div className="px-2.5 py-6 text-center space-y-2">
               <Layers className="w-6 h-6 text-muted-foreground/30 mx-auto" />
               <p className="text-[11px] text-muted-foreground/60">
