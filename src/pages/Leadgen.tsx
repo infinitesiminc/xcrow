@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight } from "lucide-react";
+import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight, BookOpen } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import type { Lead } from "@/components/leadgen/LeadCard";
+import { NicheLibrary } from "@/components/leadgen/NicheLibrary";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 const SCOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-scout`;
@@ -69,7 +70,7 @@ export default function Leadgen() {
   const [icpSummary, setIcpSummary] = useState("");
   const [pagesScraped, setPagesScraped] = useState(0);
   const [hasDiscovered, setHasDiscovered] = useState(false);
-
+  const [browseLibrary, setBrowseLibrary] = useState(false);
   const {
     leads: savedLeads, outreach, niches: savedNiches,
     upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV,
@@ -417,6 +418,23 @@ export default function Leadgen() {
 
   const [mobileView, setMobileView] = useState<"chat" | "results">("results");
 
+  const handleSeedFromLibrary = (niches: Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>) => {
+    setLocalNiches(niches);
+    if (user) {
+      upsertNiches(niches.map(n => ({
+        label: n.label,
+        description: n.description || "",
+        parent_label: n.parent_label,
+        niche_type: n.niche_type as any,
+      })));
+    }
+    setHasDiscovered(true);
+    setBrowseLibrary(false);
+    setCompanySummary(niches.find(n => n.niche_type === "vertical")?.label || "Industry ICP");
+    setIcpSummary("Seeded from Niche Library");
+    toast.success(`ICP seeded: ${niches.filter(n => n.niche_type === "vertical").length} vertical, ${niches.filter(n => n.niche_type === "segment").length} segments, ${niches.filter(n => n.niche_type === "persona").length} personas`);
+  };
+
   // Discovery hero (shown when no niches)
   const discoveryHero = (
     <div className="flex-1 flex items-center justify-center p-6">
@@ -469,6 +487,23 @@ export default function Leadgen() {
             {discoveryPhase}
           </motion.div>
         )}
+
+        <div className="flex items-center justify-center gap-3 mt-2">
+          <div className="w-12 h-px bg-border/40" />
+          <span className="text-xs text-muted-foreground/60">or</span>
+          <div className="w-12 h-px bg-border/40" />
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 mx-auto text-xs"
+          onClick={() => setBrowseLibrary(true)}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          Browse Niche Library
+          <Badge variant="secondary" className="text-[10px] ml-1">19 industries</Badge>
+        </Button>
 
         <p className="text-xs text-muted-foreground/60">
           Works best with B2B companies. We'll scrape your site to understand your offering.
@@ -570,7 +605,9 @@ export default function Leadgen() {
 
       {contextBar}
 
-      {!hasDiscovered ? discoveryHero : (
+      {browseLibrary ? (
+        <NicheLibrary onSeedNiches={handleSeedFromLibrary} onBack={() => setBrowseLibrary(false)} />
+      ) : !hasDiscovered ? discoveryHero : (
         <div className="flex flex-1 min-h-0">
           <div className="flex flex-1 min-w-0">
             <LeadgenDashboard
