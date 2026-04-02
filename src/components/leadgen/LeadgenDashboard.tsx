@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, MessageSquare, Clock } from "lucide-react";
+import { BarChart3, Clock } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
 import { ActivityLog } from "./ActivityLog";
 import type { SavedLead, LeadStatus, OutreachEntry } from "./useLeadsCRUD";
@@ -13,8 +13,6 @@ interface LeadgenDashboardProps {
   onUpdateStatus: (id: string, status: LeadStatus) => void;
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
-  chatContent: React.ReactNode;
-  defaultTab?: string;
 }
 
 export function LeadgenDashboard({
@@ -24,10 +22,8 @@ export function LeadgenDashboard({
   onUpdateStatus,
   onDraftEmail,
   onExportCSV,
-  chatContent,
-  defaultTab = "pipeline",
 }: LeadgenDashboardProps) {
-  const [tab, setTab] = useState(defaultTab);
+  const [tab, setTab] = useState("pipeline");
 
   const filteredLeads = useMemo(() => {
     if (!activeNiche) return leads;
@@ -48,9 +44,6 @@ export function LeadgenDashboard({
             <TabsTrigger value="pipeline" className="gap-1.5 text-xs data-[state=active]:bg-primary/10">
               <BarChart3 className="w-3.5 h-3.5" /> Pipeline
             </TabsTrigger>
-            <TabsTrigger value="chat" className="gap-1.5 text-xs data-[state=active]:bg-primary/10">
-              <MessageSquare className="w-3.5 h-3.5" /> Chat
-            </TabsTrigger>
             <TabsTrigger value="activity" className="gap-1.5 text-xs data-[state=active]:bg-primary/10">
               <Clock className="w-3.5 h-3.5" /> Activity
             </TabsTrigger>
@@ -70,10 +63,6 @@ export function LeadgenDashboard({
             onExportCSV={onExportCSV}
             outreachCount={filteredOutreach.length}
           />
-        </TabsContent>
-
-        <TabsContent value="chat" className="flex-1 m-0 overflow-hidden">
-          {chatContent}
         </TabsContent>
 
         <TabsContent value="activity" className="flex-1 m-0 overflow-hidden">
