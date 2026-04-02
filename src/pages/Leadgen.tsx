@@ -77,6 +77,15 @@ export default function Leadgen() {
     exportCSV,
   } = useLeadsCRUD(user?.id);
 
+  // Email draft state
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  const [draftLead, setDraftLead] = useState<Lead | null>(null);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftBody, setDraftBody] = useState("");
+  const [draftCtaText, setDraftCtaText] = useState("");
+  const [sending, setSending] = useState(false);
+
   const sidebarNiches = useMemo(
     () => localNiches.map((n, index) => ({
       id: `local-${index}-${n.label}`,
