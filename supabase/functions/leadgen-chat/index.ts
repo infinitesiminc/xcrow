@@ -804,7 +804,32 @@ Deno.serve(async (req) => {
 
       // If only register_niches (no lead search), stream text + niches event
       if (!leadSearchArgs) {
-        const normalizedContent = formatAssistantResponse(fullContent);
+        let normalizedContent = formatAssistantResponse(fullContent);
+
+        // If AI produced no text alongside register_niches, make a follow-up call to get the conversational response
+        if (!normalizedContent) {
+          try {
+            const followUpMessages = [
+              { role: "system", content: SYSTEM_PROMPT },
+              ...enrichedMessages,
+              { role: "assistant", content: null, tool_calls: toolCalls.map((tc, i) => ({ id: `call_${i}`, type: "function", function: { name: tc.name, arguments: tc.args } })) },
+              ...toolCalls.map((tc, i) => ({ role: "tool", tool_call_id: `call_${i}`, content: JSON.stringify({ success: true }) })),
+            ];
+            const followUp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: followUpMessages }),
+            });
+            if (followUp.ok) {
+              const followUpData = await followUp.json();
+              const followUpText = followUpData?.choices?.[0]?.message?.content || "";
+              normalizedContent = formatAssistantResponse(followUpText);
+            }
+          } catch (e) {
+            console.error("Follow-up AI call failed:", e);
+          }
+        }
+
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
           start(controller) {
