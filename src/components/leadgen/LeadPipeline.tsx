@@ -64,6 +64,37 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
         <KPI icon={<TrendingUp className="w-4 h-4" />} label="Reply Rate" value={`${replyRate}%`} />
       </div>
 
+      {/* Niche tabs */}
+      {nicheTags.length > 0 && (
+        <div className="px-4 pb-2 flex items-center gap-1.5 flex-wrap">
+          <Button
+            variant={nicheFilter === "all" ? "default" : "outline"}
+            size="sm"
+            className="h-6 text-[10px] px-2.5 rounded-full"
+            onClick={() => setNicheFilter("all")}
+          >
+            All Niches ({leads.length})
+          </Button>
+          {nicheTags.map((tag) => {
+            const count = leads.filter((l) => l.niche_tag === tag).length;
+            const isActive = nicheFilter === tag;
+            return (
+              <Button
+                key={tag}
+                variant={isActive ? "default" : "outline"}
+                size="sm"
+                className="h-6 text-[10px] px-2.5 rounded-full gap-1 max-w-[200px] truncate"
+                onClick={() => setNicheFilter(isActive ? "all" : tag)}
+              >
+                <span className="truncate">{tag}</span>
+                <span className="opacity-60">({count})</span>
+                {isActive && <X className="w-2.5 h-2.5 ml-0.5 shrink-0" />}
+              </Button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Filters */}
       <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
