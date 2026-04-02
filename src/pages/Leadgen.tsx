@@ -59,7 +59,7 @@ export default function Leadgen() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
   const [isFindingLeads, setIsFindingLeads] = useState(false);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
