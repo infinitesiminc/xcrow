@@ -400,7 +400,7 @@ async function executeLeadSearch(
   const searchLimit = isScale ? 8 : 5;
   const extractLimit = isScale ? 15 : 5;
   const mapsQueryCount = isScale ? 4 : 2;
-  let formattedUrl = args.website.trim();
+  let formattedUrl = (args.website || "").trim();
   if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
 
   // 1. Scrape target company team pages for real names
