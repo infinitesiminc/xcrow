@@ -289,7 +289,35 @@ export default function Leadgen() {
   }, [allLeads, activeNiche]);
 
   const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
-  const dashboardLeads = user ? savedLeads : [];
+  // For non-authed users, convert in-memory leads to SavedLead shape for pipeline
+  const dashboardLeads = useMemo(() => {
+    if (user) return savedLeads;
+    return filteredPanelLeads.map((l, i) => ({
+      ...l,
+      id: `temp-${i}-${l.name}-${l.company || ""}`,
+      status: "new" as const,
+      user_id: "",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      lead_type: "person" as string,
+      google_maps_url: null,
+      rating: null,
+      reviews_count: null,
+      niche_tag: l.niche_tag || null,
+      email: l.email || null,
+      phone: l.phone || null,
+      linkedin: l.linkedin || null,
+      website: l.website || null,
+      address: l.address || null,
+      company: l.company || null,
+      title: l.title || null,
+      source: l.source || null,
+      email_confidence: l.email_confidence ? String(l.email_confidence) : null,
+      summary: l.summary || null,
+      reason: l.reason || null,
+      photo_url: l.photo_url || null,
+    }));
+  }, [user, savedLeads, filteredPanelLeads]);
 
   // Mobile view toggle
   const [mobileView, setMobileView] = useState<"chat" | "results">("chat");
