@@ -6,7 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ChatProvider } from "@/contexts/ChatContext";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -16,7 +16,7 @@ const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
-const WhyTheseSkillsMatter = lazy(() => import("./pages/blog/WhyTheseSkillsMatter.tsx"));
+
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
@@ -26,9 +26,6 @@ const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
 
-// Admin (lazy)
-const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
-const UsersPage = lazy(() => import("./pages/admin/UsersPage.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -47,7 +44,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
-        <ChatProvider>
+        
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -59,7 +56,7 @@ const App = () => (
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/why-183-skills" element={<WhyTheseSkillsMatter />} />
+              
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
@@ -105,7 +102,7 @@ const App = () => (
           </Suspense>
           </ErrorBoundary>
         </TooltipProvider>
-        </ChatProvider>
+        
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>

@@ -25,7 +25,7 @@ import {
   User, Lock, AlertOctagon, ArrowLeft, LogOut, Check, CreditCard, Crown,
   ExternalLink, Compass, Users, Copy, Gift,
 } from "lucide-react";
-import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
+
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
@@ -144,9 +144,8 @@ export default function Settings() {
     setDeleting(true);
     try {
       await Promise.all([
-        supabase.from("analysis_history").delete().eq("user_id", user.id),
-        supabase.from("completed_simulations").delete().eq("user_id", user.id),
-        supabase.from("bookmarked_roles").delete().eq("user_id", user.id),
+        supabase.from("saved_leads").delete().eq("user_id", user.id),
+        supabase.from("leadgen_niches").delete().eq("user_id", user.id),
         supabase.from("profiles").delete().eq("id", user.id),
       ]);
       await signOut();
@@ -175,7 +174,7 @@ export default function Settings() {
   const initials = profile?.displayName
     ? profile.displayName.slice(0, 2).toUpperCase()
     : (user?.email ?? "").slice(0, 2).toUpperCase();
-  const sidebarAvatar = getAvatarById(avatarId);
+  const sidebarAvatar = null;
 
   return (
     <div className="settings-page min-h-[100dvh] bg-background flex">
@@ -330,8 +329,7 @@ function ReferralSection({ userId }: { userId?: string }) {
     (async () => {
       const { data: profile } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
       if (profile?.referral_code) setReferralCode(profile.referral_code);
-      const { count } = await supabase.from("referrals").select("*", { count: "exact", head: true }).eq("referrer_id", userId);
-      setReferralCount(count ?? 0);
+      setReferralCount(0);
     })();
   }, [userId]);
 
@@ -438,46 +436,14 @@ function ProfileSection({
       <p className="text-xs text-muted-foreground/70 mb-6">Your info helps us personalize quests, skill recommendations, and career insights to your goals.</p>
 
       <div className="space-y-8">
-        {/* Avatar picker */}
+        {/* Avatar - simplified */}
         <div className="space-y-3">
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Choose your companion</Label>
-          <div className="flex gap-6 items-start">
-            {/* Large preview */}
-            <div className="shrink-0 w-48 h-48 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center overflow-hidden relative">
-              {AVATAR_OPTIONS.map((avatar) => (
-                <img
-                  key={avatar.id}
-                  src={avatar.src}
-                  alt={avatar.label}
-                  className={`w-44 h-44 object-contain absolute inset-0 m-auto transition-opacity duration-150 crow-glow ${
-                    avatarId === avatar.id ? "opacity-100" : "opacity-0 pointer-events-none"
-                  }`}
-                />
-              ))}
-              {!avatarId && <span className="text-muted-foreground text-xs">Select</span>}
-            </div>
-            {/* Grid */}
-            <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 flex-1">
-              {AVATAR_OPTIONS.map((avatar) => (
-                <button
-                  key={avatar.id}
-                  type="button"
-                  onClick={() => setAvatarId(avatar.id)}
-                  className={`relative rounded-xl border-2 p-1.5 transition-all hover:scale-105 ${
-                    avatarId === avatar.id
-                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
-                      : "border-border/40 bg-muted/20 hover:border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <img src={avatar.src} alt={avatar.label} className="w-full aspect-square object-contain crow-glow" />
-                  {avatarId === avatar.id && (
-                    <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                    </div>
-                  )}
-                  <p className="text-[9px] text-center text-muted-foreground mt-0.5 truncate">{avatar.label}</p>
-                </button>
-              ))}
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Your Profile</Label>
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
+              <span className="text-xl font-bold text-primary">
+                {displayName ? displayName.slice(0, 2).toUpperCase() : email.slice(0, 2).toUpperCase()}
+              </span>
             </div>
           </div>
         </div>
