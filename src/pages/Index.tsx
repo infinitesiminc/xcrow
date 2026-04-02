@@ -72,8 +72,8 @@ function EmberCanvas() {
 }
 
 const VALUE_PROPS = [
-  { icon: Target, title: "Deep ICP Mapping", desc: "One URL builds your complete Ideal Customer Profile — verticals, segments, and buyer personas." },
-  { icon: Users, title: "AI Lead Discovery", desc: "Autonomous agents find, qualify, and enrich prospects matching your exact ICP criteria." },
+  { icon: Target, title: "One URL, Full Profile", desc: "Drop in any website — we instantly map your ideal buyers, verticals, and personas." },
+  { icon: Users, title: "AI Lead Discovery", desc: "Autonomous agents find, qualify, and enrich prospects that actually match your business." },
   { icon: Zap, title: "Instant Outreach", desc: "Generate personalized email sequences and export pipeline-ready lead lists in seconds." },
   { icon: BarChart3, title: "Pipeline Intelligence", desc: "Track lead status, outreach history, and conversion metrics across every niche." },
 ];
@@ -92,8 +92,8 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — AI-Powered ICP Research & Lead Generation"
-        description="Enter your website and instantly map your ideal customer profile. AI agents discover, qualify, and reach out to high-intent prospects across 3,700+ companies."
+        title="Xcrow — Find Hyper-Accurate Leads From a Single Website"
+        description="The only lead hunter that turns one website into a full pipeline. Enter your URL — AI finds, qualifies, and delivers your perfect prospects in seconds."
         path="/"
       />
       <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
@@ -140,7 +140,7 @@ export default function Index() {
               className="text-4xl md:text-5xl font-bold text-foreground mb-3 tracking-wide"
               style={{ fontFamily: "'Cinzel', serif" }}
             >
-              AI-Powered ICP Research
+              One Website. Perfect Leads.
             </h1>
 
             <div className="flex items-center justify-center gap-3 my-4">
@@ -150,7 +150,7 @@ export default function Index() {
             </div>
 
             <p className="text-muted-foreground text-sm md:text-base max-w-lg mx-auto mb-8">
-              Enter your website. Our AI scrapes your business, maps your ideal customers, and fills your pipeline — all in seconds.
+              The only lead hunter that finds hyper-accurate prospects from a single website entry. Drop your URL — AI does the rest.
             </p>
 
             <form onSubmit={handleDiscover} className="flex gap-2 max-w-md mx-auto w-full">
@@ -165,7 +165,7 @@ export default function Index() {
               </div>
               <Button type="submit" size="lg" className="h-12 px-6 gap-2" disabled={!websiteUrl.trim()}>
                 <Sparkles className="w-4 h-4" />
-                Map ICP
+                Hunt Leads
               </Button>
             </form>
           </motion.div>
@@ -178,7 +178,7 @@ export default function Index() {
             className="w-full max-w-4xl mx-auto"
           >
             <p className="text-center text-xs text-muted-foreground/70 mb-3 tracking-wide uppercase">
-              Powering ICP research across 3,700+ companies
+              Trusted across 3,700+ companies worldwide
             </p>
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
