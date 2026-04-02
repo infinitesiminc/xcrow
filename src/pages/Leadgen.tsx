@@ -8,17 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users } from "lucide-react";
+import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
-
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import type { Lead } from "@/components/leadgen/LeadCard";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
+const SCOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-scout`;
 
 type ChatItem =
   | { type: "user"; content: string }
@@ -47,36 +47,31 @@ const formatAssistantMessage = (text: string): string => {
   return result;
 };
 
-const GREETING: ChatItem = {
-  type: "assistant",
-  content: "Hey! 👋 I'm your lead gen assistant. I'll help you find high-quality prospects tailored to your business.\n\n**To get started, what's your company website?**",
-};
-
 export default function Leadgen() {
   const { user, profile, openAuthModal } = useAuth();
-  const [items, setItems] = useState<ChatItem[]>([GREETING]);
+  const [items, setItems] = useState<ChatItem[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
-  
   const [isFindingLeads, setIsFindingLeads] = useState(false);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const activeNicheRef = useRef<string | null>(null);
   activeNicheRef.current = activeNiche;
 
-  // CRM hook
+  // Discovery state
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [isDiscovering, setIsDiscovering] = useState(false);
+  const [discoveryPhase, setDiscoveryPhase] = useState("");
+  const [companySummary, setCompanySummary] = useState("");
+  const [icpSummary, setIcpSummary] = useState("");
+  const [hasDiscovered, setHasDiscovered] = useState(false);
+
   const {
-    leads: savedLeads,
-    outreach,
-    niches: savedNiches,
-    upsertLeads,
-    upsertNiches,
-    updateLeadStatus,
-    logOutreach,
-    exportCSV,
+    leads: savedLeads, outreach, niches: savedNiches,
+    upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV,
   } = useLeadsCRUD(user?.id);
 
   // Email draft state
@@ -87,6 +82,13 @@ export default function Leadgen() {
   const [draftBody, setDraftBody] = useState("");
   const [draftCtaText, setDraftCtaText] = useState("");
   const [sending, setSending] = useState(false);
+
+  // Check if user already has niches from DB
+  useEffect(() => {
+    if (savedNiches.length > 0) {
+      setHasDiscovered(true);
+    }
+  }, [savedNiches]);
 
   const sidebarNiches = useMemo(
     () => localNiches.map((n, index) => ({
@@ -102,7 +104,6 @@ export default function Leadgen() {
     [localNiches]
   );
 
-  // Accumulate all leads from chat (in-memory for non-authed users)
   const allLeads = useMemo(() => {
     const leads: Lead[] = [];
     const seen = new Set<string>();
@@ -117,26 +118,69 @@ export default function Leadgen() {
     return leads;
   }, [items]);
 
-  // Auto-save leads to DB when they arrive (authed users)
   useEffect(() => {
-    if (user && allLeads.length > 0) {
-      upsertLeads(allLeads);
-    }
+    if (user && allLeads.length > 0) upsertLeads(allLeads);
   }, [allLeads, user, upsertLeads]);
-
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
-
   useEffect(() => { scrollToBottom(); }, [items, scrollToBottom]);
 
+  // --- Discovery: single URL input ---
+  const handleDiscover = async () => {
+    const url = websiteUrl.trim();
+    if (!url) return;
+    setIsDiscovering(true);
+    setDiscoveryPhase("Scraping website...");
+
+    try {
+      setTimeout(() => setDiscoveryPhase("Analyzing business model..."), 2000);
+      setTimeout(() => setDiscoveryPhase("Mapping industry verticals..."), 4000);
+      setTimeout(() => setDiscoveryPhase("Building buyer personas..."), 6000);
+
+      const resp = await fetch(SCOUT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({ website: url }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || !data.success) throw new Error(data.error || "Discovery failed");
+
+      setCompanySummary(data.company_summary || "");
+      setIcpSummary(data.icp_summary || "");
+
+      // Populate niches
+      const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
+      setLocalNiches(niches);
+
+      // Persist to DB if authed
+      if (user) {
+        upsertNiches(niches.map(n => ({
+          label: n.label,
+          description: n.description || "",
+          parent_label: n.parent_label,
+          niche_type: n.niche_type as any,
+        })));
+      }
+
+      setHasDiscovered(true);
+      setChatOpen(false);
+      toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to analyze website");
+    } finally {
+      setIsDiscovering(false);
+      setDiscoveryPhase("");
+    }
+  };
+
+  // --- Chat handlers (kept for follow-up) ---
   const handleDraftEmail = async (lead: Lead) => {
     if (!user) { openAuthModal(); return; }
     if (!lead.email) { toast.error("This lead has no email address."); return; }
-    setDraftLead(lead);
-    setDraftModalOpen(true);
-    setDraftLoading(true);
+    setDraftLead(lead); setDraftModalOpen(true); setDraftLoading(true);
     setDraftSubject(""); setDraftBody(""); setDraftCtaText("");
     try {
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/draft-outreach`, {
@@ -144,7 +188,7 @@ export default function Leadgen() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
           lead: { name: lead.name, title: lead.title, company: lead.company, email: lead.email, reason: lead.reason, summary: lead.summary },
-          senderInfo: { name: profile?.displayName || user.email?.split("@")[0], company: profile?.company || "", website: "" },
+          senderInfo: { name: profile?.displayName || user.email?.split("@")[0], company: profile?.company || "", website: websiteUrl },
         }),
       });
       const data = await resp.json();
@@ -168,8 +212,6 @@ export default function Leadgen() {
       });
       if (error) throw error;
       toast.success(`Email sent to ${draftLead.email}`);
-
-      // Log to outreach_log and update lead status
       if (user) {
         const matchedLead = savedLeads.find((l) => l.email === draftLead.email && l.company === draftLead.company);
         if (matchedLead) {
@@ -177,7 +219,6 @@ export default function Leadgen() {
           if (matchedLead.status === "new") await updateLeadStatus(matchedLead.id, "contacted");
         }
       }
-
       setDraftModalOpen(false);
     } catch (e: any) { toast.error(e.message || "Failed to send email"); } finally { setSending(false); }
   };
@@ -229,7 +270,6 @@ export default function Leadgen() {
                 const seen = new Set(prev.map((n) => n.label));
                 const merged = [...prev];
                 const parentLabel = activeNicheRef.current;
-                // Derive niche_type from parent depth
                 const parentEntry = parentLabel ? prev.find((n) => n.label === parentLabel) : null;
                 const nicheType = !parentLabel ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
                 for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
@@ -301,34 +341,32 @@ export default function Leadgen() {
   const handleFindLeads = (niche: string) => {
     if (!user) { openAuthModal(); return; }
     setIsFindingLeads(true);
-    sendMessage(`Find more leads for the "${niche}" niche. Search for additional prospects matching this ICP.`).finally(() => setIsFindingLeads(false));
+    setChatOpen(true);
+    sendMessage(`Find leads for the "${niche}" niche. Search for prospects matching this ICP.`).finally(() => setIsFindingLeads(false));
   };
 
   const handleEnrichLeads = async (niche: string) => {
     if (!user) { openAuthModal(); return; }
     setIsEnrichingLeads(true);
+    setChatOpen(true);
     const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && !l.email);
     if (nicheLeads.length === 0) {
       toast.info("All leads in this niche already have contact details.");
-      setIsEnrichingLeads(false);
-      return;
+      setIsEnrichingLeads(false); return;
     }
     sendMessage(`Enrich contacts for leads in the "${niche}" niche — find email addresses and phone numbers for the ${nicheLeads.length} leads missing contact info.`).finally(() => setIsEnrichingLeads(false));
   };
 
   const handleScoreLeads = (niche: string) => {
     if (!user) { openAuthModal(); return; }
+    setChatOpen(true);
     sendMessage(`Score and rank the leads in the "${niche}" niche by ICP fit, deal readiness, and potential value.`);
   };
 
   const handleDraftAllOutreach = (niche: string) => {
     if (!user) { openAuthModal(); return; }
     const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && l.email && l.status === "new");
-    if (nicheLeads.length === 0) {
-      toast.info("No uncontacted leads with emails in this niche.");
-      return;
-    }
-    // Draft for first lead as starting point
+    if (nicheLeads.length === 0) { toast.info("No uncontacted leads with emails in this niche."); return; }
     handleDraftEmail(nicheLeads[0]);
   };
 
@@ -339,15 +377,12 @@ export default function Leadgen() {
     const rows = nicheLeads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.status, l.source || ""]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
+    a.href = URL.createObjectURL(blob);
     a.download = `leads-${niche.replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-    URL.revokeObjectURL(url);
   };
 
-  // Chat items without leads (leads go to panel)
   const chatOnlyItems = items.filter(it => it.type !== "leads");
   const filteredPanelLeads = useMemo(() => {
     if (!activeNiche) return allLeads;
@@ -357,17 +392,15 @@ export default function Leadgen() {
   const sidebarSavedNiches = useMemo(() => {
     const seen = new Set<string>();
     const merged: typeof savedNiches = [];
-    // DB niches take priority
     for (const n of (user ? savedNiches : [])) {
       if (!seen.has(n.label)) { seen.add(n.label); merged.push(n); }
     }
-    // Then local niches (only add if not already from DB)
     for (const n of sidebarNiches) {
       if (!seen.has(n.label)) { seen.add(n.label); merged.push(n); }
     }
     return merged;
   }, [user, savedNiches, sidebarNiches]);
-  // For non-authed users, convert in-memory leads to SavedLead shape for pipeline
+
   const dashboardLeads = useMemo(() => {
     if (user) return savedLeads;
     return filteredPanelLeads.map((l, i) => ({
@@ -380,45 +413,129 @@ export default function Leadgen() {
     }));
   }, [user, savedLeads, filteredPanelLeads]);
 
-  // Mobile view toggle
-  const [mobileView, setMobileView] = useState<"chat" | "results">("chat");
+  const [mobileView, setMobileView] = useState<"chat" | "results">("results");
 
-  // Main layout — two columns: LEFT = chat, RIGHT = niche sidebar + results
+  // Discovery hero (shown when no niches)
+  const discoveryHero = (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-lg w-full text-center space-y-6"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+          <Globe className="w-8 h-8 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Discover Your Ideal Customers</h1>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Enter your company website and our AI will analyze your business, map industry verticals, company segments, and buyer personas — building your complete ICP in seconds.
+          </p>
+        </div>
+
+        <form
+          className="flex gap-2 max-w-md mx-auto"
+          onSubmit={(e) => { e.preventDefault(); handleDiscover(); }}
+        >
+          <div className="relative flex-1">
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              placeholder="yourcompany.com"
+              className="pl-9 h-11 text-sm bg-card border-border/60"
+              disabled={isDiscovering}
+            />
+          </div>
+          <Button type="submit" className="h-11 px-5 gap-2" disabled={!websiteUrl.trim() || isDiscovering}>
+            {isDiscovering ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            {isDiscovering ? "Analyzing..." : "Map ICP"}
+          </Button>
+        </form>
+
+        {isDiscovering && discoveryPhase && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center gap-2 text-sm text-primary"
+          >
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            {discoveryPhase}
+          </motion.div>
+        )}
+
+        <p className="text-xs text-muted-foreground/60">
+          Works best with B2B companies. We'll scrape your site to understand your offering.
+        </p>
+      </motion.div>
+    </div>
+  );
+
+  // Context bar shown after discovery
+  const contextBar = (companySummary || icpSummary) && hasDiscovered ? (
+    <div className="border-b border-border/40 bg-card/50 px-4 py-2 flex items-center gap-3 shrink-0">
+      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+        <Globe className="w-3.5 h-3.5 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-foreground truncate">{companySummary}</p>
+        {icpSummary && <p className="text-xs text-muted-foreground truncate">{icpSummary}</p>}
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-xs gap-1 shrink-0"
+        onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); }}
+      >
+        Re-analyze
+      </Button>
+    </div>
+  ) : null;
+
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
       {/* Mobile toggle */}
-      <div className="md:hidden border-b border-border/40 bg-card/30 px-4 py-2 flex gap-2 shrink-0">
-        <Button variant={mobileView === "chat" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => setMobileView("chat")}>
-          <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Chat
-        </Button>
-        <Button variant={mobileView === "results" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => setMobileView("results")}>
-          <Users className="w-3.5 h-3.5 mr-1.5" /> Results {allLeads.length > 0 && `(${allLeads.length})`}
-        </Button>
-      </div>
-
-      <div className="flex flex-1 min-h-0">
-        {/* FULL WIDTH — Niche Sidebar + Results */}
-        <div className={`flex flex-1 min-w-0 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`}>
-          <LeadgenDashboard
-            leads={dashboardLeads}
-            outreach={outreach}
-            activeNiche={activeNiche}
-            onSelectNiche={setActiveNiche}
-            nicheLeads={user ? savedLeads : allLeads}
-            savedNiches={sidebarSavedNiches}
-            onUpdateStatus={updateLeadStatus}
-            onDraftEmail={handleDraftEmail}
-            onExportCSV={exportCSV}
-            onFindLeads={handleFindLeads}
-            onEnrichLeads={handleEnrichLeads}
-            onScoreLeads={handleScoreLeads}
-            onDraftAll={handleDraftAllOutreach}
-            onExportNiche={handleExportNiche}
-            isFinding={isFindingLeads}
-            isEnriching={isEnrichingLeads}
-          />
+      {hasDiscovered && (
+        <div className="md:hidden border-b border-border/40 bg-card/30 px-4 py-2 flex gap-2 shrink-0">
+          <Button variant={mobileView === "results" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => setMobileView("results")}>
+            <Users className="w-3.5 h-3.5 mr-1.5" /> Map & Leads
+          </Button>
+          <Button variant={mobileView === "chat" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => { setMobileView("chat"); setChatOpen(true); }}>
+            <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Chat
+          </Button>
         </div>
-      </div>
+      )}
+
+      {contextBar}
+
+      {!hasDiscovered ? discoveryHero : (
+        <div className="flex flex-1 min-h-0">
+          <div className="flex flex-1 min-w-0">
+            <LeadgenDashboard
+              leads={dashboardLeads}
+              outreach={outreach}
+              activeNiche={activeNiche}
+              onSelectNiche={setActiveNiche}
+              nicheLeads={user ? savedLeads : allLeads}
+              savedNiches={sidebarSavedNiches}
+              onUpdateStatus={updateLeadStatus}
+              onDraftEmail={handleDraftEmail}
+              onExportCSV={exportCSV}
+              onFindLeads={handleFindLeads}
+              onEnrichLeads={handleEnrichLeads}
+              onScoreLeads={handleScoreLeads}
+              onDraftAll={handleDraftAllOutreach}
+              onExportNiche={handleExportNiche}
+              isFinding={isFindingLeads}
+              isEnriching={isEnrichingLeads}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Floating Chat Dock */}
       <AnimatePresence>
@@ -430,7 +547,6 @@ export default function Leadgen() {
             transition={{ duration: 0.2 }}
             className="fixed bottom-20 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-8rem)] bg-card border border-border/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Chat Header */}
             <div className="border-b border-border/40 bg-card/80 backdrop-blur px-4 py-2.5 flex items-center gap-3 shrink-0">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                 <MessageSquare className="w-3.5 h-3.5 text-primary" />
@@ -439,19 +555,23 @@ export default function Leadgen() {
                 <h2 className="text-xs font-semibold text-foreground">Xcrow Scout</h2>
                 <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
               </div>
-              {!user && (
-                <Badge variant="outline" className="text-xs border-primary/30 text-primary mr-1">
-                  Free — 5 Leads
-                </Badge>
-              )}
               <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setChatOpen(false)}>
                 <X className="w-3.5 h-3.5" />
               </Button>
             </div>
 
-            {/* Messages */}
             <ScrollArea className="flex-1 px-3">
               <div className="py-4 space-y-3">
+                {chatOnlyItems.length === 0 && (
+                  <div className="flex gap-1.5">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bot className="w-3 h-3 text-primary" />
+                    </div>
+                    <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-3 py-2 max-w-[85%] text-xs">
+                      Your ICP map is ready! Click <strong>Find Leads</strong> on any niche to start prospecting, or ask me anything about your market.
+                    </div>
+                  </div>
+                )}
                 {chatOnlyItems.map((item, i) => (
                   <div key={i}>
                     {item.type === "user" && (
@@ -474,18 +594,6 @@ export default function Leadgen() {
                     )}
                   </div>
                 ))}
-
-                {allLeads.length > 0 && items[items.length - 1]?.type === "leads" && (
-                  <div className="flex gap-1.5">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Users className="w-3 h-3 text-primary" />
-                    </div>
-                    <div className="bg-primary/5 border border-primary/20 rounded-2xl rounded-bl-md px-3 py-2 text-xs text-primary font-medium">
-                      ✨ {allLeads.length} lead{allLeads.length !== 1 ? "s" : ""} found — see pipeline →
-                    </div>
-                  </div>
-                )}
-
                 {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
                   <div className="flex gap-1.5">
                     <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -500,10 +608,9 @@ export default function Leadgen() {
               </div>
             </ScrollArea>
 
-            {/* Input */}
             <div className="border-t border-border/40 bg-card/80 backdrop-blur px-3 py-2 shrink-0">
               <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
-                <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." className="flex-1 bg-muted/20 border-border/40 h-8 text-xs" autoFocus />
+                <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about your market..." className="flex-1 bg-muted/20 border-border/40 h-8 text-xs" />
                 <Button type="submit" size="icon" className="h-8 w-8" disabled={!input.trim()}><Send className="w-3.5 h-3.5" /></Button>
               </form>
             </div>
@@ -511,8 +618,8 @@ export default function Leadgen() {
         )}
       </AnimatePresence>
 
-      {/* FAB to open chat */}
-      {!chatOpen && (
+      {/* FAB */}
+      {hasDiscovered && !chatOpen && (
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -529,14 +636,13 @@ export default function Leadgen() {
   return (
     <>
       <Helmet>
-        <title>Xcrow Scout — AI Lead Gen Chat</title>
-        <meta name="description" content="Chat with AI to build your ideal customer profile and discover qualified leads instantly." />
+        <title>Xcrow Scout — AI Lead Generation</title>
+        <meta name="description" content="Enter your website and instantly map your ideal customer profile with AI-powered lead generation." />
       </Helmet>
       <Navbar />
       <div className="flex flex-col h-screen pt-16">
         {mainContent}
       </div>
-
 
       {/* Email Draft Modal */}
       <Dialog open={draftModalOpen} onOpenChange={setDraftModalOpen}>
