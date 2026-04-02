@@ -97,6 +97,7 @@ export default function Leadgen() {
       lead_count: 0,
       created_at: new Date().toISOString(),
       parent_label: n.parent_label,
+      niche_type: n.niche_type as any,
     })),
     [localNiches]
   );
