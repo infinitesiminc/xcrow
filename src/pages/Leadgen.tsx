@@ -461,6 +461,13 @@ export default function Leadgen() {
             onSelectNiche={setActiveNiche}
             collapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
+            onFindLeads={handleFindLeads}
+            onEnrichLeads={handleEnrichLeads}
+            onScoreLeads={handleScoreLeads}
+            onDraftAll={handleDraftAllOutreach}
+            onExportNiche={handleExportNiche}
+            isFinding={isFindingLeads}
+            isEnriching={isEnrichingLeads}
           />
           <LeadgenDashboard
             leads={dashboardLeads}
