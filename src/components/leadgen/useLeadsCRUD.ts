@@ -123,15 +123,15 @@ export function useLeadsCRUD(userId: string | undefined) {
   );
 
   const upsertNiches = useCallback(
-    async (newNiches: { label: string; description: string }[]) => {
+    async (newNiches: { label: string; description: string; parent_label?: string | null }[]) => {
       if (!userId || newNiches.length === 0) return;
       const rows = newNiches.map((n) => ({
         user_id: userId,
         label: n.label.slice(0, 120),
         description: n.description || null,
+        parent_label: n.parent_label || null,
         status: "active",
       }));
-      // Use upsert on user_id+label unique constraint
       await (supabase.from("leadgen_niches") as any).upsert(rows, {
         onConflict: "user_id,label",
         ignoreDuplicates: true,
