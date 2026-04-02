@@ -397,7 +397,7 @@ export default function Leadgen() {
         </div>
 
         {/* RIGHT COLUMN — Niche Sidebar + Results */}
-        <div className={`flex border-l border-border/40 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`} style={{ width: "clamp(380px, 45%, 560px)" }}>
+        <div className={`flex flex-1 min-w-0 border-l border-border/40 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`}>
           <NicheSidebar
             leads={user ? savedLeads : allLeads}
             savedNiches={sidebarSavedNiches}
