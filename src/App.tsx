@@ -26,9 +26,6 @@ const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
 
-// Admin (lazy)
-const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
-const UsersPage = lazy(() => import("./pages/admin/UsersPage.tsx"));
 
 const queryClient = new QueryClient();
 
