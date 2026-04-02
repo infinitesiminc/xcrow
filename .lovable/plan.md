@@ -1,50 +1,52 @@
 
-## Plan: Interactive Niche Funnel Map
+## Plan: ICP Tree Map with Distinct Layers
 
-### Concept
-Replace the narrow sidebar with a **full-width funnel flowchart** that visualizes the ICP discovery journey as a top-down drill-down:
+### Problem
+Industry verticals (Mid-Market 3PLs, Cold Chain) and buyer personas (Operations Leadership, Facility Management) are mixed at the same level. The ICP framework needs **3 distinct layers**:
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  YOUR MARKET                                         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │ 3PL &    │  │ E-comm & │  │ Industrial│           │
-│  │ Logistics│  │ DTC      │  │ & Mfg    │           │
-│  └────┬─────┘  └──────────┘  └──────────┘           │
-│       │                                              │
-│  ┌────▼──────────────────────────┐                   │
-│  │ Mid-Market 3PLs               │  ← selected      │
-│  │ 12 leads · [Find More] [Enrich]│                  │
-│  └────┬──────────────────────────┘                   │
-│       │                                              │
-│  ┌────▼─────┐  ┌──────────┐  ┌──────────┐           │
-│  │ Ops      │  │ Tech     │  │ C-Suite  │           │
-│  │ Leaders  │  │ Buyers   │  │ Sponsors │           │
-│  └──────────┘  └──────────┘  └──────────┘           │
-├─────────────────────────────────────────────────────┤
-│  Pipeline / Activity tabs (filtered to active niche) │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│ LAYER 1: Industry Verticals                             │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
+│ │ 3PL &    │  │ Cold     │  │ Retail   │               │
+│ │ E-comm   │  │ Chain    │  │ Distrib  │               │
+│ └────┬─────┘  └──────────┘  └──────────┘               │
+│      │                                                   │
+│ LAYER 2: Company Segments (click vertical to see)        │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
+│ │ Mid-Mkt  │  │ Regional │  │ National │               │
+│ │ 50-500   │  │ 2-10 DCs │  │ 10+ DCs  │               │
+│ └────┬─────┘  └──────────┘  └──────────┘               │
+│      │                                                   │
+│ LAYER 3: Buyer Personas (click segment to see)           │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
+│ │ Ops      │  │ Facility │  │ Supply   │               │
+│ │ Leaders  │  │ Mgmt     │  │ Chain    │               │
+│ └──────────┘  └──────────┘  └──────────┘               │
+├─────────────────────────────────────────────────────────┤
+│ Pipeline (filtered)                                      │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### How It Works
-1. **Level 1 — Industry Verticals**: Top row shows root niches as clickable cards
-2. **Level 2 — Segments**: Clicking a vertical expands its child niches below
-3. **Level 3 — Personas**: Clicking a segment shows persona-level targeting
-4. Each card shows: name, description snippet, lead count badge, and quick-action buttons
-5. Clicking a card both selects it as active niche (filtering pipeline below) AND can trigger "Find Leads" directly
-6. Connected by animated SVG lines showing the funnel path
-7. Breadcrumb trail at top: "All → 3PL & Logistics → Mid-Market 3PLs"
+### Changes
 
-### Layout Change
-- Remove `NicheSidebar` from the left column
-- The funnel map becomes the **top section** of `LeadgenDashboard`, above pipeline tabs
-- Pipeline below fills remaining height
-- Chat FAB stays bottom-right
+**1. Add `niche_type` column to `leadgen_niches`** 
+Values: `vertical`, `segment`, `persona` — this tags each niche with its ICP layer.
 
-### New Component
-- `src/components/leadgen/NicheFunnelMap.tsx` — the interactive funnel visualization
+**2. Update `NicheEntry` type and `upsertNiches`** to include `niche_type`.
 
-### Files to Edit
-- `src/components/leadgen/NicheFunnelMap.tsx` — new file
-- `src/components/leadgen/LeadgenDashboard.tsx` — embed funnel map, remove sidebar dependency
-- `src/pages/Leadgen.tsx` — remove NicheSidebar, pass full width to dashboard
+**3. Redesign `NicheFunnelMap`** to render all visible layers vertically with labeled rows:
+- Show all root verticals at top
+- When a vertical is selected, show its child segments below
+- When a segment is selected, show its child personas below
+- Each layer has a labeled header ("Industry", "Segment", "Persona")
+- SVG connector lines between parent and children
+- Action bar appears at the deepest selected level
+
+**4. Update AI chat niche parsing** in `Leadgen.tsx` to pass `niche_type` based on depth.
+
+### Files
+- Migration: add `niche_type` column
+- `src/components/leadgen/useLeadsCRUD.ts` — update NicheEntry + upsertNiches
+- `src/components/leadgen/NicheFunnelMap.tsx` — multi-layer tree rendering
+- `src/pages/Leadgen.tsx` — pass niche_type in upsertNiches calls

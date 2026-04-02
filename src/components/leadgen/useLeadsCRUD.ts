@@ -24,6 +24,8 @@ export interface OutreachEntry {
   lead_email?: string;
 }
 
+export type NicheType = "vertical" | "segment" | "persona";
+
 export interface NicheEntry {
   id: string;
   label: string;
@@ -32,6 +34,7 @@ export interface NicheEntry {
   lead_count: number;
   created_at: string;
   parent_label?: string | null;
+  niche_type?: NicheType;
 }
 
 export function useLeadsCRUD(userId: string | undefined) {
@@ -123,13 +126,14 @@ export function useLeadsCRUD(userId: string | undefined) {
   );
 
   const upsertNiches = useCallback(
-    async (newNiches: { label: string; description: string; parent_label?: string | null }[]) => {
+    async (newNiches: { label: string; description: string; parent_label?: string | null; niche_type?: NicheType }[]) => {
       if (!userId || newNiches.length === 0) return;
       const rows = newNiches.map((n) => ({
         user_id: userId,
         label: n.label.slice(0, 120),
         description: n.description || null,
         parent_label: n.parent_label || null,
+        niche_type: n.niche_type || "vertical",
         status: "active",
       }));
       await (supabase.from("leadgen_niches") as any).upsert(rows, {

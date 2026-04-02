@@ -57,7 +57,7 @@ export default function Leadgen() {
   const [items, setItems] = useState<ChatItem[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null }>>([]);
+  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   
   const [isFindingLeads, setIsFindingLeads] = useState(false);
@@ -97,6 +97,7 @@ export default function Leadgen() {
       lead_count: 0,
       created_at: new Date().toISOString(),
       parent_label: n.parent_label,
+      niche_type: n.niche_type as any,
     })),
     [localNiches]
   );
@@ -228,15 +229,22 @@ export default function Leadgen() {
                 const seen = new Set(prev.map((n) => n.label));
                 const merged = [...prev];
                 const parentLabel = activeNicheRef.current;
+                // Derive niche_type from parent depth
+                const parentEntry = parentLabel ? prev.find((n) => n.label === parentLabel) : null;
+                const nicheType = !parentLabel ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
                 for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
                   if (!seen.has(niche.label)) {
                     seen.add(niche.label);
-                    merged.push({ label: niche.label, description: niche.description || null, parent_label: parentLabel });
+                    merged.push({ label: niche.label, description: niche.description || null, parent_label: parentLabel, niche_type: nicheType });
                   }
                 }
                 return merged;
               });
-              if (user) upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current })));
+              if (user) {
+                const parentEntry = localNiches.find((n) => n.label === activeNicheRef.current);
+                const nicheType = !activeNicheRef.current ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
+                upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current, niche_type: nicheType as any })));
+              }
               continue;
             }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
@@ -259,15 +267,21 @@ export default function Leadgen() {
                 const seen = new Set(prev.map((n) => n.label));
                 const merged = [...prev];
                 const parentLabel = activeNicheRef.current;
+                const parentEntry = parentLabel ? prev.find((n) => n.label === parentLabel) : null;
+                const nicheType = !parentLabel ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
                 for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
                   if (!seen.has(niche.label)) {
                     seen.add(niche.label);
-                    merged.push({ label: niche.label, description: niche.description || null, parent_label: parentLabel });
+                    merged.push({ label: niche.label, description: niche.description || null, parent_label: parentLabel, niche_type: nicheType });
                   }
                 }
                 return merged;
               });
-              if (user) upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current })));
+              if (user) {
+                const parentEntry = localNiches.find((n) => n.label === activeNicheRef.current);
+                const nicheType = !activeNicheRef.current ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
+                upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current, niche_type: nicheType as any })));
+              }
               continue;
             }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
