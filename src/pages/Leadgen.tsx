@@ -133,12 +133,12 @@ export default function Leadgen() {
     const url = websiteUrl.trim();
     if (!url) return;
     setIsDiscovering(true);
-    setDiscoveryPhase("Scraping website...");
+    setDiscoveryPhase("Mapping site pages...");
 
     try {
-      setTimeout(() => setDiscoveryPhase("Analyzing business model..."), 2000);
-      setTimeout(() => setDiscoveryPhase("Mapping industry verticals..."), 4000);
-      setTimeout(() => setDiscoveryPhase("Building buyer personas..."), 6000);
+      setTimeout(() => setDiscoveryPhase("Scraping key pages (about, solutions, customers)..."), 3000);
+      setTimeout(() => setDiscoveryPhase("Analyzing business model & customers..."), 7000);
+      setTimeout(() => setDiscoveryPhase("Building 3-layer ICP tree..."), 11000);
 
       const resp = await fetch(SCOUT_URL, {
         method: "POST",
