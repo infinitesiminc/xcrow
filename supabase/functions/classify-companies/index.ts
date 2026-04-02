@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
 
       // Process in batches of 30 using AI
       const BATCH_SIZE = 20;
-      const MAX_BATCHES = 8;
+      const MAX_BATCHES = 3;
       let totalClassified = 0;
       let totalSkipped = 0;
       let batchCount = 0;
