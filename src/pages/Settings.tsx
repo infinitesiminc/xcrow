@@ -144,9 +144,8 @@ export default function Settings() {
     setDeleting(true);
     try {
       await Promise.all([
-        supabase.from("analysis_history").delete().eq("user_id", user.id),
-        supabase.from("completed_simulations").delete().eq("user_id", user.id),
-        supabase.from("bookmarked_roles").delete().eq("user_id", user.id),
+        supabase.from("saved_leads").delete().eq("user_id", user.id),
+        supabase.from("leadgen_niches").delete().eq("user_id", user.id),
         supabase.from("profiles").delete().eq("id", user.id),
       ]);
       await signOut();
