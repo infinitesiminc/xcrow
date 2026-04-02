@@ -4,10 +4,14 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Layers, Tag, PanelLeftClose, PanelLeft } from "lucide-react";
-import type { SavedLead, NicheEntry } from "./useLeadsCRUD";
+import type { NicheEntry } from "./useLeadsCRUD";
+
+interface NicheLeadLike {
+  niche_tag?: string | null;
+}
 
 interface NicheSidebarProps {
-  leads: SavedLead[];
+  leads: NicheLeadLike[];
   savedNiches?: NicheEntry[];
   activeNiche: string | null;
   onSelectNiche: (niche: string | null) => void;
