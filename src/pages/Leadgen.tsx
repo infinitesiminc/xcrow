@@ -60,6 +60,9 @@ export default function Leadgen() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [userPhone, setUserPhone] = useState("");
   const [showPanel, setShowPanel] = useState(false);
+  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null }>>([]);
+  const [activeNiche, setActiveNiche] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // CRM hook
@@ -74,14 +77,17 @@ export default function Leadgen() {
     exportCSV,
   } = useLeadsCRUD(user?.id);
 
-  // Email draft state
-  const [draftModalOpen, setDraftModalOpen] = useState(false);
-  const [draftLead, setDraftLead] = useState<Lead | null>(null);
-  const [draftLoading, setDraftLoading] = useState(false);
-  const [draftSubject, setDraftSubject] = useState("");
-  const [draftBody, setDraftBody] = useState("");
-  const [draftCtaText, setDraftCtaText] = useState("");
-  const [sending, setSending] = useState(false);
+  const sidebarNiches = useMemo(
+    () => localNiches.map((n, index) => ({
+      id: `local-${index}-${n.label}`,
+      label: n.label,
+      description: n.description,
+      status: "active",
+      lead_count: 0,
+      created_at: new Date().toISOString(),
+    })),
+    [localNiches]
+  );
 
   // Accumulate all leads from chat (in-memory for non-authed users)
   const allLeads = useMemo(() => {
