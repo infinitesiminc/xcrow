@@ -24,9 +24,19 @@ export interface OutreachEntry {
   lead_email?: string;
 }
 
+export interface NicheEntry {
+  id: string;
+  label: string;
+  description: string | null;
+  status: string;
+  lead_count: number;
+  created_at: string;
+}
+
 export function useLeadsCRUD(userId: string | undefined) {
   const [leads, setLeads] = useState<SavedLead[]>([]);
   const [outreach, setOutreach] = useState<OutreachEntry[]>([]);
+  const [niches, setNiches] = useState<NicheEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLeads = useCallback(async () => {
@@ -64,11 +74,22 @@ export function useLeadsCRUD(userId: string | undefined) {
     }
   }, [userId]);
 
+  const fetchNiches = useCallback(async () => {
+    if (!userId) return;
+    const { data } = await supabase
+      .from("leadgen_niches")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
+    if (data) setNiches(data as unknown as NicheEntry[]);
+  }, [userId]);
+
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
-    Promise.all([fetchLeads(), fetchOutreach()]).finally(() => setLoading(false));
-  }, [userId, fetchLeads, fetchOutreach]);
+    Promise.all([fetchLeads(), fetchOutreach(), fetchNiches()]).finally(() => setLoading(false));
+  }, [userId, fetchLeads, fetchOutreach, fetchNiches]);
 
   const upsertLeads = useCallback(
     async (newLeads: Lead[]) => {
@@ -98,6 +119,25 @@ export function useLeadsCRUD(userId: string | undefined) {
       await fetchLeads();
     },
     [userId, fetchLeads]
+  );
+
+  const upsertNiches = useCallback(
+    async (newNiches: { label: string; description: string }[]) => {
+      if (!userId || newNiches.length === 0) return;
+      const rows = newNiches.map((n) => ({
+        user_id: userId,
+        label: n.label.slice(0, 120),
+        description: n.description || null,
+        status: "active",
+      }));
+      // Use upsert on user_id+label unique constraint
+      await (supabase.from("leadgen_niches") as any).upsert(rows, {
+        onConflict: "user_id,label",
+        ignoreDuplicates: true,
+      });
+      await fetchNiches();
+    },
+    [userId, fetchNiches]
   );
 
   const updateLeadStatus = useCallback(
@@ -137,5 +177,5 @@ export function useLeadsCRUD(userId: string | undefined) {
     URL.revokeObjectURL(url);
   }, [leads]);
 
-  return { leads, outreach, loading, upsertLeads, updateLeadStatus, logOutreach, exportCSV, refetch: fetchLeads };
+  return { leads, outreach, niches, loading, upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV, refetch: fetchLeads };
 }
