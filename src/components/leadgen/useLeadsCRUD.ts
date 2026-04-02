@@ -24,6 +24,8 @@ export interface OutreachEntry {
   lead_email?: string;
 }
 
+export type NicheType = "vertical" | "segment" | "persona";
+
 export interface NicheEntry {
   id: string;
   label: string;
@@ -32,6 +34,7 @@ export interface NicheEntry {
   lead_count: number;
   created_at: string;
   parent_label?: string | null;
+  niche_type?: NicheType;
 }
 
 export function useLeadsCRUD(userId: string | undefined) {
