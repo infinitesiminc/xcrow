@@ -67,6 +67,7 @@ export default function Leadgen() {
   const [discoveryPhase, setDiscoveryPhase] = useState("");
   const [companySummary, setCompanySummary] = useState("");
   const [icpSummary, setIcpSummary] = useState("");
+  const [pagesScraped, setPagesScraped] = useState(0);
   const [hasDiscovered, setHasDiscovered] = useState(false);
 
   const {
@@ -132,12 +133,12 @@ export default function Leadgen() {
     const url = websiteUrl.trim();
     if (!url) return;
     setIsDiscovering(true);
-    setDiscoveryPhase("Scraping website...");
+    setDiscoveryPhase("Mapping site pages...");
 
     try {
-      setTimeout(() => setDiscoveryPhase("Analyzing business model..."), 2000);
-      setTimeout(() => setDiscoveryPhase("Mapping industry verticals..."), 4000);
-      setTimeout(() => setDiscoveryPhase("Building buyer personas..."), 6000);
+      setTimeout(() => setDiscoveryPhase("Scraping key pages (about, solutions, customers)..."), 3000);
+      setTimeout(() => setDiscoveryPhase("Analyzing business model & customers..."), 7000);
+      setTimeout(() => setDiscoveryPhase("Building 3-layer ICP tree..."), 11000);
 
       const resp = await fetch(SCOUT_URL, {
         method: "POST",
@@ -150,6 +151,7 @@ export default function Leadgen() {
 
       setCompanySummary(data.company_summary || "");
       setIcpSummary(data.icp_summary || "");
+      setPagesScraped(data.pages_scraped || 1);
 
       // Populate niches
       const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
@@ -509,6 +511,15 @@ export default function Leadgen() {
         {/* Stats pills */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex items-center gap-3 bg-muted/40 rounded-lg px-3 py-1.5 border border-border/30">
+            {pagesScraped > 0 && (
+              <>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-muted-foreground">{pagesScraped}</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">Pages</p>
+                </div>
+                <div className="w-px h-6 bg-border/40" />
+              </>
+            )}
             <div className="text-center">
               <p className="text-sm font-bold text-primary">{verticalCount}</p>
               <p className="text-[10px] text-muted-foreground leading-none">Verticals</p>
@@ -533,7 +544,7 @@ export default function Leadgen() {
             variant="ghost"
             size="sm"
             className="text-xs gap-1 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); }}
+            onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
           >
             <ArrowRight className="w-3 h-3" />
             Re-analyze
