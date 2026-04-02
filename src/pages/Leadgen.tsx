@@ -267,7 +267,7 @@ export default function Leadgen() {
                 }
                 return merged;
               });
-              if (user) upsertNiches(parsed.niches);
+              if (user) upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current })));
               continue;
             }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
