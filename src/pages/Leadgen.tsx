@@ -57,8 +57,6 @@ export default function Leadgen() {
   const [items, setItems] = useState<ChatItem[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [userPhone, setUserPhone] = useState("");
-  const [showPanel, setShowPanel] = useState(false);
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -119,10 +117,6 @@ export default function Leadgen() {
     }
   }, [allLeads, user, upsertLeads]);
 
-  // Auto-show panel when first leads arrive
-  useEffect(() => {
-    if (allLeads.length > 0 && !showPanel) setShowPanel(true);
-  }, [allLeads.length, showPanel]);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -281,31 +275,6 @@ export default function Leadgen() {
     setIsStreaming(false);
   };
 
-  const sendToWhatsApp = (leads: Lead[]) => {
-    const phone = userPhone.replace(/[^0-9]/g, "");
-    if (!phone || phone.length < 10) {
-      const num = window.prompt("Enter your WhatsApp number (with country code, e.g. 16261234567):");
-      if (!num) return;
-      setUserPhone(num); openWA(leads, num.replace(/[^0-9]/g, "")); return;
-    }
-    openWA(leads, phone);
-  };
-
-  const openWA = (leads: Lead[], phone: string) => {
-    let msg = `🎯 *Xcrow Scout — Your Leads*\n\n`;
-    leads.forEach((l, i) => {
-      msg += `*${i + 1}. ${l.name}*`;
-      if (l.title) msg += ` — ${l.title}`;
-      if (l.company) msg += ` @ ${l.company}`;
-      msg += "\n";
-      if (l.email) msg += `📧 ${l.email}\n`;
-      if (l.phone) msg += `📱 ${l.phone}\n`;
-      if (l.linkedin) msg += `🔗 ${l.linkedin}\n`;
-      msg += "\n";
-    });
-    msg += "_Powered by Xcrow Scout_";
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
-  };
 
   // Chat items without leads (leads go to panel)
   const chatOnlyItems = items.filter(it => it.type !== "leads");
@@ -315,7 +284,18 @@ export default function Leadgen() {
   }, [allLeads, activeNiche]);
 
   const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
-  const dashboardLeads = user ? savedLeads : [];
+  // For non-authed users, convert in-memory leads to SavedLead shape for pipeline
+  const dashboardLeads = useMemo(() => {
+    if (user) return savedLeads;
+    return filteredPanelLeads.map((l, i) => ({
+      ...l,
+      id: `temp-${i}-${l.name}-${l.company || ""}`,
+      status: "new" as const,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      niche_tag: l.niche_tag,
+    }));
+  }, [user, savedLeads, filteredPanelLeads]);
 
   // Mobile view toggle
   const [mobileView, setMobileView] = useState<"chat" | "results">("chat");
