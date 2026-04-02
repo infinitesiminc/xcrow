@@ -65,7 +65,9 @@ export default function Leadgen() {
   const {
     leads: savedLeads,
     outreach,
+    niches: savedNiches,
     upsertLeads,
+    upsertNiches,
     updateLeadStatus,
     logOutreach,
     exportCSV,
