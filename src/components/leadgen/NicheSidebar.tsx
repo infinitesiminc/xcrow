@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Layers, Tag, PanelLeftClose, PanelLeft, ChevronRight } from "lucide-react";
+import { ICPActionCard, type ICPCriteria } from "./ICPActionCard";
 import type { NicheEntry } from "./useLeadsCRUD";
 
 interface NicheLeadLike {
@@ -17,6 +18,13 @@ interface NicheSidebarProps {
   onSelectNiche: (niche: string | null) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onFindLeads?: (niche: string) => void;
+  onEnrichLeads?: (niche: string) => void;
+  onScoreLeads?: (niche: string) => void;
+  onDraftAll?: (niche: string) => void;
+  onExportNiche?: (niche: string) => void;
+  isFinding?: boolean;
+  isEnriching?: boolean;
 }
 
 interface TreeNiche {
@@ -25,36 +33,48 @@ interface TreeNiche {
   leadCount: number;
   isPlaceholder: boolean;
   children: TreeNiche[];
+  icpCriteria?: ICPCriteria;
 }
 
-export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNiche, collapsed, onToggleCollapse }: NicheSidebarProps) {
+export function NicheSidebar({
+  leads,
+  savedNiches = [],
+  activeNiche,
+  onSelectNiche,
+  collapsed,
+  onToggleCollapse,
+  onFindLeads,
+  onEnrichLeads,
+  onScoreLeads,
+  onDraftAll,
+  onExportNiche,
+  isFinding,
+  isEnriching,
+}: NicheSidebarProps) {
   const nicheTree = useMemo(() => {
-    // Count leads per niche_tag
     const leadCountMap = new Map<string, number>();
     for (const l of leads) {
       const tag = l.niche_tag || "Uncategorized";
       leadCountMap.set(tag, (leadCountMap.get(tag) || 0) + 1);
     }
 
-    // Build flat list with parent info
-    const allNiches = new Map<string, { label: string; description: string | null; parent: string | null; leadCount: number }>();
+    const allNiches = new Map<string, { label: string; description: string | null; parent: string | null; leadCount: number; icpCriteria?: ICPCriteria }>();
     for (const n of savedNiches) {
       allNiches.set(n.label, {
         label: n.label,
         description: n.description,
         parent: n.parent_label || null,
         leadCount: leadCountMap.get(n.label) || 0,
+        icpCriteria: (n as any).icp_criteria || undefined,
       });
     }
 
-    // Add lead-derived niches not in saved
     for (const [tag, count] of leadCountMap) {
       if (!allNiches.has(tag)) {
         allNiches.set(tag, { label: tag, description: null, parent: null, leadCount: count });
       }
     }
 
-    // Build tree
     const rootNiches: TreeNiche[] = [];
     const childrenMap = new Map<string, TreeNiche[]>();
 
@@ -65,6 +85,7 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
         leadCount: n.leadCount,
         isPlaceholder: n.leadCount === 0,
         children: [],
+        icpCriteria: n.icpCriteria,
       };
 
       if (n.parent) {
@@ -75,7 +96,6 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
       }
     }
 
-    // Attach children
     const attachChildren = (nodes: TreeNiche[]) => {
       for (const node of nodes) {
         node.children = childrenMap.get(node.label) || [];
@@ -84,7 +104,6 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
     };
     attachChildren(rootNiches);
 
-    // Sort: niches with leads first
     const sortNodes = (nodes: TreeNiche[]) => {
       nodes.sort((a, b) => {
         const aTotal = a.leadCount + a.children.reduce((s, c) => s + c.leadCount, 0);
@@ -99,6 +118,18 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
 
     return rootNiches;
   }, [leads, savedNiches]);
+
+  // Find the active niche node for ICP card
+  const findNicheNode = (nodes: TreeNiche[], label: string): TreeNiche | null => {
+    for (const n of nodes) {
+      if (n.label === label) return n;
+      const found = findNicheNode(n.children, label);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  const activeNicheNode = activeNiche ? findNicheNode(nicheTree, activeNiche) : null;
 
   if (collapsed) {
     return (
@@ -166,7 +197,6 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
             <span className="text-[9px] text-muted-foreground/40 italic shrink-0">explore</span>
           )}
         </button>
-        {/* Always show children */}
         {hasChildren && (
           <div className="ml-0">
             {n.children.map((child) => renderNicheNode(child, depth + 1))}
@@ -223,6 +253,25 @@ export function NicheSidebar({ leads, savedNiches = [], activeNiche, onSelectNic
             </div>
           )}
         </div>
+
+        {/* ICP Action Card — shown when a niche is selected */}
+        {activeNicheNode && (
+          <div className="p-2 pt-1 border-t border-border/30 mt-1">
+            <ICPActionCard
+              nicheLabel={activeNicheNode.label}
+              nicheDescription={activeNicheNode.description}
+              leadCount={activeNicheNode.leadCount + activeNicheNode.children.reduce((s, c) => s + c.leadCount, 0)}
+              icpCriteria={activeNicheNode.icpCriteria}
+              onFindLeads={() => onFindLeads?.(activeNicheNode.label)}
+              onEnrich={() => onEnrichLeads?.(activeNicheNode.label)}
+              onScore={() => onScoreLeads?.(activeNicheNode.label)}
+              onDraftAll={() => onDraftAll?.(activeNicheNode.label)}
+              onExport={() => onExportNiche?.(activeNicheNode.label)}
+              isFinding={isFinding}
+              isEnriching={isEnriching}
+            />
+          </div>
+        )}
       </ScrollArea>
     </div>
   );
