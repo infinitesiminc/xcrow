@@ -8,12 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, MessageSquare, Mail, Sparkles, Check, X, Users } from "lucide-react";
+import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { LeadsPanel } from "@/components/leadgen/LeadsPanel";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
 import { NicheSidebar } from "@/components/leadgen/NicheSidebar";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
@@ -315,113 +314,29 @@ export default function Leadgen() {
     return allLeads.filter((lead) => (lead.niche_tag || "Uncategorized") === activeNiche);
   }, [allLeads, activeNiche]);
 
-  // Chat UI (shared between dashboard tab and standalone)
-  const chatUI = (
-    <div className="flex h-full">
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Messages */}
-        <ScrollArea className="flex-1 px-4">
-          <div className="max-w-2xl mx-auto py-6 space-y-4">
-            <AnimatePresence initial={false}>
-              {chatOnlyItems.map((item, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                  {item.type === "user" && (
-                    <div className="flex justify-end gap-2">
-                      <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2.5 max-w-[80%] text-sm">{item.content}</div>
-                      <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-1">
-                        <User className="w-3.5 h-3.5 text-muted-foreground" />
-                      </div>
-                    </div>
-                  )}
-                  {item.type === "assistant" && (
-                    <div className="flex gap-2">
-                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                        <Bot className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] text-sm prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 [&_ol]:list-decimal [&_ol]:pl-5">
-                        <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+  const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
+  const dashboardLeads = user ? savedLeads : [];
 
-            {allLeads.length > 0 && items[items.length - 1]?.type === "leads" && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                  <Users className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <div className="bg-primary/5 border border-primary/20 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-primary font-medium">
-                  ✨ {allLeads.length} lead{allLeads.length !== 1 ? "s" : ""} found — see the panel →
-                </div>
-              </motion.div>
-            )}
+  // Mobile view toggle
+  const [mobileView, setMobileView] = useState<"chat" | "results">("chat");
 
-            {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
-              <div className="flex gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Bot className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3">
-                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-                </div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-        </ScrollArea>
-
-        {/* Input */}
-        <div className="border-t border-border/40 bg-card/30 px-4 py-3 shrink-0">
-          <form className="max-w-2xl mx-auto flex gap-2" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
-            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." className="flex-1 bg-muted/20 border-border/40" autoFocus />
-            <Button type="submit" size="icon" disabled={!input.trim()}><Send className="w-4 h-4" /></Button>
-          </form>
-        </div>
+  // Main layout — two columns: LEFT = chat, RIGHT = niche sidebar + results
+  const mainContent = (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Mobile toggle */}
+      <div className="md:hidden border-b border-border/40 bg-card/30 px-4 py-2 flex gap-2 shrink-0">
+        <Button variant={mobileView === "chat" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => setMobileView("chat")}>
+          <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Chat
+        </Button>
+        <Button variant={mobileView === "results" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => setMobileView("results")}>
+          <Users className="w-3.5 h-3.5 mr-1.5" /> Results {allLeads.length > 0 && `(${allLeads.length})`}
+        </Button>
       </div>
 
-      {/* Leads panel — right side (chat tab only for non-authed, always for chat tab) */}
-      <AnimatePresence>
-        {showPanel && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 360, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="border-l border-border/40 bg-card/20 overflow-hidden shrink-0 hidden md:block"
-          >
-            <div className="w-[360px] h-full">
-              <LeadsPanel
-                leads={filteredPanelLeads}
-                onDraftEmail={handleDraftEmail}
-                onScale={() => sendMessage("Find more leads like these — same industry, same profile type. Scale to 20+ results.")}
-                onWhatsApp={sendToWhatsApp}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-
-  const sidebarLeads = user ? savedLeads : filteredPanelLeads;
-  const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
-
-  // Main layout
-  const mainContent = (
-    <div className="flex h-full min-h-0">
-      <NicheSidebar
-        leads={user ? savedLeads : allLeads}
-        savedNiches={sidebarSavedNiches}
-        activeNiche={activeNiche}
-        onSelectNiche={setActiveNiche}
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
-      />
-
-      <div className="flex flex-col flex-1 min-w-0">
-        {!user && (
+      <div className="flex flex-1 min-h-0">
+        {/* LEFT COLUMN — Chat */}
+        <div className={`flex flex-col flex-1 min-w-0 ${mobileView !== "chat" ? "hidden md:flex" : "flex"}`}>
+          {/* Header */}
           <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3 shrink-0">
             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
               <MessageSquare className="w-4.5 h-4.5 text-primary" />
@@ -430,26 +345,96 @@ export default function Leadgen() {
               <h1 className="text-sm font-semibold text-foreground">Xcrow Scout</h1>
               <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
             </div>
-            <div className="ml-auto">
-              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-                Free — 5 Leads
-              </Badge>
-            </div>
+            {!user && (
+              <div className="ml-auto">
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                  Free — 5 Leads
+                </Badge>
+              </div>
+            )}
           </div>
-        )}
 
-        {user ? (
+          {/* Messages */}
+          <ScrollArea className="flex-1 px-4">
+            <div className="max-w-2xl mx-auto py-6 space-y-4">
+              <AnimatePresence initial={false}>
+                {chatOnlyItems.map((item, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                    {item.type === "user" && (
+                      <div className="flex justify-end gap-2">
+                        <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2.5 max-w-[80%] text-sm">{item.content}</div>
+                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-1">
+                          <User className="w-3.5 h-3.5 text-muted-foreground" />
+                        </div>
+                      </div>
+                    )}
+                    {item.type === "assistant" && (
+                      <div className="flex gap-2">
+                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                          <Bot className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] text-sm prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 [&_ol]:list-decimal [&_ol]:pl-5">
+                          <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {allLeads.length > 0 && items[items.length - 1]?.type === "leads" && (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                    <Users className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <div className="bg-primary/5 border border-primary/20 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-primary font-medium">
+                    ✨ {allLeads.length} lead{allLeads.length !== 1 ? "s" : ""} found — see results →
+                  </div>
+                </motion.div>
+              )}
+
+              {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
+                <div className="flex gap-2">
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Bot className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3">
+                    <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+          </ScrollArea>
+
+          {/* Input */}
+          <div className="border-t border-border/40 bg-card/30 px-4 py-3 shrink-0">
+            <form className="max-w-2xl mx-auto flex gap-2" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
+              <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." className="flex-1 bg-muted/20 border-border/40" autoFocus />
+              <Button type="submit" size="icon" disabled={!input.trim()}><Send className="w-4 h-4" /></Button>
+            </form>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN — Niche Sidebar + Results */}
+        <div className={`flex border-l border-border/40 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`} style={{ width: "clamp(380px, 45%, 560px)" }}>
+          <NicheSidebar
+            leads={user ? savedLeads : allLeads}
+            savedNiches={sidebarSavedNiches}
+            activeNiche={activeNiche}
+            onSelectNiche={setActiveNiche}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
+          />
           <LeadgenDashboard
-            leads={savedLeads}
+            leads={dashboardLeads}
             outreach={outreach}
             activeNiche={activeNiche}
             onUpdateStatus={updateLeadStatus}
             onDraftEmail={handleDraftEmail}
             onExportCSV={exportCSV}
-            chatContent={chatUI}
-            defaultTab={savedLeads.length > 0 ? "pipeline" : "chat"}
           />
-        ) : chatUI}
+        </div>
       </div>
     </div>
   );
@@ -465,35 +450,6 @@ export default function Leadgen() {
         {mainContent}
       </div>
 
-      {/* Mobile leads panel overlay */}
-      <AnimatePresence>
-        {showPanel && allLeads.length > 0 && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-y-0 right-0 w-[85vw] max-w-[360px] bg-background border-l border-border/40 z-40 md:hidden pt-16"
-          >
-            <div className="h-full relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 z-10 h-7 w-7"
-                onClick={() => setShowPanel(false)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-              <LeadsPanel
-                leads={allLeads}
-                onDraftEmail={handleDraftEmail}
-                onScale={() => { setShowPanel(false); sendMessage("Find more leads like these — same industry, same profile type. Scale to 20+ results."); }}
-                onWhatsApp={sendToWhatsApp}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Email Draft Modal */}
       <Dialog open={draftModalOpen} onOpenChange={setDraftModalOpen}>
