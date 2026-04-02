@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState, useLayoutEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,112 @@ const LAYER_CONFIG: Record<NicheType, { label: string; icon: typeof Layers; colo
 
 const LAYER_ORDER: NicheType[] = ["vertical", "segment", "persona"];
 
+/* ── Animated SVG connector lines ── */
+function ConnectorLines({ containerRef, breadcrumbs }: { containerRef: React.RefObject<HTMLDivElement>; breadcrumbs: string[] }) {
+  const [lines, setLines] = useState<{ x1: number; y1: number; x2: number; y2: number }[]>([]);
+
+  const measure = useCallback(() => {
+    const container = containerRef.current;
+    if (!container || breadcrumbs.length === 0) { setLines([]); return; }
+
+    const rect = container.getBoundingClientRect();
+    const newLines: typeof lines = [];
+
+    // For each breadcrumb level, draw lines from parent to children
+    for (let i = 0; i < breadcrumbs.length; i++) {
+      const parentEl = container.querySelector(`[data-niche-card="${CSS.escape(breadcrumbs[i])}"]`);
+      if (!parentEl) continue;
+
+      // Find child cards in the next layer
+      const nextLayerIdx = i + 1;
+      const childCards = container.querySelectorAll(`[data-layer-index="${nextLayerIdx}"] [data-niche-card]`);
+      if (childCards.length === 0) continue;
+
+      const parentRect = parentEl.getBoundingClientRect();
+      const px = parentRect.left + parentRect.width / 2 - rect.left;
+      const py = parentRect.bottom - rect.top;
+
+      childCards.forEach((child) => {
+        const childRect = child.getBoundingClientRect();
+        const cx = childRect.left + childRect.width / 2 - rect.left;
+        const cy = childRect.top - rect.top;
+        newLines.push({ x1: px, y1: py, x2: cx, y2: cy });
+      });
+    }
+
+    setLines(newLines);
+  }, [containerRef, breadcrumbs]);
+
+  useLayoutEffect(() => {
+    measure();
+    // Re-measure on scroll or resize
+    const container = containerRef.current;
+    if (!container) return;
+    const scrollAreas = container.querySelectorAll("[data-radix-scroll-area-viewport]");
+    const handler = () => requestAnimationFrame(measure);
+    window.addEventListener("resize", handler);
+    scrollAreas.forEach((el) => el.addEventListener("scroll", handler));
+    // Also observe for layout shifts
+    const observer = new MutationObserver(handler);
+    observer.observe(container, { childList: true, subtree: true });
+    return () => {
+      window.removeEventListener("resize", handler);
+      scrollAreas.forEach((el) => el.removeEventListener("scroll", handler));
+      observer.disconnect();
+    };
+  }, [measure]);
+
+  if (lines.length === 0) return null;
+
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none z-[1]" style={{ overflow: "visible" }}>
+      <defs>
+        <linearGradient id="line-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
+        </linearGradient>
+      </defs>
+      {lines.map((line, i) => {
+        const midY = (line.y1 + line.y2) / 2;
+        const path = `M ${line.x1} ${line.y1} C ${line.x1} ${midY}, ${line.x2} ${midY}, ${line.x2} ${line.y2}`;
+        const length = Math.sqrt((line.x2 - line.x1) ** 2 + (line.y2 - line.y1) ** 2) * 1.5;
+        return (
+          <g key={i}>
+            {/* Glow */}
+            <path
+              d={path}
+              fill="none"
+              stroke="hsl(var(--primary))"
+              strokeWidth="3"
+              strokeOpacity="0.08"
+              strokeLinecap="round"
+            />
+            {/* Main line */}
+            <path
+              d={path}
+              fill="none"
+              stroke="url(#line-grad)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray={`4 4`}
+              className="animate-connector-flow"
+            />
+            {/* Dot at end */}
+            <circle
+              cx={line.x2}
+              cy={line.y2}
+              r="2.5"
+              fill="hsl(var(--primary))"
+              opacity="0.4"
+              className="animate-connector-pulse"
+            />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export function NicheFunnelMap({
   leads,
   savedNiches = [],
@@ -67,6 +173,8 @@ export function NicheFunnelMap({
   isFinding,
   isEnriching,
 }: NicheFunnelMapProps) {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
   // Build lead count map
   const leadCountMap = useMemo(() => {
     const m = new Map<string, number>();
@@ -89,7 +197,6 @@ export function NicheFunnelMap({
         leadCount: leadCountMap.get(n.label) || 0,
       });
     }
-    // Add any lead tags not in saved niches
     for (const [tag, count] of leadCountMap) {
       if (!allNiches.has(tag)) {
         allNiches.set(tag, { label: tag, description: null, parent: null, nicheType: "vertical", leadCount: count });
@@ -117,7 +224,6 @@ export function NicheFunnelMap({
     };
     attach(rootNodes);
 
-    // Sort by total leads desc
     const sortNodes = (nodes: TreeNode[]) => {
       nodes.sort((a, b) => {
         const totalLeads = (n: TreeNode): number => n.leadCount + n.children.reduce((s, c) => s + totalLeads(c), 0);
@@ -146,14 +252,11 @@ export function NicheFunnelMap({
     return path;
   }, [activeNiche, savedNiches]);
 
-  // Determine visible layers: always show verticals, then children of selected path
+  // Determine visible layers
   const visibleLayers = useMemo(() => {
     const layers: { type: NicheType; nodes: TreeNode[]; parentLabel: string | null }[] = [];
-
-    // Layer 1: all roots (verticals)
     layers.push({ type: "vertical", nodes: roots, parentLabel: null });
 
-    // If a vertical is selected, show its children (segments)
     if (breadcrumbs.length >= 1) {
       const selectedVertical = roots.find((n) => n.label === breadcrumbs[0]);
       if (selectedVertical && selectedVertical.children.length > 0) {
@@ -161,7 +264,6 @@ export function NicheFunnelMap({
       }
     }
 
-    // If a segment is selected, show its children (personas)
     if (breadcrumbs.length >= 2) {
       const selectedVertical = roots.find((n) => n.label === breadcrumbs[0]);
       const selectedSegment = selectedVertical?.children.find((n) => n.label === breadcrumbs[1]);
@@ -198,7 +300,7 @@ export function NicheFunnelMap({
       <div className="px-6 py-10 text-center border-b border-border/40 bg-card/30">
         <Layers className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">Start a chat to discover your market niches.</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">The AI will map your ICP into Industry → Segment → Persona layers.</p>
+        <p className="text-xs text-muted-foreground/60 mt-1">The AI will map your targets into Industry → Segment → Persona layers.</p>
       </div>
     );
   }
@@ -236,7 +338,7 @@ export function NicheFunnelMap({
 
       {/* Rail + Tree layers */}
       <div className="flex">
-        {/* Hierarchy rail — always visible */}
+        {/* Hierarchy rail */}
         <div className="flex flex-col items-center py-3 pl-3 pr-1 shrink-0 gap-0">
           {LAYER_ORDER.map((type, i) => {
             const config = LAYER_CONFIG[type];
@@ -267,7 +369,6 @@ export function NicheFunnelMap({
                     "w-3.5 h-3.5 transition-colors",
                     hasActiveInLayer ? config.color : isVisible ? "text-muted-foreground" : "text-muted-foreground/30"
                   )} />
-                  {/* Tooltip */}
                   <div className="absolute left-full ml-2 px-2 py-1 rounded-md bg-popover border border-border text-xs font-medium text-foreground whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-20 shadow-md">
                     {config.label}
                   </div>
@@ -277,15 +378,16 @@ export function NicheFunnelMap({
           })}
         </div>
 
-        {/* Map content */}
-        <div className="flex-1 px-3 pb-3 space-y-1 min-w-0">
+        {/* Map content with connector lines */}
+        <div className="flex-1 px-3 pb-3 space-y-1 min-w-0 relative" ref={mapContainerRef}>
+          <ConnectorLines containerRef={mapContainerRef} breadcrumbs={breadcrumbs} />
+
           {visibleLayers.map((layer, layerIdx) => {
           const config = LAYER_CONFIG[layer.type];
           const LayerIcon = config.icon;
-          const isLastLayer = layerIdx === visibleLayers.length - 1;
 
           return (
-            <div key={`${layer.type}-${layer.parentLabel || "root"}`}>
+            <div key={`${layer.type}-${layer.parentLabel || "root"}`} data-layer-index={layerIdx}>
               {/* Layer header */}
               <div className="flex items-center gap-2 py-1.5">
                 <LayerIcon className={cn("w-3.5 h-3.5", config.color)} />
@@ -294,13 +396,6 @@ export function NicheFunnelMap({
                 </span>
                 <div className="flex-1 h-px bg-border/30" />
               </div>
-
-              {/* Connector line from parent */}
-              {layerIdx > 0 && (
-                <div className="flex justify-center -mt-1 mb-1">
-                  <div className="w-px h-3 bg-border/50" />
-                </div>
-              )}
 
               {/* Cards grid */}
               <ScrollArea className="w-full">
@@ -315,13 +410,14 @@ export function NicheFunnelMap({
                       return (
                         <motion.button
                           key={node.label}
+                          data-niche-card={node.label}
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ delay: idx * 0.03 }}
                           onClick={() => onSelectNiche(isActive ? null : node.label)}
                           className={cn(
-                            "flex-shrink-0 w-48 rounded-lg border p-3 text-left transition-all group",
+                            "flex-shrink-0 w-48 rounded-lg border p-3 text-left transition-all group relative z-[2]",
                             isActive
                               ? "border-primary bg-primary/5 shadow-md shadow-primary/10 ring-1 ring-primary/20"
                               : isSelected
