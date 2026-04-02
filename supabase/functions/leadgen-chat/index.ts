@@ -66,7 +66,8 @@ Based on their business AND service area, PROACTIVELY recommend the lead types m
 - If the user gives vague answers, help them be more specific with examples
 - Once you have enough info (at minimum: website + who they sell to + geography), you may propose running the search
 - ALWAYS call run_lead_search when the user confirms the ICP — never just describe leads
-- When the user asks to "scale", "find more", "get more leads", or similar — call run_lead_search again with scale=true and generate 5-8 DIFFERENT, DIVERSE search queries targeting new companies, sub-niches, and adjacent areas that were NOT covered in previous searches`;
+- When the user asks to "scale", "find more", "get more leads", or similar — call run_lead_search again with scale=true and generate 5-8 DIFFERENT, DIVERSE search queries targeting new companies, sub-niches, and adjacent areas that were NOT covered in previous searches
+- CRITICAL: Whenever you present 2+ lead type or persona options to the user, ALSO call register_niches with those options so they are saved as explorable branches. Do this BEFORE waiting for the user's choice.`;
 
 const TOOLS = [
   {
