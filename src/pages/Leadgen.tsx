@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import type { Lead } from "@/components/leadgen/LeadCard";
-import { NicheLibrary } from "@/components/leadgen/NicheLibrary";
+
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 const SCOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-scout`;
