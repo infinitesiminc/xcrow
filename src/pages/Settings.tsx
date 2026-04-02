@@ -25,7 +25,7 @@ import {
   User, Lock, AlertOctagon, ArrowLeft, LogOut, Check, CreditCard, Crown,
   ExternalLink, Compass, Users, Copy, Gift,
 } from "lucide-react";
-import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
+
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },

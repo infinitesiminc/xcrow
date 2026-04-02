@@ -102,7 +102,7 @@ const App = () => (
           </Suspense>
           </ErrorBoundary>
         </TooltipProvider>
-        </ChatProvider>
+        
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
