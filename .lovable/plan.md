@@ -1,52 +1,36 @@
+# Delete Niche Library + Add Logo Marquee Social Proof to Homepage and integrate /leadgen directly with homepage
 
-## Plan: ICP Tree Map with Distinct Layers
+## Changes
 
-### Problem
-Industry verticals (Mid-Market 3PLs, Cold Chain) and buyer personas (Operations Leadership, Facility Management) are mixed at the same level. The ICP framework needs **3 distinct layers**:
+### 1. Delete Niche Library
 
-```
-┌─────────────────────────────────────────────────────────┐
-│ LAYER 1: Industry Verticals                             │
-│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
-│ │ 3PL &    │  │ Cold     │  │ Retail   │               │
-│ │ E-comm   │  │ Chain    │  │ Distrib  │               │
-│ └────┬─────┘  └──────────┘  └──────────┘               │
-│      │                                                   │
-│ LAYER 2: Company Segments (click vertical to see)        │
-│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
-│ │ Mid-Mkt  │  │ Regional │  │ National │               │
-│ │ 50-500   │  │ 2-10 DCs │  │ 10+ DCs  │               │
-│ └────┬─────┘  └──────────┘  └──────────┘               │
-│      │                                                   │
-│ LAYER 3: Buyer Personas (click segment to see)           │
-│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
-│ │ Ops      │  │ Facility │  │ Supply   │               │
-│ │ Leaders  │  │ Mgmt     │  │ Chain    │               │
-│ └──────────┘  └──────────┘  └──────────┘               │
-├─────────────────────────────────────────────────────────┤
-│ Pipeline (filtered)                                      │
-└─────────────────────────────────────────────────────────┘
-```
+- **Delete** `src/components/leadgen/NicheLibrary.tsx`
+- **Edit** `src/pages/Leadgen.tsx`:
+  - Remove `NicheLibrary` import
+  - Remove `browseLibrary` state and `handleSeedFromLibrary` function
+  - Remove the "Browse Niche Library" button from the discovery hero
+  - Remove the `browseLibrary` conditional rendering block — simplify to just `!hasDiscovered ? discoveryHero : dashboard`
 
-### Changes
+### 2. Reshape Homepage (`src/pages/Index.tsx`)
 
-**1. Add `niche_type` column to `leadgen_niches`** 
-Values: `vertical`, `segment`, `persona` — this tags each niche with its ICP layer.
+Replace the 3-product picker with a single Leadgen-focused landing page:
 
-**2. Update `NicheEntry` type and `upsertNiches`** to include `niche_type`.
+- **Hero section**: Headline like "AI-Powered ICP Research" with a CTA button linking to `/leadgen`
+- **Logo Marquee Strip**: Use the existing `CompanyMarquee.tsx` component with a curated list of recognizable brands (Apple, Stripe, OpenAI, Netflix, Figma, Anthropic, Canva, Datadog, Notion, Salesforce, etc.)
+- **Headline above marquee**: "Powering ICP research across 3,700+ companies"
+- Keep the existing dark RPG aesthetic, ember particles, and hero background image
+- Remove the 3-product grid entirely
+- Keep Footer
 
-**3. Redesign `NicheFunnelMap`** to render all visible layers vertically with labeled rows:
-- Show all root verticals at top
-- When a vertical is selected, show its child segments below
-- When a segment is selected, show its child personas below
-- Each layer has a labeled header ("Industry", "Segment", "Persona")
-- SVG connector lines between parent and children
-- Action bar appears at the deepest selected level
+### 3. Brand list
 
-**4. Update AI chat niche parsing** in `Leadgen.tsx` to pass `niche_type` based on depth.
+Hardcode ~16 well-known brand names in 2 rows for the marquee. `CompanyMarquee` already handles logo fetching via `brandfetchFromName()` with fallbacks.
 
-### Files
-- Migration: add `niche_type` column
-- `src/components/leadgen/useLeadsCRUD.ts` — update NicheEntry + upsertNiches
-- `src/components/leadgen/NicheFunnelMap.tsx` — multi-layer tree rendering
-- `src/pages/Leadgen.tsx` — pass niche_type in upsertNiches calls
+## Files affected
+
+
+| File                                      | Action                               |
+| ----------------------------------------- | ------------------------------------ |
+| `src/components/leadgen/NicheLibrary.tsx` | Delete                               |
+| `src/pages/Leadgen.tsx`                   | Remove NicheLibrary references       |
+| `src/pages/Index.tsx`                     | Rewrite as Leadgen landing + marquee |
