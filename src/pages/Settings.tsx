@@ -378,10 +378,7 @@ function ReferralSection({ userId }: { userId?: string }) {
                   {copied ? "Copied!" : "Copy"}
                 </Button>
               </div>
-              <div className="pt-1">
-                <p className="text-[11px] text-muted-foreground mb-2">Or share directly:</p>
-                <InviteShareWidget />
-              </div>
+            
             </>
           ) : (
             <p className="text-xs text-muted-foreground">Referral code not yet generated. Complete onboarding to get yours.</p>
