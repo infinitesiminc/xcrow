@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, Mail, MessageSquare, TrendingUp, Download, Search } from "lucide-react";
+import { Users, Mail, MessageSquare, TrendingUp, Download, Search, X } from "lucide-react";
 import type { SavedLead, LeadStatus } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
@@ -28,16 +28,27 @@ interface LeadPipelineProps {
 export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount }: LeadPipelineProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [nicheFilter, setNicheFilter] = useState<string>("all");
+
+  // Extract unique niche tags
+  const nicheTags = useMemo(() => {
+    const tags = new Set<string>();
+    for (const l of leads) {
+      if (l.niche_tag) tags.add(l.niche_tag);
+    }
+    return Array.from(tags);
+  }, [leads]);
 
   const filtered = useMemo(() => {
     let result = leads;
+    if (nicheFilter !== "all") result = result.filter((l) => l.niche_tag === nicheFilter);
     if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q));
     }
     return result;
-  }, [leads, search, statusFilter]);
+  }, [leads, search, statusFilter, nicheFilter]);
 
   const contacted = leads.filter((l) => l.status !== "new").length;
   const replied = leads.filter((l) => l.status === "replied" || l.status === "won").length;
