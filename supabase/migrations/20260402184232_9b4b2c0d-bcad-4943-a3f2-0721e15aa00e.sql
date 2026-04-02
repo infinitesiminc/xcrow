@@ -1,0 +1,1 @@
+ALTER TABLE public.leadgen_niches ADD COLUMN IF NOT EXISTS niche_type TEXT NOT NULL DEFAULT 'vertical';
