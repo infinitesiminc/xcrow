@@ -1,56 +1,50 @@
 
+## Plan: Interactive Niche Funnel Map
 
-## Plan: Redesign Leadgen Layout for Better E2E Flow
+### Concept
+Replace the narrow sidebar with a **full-width funnel flowchart** that visualizes the ICP discovery journey as a top-down drill-down:
 
-### Current Problems
-From the screenshot: the NicheSidebar is narrow (224px) causing text truncation, the ICP action card is buried at the bottom and gets cut off, and the floating chat dock overlaps the sidebar. The overall flow feels cramped and disconnected.
-
-### User E2E Flow
-
-```text
-┌──────────────────────────────────────────────────────────┐
-│ Navbar                                                   │
-├──────┬───────────────────────────────────────────────────┤
-│Niche │  ICP Action Bar (when niche selected)             │
-│Tree  │  ┌─────────────────────────────────────────────┐  │
-│      │  │ "Mid-Market 3PLs" · 12 leads                │  │
-│ All  │  │ [Find Leads] [Enrich] [Score] [Draft] [CSV] │  │
-│ 3PL  │  └─────────────────────────────────────────────┘  │
-│ DTC  │───────────────────────────────────────────────────│
-│ Med  │  Pipeline / Activity tabs                         │
-│ ...  │  ┌────────┬────────┬─────────┬─────────┐         │
-│      │  │  New   │Contact │Qualified│  Won    │         │
-│      │  │ cards  │ cards  │ cards   │ cards   │         │
-│      │  └────────┴────────┴─────────┴─────────┘         │
-├──────┴───────────────────────────────────────────────────┤
-│  [💬 Chat FAB — bottom-right]                            │
-└──────────────────────────────────────────────────────────┘
+```
+┌─────────────────────────────────────────────────────┐
+│  YOUR MARKET                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │ 3PL &    │  │ E-comm & │  │ Industrial│           │
+│  │ Logistics│  │ DTC      │  │ & Mfg    │           │
+│  └────┬─────┘  └──────────┘  └──────────┘           │
+│       │                                              │
+│  ┌────▼──────────────────────────┐                   │
+│  │ Mid-Market 3PLs               │  ← selected      │
+│  │ 12 leads · [Find More] [Enrich]│                  │
+│  └────┬──────────────────────────┘                   │
+│       │                                              │
+│  ┌────▼─────┐  ┌──────────┐  ┌──────────┐           │
+│  │ Ops      │  │ Tech     │  │ C-Suite  │           │
+│  │ Leaders  │  │ Buyers   │  │ Sponsors │           │
+│  └──────────┘  └──────────┘  └──────────┘           │
+├─────────────────────────────────────────────────────┤
+│  Pipeline / Activity tabs (filtered to active niche) │
+└─────────────────────────────────────────────────────┘
 ```
 
-### Changes
+### How It Works
+1. **Level 1 — Industry Verticals**: Top row shows root niches as clickable cards
+2. **Level 2 — Segments**: Clicking a vertical expands its child niches below
+3. **Level 3 — Personas**: Clicking a segment shows persona-level targeting
+4. Each card shows: name, description snippet, lead count badge, and quick-action buttons
+5. Clicking a card both selects it as active niche (filtering pipeline below) AND can trigger "Find Leads" directly
+6. Connected by animated SVG lines showing the funnel path
+7. Breadcrumb trail at top: "All → 3PL & Logistics → Mid-Market 3PLs"
 
-**1. Move ICP Action Card out of sidebar → inline toolbar in main content area**
-- Remove `ICPActionCard` from inside `NicheSidebar`'s ScrollArea
-- Add an ICP Action Bar at the top of `LeadgenDashboard` (horizontal strip) that shows when a niche is selected
-- Displays: niche name, description, lead count, then horizontal button row (Find Leads, Enrich, Score, Draft, Export)
-- This gives the buttons full width and visibility
+### Layout Change
+- Remove `NicheSidebar` from the left column
+- The funnel map becomes the **top section** of `LeadgenDashboard`, above pipeline tabs
+- Pipeline below fills remaining height
+- Chat FAB stays bottom-right
 
-**2. Slim down NicheSidebar to pure navigation**
-- Remove ICP action card rendering from sidebar
-- Remove all action handler props (`onFindLeads`, `onEnrichLeads`, etc.) from `NicheSidebar`
-- Keep tree structure, collapsed mode, niche selection — that's it
-- Width stays at `w-56` but content no longer overflows
-
-**3. Move FAB to bottom-right**
-- Change floating chat button from `left-6` → `right-6` and chat panel from `left-4` → `right-4`
-- Prevents overlap with the niche sidebar
-
-**4. Pass ICP actions to LeadgenDashboard**
-- `LeadgenDashboard` receives the active niche info + action handlers
-- Renders the horizontal ICP bar above the tabs when a niche is active
+### New Component
+- `src/components/leadgen/NicheFunnelMap.tsx` — the interactive funnel visualization
 
 ### Files to Edit
-- `src/components/leadgen/NicheSidebar.tsx` — remove ICP card, remove action props
-- `src/components/leadgen/LeadgenDashboard.tsx` — add ICP action bar at top
-- `src/pages/Leadgen.tsx` — rewire props, move FAB to right side
-
+- `src/components/leadgen/NicheFunnelMap.tsx` — new file
+- `src/components/leadgen/LeadgenDashboard.tsx` — embed funnel map, remove sidebar dependency
+- `src/pages/Leadgen.tsx` — remove NicheSidebar, pass full width to dashboard

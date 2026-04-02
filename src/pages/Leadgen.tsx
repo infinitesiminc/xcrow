@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
-import { NicheSidebar } from "@/components/leadgen/NicheSidebar";
+
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import type { Lead } from "@/components/leadgen/LeadCard";
 
@@ -59,7 +59,7 @@ export default function Leadgen() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
   const [isFindingLeads, setIsFindingLeads] = useState(false);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
@@ -373,19 +373,13 @@ export default function Leadgen() {
       <div className="flex flex-1 min-h-0">
         {/* FULL WIDTH — Niche Sidebar + Results */}
         <div className={`flex flex-1 min-w-0 ${mobileView !== "results" ? "hidden md:flex" : "flex"}`}>
-          <NicheSidebar
-            leads={user ? savedLeads : allLeads}
-            savedNiches={sidebarSavedNiches}
-            activeNiche={activeNiche}
-            onSelectNiche={setActiveNiche}
-            collapsed={sidebarCollapsed}
-            onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
-          />
           <LeadgenDashboard
             leads={dashboardLeads}
             outreach={outreach}
             activeNiche={activeNiche}
-            activeNicheDescription={localNiches.find(n => n.label === activeNiche)?.description || savedNiches.find(n => n.label === activeNiche)?.description || null}
+            onSelectNiche={setActiveNiche}
+            nicheLeads={user ? savedLeads : allLeads}
+            savedNiches={sidebarSavedNiches}
             onUpdateStatus={updateLeadStatus}
             onDraftEmail={handleDraftEmail}
             onExportCSV={exportCSV}
