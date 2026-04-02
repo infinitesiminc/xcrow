@@ -43,8 +43,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { website, phone } = await req.json();
-    if (!website || !phone) return json({ success: false, error: "website and phone required" }, 400);
+    const { website } = await req.json();
+    if (!website) return json({ success: false, error: "website is required" }, 400);
 
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!firecrawlKey) return json({ success: false, error: "Firecrawl not configured" }, 500);
@@ -78,24 +78,62 @@ Deno.serve(async (req) => {
 
     console.log("Site content length:", siteContent.length);
 
-    // --- Step 2: AI extracts ICP and builds search queries ---
+    // --- Step 2: AI builds full 3-layer ICP tree ---
     const icpText = await aiCall(
-      `You are a lead generation expert. Analyze the website content and generate exactly 3 search queries to find potential customers/buyers for this business. 
+      `You are an elite B2B go-to-market strategist. Analyze the website content and build a complete ICP (Ideal Customer Profile) tree with exactly 3 layers:
+
+Layer 1 — Industry Verticals: 3-5 distinct industries/sectors that would buy this product/service.
+Layer 2 — Company Segments: For each vertical, 2-3 specific company segments (by size, stage, or sub-type).
+Layer 3 — Buyer Personas: For each segment, 1-2 specific decision-maker job title clusters who would champion the purchase.
 
 Return JSON ONLY (no markdown fences):
 {
   "company_summary": "one sentence about what this company does",
-  "icp": "one sentence describing their ideal customer",
-  "search_queries": ["query 1", "query 2", "query 3"]
+  "icp_summary": "one sentence describing their ideal customer",
+  "verticals": [
+    {
+      "label": "Industry Vertical Name",
+      "description": "Why this vertical needs the product",
+      "segments": [
+        {
+          "label": "Company Segment Name",
+          "description": "What defines this segment",
+          "personas": [
+            {
+              "label": "Buyer Persona Title Cluster",
+              "description": "Why this person would champion the purchase"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 
-Make queries specific — include job titles, industries, company types that would BUY from this business.`,
-      `Website: ${formattedUrl}\n\nContent:\n${siteContent.slice(0, 4000)}`
+Rules:
+- Be specific: "Mid-Market 3PLs (50-500 employees)" not just "Logistics"
+- Verticals should be distinct industries, segments should be company types within that vertical
+- Personas should be actual job title clusters (e.g. "VP of Operations / Warehouse Director")
+- Focus on WHO BUYS, not who uses`,
+      `Website: ${formattedUrl}\n\nContent:\n${siteContent.slice(0, 6000)}`
     );
 
     console.log("AI ICP response:", icpText.slice(0, 500));
 
-    let icpData: { company_summary: string; icp: string; search_queries: string[] };
+    let icpData: {
+      company_summary: string;
+      icp_summary: string;
+      verticals: Array<{
+        label: string;
+        description: string;
+        segments: Array<{
+          label: string;
+          description: string;
+          personas: Array<{ label: string; description: string }>;
+        }>;
+      }>;
+    };
+
     try {
       const cleaned = icpText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       icpData = JSON.parse(cleaned);
@@ -103,90 +141,45 @@ Make queries specific — include job titles, industries, company types that wou
       const domain = new URL(formattedUrl).hostname.replace("www.", "");
       icpData = {
         company_summary: `Business at ${domain}`,
-        icp: "potential customers",
-        search_queries: [
-          `${domain} competitors customers`,
-          `companies similar to ${domain}`,
-          `who buys from ${domain}`,
+        icp_summary: "potential customers",
+        verticals: [
+          {
+            label: "Technology Companies",
+            description: `Companies that could benefit from ${domain}'s offerings`,
+            segments: [
+              {
+                label: "Mid-Market SaaS",
+                description: "Growing SaaS companies with 50-500 employees",
+                personas: [
+                  { label: "VP of Engineering / CTO", description: "Technical decision-makers" },
+                ],
+              },
+            ],
+          },
         ],
       };
     }
 
-    // --- Step 3: Firecrawl search for leads ---
-    console.log("Searching with queries:", icpData.search_queries);
-
-    const allResults: any[] = [];
-    for (const query of icpData.search_queries.slice(0, 3)) {
-      try {
-        const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${firecrawlKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query: `${query} contact email linkedin`,
-            limit: 5,
-          }),
-        });
-        const searchData = await searchRes.json();
-        const results = searchData?.data || [];
-        allResults.push(...results);
-      } catch (e) {
-        console.error("Search query failed:", query, e);
+    // Flatten into niches array for the frontend
+    const niches: Array<{ label: string; description: string; parent_label: string | null; niche_type: string }> = [];
+    for (const v of icpData.verticals) {
+      niches.push({ label: v.label, description: v.description, parent_label: null, niche_type: "vertical" });
+      for (const s of v.segments || []) {
+        niches.push({ label: s.label, description: s.description, parent_label: v.label, niche_type: "segment" });
+        for (const p of s.personas || []) {
+          niches.push({ label: p.label, description: p.description, parent_label: s.label, niche_type: "persona" });
+        }
       }
     }
 
-    console.log("Total search results:", allResults.length);
+    console.log(`Returning ${niches.length} niches across 3 layers`);
 
-    // --- Step 4: AI extracts structured leads ---
-    const searchSummary = allResults
-      .slice(0, 10)
-      .map((r: any) => `URL: ${r.url}\nTitle: ${r.title || ""}\nDesc: ${r.description || ""}\nContent: ${(r.markdown || "").slice(0, 500)}`)
-      .join("\n---\n");
-
-    const extractText = await aiCall(
-      `You are a lead extraction expert. From the search results, extract up to 5 real people who could be potential customers for the business described.
-
-Return JSON ONLY (no markdown fences):
-{
-  "leads": [
-    {
-      "name": "Full Name",
-      "title": "Job Title",
-      "company": "Company Name",
-      "email": "email@example.com or null",
-      "phone": "phone number or null",
-      "linkedin": "https://linkedin.com/in/username or null",
-      "twitter": "https://x.com/username or null"
-    }
-  ]
-}
-
-Rules:
-- Only include REAL people with real names
-- Prioritize decision-makers (founders, VPs, directors)
-- Include as many contact details as possible
-- If you can't find 5, return what you have`,
-      `Business: ${icpData.company_summary}\nICP: ${icpData.icp}\n\nSearch Results:\n${searchSummary}`
-    );
-
-    console.log("Extract response:", extractText.slice(0, 500));
-
-    let leads: any[] = [];
-    try {
-      const cleaned = extractText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      const parsed = JSON.parse(cleaned);
-      leads = parsed.leads || [];
-    } catch {
-      console.error("Failed to parse leads JSON");
-      leads = [];
-    }
-
-    leads = leads.slice(0, 5);
-    console.log(`Returning ${leads.length} leads`);
-
-    return json({ success: true, leads, icp: icpData.icp });
+    return json({
+      success: true,
+      company_summary: icpData.company_summary,
+      icp_summary: icpData.icp_summary,
+      niches,
+    });
   } catch (error) {
     console.error("Leadgen error:", error);
     return json(
