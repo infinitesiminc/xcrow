@@ -615,25 +615,58 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+    const apifyKey = Deno.env.get("APIFY_API_KEY");
 
-    // Check if user's first message contains a URL — scrape it and inject context
+    // Check if any user message contains a URL — scrape it and inject context
     const enrichedMessages = [...messages];
+    const googleMapsRe = /https?:\/\/(?:www\.)?(?:google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl\/maps)[^\s]*/i;
     const urlRe = /https?:\/\/[^\s]+|[a-z0-9-]+\.[a-z]{2,}/i;
     const firstUserMsg = messages.find((m: any) => m.role === "user");
-    if (firstUserMsg && firecrawlKey) {
-      const urlMatch = firstUserMsg.content.match(urlRe);
-      if (urlMatch) {
+    
+    if (firstUserMsg) {
+      const mapsMatch = firstUserMsg.content.match(googleMapsRe);
+      
+      if (mapsMatch && apifyKey) {
+        // Google Maps link detected — scrape with Apify for rich business data
         try {
-          const siteContent = await scrapeWebsite(urlMatch[0], firecrawlKey);
-          if (siteContent) {
-            // Add scraped context as a system message before the conversation
+          console.log("Detected Google Maps link:", mapsMatch[0]);
+          const mapsContent = await scrapeGoogleMapsLink(mapsMatch[0], apifyKey);
+          if (mapsContent) {
             enrichedMessages.unshift({
               role: "system",
-              content: `[SCRAPED WEBSITE CONTENT from ${urlMatch[0]}]:\n${siteContent.slice(0, 3000)}\n\n[END SCRAPED CONTENT]`,
+              content: `[GOOGLE MAPS BUSINESS DATA from ${mapsMatch[0]}]:\n${mapsContent}\n\n[END GOOGLE MAPS DATA]\n\nIMPORTANT: The user provided a Google Maps link as their business. Use ALL the data above (category, location, rating, reviews, services, hours) to deeply understand their business type, service area, and market position. This is their business — help them find leads/customers.`,
             });
           }
         } catch (e) {
-          console.error("Scrape failed:", e);
+          console.error("Google Maps scrape failed:", e);
+          // Fallback to Firecrawl scrape of the Maps page
+          if (firecrawlKey) {
+            try {
+              const siteContent = await scrapeWebsite(mapsMatch[0], firecrawlKey);
+              if (siteContent) {
+                enrichedMessages.unshift({
+                  role: "system",
+                  content: `[SCRAPED GOOGLE MAPS PAGE from ${mapsMatch[0]}]:\n${siteContent.slice(0, 3000)}\n\n[END SCRAPED CONTENT]`,
+                });
+              }
+            } catch {}
+          }
+        }
+      } else if (firecrawlKey) {
+        // Regular website URL
+        const urlMatch = firstUserMsg.content.match(urlRe);
+        if (urlMatch) {
+          try {
+            const siteContent = await scrapeWebsite(urlMatch[0], firecrawlKey);
+            if (siteContent) {
+              enrichedMessages.unshift({
+                role: "system",
+                content: `[SCRAPED WEBSITE CONTENT from ${urlMatch[0]}]:\n${siteContent.slice(0, 3000)}\n\n[END SCRAPED CONTENT]`,
+              });
+            }
+          } catch (e) {
+            console.error("Scrape failed:", e);
+          }
         }
       }
     }
