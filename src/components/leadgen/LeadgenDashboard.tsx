@@ -49,7 +49,7 @@ export function LeadgenDashboard({
             </TabsTrigger>
           </TabsList>
           {activeNiche && (
-            <span className="text-[11px] text-primary font-medium truncate max-w-[200px]">
+            <span className="text-xs text-primary font-medium truncate max-w-[200px]">
               → {activeNiche}
             </span>
           )}

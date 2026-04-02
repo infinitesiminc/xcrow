@@ -60,7 +60,7 @@ export function LeadCard({ lead, index, onDraftEmail }: LeadCardProps) {
           <div className="flex items-start gap-2.5">
             <div className="relative">
               <LeadAvatar lead={lead} />
-              <span className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+              <span className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                 {index + 1}
               </span>
             </div>
@@ -88,13 +88,13 @@ export function LeadCard({ lead, index, onDraftEmail }: LeadCardProps) {
           {lead.email && (
             <span className="text-xs text-muted-foreground">
               📧 {lead.email}
-              {lead.email_confidence && <span className="text-[9px] ml-1 text-primary/60">({lead.email_confidence}%)</span>}
+              {lead.email_confidence && <span className="text-xs ml-1 text-primary/60">({lead.email_confidence}%)</span>}
             </span>
           )}
           {lead.phone && (
             <span className="text-xs text-muted-foreground">
               📱 {lead.phone}
-              {lead.phone_source === "google_maps" && <span className="text-[9px] ml-1 text-primary/60">(Maps ✓)</span>}
+              {lead.phone_source === "google_maps" && <span className="text-xs ml-1 text-primary/60">(Maps ✓)</span>}
             </span>
           )}
           {lead.address && <span className="text-xs text-muted-foreground">📍 {lead.address}</span>}
@@ -106,7 +106,7 @@ export function LeadCard({ lead, index, onDraftEmail }: LeadCardProps) {
         </div>
 
         {lead.source && (
-          <Badge variant="outline" className="text-[9px] px-1.5 py-0 mt-1 border-muted-foreground/30 text-muted-foreground">
+          <Badge variant="outline" className="text-xs px-1.5 py-0 mt-1 border-muted-foreground/30 text-muted-foreground">
             {lead.source}
           </Badge>
         )}

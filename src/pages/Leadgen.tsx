@@ -416,10 +416,10 @@ export default function Leadgen() {
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-xs font-semibold text-foreground">Xcrow Scout</h2>
-                <p className="text-[10px] text-muted-foreground">AI-guided lead discovery</p>
+                <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
               </div>
               {!user && (
-                <Badge variant="outline" className="text-[9px] border-primary/30 text-primary mr-1">
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary mr-1">
                   Free — 5 Leads
                 </Badge>
               )}
