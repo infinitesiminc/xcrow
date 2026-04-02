@@ -389,7 +389,7 @@ export default function Leadgen() {
           >
             <div className="w-[360px] h-full">
               <LeadsPanel
-                leads={allLeads}
+                leads={filteredPanelLeads}
                 onDraftEmail={handleDraftEmail}
                 onScale={() => sendMessage("Find more leads like these — same industry, same profile type. Scale to 20+ results.")}
                 onWhatsApp={sendToWhatsApp}
