@@ -70,7 +70,7 @@ export default function Leadgen() {
   const [icpSummary, setIcpSummary] = useState("");
   const [pagesScraped, setPagesScraped] = useState(0);
   const [hasDiscovered, setHasDiscovered] = useState(false);
-  const [browseLibrary, setBrowseLibrary] = useState(false);
+  
   const {
     leads: savedLeads, outreach, niches: savedNiches,
     upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV,
