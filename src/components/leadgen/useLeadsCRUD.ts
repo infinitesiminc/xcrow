@@ -31,6 +31,7 @@ export interface NicheEntry {
   status: string;
   lead_count: number;
   created_at: string;
+  parent_label?: string | null;
 }
 
 export function useLeadsCRUD(userId: string | undefined) {
