@@ -4,12 +4,13 @@ import { BarChart3, MessageSquare, Clock } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
 import { ActivityLog } from "./ActivityLog";
 import { NicheSidebar } from "./NicheSidebar";
-import type { SavedLead, LeadStatus, OutreachEntry } from "./useLeadsCRUD";
+import type { SavedLead, LeadStatus, OutreachEntry, NicheEntry } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
 interface LeadgenDashboardProps {
   leads: SavedLead[];
   outreach: OutreachEntry[];
+  savedNiches?: NicheEntry[];
   onUpdateStatus: (id: string, status: LeadStatus) => void;
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
@@ -20,6 +21,7 @@ interface LeadgenDashboardProps {
 export function LeadgenDashboard({
   leads,
   outreach,
+  savedNiches = [],
   onUpdateStatus,
   onDraftEmail,
   onExportCSV,
