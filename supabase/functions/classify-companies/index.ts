@@ -18,41 +18,31 @@ const VERTICALS = [
   { id: 9, name: "E-commerce & Payments", keywords: ["e-commerce", "ecommerce", "payments", "checkout", "storefront", "retail", "shopping"] },
   { id: 10, name: "Communication & Collaboration", keywords: ["communication", "messaging", "video conferencing", "collaboration", "chat", "meetings"] },
   { id: 11, name: "Legal Tech", keywords: ["legal", "law", "contract", "compliance", "regulatory", "e-signature"] },
-  { id: 12, name: "Education & Learning", keywords: ["education", "learning", "edtech", "e-learning", "lms", "tutoring", "training"] },
-  { id: 13, name: "Healthcare & Wellness Tech", keywords: ["healthcare", "health tech", "medical", "telemedicine", "ehr", "wellness", "clinical"] },
-  { id: 14, name: "Real Estate & PropTech", keywords: ["real estate", "proptech", "property", "rental", "mortgage", "housing"] },
+  { id: 12, name: "Education & Learning", keywords: ["education", "learning", "edtech", "e-learning", "lms", "tutoring", "training", "professional training"] },
+  { id: 13, name: "Healthcare & Life Sciences", keywords: ["healthcare", "health tech", "medical", "telemedicine", "ehr", "wellness", "clinical", "biotech", "pharma", "medical devices", "drug discovery"] },
+  { id: 14, name: "Real Estate & PropTech", keywords: ["real estate", "proptech", "property", "rental", "mortgage", "housing", "construction tech"] },
   { id: 15, name: "Cybersecurity", keywords: ["cybersecurity", "security", "infosec", "endpoint", "firewall", "threat detection", "identity"] },
   { id: 16, name: "Data & BI", keywords: ["data", "business intelligence", "analytics platform", "data warehouse", "etl", "data pipeline", "visualization", "reporting", "bi tool"] },
-  { id: 17, name: "Supply Chain & Logistics", keywords: ["supply chain", "logistics", "shipping", "freight", "warehouse management", "inventory", "fulfillment", "fleet"] },
+  { id: 17, name: "Supply Chain & Logistics", keywords: ["supply chain", "logistics", "shipping", "freight", "warehouse management", "inventory", "fulfillment", "fleet", "transportation"] },
   { id: 18, name: "ERP & Operations", keywords: ["erp", "enterprise resource planning", "operations", "resource planning", "business operations", "back office"] },
   { id: 19, name: "IT Service Management", keywords: ["itsm", "it service", "incident management", "service desk", "it operations", "observability", "apm"] },
   { id: 20, name: "Content & CMS", keywords: ["cms", "content management", "headless cms", "website builder", "digital experience", "web publishing", "content platform"] },
   { id: 21, name: "Procurement & Spend", keywords: ["procurement", "purchasing", "spend management", "vendor management", "sourcing", "expense management", "corporate card"] },
   { id: 22, name: "GRC & Compliance", keywords: ["governance", "risk", "compliance", "grc", "audit", "regulatory", "privacy", "trust", "soc2", "iso"] },
   { id: 23, name: "AI Infrastructure", keywords: ["ai infrastructure", "foundation model", "llm", "large language model", "generative ai", "ai platform", "machine learning", "ml ops", "ai assistant", "multimodal ai", "ai app builder", "ai code editor", "ai agent platform"] },
+  { id: 24, name: "Financial Services & Fintech", keywords: ["fintech", "banking", "insurance", "insurtech", "lending", "wealth management", "neobank", "trading", "capital markets", "financial services"] },
+  { id: 25, name: "Staffing & Workforce", keywords: ["staffing", "recruiting agency", "temp agency", "workforce", "contingent labor", "gig economy", "freelance platform", "talent marketplace"] },
+  { id: 26, name: "Consulting & Professional Services", keywords: ["consulting", "management consulting", "advisory", "professional services", "strategy", "outsourcing", "bpo"] },
+  { id: 27, name: "Media & Entertainment", keywords: ["media", "publishing", "news", "entertainment", "gaming", "music", "streaming", "broadcast", "media production", "online media"] },
+  { id: 28, name: "Manufacturing & Industrial", keywords: ["manufacturing", "industrial", "hardware", "robotics", "3d printing", "automation", "factory", "industrial iot"] },
+  { id: 29, name: "Energy & CleanTech", keywords: ["energy", "solar", "battery", "oil", "gas", "cleantech", "renewable", "utilities", "ev", "electric vehicle", "carbon"] },
+  { id: 30, name: "Marketplace & Platform", keywords: ["marketplace", "platform", "two-sided", "aggregator", "on-demand", "sharing economy"] },
+  { id: 31, name: "Crypto & Web3", keywords: ["crypto", "web3", "blockchain", "defi", "nft", "dao", "decentralized"] },
+  { id: 32, name: "Aerospace & Defense", keywords: ["aerospace", "defense", "military", "drones", "space", "satellite", "aviation"] },
+  { id: 33, name: "Food & Agriculture", keywords: ["food", "agriculture", "agtech", "farming", "restaurant", "foodtech", "beverage", "grocery"] },
+  { id: 34, name: "Nonprofit & Government", keywords: ["nonprofit", "government", "civic", "public sector", "ngo", "social impact", "govtech"] },
+  { id: 35, name: "Research & Science", keywords: ["research", "science", "laboratory", "scientific", "r&d", "quantum computing", "semiconductor"] },
 ];
-
-// Non-software industries to exclude
-const EXCLUDE_PATTERNS = [
-  "biotech", "drug discovery", "therapeutics", "gene therapy", "nanomedicine",
-  "agriculture", "farming", "food", "restaurant", "hospitality",
-  "aerospace", "defense", "military", "drones", "airplanes", "air taxi",
-  "construction", "mining", "oil", "energy", "solar", "battery",
-  "automotive", "electric vehicle", "transportation", "logistics",
-  "fashion", "apparel", "clothing", "textile",
-  "fitness", "gym", "sports",
-  "insurance", "banking",
-  "manufacturing", "industrial", "hardware", "robotics", "3d print",
-  "quantum computing", "semiconductor", "chip",
-  "nonprofit", "government", "civic",
-  "media production", "publishing", "news", "entertainment", "gaming", "music",
-  "crypto", "web3", "blockchain", "defi",
-];
-
-function isExcluded(industry: string): boolean {
-  const lower = industry.toLowerCase();
-  return EXCLUDE_PATTERNS.some((p) => lower.includes(p));
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -92,7 +82,7 @@ Deno.serve(async (req) => {
         (c: any) => !classifiedIds.has(c.id)
       );
 
-      // Process in batches of 30 using AI
+      // Process in batches using AI
       const BATCH_SIZE = 20;
       const MAX_BATCHES = 3;
       let totalClassified = 0;
@@ -110,7 +100,7 @@ Deno.serve(async (req) => {
           )
           .join("\n");
 
-        const prompt = `You are classifying software companies into verticals for a startup disruption tool.
+        const prompt = `You are classifying B2B companies into industry verticals for a lead generation tool.
 
 VERTICALS (use exact IDs):
 ${VERTICALS.map((v) => `${v.id}. ${v.name}`).join("\n")}
@@ -121,13 +111,13 @@ ${companyList}
 For each company, output a JSON array. Each element:
 {
   "idx": <1-based index>,
-  "vertical_id": <1-15 or null if not software>,
+  "vertical_id": <1-35>,
   "sub_vertical": "<specific niche within the vertical, e.g. 'Sales Engagement', 'Email Marketing', 'Cloud Monitoring'>",
   "role": "<'incumbent' if established/large player, 'disruptor' if AI-native/startup challenger, 'transitioning' if adapting>"
 }
 
 Rules:
-- Skip companies that are NOT software/SaaS businesses (set vertical_id to null)
+- Classify EVERY company into the best-fit vertical — do not skip any
 - "incumbent" = companies with 200+ employees or 10+ years old or large funding
 - "disruptor" = AI-native, small teams, recent founding, challenging incumbents
 - "transitioning" = mid-size companies adding AI capabilities
@@ -170,7 +160,7 @@ Rules:
 
         const inserts: any[] = [];
         for (const r of results) {
-          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 23) {
+          if (!r.vertical_id || r.vertical_id < 1 || r.vertical_id > 35) {
             totalSkipped++;
             continue;
           }
