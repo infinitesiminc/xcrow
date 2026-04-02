@@ -329,8 +329,7 @@ function ReferralSection({ userId }: { userId?: string }) {
     (async () => {
       const { data: profile } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
       if (profile?.referral_code) setReferralCode(profile.referral_code);
-      const { count } = await supabase.from("referrals").select("*", { count: "exact", head: true }).eq("referrer_id", userId);
-      setReferralCount(count ?? 0);
+      setReferralCount(0);
     })();
   }, [userId]);
 

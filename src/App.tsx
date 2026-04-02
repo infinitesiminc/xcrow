@@ -59,7 +59,7 @@ const App = () => (
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/why-183-skills" element={<WhyTheseSkillsMatter />} />
+              
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />

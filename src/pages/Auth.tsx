@@ -33,21 +33,13 @@ const Auth = () => {
         }).then(() => {});
       }
 
-      // Process any pending bookmark from pre-login save attempt
+      // Process any pending redirect from pre-login
       const pending = sessionStorage.getItem("pending_bookmark");
       if (pending) {
         sessionStorage.removeItem("pending_bookmark");
         try {
           const data = JSON.parse(pending);
           const returnUrl = data.return_url;
-          supabase.from("bookmarked_roles").insert({
-            user_id: user.id,
-            job_title: data.job_title,
-            company: data.company,
-            augmented_percent: data.augmented_percent,
-            automation_risk_percent: data.automation_risk_percent,
-            new_skills_percent: data.new_skills_percent,
-          }).then(() => {});
           if (returnUrl) {
             const url = new URL(returnUrl);
             navigate(url.pathname + url.search);
