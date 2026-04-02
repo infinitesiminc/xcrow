@@ -62,6 +62,7 @@ export default function Leadgen() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isFindingLeads, setIsFindingLeads] = useState(false);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
+  const [chatOpen, setChatOpen] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
   const activeNicheRef = useRef<string | null>(null);
   activeNicheRef.current = activeNiche;
