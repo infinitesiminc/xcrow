@@ -60,6 +60,8 @@ export default function Leadgen() {
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isFindingLeads, setIsFindingLeads] = useState(false);
+  const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const activeNicheRef = useRef<string | null>(null);
   activeNicheRef.current = activeNiche;
