@@ -151,6 +151,7 @@ export default function Leadgen() {
 
       setCompanySummary(data.company_summary || "");
       setIcpSummary(data.icp_summary || "");
+      setPagesScraped(data.pages_scraped || 1);
 
       // Populate niches
       const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
