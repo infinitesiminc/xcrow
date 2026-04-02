@@ -428,15 +428,7 @@ export default function Leadgen() {
             onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
           />
           <LeadgenDashboard
-            leads={dashboardLeads.length > 0 ? dashboardLeads : filteredPanelLeads.map((l) => ({
-              ...l,
-              id: l.id || `temp-${l.name}-${l.company}`,
-              status: "new" as const,
-              user_id: user?.id || "",
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              lead_type: "person",
-            }))}
+            leads={dashboardLeads}
             outreach={outreach}
             activeNiche={activeNiche}
             onUpdateStatus={updateLeadStatus}
