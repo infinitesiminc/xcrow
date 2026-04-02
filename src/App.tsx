@@ -11,93 +11,27 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-
-// Lazy-load all page components
 const Index = lazy(() => import("./pages/Index.tsx"));
-const Analysis = lazy(() => import("./pages/Analysis.tsx"));
-const RoleDeepDive = lazy(() => import("./pages/RoleDeepDive.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-
-const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
-
-const Students = lazy(() => import("./pages/Students.tsx"));
-const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
-const Pricing = lazy(() => import("./pages/Pricing.tsx"));
-const Schools = lazy(() => import("./pages/Schools.tsx"));
-const About = lazy(() => import("./pages/About.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const WhyTheseSkillsMatter = lazy(() => import("./pages/blog/WhyTheseSkillsMatter.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
-
-const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
-const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
-const MapPage = lazy(() => import("./pages/MapPage.tsx"));
-const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
-const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
-const Competition = lazy(() => import("./pages/Competition.tsx"));
-const Investors = lazy(() => import("./pages/Investors.tsx"));
-const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard.tsx"));
-const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
-const Disrupt = lazy(() => import("./pages/Disrupt.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
 
-
 // Admin (lazy)
-const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 const UsersPage = lazy(() => import("./pages/admin/UsersPage.tsx"));
 
-const SchoolsPage = lazy(() => import("./pages/admin/SchoolsPage.tsx"));
-const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
-
-// School admin (lazy)
-const SchoolLayout = lazy(() => import("./layouts/SchoolLayout.tsx"));
-const SchoolDashboard = lazy(() => import("./pages/school/SchoolDashboard.tsx"));
-const SchoolStudents = lazy(() => import("./pages/school/SchoolStudents.tsx"));
-const SchoolInvite = lazy(() => import("./pages/school/SchoolInvite.tsx"));
-const SchoolAnalytics = lazy(() => import("./pages/school/SchoolAnalytics.tsx"));
-
 const queryClient = new QueryClient();
 
-
-/** Route / to the right dashboard per tier */
-function HomeDashboard() {
-  const { user, loading, profile, isSuperAdmin, isSchoolAdmin } = useAuth();
-  if (loading) return null;
-  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
-  if (!profile || !profile.onboardingCompleted) {
-    return <Suspense fallback={null}><Index /></Suspense>;
-  }
-  if (isSuperAdmin) return <Navigate to="/admin" replace />;
-  if (isSchoolAdmin) return <Navigate to="/school" replace />;
-  return <Suspense fallback={null}><Index /></Suspense>;
-}
-
-/** Gate admin routes to superadmins */
-function AdminGate() {
-  const { user, loading, isSuperAdmin } = useAuth();
-  if (loading) return null;
-  if (!user || !isSuperAdmin) return <Navigate to="/" replace />;
-  return <Suspense fallback={null}><HRLayout /></Suspense>;
-}
-
-/** Gate school admin routes */
-function SchoolAdminGate() {
-  const { user, loading, isSchoolAdmin } = useAuth();
-  if (loading) return null;
-  if (!user || !isSchoolAdmin) return <Navigate to="/" replace />;
-  return <Suspense fallback={null}><SchoolLayout /></Suspense>;
-}
-
-/** Gate authenticated-only routes */
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, openAuthModal } = useAuth();
   if (loading) return null;
@@ -117,89 +51,59 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <ErrorBoundary fallbackTitle="The realm encountered an error">
+          <ErrorBoundary fallbackTitle="Something went wrong">
           <Suspense fallback={null}>
             <Routes>
-              {/* Public B2C routes */}
-              <Route path="/" element={<HomeDashboard />} />
-              <Route path="/upskill" element={<><Navbar /><MapPage /></>} />
-              <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
-              <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
+              <Route path="/" element={<Suspense fallback={null}><Index /></Suspense>} />
+              <Route path="/leadgen" element={<><Leadgen /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
-              <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="/card-styles" element={<Navigate to="/" replace />} />
-              <Route path="/l2-formats" element={<Navigate to="/" replace />} />
-              <Route path="/journey" element={<Navigate to="/upskill" replace />} />
-              <Route path="/students" element={<Students />} />
-              
-              <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
-              <Route path="/schools" element={<Schools />} />
-              <Route path="/about" element={<About />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/why-183-skills" element={<WhyTheseSkillsMatter />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
-              
-              <Route path="/professionals" element={<Navigate to="/" replace />} />
-              <Route path="/enterprise" element={<Navigate to="/" replace />} />
-              <Route path="/simulation-design" element={<Navigate to="/" replace />} />
-              <Route path="/join" element={<JoinWorkspace />} />
-              <Route path="/score-distributions" element={<Navigate to="/" replace />} />
-              <Route path="/u/:username" element={<PublicProfile />} />
-              <Route path="/progression" element={<Navigate to="/how-it-works" replace />} />
-              <Route path="/play" element={<Navigate to="/" replace />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/skills" element={<SkillsCodex />} />
-              <Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />
-               <Route path="/investors" element={<Investors />} />
-              <Route path="/agentlauncher" element={<><Disrupt /></>} />
-              <Route path="/founder" element={<Navigate to="/agentlauncher" replace />} />
-              <Route path="/disrupt" element={<Navigate to="/agentlauncher" replace />} />
-              <Route path="/leadgen" element={<><Leadgen /></>} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/use-cases" element={<><UseCasesIndex /></>} />
               <Route path="/use-cases/:slug" element={<><UseCasePage /></>} />
-              <Route path="/map" element={<Navigate to="/upskill" replace />} />
-              <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
-              <Route path="/tools" element={<Navigate to="/" replace />} />
-              <Route path="/org-stack" element={<Navigate to="/" replace />} />
-              {/* Redirects — old routes all go to feed */}
+
+              {/* Redirects — old routes */}
+              <Route path="/upskill" element={<Navigate to="/" replace />} />
+              <Route path="/agentlauncher" element={<Navigate to="/" replace />} />
+              <Route path="/founder" element={<Navigate to="/" replace />} />
+              <Route path="/disrupt" element={<Navigate to="/" replace />} />
+              <Route path="/map" element={<Navigate to="/" replace />} />
+              <Route path="/journey" element={<Navigate to="/" replace />} />
+              <Route path="/skills" element={<Navigate to="/" replace />} />
+              <Route path="/pricing" element={<Navigate to="/" replace />} />
+              <Route path="/schools" element={<Navigate to="/" replace />} />
+              <Route path="/about" element={<Navigate to="/" replace />} />
+              <Route path="/how-it-works" element={<Navigate to="/" replace />} />
+              <Route path="/competition" element={<Navigate to="/" replace />} />
+              <Route path="/investors" element={<Navigate to="/" replace />} />
+              <Route path="/leaderboard" element={<Navigate to="/" replace />} />
+              <Route path="/students" element={<Navigate to="/" replace />} />
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />
               <Route path="/learning-path" element={<Navigate to="/" replace />} />
-
-              {/* School admin */}
-              <Route path="/school" element={<SchoolAdminGate />}>
-                <Route index element={<SchoolDashboard />} />
-                <Route path="students" element={<SchoolStudents />} />
-                <Route path="invite" element={<SchoolInvite />} />
-                <Route path="analytics" element={<SchoolAnalytics />} />
-              </Route>
-
-              {/* Superadmin */}
-              <Route path="/admin" element={<AdminGate />}>
-                <Route index element={<PipelinePage />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="schools" element={<SchoolsPage />} />
-                <Route path="schools/:schoolId" element={<SchoolDetailPage />} />
-                {/* Legacy redirects */}
-                <Route path="analytics" element={<Navigate to="/admin" replace />} />
-                <Route path="upgrades" element={<Navigate to="/admin/users" replace />} />
-                <Route path="pricing-usage" element={<Navigate to="/admin/users" replace />} />
-                <Route path="schools/data-ops" element={<Navigate to="/admin/schools" replace />} />
-                <Route path="schools/skills-gap" element={<Navigate to="/admin/schools" replace />} />
-                <Route path="schools/skill-matrix" element={<Navigate to="/admin/schools" replace />} />
-              </Route>
+              <Route path="/play" element={<Navigate to="/" replace />} />
+              <Route path="/progression" element={<Navigate to="/" replace />} />
+              <Route path="/professionals" element={<Navigate to="/" replace />} />
+              <Route path="/enterprise" element={<Navigate to="/" replace />} />
+              <Route path="/tools" element={<Navigate to="/" replace />} />
+              <Route path="/org-stack" element={<Navigate to="/" replace />} />
+              <Route path="/sponsor" element={<Navigate to="/" replace />} />
+              <Route path="/join" element={<Navigate to="/" replace />} />
+              <Route path="/analysis" element={<Navigate to="/" replace />} />
+              <Route path="/role/:jobTitle" element={<Navigate to="/" replace />} />
+              <Route path="/company/:slug" element={<Navigate to="/" replace />} />
+              <Route path="/u/:username" element={<Navigate to="/" replace />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
           </ErrorBoundary>
-          
         </TooltipProvider>
         </ChatProvider>
       </AuthProvider>

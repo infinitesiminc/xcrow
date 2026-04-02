@@ -20,7 +20,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
           >
             Xcrow.ai
           </Link>
-          <p className="text-xs text-muted-foreground mt-1 italic">183 skills. 4 phases. 1 mission. Master the AI frontier.</p>
+          <p className="text-xs text-muted-foreground mt-1 italic">AI-powered ICP research & lead generation.</p>
         </div>
         <div className="flex gap-10">
           <div className="flex flex-col gap-2">
@@ -30,11 +30,9 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
             >
               Product
             </span>
-            <Link to="/how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How It Works</Link>
-            <Link to="/skills" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Skills</Link>
-            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
-            <Link to="/schools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Schools</Link>
-            <Link to="/competition" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Competition</Link>
+            <Link to="/leadgen" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Leadgen</Link>
+            <Link to="/use-cases" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Use Cases</Link>
+            <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
           </div>
           <div className="flex flex-col gap-2">
             <span
@@ -43,9 +41,6 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
             >
               Company
             </span>
-            <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
-            <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
-            <Link to="/investors" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Investors</Link>
             <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
           </div>
         </div>

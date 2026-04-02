@@ -26,8 +26,6 @@ import {
   ExternalLink, Compass, Users, Copy, Gift,
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
-import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
-import InviteShareWidget from "@/components/InviteShareWidget";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
@@ -380,10 +378,7 @@ function ReferralSection({ userId }: { userId?: string }) {
                   {copied ? "Copied!" : "Copy"}
                 </Button>
               </div>
-              <div className="pt-1">
-                <p className="text-[11px] text-muted-foreground mb-2">Or share directly:</p>
-                <InviteShareWidget />
-              </div>
+            
             </>
           ) : (
             <p className="text-xs text-muted-foreground">Referral code not yet generated. Complete onboarding to get yours.</p>
@@ -587,7 +582,7 @@ function ProfileSection({
                 <School className="h-3.5 w-3.5 text-muted-foreground" />
                 School / University
               </Label>
-              <SchoolAutocomplete value={schoolName} onChange={setSchoolName} />
+              <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford..." className="bg-muted/30" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

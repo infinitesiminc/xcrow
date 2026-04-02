@@ -13,25 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, GraduationCap, Sun, Moon, BookOpen, Coins, Wrench, Sparkles, Swords } from "lucide-react";
+import { User, Menu, X, Compass, Settings, LogOut, Sun, Moon } from "lucide-react";
 
 export default function Navbar() {
-  const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
+  const { user, signOut, openAuthModal, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [bossCount, setBossCount] = useState(0);
-
-  // Read boss count from localStorage (set by MapPage)
-  useEffect(() => {
-    const stored = localStorage.getItem("xcrow-boss-count");
-    if (stored) setBossCount(parseInt(stored, 10) || 0);
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "xcrow-boss-count") setBossCount(parseInt(e.newValue || "0", 10));
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
 
   // Parchment mode toggle
   const [parchment, setParchment] = useState(() => {
@@ -59,19 +47,9 @@ export default function Navbar() {
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
-  const navItems = user
-    ? [
-        { label: "Upskill", path: "/upskill", icon: Map },
-        { label: "Agent Launcher", path: "/agentlauncher", icon: Swords },
-        { label: "Leadgen", path: "/leadgen", icon: Compass },
-        ...(isSchoolAdmin ? [{ label: "School", path: "/school", icon: GraduationCap }] : []),
-        ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
-      ]
-    : [
-        { label: "Upskill", path: "/upskill", icon: Map },
-        { label: "Agent Launcher", path: "/agentlauncher", icon: Swords },
-        { label: "Leadgen", path: "/leadgen", icon: Compass },
-      ];
+  const navItems = [
+    { label: "Leadgen", path: "/leadgen", icon: Compass },
+  ];
 
   const handleNav = (path: string) => {
     navigate(path);
@@ -123,21 +101,6 @@ export default function Navbar() {
               >
                 {Icon && <Icon className="h-4 w-4" />}
                 {item.label}
-                {item.path === "/map" && bossCount > 0 && (
-                  <span
-                    className="ml-1 inline-flex items-center justify-center rounded-full text-[10px] font-bold leading-none"
-                    style={{
-                      minWidth: "18px",
-                      height: "18px",
-                      padding: "0 5px",
-                      background: "hsl(45 93% 48%)",
-                      color: "hsl(45 20% 10%)",
-                      boxShadow: "0 0 6px hsl(45 93% 58% / 0.5)",
-                    }}
-                  >
-                    ⚔️{bossCount}
-                  </span>
-                )}
               </button>
             );
           })}
