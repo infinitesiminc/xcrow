@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Layers, Tag, PanelLeftClose, PanelLeft, ChevronRight } from "lucide-react";
-import { ICPActionCard, type ICPCriteria } from "./ICPActionCard";
 import type { NicheEntry } from "./useLeadsCRUD";
 
 interface NicheLeadLike {
@@ -18,13 +17,6 @@ interface NicheSidebarProps {
   onSelectNiche: (niche: string | null) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
-  onFindLeads?: (niche: string) => void;
-  onEnrichLeads?: (niche: string) => void;
-  onScoreLeads?: (niche: string) => void;
-  onDraftAll?: (niche: string) => void;
-  onExportNiche?: (niche: string) => void;
-  isFinding?: boolean;
-  isEnriching?: boolean;
 }
 
 interface TreeNiche {
@@ -33,7 +25,6 @@ interface TreeNiche {
   leadCount: number;
   isPlaceholder: boolean;
   children: TreeNiche[];
-  icpCriteria?: ICPCriteria;
 }
 
 export function NicheSidebar({
@@ -43,13 +34,6 @@ export function NicheSidebar({
   onSelectNiche,
   collapsed,
   onToggleCollapse,
-  onFindLeads,
-  onEnrichLeads,
-  onScoreLeads,
-  onDraftAll,
-  onExportNiche,
-  isFinding,
-  isEnriching,
 }: NicheSidebarProps) {
   const nicheTree = useMemo(() => {
     const leadCountMap = new Map<string, number>();
@@ -58,14 +42,13 @@ export function NicheSidebar({
       leadCountMap.set(tag, (leadCountMap.get(tag) || 0) + 1);
     }
 
-    const allNiches = new Map<string, { label: string; description: string | null; parent: string | null; leadCount: number; icpCriteria?: ICPCriteria }>();
+    const allNiches = new Map<string, { label: string; description: string | null; parent: string | null; leadCount: number }>();
     for (const n of savedNiches) {
       allNiches.set(n.label, {
         label: n.label,
         description: n.description,
         parent: n.parent_label || null,
         leadCount: leadCountMap.get(n.label) || 0,
-        icpCriteria: (n as any).icp_criteria || undefined,
       });
     }
 
@@ -85,7 +68,6 @@ export function NicheSidebar({
         leadCount: n.leadCount,
         isPlaceholder: n.leadCount === 0,
         children: [],
-        icpCriteria: n.icpCriteria,
       };
 
       if (n.parent) {
@@ -118,18 +100,6 @@ export function NicheSidebar({
 
     return rootNiches;
   }, [leads, savedNiches]);
-
-  // Find the active niche node for ICP card
-  const findNicheNode = (nodes: TreeNiche[], label: string): TreeNiche | null => {
-    for (const n of nodes) {
-      if (n.label === label) return n;
-      const found = findNicheNode(n.children, label);
-      if (found) return found;
-    }
-    return null;
-  };
-
-  const activeNicheNode = activeNiche ? findNicheNode(nicheTree, activeNiche) : null;
 
   if (collapsed) {
     return (
@@ -208,7 +178,6 @@ export function NicheSidebar({
 
   return (
     <div className="w-56 border-r border-border/40 bg-card/20 flex flex-col shrink-0">
-      {/* Header */}
       <div className="px-3 py-2.5 border-b border-border/40 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1.5">
           <Layers className="w-3.5 h-3.5 text-primary" />
@@ -221,7 +190,6 @@ export function NicheSidebar({
 
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-0.5">
-          {/* All niches */}
           <button
             onClick={() => onSelectNiche(null)}
             className={cn(
@@ -238,7 +206,6 @@ export function NicheSidebar({
             </Badge>
           </button>
 
-          {/* Tree */}
           {nicheTree.map((n) => renderNicheNode(n, 0))}
 
           {nicheTree.length === 0 && (
@@ -253,25 +220,6 @@ export function NicheSidebar({
             </div>
           )}
         </div>
-
-        {/* ICP Action Card — shown when a niche is selected */}
-        {activeNicheNode && (
-          <div className="p-2 pt-1 border-t border-border/30 mt-1">
-            <ICPActionCard
-              nicheLabel={activeNicheNode.label}
-              nicheDescription={activeNicheNode.description}
-              leadCount={activeNicheNode.leadCount + activeNicheNode.children.reduce((s, c) => s + c.leadCount, 0)}
-              icpCriteria={activeNicheNode.icpCriteria}
-              onFindLeads={() => onFindLeads?.(activeNicheNode.label)}
-              onEnrich={() => onEnrichLeads?.(activeNicheNode.label)}
-              onScore={() => onScoreLeads?.(activeNicheNode.label)}
-              onDraftAll={() => onDraftAll?.(activeNicheNode.label)}
-              onExport={() => onExportNiche?.(activeNicheNode.label)}
-              isFinding={isFinding}
-              isEnriching={isEnriching}
-            />
-          </div>
-        )}
       </ScrollArea>
     </div>
   );
