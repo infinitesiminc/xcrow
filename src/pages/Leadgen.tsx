@@ -380,6 +380,15 @@ export default function Leadgen() {
             onSelectNiche={setActiveNiche}
             collapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
+          />
+          <LeadgenDashboard
+            leads={dashboardLeads}
+            outreach={outreach}
+            activeNiche={activeNiche}
+            activeNicheDescription={localNiches.find(n => n.label === activeNiche)?.description || savedNiches.find(n => n.label === activeNiche)?.description || null}
+            onUpdateStatus={updateLeadStatus}
+            onDraftEmail={handleDraftEmail}
+            onExportCSV={exportCSV}
             onFindLeads={handleFindLeads}
             onEnrichLeads={handleEnrichLeads}
             onScoreLeads={handleScoreLeads}
@@ -387,14 +396,6 @@ export default function Leadgen() {
             onExportNiche={handleExportNiche}
             isFinding={isFindingLeads}
             isEnriching={isEnrichingLeads}
-          />
-          <LeadgenDashboard
-            leads={dashboardLeads}
-            outreach={outreach}
-            activeNiche={activeNiche}
-            onUpdateStatus={updateLeadStatus}
-            onDraftEmail={handleDraftEmail}
-            onExportCSV={exportCSV}
           />
         </div>
       </div>
