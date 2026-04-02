@@ -224,10 +224,11 @@ export default function Leadgen() {
               setLocalNiches((prev) => {
                 const seen = new Set(prev.map((n) => n.label));
                 const merged = [...prev];
+                const parentLabel = activeNicheRef.current;
                 for (const niche of parsed.niches as Array<{ label: string; description?: string }>) {
                   if (!seen.has(niche.label)) {
                     seen.add(niche.label);
-                    merged.push({ label: niche.label, description: niche.description || null });
+                    merged.push({ label: niche.label, description: niche.description || null, parent_label: parentLabel });
                   }
                 }
                 return merged;
