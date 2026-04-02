@@ -472,23 +472,6 @@ export default function Leadgen() {
           </motion.div>
         )}
 
-        <div className="flex items-center justify-center gap-3 mt-2">
-          <div className="w-12 h-px bg-border/40" />
-          <span className="text-xs text-muted-foreground/60">or</span>
-          <div className="w-12 h-px bg-border/40" />
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 mx-auto text-xs"
-          onClick={() => setBrowseLibrary(true)}
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          Browse Niche Library
-          <Badge variant="secondary" className="text-[10px] ml-1">19 industries</Badge>
-        </Button>
-
         <p className="text-xs text-muted-foreground/60">
           Works best with B2B companies. We'll scrape your site to understand your offering.
         </p>
