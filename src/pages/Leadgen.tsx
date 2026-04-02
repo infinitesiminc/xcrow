@@ -94,6 +94,46 @@ export default function Leadgen() {
     }
   }, [savedNiches]);
 
+  // Auto-discover from homepage URL input
+  const autoDiscoverRef = useRef(false);
+  useEffect(() => {
+    const website = searchParams.get("website");
+    if (website && !autoDiscoverRef.current && !hasDiscovered && !isDiscovering) {
+      autoDiscoverRef.current = true;
+      setWebsiteUrl(website);
+      setSearchParams({}, { replace: true });
+      setTimeout(() => {
+        setIsDiscovering(true);
+        setDiscoveryPhase("Mapping site pages...");
+        setTimeout(() => setDiscoveryPhase("Scraping key pages (about, solutions, customers)..."), 3000);
+        setTimeout(() => setDiscoveryPhase("Analyzing business model & customers..."), 7000);
+        setTimeout(() => setDiscoveryPhase("Building 3-layer ICP tree..."), 11000);
+        fetch(SCOUT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          body: JSON.stringify({ website: website.trim() }),
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) throw new Error(data.error || "Discovery failed");
+            setCompanySummary(data.company_summary || "");
+            setIcpSummary(data.icp_summary || "");
+            setPagesScraped(data.pages_scraped || 1);
+            const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
+            setLocalNiches(niches);
+            if (user) {
+              upsertNiches(niches.map(n => ({ label: n.label, description: n.description || "", parent_label: n.parent_label, niche_type: n.niche_type as any })));
+            }
+            setHasDiscovered(true);
+            setChatOpen(false);
+            toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+          })
+          .catch((e: any) => toast.error(e.message || "Failed to analyze website"))
+          .finally(() => { setIsDiscovering(false); setDiscoveryPhase(""); });
+      }, 100);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const sidebarNiches = useMemo(
     () => localNiches.map((n, index) => ({
       id: `local-${index}-${n.label}`,
