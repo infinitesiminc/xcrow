@@ -362,6 +362,7 @@ export default function Leadgen() {
     <LeadgenDashboard
       leads={savedLeads}
       outreach={outreach}
+      savedNiches={savedNiches}
       onUpdateStatus={updateLeadStatus}
       onDraftEmail={handleDraftEmail}
       onExportCSV={exportCSV}
