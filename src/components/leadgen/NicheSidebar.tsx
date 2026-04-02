@@ -126,9 +126,13 @@ export function NicheSidebar({ leads, activeNiche, onSelectNiche, collapsed, onT
           })}
 
           {niches.length === 0 && (
-            <div className="px-2.5 py-6 text-center">
+            <div className="px-2.5 py-6 text-center space-y-2">
+              <Layers className="w-6 h-6 text-muted-foreground/30 mx-auto" />
               <p className="text-[11px] text-muted-foreground/60">
-                Niches appear here as you explore leads in chat.
+                Niches appear here as you discover leads via chat.
+              </p>
+              <p className="text-[10px] text-muted-foreground/40">
+                Each search branch is saved automatically.
               </p>
             </div>
           )}
