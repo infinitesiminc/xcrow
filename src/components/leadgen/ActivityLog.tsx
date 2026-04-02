@@ -34,13 +34,13 @@ export function ActivityLog({ entries }: ActivityLogProps) {
                 <p className="text-sm font-medium text-foreground truncate">
                   {entry.lead_name || "Unknown"}
                 </p>
-                <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                <Badge variant="outline" className="text-xs px-1.5 py-0">
                   {entry.status}
                 </Badge>
               </div>
               {entry.subject && <p className="text-xs text-muted-foreground mt-0.5 truncate">📧 {entry.subject}</p>}
-              {entry.lead_email && <p className="text-[10px] text-muted-foreground/60 mt-0.5">{entry.lead_email}</p>}
-              <p className="text-[10px] text-muted-foreground/40 mt-1">
+              {entry.lead_email && <p className="text-xs text-muted-foreground/60 mt-0.5">{entry.lead_email}</p>}
+              <p className="text-xs text-muted-foreground/40 mt-1">
                 {format(new Date(entry.sent_at), "MMM d, yyyy 'at' h:mm a")}
               </p>
             </div>

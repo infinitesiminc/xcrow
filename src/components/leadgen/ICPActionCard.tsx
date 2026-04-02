@@ -53,10 +53,10 @@ export function ICPActionCard({
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-foreground truncate">{nicheLabel}</p>
             {nicheDescription && (
-              <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{nicheDescription}</p>
+              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{nicheDescription}</p>
             )}
           </div>
-          <Badge variant="secondary" className="text-[9px] px-1.5 py-0 shrink-0">
+          <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
             {leadCount} leads
           </Badge>
         </div>
@@ -65,22 +65,22 @@ export function ICPActionCard({
         {hasCriteria && (
           <div className="flex flex-wrap gap-1">
             {icpCriteria?.industry && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-muted-foreground/30">
                 {icpCriteria.industry}
               </Badge>
             )}
             {icpCriteria?.company_size && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-muted-foreground/30">
                 {icpCriteria.company_size}
               </Badge>
             )}
             {icpCriteria?.buyer_persona && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-muted-foreground/30">
                 {icpCriteria.buyer_persona}
               </Badge>
             )}
             {icpCriteria?.region && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-muted-foreground/30">
                 {icpCriteria.region}
               </Badge>
             )}
@@ -92,7 +92,7 @@ export function ICPActionCard({
           <Button
             variant="default"
             size="sm"
-            className="h-7 text-[11px] gap-1.5 w-full justify-start"
+            className="h-7 text-xs gap-1.5 w-full justify-start"
             onClick={onFindLeads}
             disabled={isFinding}
           >
@@ -102,7 +102,7 @@ export function ICPActionCard({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[11px] gap-1.5 w-full justify-start"
+            className="h-7 text-xs gap-1.5 w-full justify-start"
             onClick={onEnrich}
             disabled={isEnriching || leadCount === 0}
           >
@@ -112,7 +112,7 @@ export function ICPActionCard({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[11px] gap-1.5 w-full justify-start"
+            className="h-7 text-xs gap-1.5 w-full justify-start"
             onClick={onScore}
             disabled={leadCount === 0}
           >
@@ -122,7 +122,7 @@ export function ICPActionCard({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[11px] gap-1.5 w-full justify-start"
+            className="h-7 text-xs gap-1.5 w-full justify-start"
             onClick={onDraftAll}
             disabled={leadCount === 0}
           >
@@ -132,7 +132,7 @@ export function ICPActionCard({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-[11px] gap-1.5 w-full justify-start text-muted-foreground"
+            className="h-7 text-xs gap-1.5 w-full justify-start text-muted-foreground"
             onClick={onExport}
             disabled={leadCount === 0}
           >

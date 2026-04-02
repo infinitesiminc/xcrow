@@ -117,8 +117,8 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
                           )}
                         </div>
                         <Select value={lead.status} onValueChange={(v) => onUpdateStatus(lead.id, v as LeadStatus)}>
-                          <SelectTrigger className="h-6 text-[10px] w-[90px] px-2 shrink-0">
-                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${STATUS_COLORS[lead.status]}`}>
+                          <SelectTrigger className="h-6 text-xs w-[90px] px-2 shrink-0">
+                            <Badge variant="outline" className={`text-xs px-1.5 py-0 ${STATUS_COLORS[lead.status]}`}>
                               {lead.status}
                             </Badge>
                           </SelectTrigger>
@@ -165,18 +165,18 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-1.5">
                           {lead.source && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30 text-muted-foreground">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 border-muted-foreground/30 text-muted-foreground">
                               {lead.source}
                             </Badge>
                           )}
                           {lead.niche_tag && (
-                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0">
                               {lead.niche_tag}
                             </Badge>
                           )}
                         </div>
                         {lead.email && (
-                          <Button variant="outline" size="sm" className="h-6 gap-1 text-[10px] px-2" onClick={() => onDraftEmail(lead)}>
+                          <Button variant="outline" size="sm" className="h-6 gap-1 text-xs px-2" onClick={() => onDraftEmail(lead)}>
                             <Mail className="w-3 h-3" />
                             <Sparkles className="w-3 h-3" />
                             Draft
@@ -202,7 +202,7 @@ function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; val
         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">{icon}</div>
         <div>
           <p className="text-lg font-bold text-foreground leading-none">{value}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
         </div>
       </CardContent>
     </Card>

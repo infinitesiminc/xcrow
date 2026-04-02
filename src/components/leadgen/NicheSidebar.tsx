@@ -143,7 +143,7 @@ export function NicheSidebar({
               key={n.label}
               onClick={() => onSelectNiche(activeNiche === n.label ? null : n.label)}
               className={cn(
-                "w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold transition-colors",
+                "w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold transition-colors",
                 activeNiche === n.label
                   ? "bg-primary text-primary-foreground"
                   : n.isPlaceholder
@@ -190,11 +190,11 @@ export function NicheSidebar({
           )}
           <span className="truncate flex-1">{n.label}</span>
           {totalLeads > 0 ? (
-            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
+            <Badge variant="secondary" className="text-xs px-1.5 py-0 h-4 shrink-0">
               {totalLeads}
             </Badge>
           ) : (
-            <span className="text-[9px] text-muted-foreground/40 italic shrink-0">explore</span>
+            <span className="text-xs text-muted-foreground/40 italic shrink-0">explore</span>
           )}
         </button>
         {hasChildren && (
@@ -233,7 +233,7 @@ export function NicheSidebar({
           >
             <Tag className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate flex-1">All Niches</span>
-            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
+            <Badge variant="secondary" className="text-xs px-1.5 py-0 h-4 shrink-0">
               {leads.length}
             </Badge>
           </button>
@@ -244,10 +244,10 @@ export function NicheSidebar({
           {nicheTree.length === 0 && (
             <div className="px-2.5 py-6 text-center space-y-2">
               <Layers className="w-6 h-6 text-muted-foreground/30 mx-auto" />
-              <p className="text-[11px] text-muted-foreground/60">
+              <p className="text-xs text-muted-foreground/60">
                 Niches appear here as you discover leads via chat.
               </p>
-              <p className="text-[10px] text-muted-foreground/40">
+              <p className="text-xs text-muted-foreground/40">
                 Each search branch is saved automatically.
               </p>
             </div>
