@@ -1,13 +1,15 @@
 /**
- * Index — Leadgen-focused landing page with logo marquee social proof.
+ * Index — Leadgen-focused landing page with URL input + logo marquee.
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import heroImage from "@/assets/og-hero.png";
-import { ArrowRight, Target, Zap, Users, BarChart3 } from "lucide-react";
+import { ArrowRight, Target, Zap, Users, BarChart3, Globe, Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 
@@ -78,6 +80,14 @@ const VALUE_PROPS = [
 
 export default function Index() {
   const navigate = useNavigate();
+  const [websiteUrl, setWebsiteUrl] = useState("");
+
+  const handleDiscover = (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = websiteUrl.trim();
+    if (!url) return;
+    navigate(`/leadgen?website=${encodeURIComponent(url)}`);
+  };
 
   return (
     <>
@@ -143,13 +153,21 @@ export default function Index() {
               Enter your website. Our AI scrapes your business, maps your ideal customers, and fills your pipeline — all in seconds.
             </p>
 
-            <Button
-              size="lg"
-              className="gap-2 text-base px-8"
-              onClick={() => navigate("/leadgen")}
-            >
-              Start Mapping Your ICP <ArrowRight className="w-4 h-4" />
-            </Button>
+            <form onSubmit={handleDiscover} className="flex gap-2 max-w-md mx-auto w-full">
+              <div className="relative flex-1">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="yourcompany.com"
+                  className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
+                />
+              </div>
+              <Button type="submit" size="lg" className="h-12 px-6 gap-2" disabled={!websiteUrl.trim()}>
+                <Sparkles className="w-4 h-4" />
+                Map ICP
+              </Button>
+            </form>
           </motion.div>
 
           {/* Logo Marquee Social Proof */}
