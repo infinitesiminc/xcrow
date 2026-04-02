@@ -401,51 +401,58 @@ export default function Leadgen() {
     </div>
   );
 
-  // Niche sidebar state (lifted to top level so it's visible across all tabs)
-  const [activeNiche, setActiveNiche] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const filteredPanelLeads = useMemo(() => {
+    if (!activeNiche) return allLeads;
+    return allLeads.filter((lead) => (lead.niche_tag || "Uncategorized") === activeNiche);
+  }, [allLeads, activeNiche]);
 
-  // Signed-in users get the dashboard wrapper
-  const mainContent = user ? (
-    <div className="flex h-full">
+  const sidebarLeads = user ? savedLeads : filteredPanelLeads;
+  const sidebarSavedNiches = user ? savedNiches : sidebarNiches;
+
+  // Main layout
+  const mainContent = (
+    <div className="flex h-full min-h-0">
       <NicheSidebar
-        leads={savedLeads}
-        savedNiches={savedNiches}
+        leads={user ? savedLeads : allLeads}
+        savedNiches={sidebarSavedNiches}
         activeNiche={activeNiche}
         onSelectNiche={setActiveNiche}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
       />
-      <LeadgenDashboard
-        leads={savedLeads}
-        outreach={outreach}
-        activeNiche={activeNiche}
-        onUpdateStatus={updateLeadStatus}
-        onDraftEmail={handleDraftEmail}
-        onExportCSV={exportCSV}
-        chatContent={chatUI}
-        defaultTab={savedLeads.length > 0 ? "pipeline" : "chat"}
-      />
-    </div>
-  ) : (
-    <>
-      {/* Header for non-authed */}
-      <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3 shrink-0">
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-          <MessageSquare className="w-4.5 h-4.5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-sm font-semibold text-foreground">Xcrow Scout</h1>
-          <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
-        </div>
-        <div className="ml-auto">
-          <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-            Free — 5 Leads
-          </Badge>
-        </div>
+
+      <div className="flex flex-col flex-1 min-w-0">
+        {!user && (
+          <div className="border-b border-border/40 bg-card/30 px-4 py-3 flex items-center gap-3 shrink-0">
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <MessageSquare className="w-4.5 h-4.5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold text-foreground">Xcrow Scout</h1>
+              <p className="text-xs text-muted-foreground">AI-guided lead discovery</p>
+            </div>
+            <div className="ml-auto">
+              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                Free — 5 Leads
+              </Badge>
+            </div>
+          </div>
+        )}
+
+        {user ? (
+          <LeadgenDashboard
+            leads={savedLeads}
+            outreach={outreach}
+            activeNiche={activeNiche}
+            onUpdateStatus={updateLeadStatus}
+            onDraftEmail={handleDraftEmail}
+            onExportCSV={exportCSV}
+            chatContent={chatUI}
+            defaultTab={savedLeads.length > 0 ? "pipeline" : "chat"}
+          />
+        ) : chatUI}
       </div>
-      {chatUI}
-    </>
+    </div>
   );
 
   return (
