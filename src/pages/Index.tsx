@@ -165,7 +165,7 @@ export default function Index() {
               </div>
               <Button type="submit" size="lg" className="h-12 px-6 gap-2" disabled={!websiteUrl.trim()}>
                 <Sparkles className="w-4 h-4" />
-                Map ICP
+                Hunt Leads
               </Button>
             </form>
           </motion.div>
