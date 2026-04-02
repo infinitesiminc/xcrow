@@ -61,6 +61,8 @@ export default function Leadgen() {
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const activeNicheRef = useRef<string | null>(null);
+  activeNicheRef.current = activeNiche;
 
   // CRM hook
   const {
