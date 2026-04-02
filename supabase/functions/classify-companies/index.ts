@@ -77,9 +77,9 @@ Deno.serve(async (req) => {
       const { data: companies } = await sb
         .from("companies")
         .select("id, name, industry, description, employee_range, founded_year, funding_stage")
-        .not("industry", "is", null)
+        .or("industry.not.is.null,description.not.is.null")
         .order("name")
-        .limit(500);
+        .limit(2000);
 
       if (!companies?.length) {
         return new Response(JSON.stringify({ classified: 0, skipped: 0 }), {
