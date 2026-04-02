@@ -72,8 +72,8 @@ function EmberCanvas() {
 }
 
 const VALUE_PROPS = [
-  { icon: Target, title: "Deep ICP Mapping", desc: "One URL builds your complete Ideal Customer Profile — verticals, segments, and buyer personas." },
-  { icon: Users, title: "AI Lead Discovery", desc: "Autonomous agents find, qualify, and enrich prospects matching your exact ICP criteria." },
+  { icon: Target, title: "One URL, Full Profile", desc: "Drop in any website — we instantly map your ideal buyers, verticals, and personas." },
+  { icon: Users, title: "AI Lead Discovery", desc: "Autonomous agents find, qualify, and enrich prospects that actually match your business." },
   { icon: Zap, title: "Instant Outreach", desc: "Generate personalized email sequences and export pipeline-ready lead lists in seconds." },
   { icon: BarChart3, title: "Pipeline Intelligence", desc: "Track lead status, outreach history, and conversion metrics across every niche." },
 ];
