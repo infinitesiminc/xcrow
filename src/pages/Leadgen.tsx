@@ -57,7 +57,7 @@ export default function Leadgen() {
   const [items, setItems] = useState<ChatItem[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null }>>([]);
+  const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>>([]);
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   
   const [isFindingLeads, setIsFindingLeads] = useState(false);
