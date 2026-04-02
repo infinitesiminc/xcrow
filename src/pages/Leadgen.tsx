@@ -475,24 +475,71 @@ export default function Leadgen() {
     </div>
   );
 
-  // Context bar shown after discovery
+  // Niche stats
+  const allNiches = sidebarSavedNiches;
+  const verticalCount = allNiches.filter(n => n.niche_type === "vertical").length;
+  const segmentCount = allNiches.filter(n => n.niche_type === "segment").length;
+  const personaCount = allNiches.filter(n => n.niche_type === "persona").length;
+  const totalLeadCount = dashboardLeads.length;
+
+  // Company overview snapshot
   const contextBar = (companySummary || icpSummary) && hasDiscovered ? (
-    <div className="border-b border-border/40 bg-card/50 px-4 py-2 flex items-center gap-3 shrink-0">
-      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-        <Globe className="w-3.5 h-3.5 text-primary" />
+    <div className="border-b border-border/40 bg-gradient-to-r from-card/80 to-card/50 px-5 py-3 shrink-0">
+      <div className="flex items-start gap-4">
+        {/* Company icon + info */}
+        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+          <Globe className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-foreground truncate">{companySummary}</h3>
+            {websiteUrl && (
+              <Badge variant="outline" className="text-xs shrink-0 border-border/40">
+                {websiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+              </Badge>
+            )}
+          </div>
+          {icpSummary && (
+            <p className="text-xs text-muted-foreground line-clamp-1">
+              <span className="font-medium text-foreground/80">Target:</span> {icpSummary}
+            </p>
+          )}
+        </div>
+
+        {/* Stats pills */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 bg-muted/40 rounded-lg px-3 py-1.5 border border-border/30">
+            <div className="text-center">
+              <p className="text-sm font-bold text-primary">{verticalCount}</p>
+              <p className="text-[10px] text-muted-foreground leading-none">Verticals</p>
+            </div>
+            <div className="w-px h-6 bg-border/40" />
+            <div className="text-center">
+              <p className="text-sm font-bold text-foreground">{segmentCount}</p>
+              <p className="text-[10px] text-muted-foreground leading-none">Segments</p>
+            </div>
+            <div className="w-px h-6 bg-border/40" />
+            <div className="text-center">
+              <p className="text-sm font-bold text-foreground">{personaCount}</p>
+              <p className="text-[10px] text-muted-foreground leading-none">Personas</p>
+            </div>
+            <div className="w-px h-6 bg-border/40" />
+            <div className="text-center">
+              <p className="text-sm font-bold text-foreground">{totalLeadCount}</p>
+              <p className="text-[10px] text-muted-foreground leading-none">Leads</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs gap-1 shrink-0 text-muted-foreground hover:text-foreground"
+            onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); }}
+          >
+            <ArrowRight className="w-3 h-3" />
+            Re-analyze
+          </Button>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-foreground truncate">{companySummary}</p>
-        {icpSummary && <p className="text-xs text-muted-foreground truncate">{icpSummary}</p>}
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="text-xs gap-1 shrink-0"
-        onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); }}
-      >
-        Re-analyze
-      </Button>
     </div>
   ) : null;
 
