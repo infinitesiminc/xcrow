@@ -442,7 +442,7 @@ function ProfileSection({
           <div className="flex items-center gap-4">
             <div className="shrink-0 w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
               <span className="text-xl font-bold text-primary">
-                {displayName ? displayName.slice(0, 2).toUpperCase() : (user?.email ?? "").slice(0, 2).toUpperCase()}
+                {displayName ? displayName.slice(0, 2).toUpperCase() : email.slice(0, 2).toUpperCase()}
               </span>
             </div>
           </div>
