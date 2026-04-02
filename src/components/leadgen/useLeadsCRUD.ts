@@ -89,6 +89,7 @@ export function useLeadsCRUD(userId: string | undefined) {
         reason: l.reason || null,
         photo_url: l.photo_url || null,
         status: "new" as const,
+        niche_tag: l.niche_tag || null,
       }));
       await supabase.from("saved_leads").upsert(rows, {
         onConflict: "user_id,email,company",
