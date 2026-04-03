@@ -109,7 +109,7 @@ export default function Blog() {
 
             {/* CTA */}
             <motion.div variants={fadeUp} custom={ARTICLES.length + 1}
-              className="mt-14 text-center rounded-xl border border-[hsl(var(--filigree)/0.15)] p-8"
+              className="mt-14 text-center rounded-xl border border-border p-8"
               style={{ background: "hsl(var(--background))", boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.5)" }}>
               <h3 className="font-sans font-semibold text-xl font-bold mb-2">Ready to see the data in action?</h3>
               <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
