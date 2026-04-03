@@ -638,6 +638,7 @@ export default function Leadgen() {
               onExportNiche={handleExportNiche}
               isFinding={isFindingLeads}
               isEnriching={isEnrichingLeads}
+              onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
             />
           </div>
         </div>
