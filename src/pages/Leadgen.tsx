@@ -16,7 +16,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
+import { LeadDetailDrawer } from "@/components/leadgen/LeadDetailDrawer";
 import type { Lead } from "@/components/leadgen/LeadCard";
+import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
