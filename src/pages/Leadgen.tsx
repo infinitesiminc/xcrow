@@ -51,6 +51,21 @@ const formatAssistantMessage = (text: string): string => {
   return result;
 };
 
+const normalizeNicheLabel = (value?: string | null) =>
+  (value || "")
+    .toLowerCase()
+    .replace(/[()]/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | null) => {
+  if (!niche) return true;
+  const leadTag = normalizeNicheLabel(lead.niche_tag || "Uncategorized");
+  const target = normalizeNicheLabel(niche);
+  return leadTag === target || leadTag.includes(target) || target.includes(leadTag);
+};
+
 export default function Leadgen() {
   const { user, profile, openAuthModal } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
