@@ -731,44 +731,51 @@ export default function Leadgen() {
 
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
-      {/* Mobile toggle */}
-      {hasDiscovered && (
-        <div className="md:hidden border-b border-border/40 bg-card/30 px-4 py-2 flex gap-2 shrink-0">
-          <Button variant={mobileView === "results" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => setMobileView("results")}>
-            <Users className="w-3.5 h-3.5 mr-1.5" /> Map & Leads
-          </Button>
-          <Button variant={mobileView === "chat" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => { setMobileView("chat"); setChatOpen(true); }}>
-            <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Chat
-          </Button>
-        </div>
-      )}
-
-      {contextBar}
-
       {!hasDiscovered ? discoveryHero : (
-        <div className="flex flex-1 min-h-0">
-          <div className="flex flex-1 min-w-0">
-            <LeadgenDashboard
-              leads={dashboardLeads}
-              outreach={outreach}
+        <SidebarProvider defaultOpen={true}>
+          <div className="flex flex-1 min-h-0 w-full">
+            <AppSidebar
+              leads={user ? savedLeads : allLeads}
+              savedNiches={sidebarSavedNiches}
               activeNiche={activeNiche}
               onSelectNiche={setActiveNiche}
-              nicheLeads={user ? savedLeads : allLeads}
-              savedNiches={sidebarSavedNiches}
-              onUpdateStatus={updateLeadStatus}
-              onDraftEmail={handleDraftEmail}
-              onExportCSV={exportCSV}
-              onFindLeads={handleFindLeads}
-              onEnrichLeads={handleEnrichLeads}
-              onScoreLeads={handleScoreLeads}
-              onDraftAll={handleDraftAllOutreach}
-              onExportNiche={handleExportNiche}
-              isFinding={isFindingLeads}
-              isEnriching={isEnrichingLeads}
-              onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+              companySummary={companySummary}
+              websiteUrl={websiteUrl}
             />
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Header with trigger + re-analyze */}
+              <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex items-center gap-2 shrink-0">
+                <SidebarTrigger />
+                <div className="flex-1" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs gap-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
+                >
+                  <ArrowRight className="w-3 h-3" />
+                  Re-analyze
+                </Button>
+              </div>
+              <LeadgenDashboard
+                leads={dashboardLeads}
+                outreach={outreach}
+                activeNiche={activeNiche}
+                onUpdateStatus={updateLeadStatus}
+                onDraftEmail={handleDraftEmail}
+                onExportCSV={exportCSV}
+                onFindLeads={handleFindLeads}
+                onEnrichLeads={handleEnrichLeads}
+                onScoreLeads={handleScoreLeads}
+                onDraftAll={handleDraftAllOutreach}
+                onExportNiche={handleExportNiche}
+                isFinding={isFindingLeads}
+                isEnriching={isEnrichingLeads}
+                onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+              />
+            </div>
           </div>
-        </div>
+        </SidebarProvider>
       )}
 
       {/* Floating Chat Dock */}
