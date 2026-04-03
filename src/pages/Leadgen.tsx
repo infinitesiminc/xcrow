@@ -454,13 +454,53 @@ export default function Leadgen() {
   const handleEnrichLeads = async (niche: string) => {
     if (!user) { openAuthModal(); return; }
     setIsEnrichingLeads(true);
-    setChatOpen(true);
     const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && !l.email);
     if (nicheLeads.length === 0) {
       toast.info("All leads in this niche already have contact details.");
       setIsEnrichingLeads(false); return;
     }
-    sendMessage(`Enrich contacts for leads in the "${niche}" niche — find email addresses and phone numbers for the ${nicheLeads.length} leads missing contact info.`).finally(() => setIsEnrichingLeads(false));
+    toast.info(`Enriching ${nicheLeads.length} leads...`);
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: `Enrich contacts for leads in the "${niche}" niche — find email addresses and phone numbers for the ${nicheLeads.length} leads missing contact info.` }],
+        }),
+      });
+      if (!resp.ok) throw new Error("Enrichment failed");
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      const enrichedLeads: Lead[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "leads" && parsed.leads) enrichedLeads.push(...parsed.leads);
+          } catch {}
+        }
+      }
+      if (enrichedLeads.length > 0) {
+        await upsertLeads(enrichedLeads);
+        toast.success(`Enriched ${enrichedLeads.length} leads!`);
+      } else {
+        toast.info("No additional contact info found.");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Enrichment failed");
+    } finally {
+      setIsEnrichingLeads(false);
+    }
   };
 
   const handleScoreLeads = (niche: string) => {
