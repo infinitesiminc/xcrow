@@ -293,11 +293,17 @@ Rules:
 
     console.log(`=== Done: ${niches.length} niches from ${pagesScraped} pages ===`);
 
+    const pagesAnalyzed = [
+      { url: formattedUrl, path: "/", category: "homepage" },
+      ...pageResults.filter((p) => p.ok).map((p) => ({ url: p.url, path: p.path, category: p.category })),
+    ];
+
     return json({
       success: true,
       company_summary: icpData.company_summary,
       icp_summary: icpData.icp_summary,
       pages_scraped: pagesScraped,
+      pages_analyzed: pagesAnalyzed,
       niches,
     });
   } catch (error) {
