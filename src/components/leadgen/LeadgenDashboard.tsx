@@ -100,6 +100,7 @@ export function LeadgenDashboard({
             onDraftEmail={onDraftEmail}
             onExportCSV={onExportCSV}
             outreachCount={filteredOutreach.length}
+            onSelectLead={onSelectLead}
           />
         </TabsContent>
 
