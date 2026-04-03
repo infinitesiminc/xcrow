@@ -505,8 +505,7 @@ export default function Leadgen() {
 
   const handleScoreLeads = (niche: string) => {
     if (!user) { openAuthModal(); return; }
-    setChatOpen(true);
-    sendMessage(`Score and rank the leads in the "${niche}" niche by ICP fit, deal readiness, and potential value.`);
+    toast.info("Scoring leads — this feature is coming soon!");
   };
 
   const handleDraftAllOutreach = (niche: string) => {
