@@ -23,6 +23,7 @@ interface LeadPipelineProps {
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
   outreachCount: number;
+  onSelectLead?: (lead: SavedLead) => void;
 }
 
 function LeadAvatar({ lead }: { lead: SavedLead }) {
