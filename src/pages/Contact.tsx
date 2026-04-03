@@ -66,7 +66,7 @@ const Contact = () => {
             style={{ background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.2)" }}>
             <span className="text-2xl">👋</span>
           </div>
-          <h1 className="font-fantasy text-3xl sm:text-5xl font-bold mb-5 leading-tight">
+          <h1 className="font-sans font-semibold text-3xl sm:text-5xl font-bold mb-5 leading-tight">
             Let's Build the Future of Work Together
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
@@ -102,10 +102,10 @@ const Contact = () => {
           {/* ═══ CONTACT FORM — 3 cols ═══ */}
           <motion.div {...fade(0.15)} className="lg:col-span-3">
             {sent ? (
-              <Card className="border-border/50" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
+              <Card className="border-border/50" >
                 <CardContent className="p-10 text-center">
                   <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-primary" />
-                  <h2 className="font-fantasy text-xl font-bold mb-2">Message sent!</h2>
+                  <h2 className="font-sans font-semibold text-xl font-bold mb-2">Message sent!</h2>
                   <p className="text-sm text-muted-foreground mb-6">Thanks for reaching out. I'll personally reply within 24 hours. — Jackson</p>
                   <Button variant="outline" onClick={() => { setSent(false); setName(""); setEmail(""); setOrg(""); setPhone(""); setMessage(""); }}>
                     Send another message
@@ -113,9 +113,9 @@ const Contact = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="border-border/50" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))" }}>
+              <Card className="border-border/50" >
                 <CardContent className="p-6 sm:p-8">
-                  <h2 className="font-fantasy text-xl font-bold mb-1">Get in Touch</h2>
+                  <h2 className="font-sans font-semibold text-xl font-bold mb-1">Get in Touch</h2>
                   <p className="text-sm text-muted-foreground mb-6">Tell me about your organization and I'll show you how Xcrow fits.</p>
                   <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -173,9 +173,9 @@ const Contact = () => {
 
             {/* Direct contact */}
             <motion.div {...fade(0.25)}>
-              <Card className="border-border/50" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
+              <Card className="border-border/50" >
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-fantasy font-bold text-sm">Reach Me Directly</h3>
+                  <h3 className="font-sans font-semibold font-bold text-sm">Reach Me Directly</h3>
                   <div className="flex items-start gap-3">
                     <Mail className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                     <div>
@@ -203,7 +203,7 @@ const Contact = () => {
 
             {/* Calendly */}
             <motion.div {...fade(0.35)}>
-              <Card className="border-border/50 overflow-hidden" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
+              <Card className="border-border/50 overflow-hidden" >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="h-9 w-9 rounded-xl flex items-center justify-center"
@@ -211,7 +211,7 @@ const Contact = () => {
                       <Calendar className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-fantasy font-bold text-sm">Book a Call</h3>
+                      <h3 className="font-sans font-semibold font-bold text-sm">Book a Call</h3>
                       <p className="text-[11px] text-muted-foreground">30 min · free · no pressure</p>
                     </div>
                   </div>
