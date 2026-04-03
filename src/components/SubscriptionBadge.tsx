@@ -1,6 +1,5 @@
 /**
  * SubscriptionBadge — Compact plan indicator for the navbar.
- * Shows Champion badge for pro users, or "Free" with upgrade CTA.
  */
 import { useNavigate } from "react-router-dom";
 import { Crown, Sparkles } from "lucide-react";
@@ -16,15 +15,10 @@ export default function SubscriptionBadge() {
     return (
       <button
         onClick={() => navigate("/settings?section=subscription")}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all border"
-        style={{
-          background: "hsl(var(--territory-strategic) / 0.12)",
-          borderColor: "hsl(var(--territory-strategic) / 0.3)",
-          color: "hsl(var(--territory-strategic))",
-        }}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all border bg-primary/10 border-primary/30 text-primary"
       >
         <Crown size={13} />
-        <span>Champion</span>
+        <span>Pro</span>
       </button>
     );
   }
@@ -32,12 +26,7 @@ export default function SubscriptionBadge() {
   return (
     <button
       onClick={() => navigate("/pricing")}
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all border hover:opacity-80"
-      style={{
-        background: "hsl(var(--muted) / 0.3)",
-        borderColor: "hsl(var(--border) / 0.4)",
-        color: "hsl(var(--muted-foreground))",
-      }}
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all border hover:opacity-80 bg-muted/30 border-border/40 text-muted-foreground"
     >
       <Sparkles size={13} />
       <span>Upgrade</span>
