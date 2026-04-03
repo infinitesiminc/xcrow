@@ -90,7 +90,9 @@ export default function Leadgen() {
   const [companySummary, setCompanySummary] = useState("");
   const [icpSummary, setIcpSummary] = useState("");
   const [pagesScraped, setPagesScraped] = useState(0);
+  const [pagesAnalyzed, setPagesAnalyzed] = useState<Array<{ url: string; path: string; category: string }>>([]);
   const [hasDiscovered, setHasDiscovered] = useState(false);
+  const [isAutoSeeding, setIsAutoSeeding] = useState(false);
   
   const {
     leads: savedLeads, outreach, niches: savedNiches,
@@ -140,6 +142,7 @@ export default function Leadgen() {
             setCompanySummary(data.company_summary || "");
             setIcpSummary(data.icp_summary || "");
             setPagesScraped(data.pages_scraped || 1);
+            setPagesAnalyzed(data.pages_analyzed || []);
             const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
             setLocalNiches(niches);
             if (user) {
@@ -216,6 +219,7 @@ export default function Leadgen() {
       setCompanySummary(data.company_summary || "");
       setIcpSummary(data.icp_summary || "");
       setPagesScraped(data.pages_scraped || 1);
+      setPagesAnalyzed(data.pages_analyzed || []);
 
       // Populate niches
       const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
@@ -234,6 +238,9 @@ export default function Leadgen() {
       setHasDiscovered(true);
       setChatOpen(false);
       toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+
+      // Auto-seed 1 lead per persona
+      handleAutoSeed(niches);
     } catch (e: any) {
       toast.error(e.message || "Failed to analyze website");
     } finally {
@@ -559,6 +566,127 @@ export default function Leadgen() {
     a.click();
   };
 
+  // --- Batch find: request 5 leads for a niche ---
+  const handleBatchFind = async (niche: string) => {
+    if (!user) { openAuthModal(); return; }
+    setIsFindingLeads(true);
+    toast.info(`Finding batch of leads for "${niche}"...`);
+    try {
+      const nicheEntry = localNiches.find((n) => n.label === niche);
+      const parentNiche = nicheEntry?.parent_label ? localNiches.find((n) => n.label === nicheEntry.parent_label) : null;
+      const grandparentNiche = parentNiche?.parent_label ? localNiches.find((n) => n.label === parentNiche.parent_label) : null;
+      const contextParts = [
+        websiteUrl ? `My company website is ${websiteUrl}.` : "",
+        companySummary ? `Company: ${companySummary}.` : "",
+        grandparentNiche ? `Industry vertical: ${grandparentNiche.label}.` : "",
+        parentNiche ? `Market segment: ${parentNiche.label}.` : "",
+        `Target persona: ${niche}${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}.`,
+      ].filter(Boolean).join(" ");
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: `${contextParts}\n\nSkip discovery. Find exactly 5 real people with verified emails matching this persona "${niche}". Return them as leads.` }],
+        }),
+      });
+      if (!resp.ok) throw new Error("Batch search failed");
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      const foundLeads: Lead[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: niche })));
+          } catch {}
+        }
+      }
+      if (foundLeads.length > 0) {
+        await upsertLeads(foundLeads);
+        setActiveNiche(niche);
+        toast.success(`Added ${foundLeads.length} leads!`);
+      } else {
+        toast.info("No leads found. Try a different niche.");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Batch search failed");
+    } finally {
+      setIsFindingLeads(false);
+    }
+  };
+
+  // --- Find lookalikes from a single lead ---
+  const handleFindLookalikes = async (lead: SavedLead) => {
+    if (!user) { openAuthModal(); return; }
+    setIsFindingLeads(true);
+    toast.info(`Finding lookalikes for ${lead.name}...`);
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: `Find 3 people similar to ${lead.name} at ${lead.company || "their company"} (${lead.title || "similar role"}) — same industry, role level, and company size. Return them as leads with verified emails.` }],
+        }),
+      });
+      if (!resp.ok) throw new Error("Lookalike search failed");
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      const foundLeads: Lead[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: lead.niche_tag })));
+          } catch {}
+        }
+      }
+      if (foundLeads.length > 0) {
+        await upsertLeads(foundLeads);
+        toast.success(`Found ${foundLeads.length} lookalikes!`);
+      } else {
+        toast.info("No lookalikes found.");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Lookalike search failed");
+    } finally {
+      setIsFindingLeads(false);
+    }
+  };
+
+  // --- Auto-seed: 1 lead per persona niche after discovery ---
+  const handleAutoSeed = async (niches: Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>) => {
+    if (!user) return;
+    const personas = niches.filter(n => n.niche_type === "persona");
+    if (personas.length === 0) return;
+    setIsAutoSeeding(true);
+    for (let i = 0; i < personas.length; i++) {
+      toast.info(`Seeding lead ${i + 1}/${personas.length}: ${personas[i].label}`, { id: "auto-seed" });
+      await handleFindLeads(personas[i].label);
+    }
+    setIsAutoSeeding(false);
+    toast.success(`Seeded ${personas.length} sample leads!`, { id: "auto-seed" });
+  };
+
   const chatOnlyItems = items.filter(it => it.type !== "leads");
   const filteredPanelLeads = useMemo(() => {
     if (!activeNiche) return allLeads;
@@ -687,7 +815,7 @@ export default function Leadgen() {
                 onUpdateStatus={updateLeadStatus}
                 onDraftEmail={handleDraftEmail}
                 onExportCSV={exportCSV}
-                onFindLeads={handleFindLeads}
+                onBatchFind={handleBatchFind}
                 onEnrichLeads={handleEnrichLeads}
                 onScoreLeads={handleScoreLeads}
                 onDraftAll={handleDraftAllOutreach}
@@ -695,6 +823,11 @@ export default function Leadgen() {
                 isFinding={isFindingLeads}
                 isEnriching={isEnrichingLeads}
                 onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+                onFindLookalikes={handleFindLookalikes}
+                websiteUrl={websiteUrl}
+                pagesAnalyzed={pagesAnalyzed}
+                companySummary={companySummary}
+                icpSummary={icpSummary}
               />
             </div>
           </div>

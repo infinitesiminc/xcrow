@@ -1,9 +1,16 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Search, Sparkles, Target, Mail, Download, Loader2 } from "lucide-react";
+import { Plus, Sparkles, Target, Mail, Download, Loader2 } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
+import { ICPInsightsPanel } from "./ICPInsightsPanel";
 import type { SavedLead, LeadStatus, OutreachEntry } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
+
+interface PageAnalyzed {
+  url: string;
+  path: string;
+  category: string;
+}
 
 interface LeadgenDashboardProps {
   leads: SavedLead[];
@@ -12,7 +19,7 @@ interface LeadgenDashboardProps {
   onUpdateStatus: (id: string, status: LeadStatus) => void;
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
-  onFindLeads?: (niche: string) => void;
+  onBatchFind?: (niche: string) => void;
   onEnrichLeads?: (niche: string) => void;
   onScoreLeads?: (niche: string) => void;
   onDraftAll?: (niche: string) => void;
@@ -20,6 +27,12 @@ interface LeadgenDashboardProps {
   isFinding?: boolean;
   isEnriching?: boolean;
   onSelectLead?: (lead: SavedLead) => void;
+  onFindLookalikes?: (lead: SavedLead) => void;
+  // ICP Insights
+  websiteUrl?: string;
+  pagesAnalyzed?: PageAnalyzed[];
+  companySummary?: string;
+  icpSummary?: string;
 }
 
 export function LeadgenDashboard({
@@ -29,7 +42,7 @@ export function LeadgenDashboard({
   onUpdateStatus,
   onDraftEmail,
   onExportCSV,
-  onFindLeads,
+  onBatchFind,
   onEnrichLeads,
   onScoreLeads,
   onDraftAll,
@@ -37,6 +50,11 @@ export function LeadgenDashboard({
   isFinding,
   isEnriching,
   onSelectLead,
+  onFindLookalikes,
+  websiteUrl,
+  pagesAnalyzed,
+  companySummary,
+  icpSummary,
 }: LeadgenDashboardProps) {
   const normalizeNicheLabel = (value?: string | null) =>
     (value || "").toLowerCase().replace(/[()]/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
@@ -58,6 +76,14 @@ export function LeadgenDashboard({
 
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full">
+      {/* ICP Insights Panel */}
+      <ICPInsightsPanel
+        websiteUrl={websiteUrl || ""}
+        pagesAnalyzed={pagesAnalyzed || []}
+        companySummary={companySummary || ""}
+        icpSummary={icpSummary || ""}
+      />
+
       {/* Action Toolbar */}
       <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground mr-1">
@@ -69,10 +95,10 @@ export function LeadgenDashboard({
           size="sm"
           className="h-7 gap-1.5 text-xs"
           disabled={!activeNiche || isFinding}
-          onClick={() => activeNiche && onFindLeads?.(activeNiche)}
+          onClick={() => activeNiche && onBatchFind?.(activeNiche)}
         >
-          {isFinding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-          Find
+          {isFinding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+          +Batch
         </Button>
         <Button
           variant="outline"
@@ -124,6 +150,7 @@ export function LeadgenDashboard({
         onExportCSV={onExportCSV}
         outreachCount={filteredOutreach.length}
         onSelectLead={onSelectLead}
+        onFindLookalikes={onFindLookalikes}
       />
     </div>
   );
