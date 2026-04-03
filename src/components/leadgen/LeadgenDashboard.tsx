@@ -28,6 +28,7 @@ interface LeadgenDashboardProps {
   onExportNiche?: (niche: string) => void;
   isFinding?: boolean;
   isEnriching?: boolean;
+  onSelectLead?: (lead: SavedLead) => void;
 }
 
 export function LeadgenDashboard({
@@ -47,6 +48,7 @@ export function LeadgenDashboard({
   onExportNiche,
   isFinding,
   isEnriching,
+  onSelectLead,
 }: LeadgenDashboardProps) {
   const [tab, setTab] = useState("pipeline");
 
@@ -98,6 +100,7 @@ export function LeadgenDashboard({
             onDraftEmail={onDraftEmail}
             onExportCSV={onExportCSV}
             outreachCount={filteredOutreach.length}
+            onSelectLead={onSelectLead}
           />
         </TabsContent>
 

@@ -16,7 +16,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
+import { LeadDetailDrawer } from "@/components/leadgen/LeadDetailDrawer";
 import type { Lead } from "@/components/leadgen/LeadCard";
+import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
@@ -86,6 +88,8 @@ export default function Leadgen() {
   const [draftBody, setDraftBody] = useState("");
   const [draftCtaText, setDraftCtaText] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Check if user already has niches from DB
   useEffect(() => {
@@ -634,6 +638,7 @@ export default function Leadgen() {
               onExportNiche={handleExportNiche}
               isFinding={isFindingLeads}
               isEnriching={isEnrichingLeads}
+              onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
             />
           </div>
         </div>
@@ -745,6 +750,17 @@ export default function Leadgen() {
       <div className="flex flex-col h-screen pt-16">
         {mainContent}
       </div>
+
+      {/* Lead Detail Drawer */}
+      <LeadDetailDrawer
+        lead={selectedLead}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        outreach={outreach}
+        onUpdateStatus={updateLeadStatus}
+        onDraftEmail={handleDraftEmail}
+        userId={user?.id}
+      />
 
       {/* Email Draft Modal */}
       <Dialog open={draftModalOpen} onOpenChange={setDraftModalOpen}>

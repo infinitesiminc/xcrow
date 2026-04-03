@@ -23,6 +23,7 @@ interface LeadPipelineProps {
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
   outreachCount: number;
+  onSelectLead?: (lead: SavedLead) => void;
 }
 
 function LeadAvatar({ lead }: { lead: SavedLead }) {
@@ -40,7 +41,7 @@ function LeadAvatar({ lead }: { lead: SavedLead }) {
   );
 }
 
-export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount }: LeadPipelineProps) {
+export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount, onSelectLead }: LeadPipelineProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -101,7 +102,7 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
         ) : (
           <div className="space-y-2.5">
             {filtered.map((lead) => (
-              <Card key={lead.id} className="bg-card/60 border-border/40 hover:border-primary/20 transition-colors">
+              <Card key={lead.id} className="bg-card/60 border-border/40 hover:border-primary/20 transition-colors cursor-pointer" onClick={() => onSelectLead?.(lead)}>
                 <CardContent className="p-3">
                   {/* Row 1: Avatar + Name + Status */}
                   <div className="flex items-start gap-3">
