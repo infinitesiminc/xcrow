@@ -90,7 +90,9 @@ export default function Leadgen() {
   const [companySummary, setCompanySummary] = useState("");
   const [icpSummary, setIcpSummary] = useState("");
   const [pagesScraped, setPagesScraped] = useState(0);
+  const [pagesAnalyzed, setPagesAnalyzed] = useState<Array<{ url: string; path: string; category: string }>>([]);
   const [hasDiscovered, setHasDiscovered] = useState(false);
+  const [isAutoSeeding, setIsAutoSeeding] = useState(false);
   
   const {
     leads: savedLeads, outreach, niches: savedNiches,
