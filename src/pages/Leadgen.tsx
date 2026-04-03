@@ -88,6 +88,8 @@ export default function Leadgen() {
   const [draftBody, setDraftBody] = useState("");
   const [draftCtaText, setDraftCtaText] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Check if user already has niches from DB
   useEffect(() => {
