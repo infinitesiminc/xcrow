@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import { LeadDetailDrawer } from "@/components/leadgen/LeadDetailDrawer";
+import { AppSidebar } from "@/components/leadgen/AppSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import type { Lead } from "@/components/leadgen/LeadCard";
 import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
 
@@ -587,7 +589,6 @@ export default function Leadgen() {
     }));
   }, [user, savedLeads, filteredPanelLeads]);
 
-  const [mobileView, setMobileView] = useState<"chat" | "results">("results");
 
 
   // Discovery hero (shown when no niches)
@@ -650,123 +651,54 @@ export default function Leadgen() {
     </div>
   );
 
-  // Niche stats
-  const allNiches = sidebarSavedNiches;
-  const verticalCount = allNiches.filter(n => n.niche_type === "vertical").length;
-  const segmentCount = allNiches.filter(n => n.niche_type === "segment").length;
-  const personaCount = allNiches.filter(n => n.niche_type === "persona").length;
-  const totalLeadCount = dashboardLeads.length;
-
-  // Company overview snapshot
-  const contextBar = (companySummary || icpSummary) && hasDiscovered ? (
-    <div className="border-b border-border/40 bg-gradient-to-r from-card/80 to-card/50 px-5 py-3 shrink-0">
-      <div className="flex items-start gap-4">
-        {/* Company icon + info */}
-        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-          <Globe className="w-5 h-5 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-foreground truncate">{companySummary}</h3>
-            {websiteUrl && (
-              <Badge variant="outline" className="text-xs shrink-0 border-border/40">
-                {websiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-              </Badge>
-            )}
-          </div>
-          {icpSummary && (
-            <p className="text-xs text-muted-foreground line-clamp-1">
-              <span className="font-medium text-foreground/80">Target:</span> {icpSummary}
-            </p>
-          )}
-        </div>
-
-        {/* Stats pills */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-3 bg-muted/40 rounded-lg px-3 py-1.5 border border-border/30">
-            {pagesScraped > 0 && (
-              <>
-                <div className="text-center">
-                  <p className="text-sm font-bold text-muted-foreground">{pagesScraped}</p>
-                  <p className="text-[10px] text-muted-foreground leading-none">Pages</p>
-                </div>
-                <div className="w-px h-6 bg-border/40" />
-              </>
-            )}
-            <div className="text-center">
-              <p className="text-sm font-bold text-primary">{verticalCount}</p>
-              <p className="text-[10px] text-muted-foreground leading-none">Verticals</p>
-            </div>
-            <div className="w-px h-6 bg-border/40" />
-            <div className="text-center">
-              <p className="text-sm font-bold text-foreground">{segmentCount}</p>
-              <p className="text-[10px] text-muted-foreground leading-none">Segments</p>
-            </div>
-            <div className="w-px h-6 bg-border/40" />
-            <div className="text-center">
-              <p className="text-sm font-bold text-foreground">{personaCount}</p>
-              <p className="text-[10px] text-muted-foreground leading-none">Personas</p>
-            </div>
-            <div className="w-px h-6 bg-border/40" />
-            <div className="text-center">
-              <p className="text-sm font-bold text-foreground">{totalLeadCount}</p>
-              <p className="text-[10px] text-muted-foreground leading-none">Leads</p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs gap-1 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
-          >
-            <ArrowRight className="w-3 h-3" />
-            Re-analyze
-          </Button>
-        </div>
-      </div>
-    </div>
-  ) : null;
 
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
-      {/* Mobile toggle */}
-      {hasDiscovered && (
-        <div className="md:hidden border-b border-border/40 bg-card/30 px-4 py-2 flex gap-2 shrink-0">
-          <Button variant={mobileView === "results" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => setMobileView("results")}>
-            <Users className="w-3.5 h-3.5 mr-1.5" /> Map & Leads
-          </Button>
-          <Button variant={mobileView === "chat" ? "default" : "outline"} size="sm" className="flex-1 text-xs h-8" onClick={() => { setMobileView("chat"); setChatOpen(true); }}>
-            <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Chat
-          </Button>
-        </div>
-      )}
-
-      {contextBar}
-
       {!hasDiscovered ? discoveryHero : (
-        <div className="flex flex-1 min-h-0">
-          <div className="flex flex-1 min-w-0">
-            <LeadgenDashboard
-              leads={dashboardLeads}
-              outreach={outreach}
+        <SidebarProvider defaultOpen={true}>
+          <div className="flex flex-1 min-h-0 w-full">
+            <AppSidebar
+              leads={user ? savedLeads : allLeads}
+              savedNiches={sidebarSavedNiches}
               activeNiche={activeNiche}
               onSelectNiche={setActiveNiche}
-              nicheLeads={user ? savedLeads : allLeads}
-              savedNiches={sidebarSavedNiches}
-              onUpdateStatus={updateLeadStatus}
-              onDraftEmail={handleDraftEmail}
-              onExportCSV={exportCSV}
-              onFindLeads={handleFindLeads}
-              onEnrichLeads={handleEnrichLeads}
-              onScoreLeads={handleScoreLeads}
-              onDraftAll={handleDraftAllOutreach}
-              onExportNiche={handleExportNiche}
-              isFinding={isFindingLeads}
-              isEnriching={isEnrichingLeads}
-              onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+              companySummary={companySummary}
+              websiteUrl={websiteUrl}
             />
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Header with trigger + re-analyze */}
+              <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex items-center gap-2 shrink-0">
+                <SidebarTrigger />
+                <div className="flex-1" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs gap-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
+                >
+                  <ArrowRight className="w-3 h-3" />
+                  Re-analyze
+                </Button>
+              </div>
+              <LeadgenDashboard
+                leads={dashboardLeads}
+                outreach={outreach}
+                activeNiche={activeNiche}
+                onUpdateStatus={updateLeadStatus}
+                onDraftEmail={handleDraftEmail}
+                onExportCSV={exportCSV}
+                onFindLeads={handleFindLeads}
+                onEnrichLeads={handleEnrichLeads}
+                onScoreLeads={handleScoreLeads}
+                onDraftAll={handleDraftAllOutreach}
+                onExportNiche={handleExportNiche}
+                isFinding={isFindingLeads}
+                isEnriching={isEnrichingLeads}
+                onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+              />
+            </div>
           </div>
-        </div>
+        </SidebarProvider>
       )}
 
       {/* Floating Chat Dock */}

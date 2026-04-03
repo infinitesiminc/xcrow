@@ -1,23 +1,14 @@
-import { useState, useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Clock } from "lucide-react";
+import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Search, Sparkles, Target, Mail, Download, Loader2 } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
-import { ActivityLog } from "./ActivityLog";
-import { NicheFunnelMap } from "./NicheFunnelMap";
-import type { SavedLead, LeadStatus, OutreachEntry, NicheEntry } from "./useLeadsCRUD";
+import type { SavedLead, LeadStatus, OutreachEntry } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
-
-interface NicheLeadLike {
-  niche_tag?: string | null;
-}
 
 interface LeadgenDashboardProps {
   leads: SavedLead[];
   outreach: OutreachEntry[];
   activeNiche: string | null;
-  onSelectNiche: (niche: string | null) => void;
-  nicheLeads: NicheLeadLike[];
-  savedNiches?: NicheEntry[];
   onUpdateStatus: (id: string, status: LeadStatus) => void;
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
@@ -35,9 +26,6 @@ export function LeadgenDashboard({
   leads,
   outreach,
   activeNiche,
-  onSelectNiche,
-  nicheLeads,
-  savedNiches,
   onUpdateStatus,
   onDraftEmail,
   onExportCSV,
@@ -50,17 +38,11 @@ export function LeadgenDashboard({
   isEnriching,
   onSelectLead,
 }: LeadgenDashboardProps) {
-  const [tab, setTab] = useState("pipeline");
+  const normalizeNicheLabel = (value?: string | null) =>
+    (value || "").toLowerCase().replace(/[()]/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
 
   const filteredLeads = useMemo(() => {
     if (!activeNiche) return leads;
-    const normalizeNicheLabel = (value?: string | null) =>
-      (value || "")
-        .toLowerCase()
-        .replace(/[()]/g, " ")
-        .replace(/[^a-z0-9]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
     const target = normalizeNicheLabel(activeNiche);
     return leads.filter((l) => {
       const leadTag = normalizeNicheLabel(l.niche_tag || "Uncategorized");
@@ -76,49 +58,73 @@ export function LeadgenDashboard({
 
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full">
-      {/* Funnel Map */}
-      <NicheFunnelMap
-        leads={nicheLeads}
-        savedNiches={savedNiches}
-        activeNiche={activeNiche}
-        onSelectNiche={onSelectNiche}
-        onFindLeads={onFindLeads}
-        onEnrichLeads={onEnrichLeads}
-        onScoreLeads={onScoreLeads}
-        onDraftAll={onDraftAll}
-        onExportNiche={onExportNiche}
-        isFinding={isFinding}
-        isEnriching={isEnriching}
+      {/* Action Toolbar */}
+      <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
+        <span className="text-xs font-medium text-muted-foreground mr-1">
+          {activeNiche || "All Leads"}
+        </span>
+        <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5 text-xs"
+          disabled={!activeNiche || isFinding}
+          onClick={() => activeNiche && onFindLeads?.(activeNiche)}
+        >
+          {isFinding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+          Find
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5 text-xs"
+          disabled={!activeNiche || isEnriching}
+          onClick={() => activeNiche && onEnrichLeads?.(activeNiche)}
+        >
+          {isEnriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+          Enrich
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5 text-xs"
+          disabled={!activeNiche}
+          onClick={() => activeNiche && onScoreLeads?.(activeNiche)}
+        >
+          <Target className="w-3.5 h-3.5" />
+          Score
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5 text-xs"
+          disabled={!activeNiche}
+          onClick={() => activeNiche && onDraftAll?.(activeNiche)}
+        >
+          <Mail className="w-3.5 h-3.5" />
+          Draft
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5 text-xs"
+          disabled={!activeNiche}
+          onClick={() => activeNiche && onExportNiche?.(activeNiche)}
+        >
+          <Download className="w-3.5 h-3.5" />
+          Export
+        </Button>
+      </div>
+
+      {/* Lead Pipeline (full area) */}
+      <LeadPipeline
+        leads={filteredLeads}
+        onUpdateStatus={onUpdateStatus}
+        onDraftEmail={onDraftEmail}
+        onExportCSV={onExportCSV}
+        outreachCount={filteredOutreach.length}
+        onSelectLead={onSelectLead}
       />
-
-      {/* Pipeline / Activity tabs */}
-      <Tabs value={tab} onValueChange={setTab} className="flex flex-col flex-1 min-h-0">
-        <div className="border-b border-border/40 bg-card/30 px-4 shrink-0 flex items-center gap-3">
-          <TabsList className="bg-transparent h-10 gap-1">
-            <TabsTrigger value="pipeline" className="gap-1.5 text-xs data-[state=active]:bg-primary/10">
-              <BarChart3 className="w-3.5 h-3.5" /> Pipeline
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="gap-1.5 text-xs data-[state=active]:bg-primary/10">
-              <Clock className="w-3.5 h-3.5" /> Activity
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="pipeline" className="flex-1 m-0 overflow-hidden">
-          <LeadPipeline
-            leads={filteredLeads}
-            onUpdateStatus={onUpdateStatus}
-            onDraftEmail={onDraftEmail}
-            onExportCSV={onExportCSV}
-            outreachCount={filteredOutreach.length}
-            onSelectLead={onSelectLead}
-          />
-        </TabsContent>
-
-        <TabsContent value="activity" className="flex-1 m-0 overflow-hidden">
-          <ActivityLog entries={filteredOutreach} />
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }
