@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Styrene+A:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,200 +6,50 @@
 
 @layer base {
   :root {
-    /* TikTok-native dark-first — light mode is secondary */
-    --background: 240 6% 97%;
-    --foreground: 240 10% 10%;
+    /* Claude.ai-inspired warm light palette */
+    --background: 40 23% 97%;
+    --foreground: 30 10% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card-foreground: 30 10% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover-foreground: 30 10% 12%;
 
-    --primary: 262 83% 58%;
+    --primary: 24 70% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 93%;
-    --secondary-foreground: 240 10% 10%;
+    --secondary: 35 15% 93%;
+    --secondary-foreground: 30 10% 20%;
 
-    --muted: 240 5% 93%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 35 12% 92%;
+    --muted-foreground: 30 6% 46%;
 
-    --accent: 262 40% 93%;
-    --accent-foreground: 262 83% 45%;
+    --accent: 24 30% 93%;
+    --accent-foreground: 24 70% 35%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 262 83% 58%;
+    --border: 35 12% 88%;
+    --input: 35 12% 88%;
+    --ring: 24 70% 45%;
 
     --radius: 0.75rem;
 
-    --success: 152 60% 45%;
+    --success: 152 50% 40%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 80% 48%;
     --warning-foreground: 0 0% 100%;
 
-    /* Neon accent palette */
-    --neon-purple: 262 83% 58%;
-    --neon-pink: 330 90% 60%;
-    --neon-blue: 217 91% 60%;
-    --neon-cyan: 185 95% 50%;
-    --neon-lime: 82 85% 55%;
-
-    /* Brand metaphor: Red = AI risk, Blue = human strength */
-    --brand-ai: 330 90% 60%;
-    --brand-human: 217 91% 60%;
-    --brand-mid: 262 83% 58%;
-
-    /* 7-stop AI-exposure spectrum */
-    --spectrum-0: 217 91% 60%;
-    --spectrum-1: 185 80% 48%;
-    --spectrum-2: 152 60% 45%;
-    --spectrum-3: 262 83% 58%;
-    --spectrum-4: 38 92% 50%;
-    --spectrum-5: 20 90% 55%;
-    --spectrum-6: 330 90% 60%;
-
-    --dot-blue: 217 91% 60%;
-    --dot-teal: 185 95% 50%;
-    --dot-purple: 262 83% 58%;
-    --dot-amber: 38 80% 55%;
-
-    /* ── 8 Territory Colors ── */
-    --territory-technical:   262 83% 58%;   /* Amethyst — Circuit Peaks     */
-    --territory-analytical:  195 85% 50%;   /* Cyan     — Data Highlands    */
-    --territory-strategic:   45  85% 50%;   /* Gold     — Command Summit    */
-    --territory-communication: 152 60% 45%; /* Emerald  — Bridge Isles      */
-    --territory-leadership:  25  90% 55%;   /* Flame    — Crown Heights     */
-    --territory-creative:    340 75% 55%;   /* Ruby     — Prism Coast       */
-    --territory-ethics:      175 70% 42%;   /* Jade     — Sentinel Watch    */
-    --territory-humanedge:   320 70% 58%;   /* Magenta  — Soul Springs      */
-
-    /* ── Fantasy surface tokens ── */
-    --surface-stone: 240 6% 92%;
-    --surface-parchment: 38 30% 94%;
-    --filigree: 38 50% 65%;
-    --filigree-glow: 38 60% 50%;
-    --emboss-light: 0 0% 100% / 0.08;
-    --emboss-shadow: 0 0% 0% / 0.15;
-
-    /* ── Sentinel / L2 battle tokens ── */
-    --sentinel: 262 60% 48%;
-    --sentinel-surface: 262 15% 88%;
-    --sentinel-surface-deep: 262 12% 82%;
-    --sentinel-border: 262 30% 70%;
-    --sentinel-text: 262 60% 40%;
-    --sentinel-glow: 262 70% 55%;
-    --sentinel-arena-bg: 262 10% 92%;
-    --sentinel-arena-fg: 262 15% 15%;
-
-    --sidebar-background: 240 5% 95%;
-    --sidebar-foreground: 240 10% 20%;
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-background: 40 20% 96%;
+    --sidebar-foreground: 30 10% 18%;
+    --sidebar-primary: 24 70% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 262 40% 93%;
-    --sidebar-accent-foreground: 262 83% 45%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 262 83% 58%;
-  }
-
-  .dark {
-    --background: 240 10% 7%;
-    --foreground: 220 10% 82%;
-
-    --card: 240 10% 10%;
-    --card-foreground: 220 10% 82%;
-
-    --popover: 240 10% 10%;
-    --popover-foreground: 220 10% 82%;
-
-    --primary: 262 83% 62%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 8% 14%;
-    --secondary-foreground: 220 8% 78%;
-
-    --muted: 240 8% 16%;
-    --muted-foreground: 220 5% 52%;
-
-    --accent: 262 50% 16%;
-    --accent-foreground: 262 83% 72%;
-
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 240 8% 16%;
-    --input: 240 8% 16%;
-    --ring: 262 83% 62%;
-
-    --success: 152 60% 40%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 80% 45%;
-    --warning-foreground: 0 0% 100%;
-
-    --neon-purple: 262 83% 65%;
-    --neon-pink: 330 90% 65%;
-    --neon-blue: 217 91% 65%;
-    --neon-cyan: 185 95% 55%;
-    --neon-lime: 82 85% 60%;
-
-    --brand-ai: 330 90% 65%;
-    --brand-human: 217 91% 65%;
-    --brand-mid: 262 83% 65%;
-
-    /* 7-stop spectrum — dark mode */
-    --spectrum-0: 217 91% 65%;
-    --spectrum-1: 185 80% 52%;
-    --spectrum-2: 152 60% 50%;
-    --spectrum-3: 262 83% 65%;
-    --spectrum-4: 38 92% 55%;
-    --spectrum-5: 20 90% 58%;
-    --spectrum-6: 330 90% 65%;
-
-    --dot-blue: 217 91% 65%;
-    --dot-teal: 185 95% 55%;
-    --dot-purple: 262 83% 65%;
-    --dot-amber: 38 80% 60%;
-
-    /* ── 8 Territory Colors (dark — lifted lightness) ── */
-    --territory-technical:   262 83% 65%;
-    --territory-analytical:  195 85% 58%;
-    --territory-strategic:   45  85% 55%;
-    --territory-communication: 152 60% 50%;
-    --territory-leadership:  25  90% 58%;
-    --territory-creative:    340 75% 60%;
-    --territory-ethics:      175 70% 48%;
-    --territory-humanedge:   320 70% 62%;
-
-    /* ── Fantasy surface tokens (dark) ── */
-    --surface-stone: 240 8% 12%;
-    --surface-parchment: 35 15% 14%;
-    --filigree: 38 55% 45%;
-    --filigree-glow: 38 65% 55%;
-    --emboss-light: 0 0% 100% / 0.05;
-    --emboss-shadow: 0 0% 0% / 0.4;
-
-    /* ── Sentinel / L2 battle tokens (dark) ── */
-    --sentinel: 262 80% 55%;
-    --sentinel-surface: 262 30% 12%;
-    --sentinel-surface-deep: 262 30% 14%;
-    --sentinel-border: 262 60% 40%;
-    --sentinel-text: 262 80% 70%;
-    --sentinel-glow: 262 80% 55%;
-    --sentinel-arena-bg: 262 40% 8%;
-    --sentinel-arena-fg: 0 0% 90%;
-
-    --sidebar-background: 240 10% 9%;
-    --sidebar-foreground: 220 8% 78%;
-    --sidebar-primary: 262 83% 62%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 262 50% 16%;
-    --sidebar-accent-foreground: 262 83% 72%;
-    --sidebar-border: 240 8% 16%;
-    --sidebar-ring: 262 83% 62%;
+    --sidebar-accent: 24 25% 92%;
+    --sidebar-accent-foreground: 24 70% 35%;
+    --sidebar-border: 35 12% 88%;
+    --sidebar-ring: 24 70% 45%;
   }
 }
 
@@ -210,134 +60,26 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3 {
     font-family: 'Inter', system-ui, sans-serif;
-  }
-
-  /* Fantasy display headings — Cinzel for RPG gravitas */
-  h1 {
-    font-family: 'Cinzel', 'Syne', 'Space Grotesk', serif;
-    font-weight: 700;
-  }
-
-  h2, h3 {
-    font-family: 'Cinzel', 'Space Grotesk', serif;
     font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   h4, h5, h6 {
-    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 600;
   }
 }
 
-/* Default to dark mode — toggle via .parchment class */
+/* Force light mode only */
 html {
-  color-scheme: dark;
-}
-html:not(.light):not(.parchment) {
-  @apply dark;
-}
-
-/* ═══════════════════════════════════════════
-   PARCHMENT MODE — Sunlight-readable RPG
-   ═══════════════════════════════════════════ */
-.parchment {
   color-scheme: light;
-
-  --background: 35 25% 92%;
-  --foreground: 30 15% 15%;
-
-  --card: 36 28% 95%;
-  --card-foreground: 30 15% 15%;
-
-  --popover: 36 28% 95%;
-  --popover-foreground: 30 15% 15%;
-
-  --primary: 262 70% 48%;
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 35 18% 87%;
-  --secondary-foreground: 30 15% 20%;
-
-  --muted: 35 15% 85%;
-  --muted-foreground: 30 10% 40%;
-
-  --accent: 262 30% 88%;
-  --accent-foreground: 262 70% 38%;
-
-  --destructive: 0 72% 50%;
-  --destructive-foreground: 0 0% 100%;
-
-  --border: 35 15% 78%;
-  --input: 35 15% 80%;
-  --ring: 262 70% 48%;
-
-  --success: 152 50% 35%;
-  --success-foreground: 0 0% 100%;
-  --warning: 38 80% 42%;
-  --warning-foreground: 0 0% 100%;
-
-  /* Neon → muted jewel tones for light */
-  --neon-purple: 262 60% 45%;
-  --neon-pink: 330 65% 48%;
-  --neon-blue: 217 70% 45%;
-  --neon-cyan: 185 70% 35%;
-  --neon-lime: 82 60% 38%;
-
-  --brand-ai: 330 65% 48%;
-  --brand-human: 217 70% 45%;
-  --brand-mid: 262 60% 45%;
-
-  /* 7-stop spectrum — parchment */
-  --spectrum-0: 217 70% 45%;
-  --spectrum-1: 185 60% 35%;
-  --spectrum-2: 152 50% 35%;
-  --spectrum-3: 262 60% 45%;
-  --spectrum-4: 38 75% 42%;
-  --spectrum-5: 20 70% 45%;
-  --spectrum-6: 330 65% 48%;
-
-  --dot-blue: 217 70% 45%;
-  --dot-teal: 185 70% 35%;
-  --dot-purple: 262 60% 45%;
-  --dot-amber: 38 65% 42%;
-
-  /* Territory colors — deeper for light bg */
-  --territory-technical:   262 60% 45%;
-  --territory-analytical:  195 70% 38%;
-  --territory-strategic:   45  70% 40%;
-  --territory-communication: 152 50% 35%;
-  --territory-leadership:  25  70% 42%;
-  --territory-creative:    340 60% 42%;
-  --territory-ethics:      175 55% 32%;
-  --territory-humanedge:   320 55% 42%;
-
-  /* Fantasy surface tokens — warm parchment */
-  --surface-stone: 35 22% 88%;
-  --surface-parchment: 38 30% 91%;
-  --filigree: 30 45% 35%;
-  --filigree-glow: 35 55% 42%;
-  --emboss-light: 0 0% 100% / 0.5;
-  --emboss-shadow: 30 20% 30% / 0.12;
-
-  /* ── Sentinel / L2 battle tokens (parchment) ── */
-  --sentinel: 262 55% 45%;
-  --sentinel-surface: 262 12% 85%;
-  --sentinel-surface-deep: 262 10% 80%;
-  --sentinel-border: 262 25% 65%;
-  --sentinel-text: 262 55% 38%;
-  --sentinel-glow: 262 65% 50%;
-  --sentinel-arena-bg: 262 8% 90%;
-  --sentinel-arena-fg: 262 15% 15%;
-
-  --sidebar-background: 35 20% 90%;
-  --sidebar-foreground: 30 15% 20%;
-  --sidebar-primary: 262 70% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 262 30% 88%;
-  --sidebar-accent-foreground: 262 70% 38%;
-  --sidebar-border: 35 15% 78%;
-  --sidebar-ring: 262 70% 48%;
 }
 
 /* Task carousel scrollbar */
@@ -373,7 +115,7 @@ html:not(.light):not(.parchment) {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: hsl(var(--border) / 0.4);
+  background: hsl(var(--border) / 0.5);
   border-radius: 2px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
@@ -381,151 +123,13 @@ html:not(.light):not(.parchment) {
 }
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--border) / 0.4) transparent;
+  scrollbar-color: hsl(var(--border) / 0.5) transparent;
 }
 
-/* Sim-launch glow border — moving gradient border for simulation buttons */
-@keyframes glow-rotate {
-  0% { --glow-angle: 0deg; }
-  100% { --glow-angle: 360deg; }
-}
-
-@property --glow-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-.sim-glow-border {
-  position: relative;
-  overflow: hidden;
-}
-
-.sim-glow-border::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: conic-gradient(
-    from var(--glow-angle),
-    transparent 0%,
-    hsl(var(--neon-purple) / 0.6) 10%,
-    hsl(var(--neon-cyan) / 0.5) 20%,
-    hsl(var(--neon-pink) / 0.6) 30%,
-    transparent 40%,
-    transparent 100%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: glow-rotate 3s linear infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.sim-glow-border:hover::before {
-  opacity: 1;
-}
-
-/* Button variant — always visible subtle glow */
-.sim-glow-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.sim-glow-btn::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: conic-gradient(
-    from var(--glow-angle),
-    transparent 0%,
-    hsl(var(--neon-purple) / 0.5) 10%,
-    hsl(var(--neon-cyan) / 0.4) 20%,
-    hsl(var(--neon-pink) / 0.5) 30%,
-    transparent 40%,
-    transparent 100%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: glow-rotate 3s linear infinite;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.sim-glow-btn:hover::before {
-  opacity: 1;
-}
-
-
-.glow-purple {
-  box-shadow: 0 0 20px hsl(var(--neon-purple) / 0.3), 0 0 60px hsl(var(--neon-purple) / 0.1);
-}
-.glow-pink {
-  box-shadow: 0 0 20px hsl(var(--neon-pink) / 0.3), 0 0 60px hsl(var(--neon-pink) / 0.1);
-}
-.glow-blue {
-  box-shadow: 0 0 20px hsl(var(--neon-blue) / 0.3), 0 0 60px hsl(var(--neon-blue) / 0.1);
-}
-.text-glow-purple {
-  text-shadow: 0 0 20px hsl(var(--neon-purple) / 0.5), 0 0 40px hsl(var(--neon-purple) / 0.2);
-}
-
-@keyframes ticker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes coach-glow {
-  0%, 100% { box-shadow: 0 0 16px -4px hsl(var(--primary) / 0.4), 0 0 36px -8px hsl(var(--primary) / 0.2); }
-  50% { box-shadow: 0 0 24px -2px hsl(var(--primary) / 0.6), 0 0 50px -6px hsl(var(--primary) / 0.35); }
-}
-
-.animate-coach-glow {
-  animation: coach-glow 2.5s ease-in-out infinite;
-}
-.neon-text {
-  background: linear-gradient(135deg, hsl(var(--neon-purple)), hsl(var(--neon-pink)), hsl(var(--neon-blue)));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Neon border glow */
-.neon-border {
-  position: relative;
-  border-radius: var(--radius);
-}
-.neon-border::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, hsl(var(--neon-purple)), hsl(var(--neon-pink)), hsl(var(--neon-blue)));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* ── Chat prose (Claude-inspired clean typography) ── */
+/* ── Chat prose (clean typography) ── */
 .chat-prose {
   color: hsl(var(--foreground) / 0.92);
-  font-size: 0.9375rem; /* 15px */
+  font-size: 0.9375rem;
   line-height: 1.7;
 }
 .chat-prose p {
@@ -577,7 +181,7 @@ html:not(.light):not(.parchment) {
   font-style: italic;
 }
 
-/* ── Disrupt briefing prose — better section separation ── */
+/* ── Disrupt briefing prose ── */
 .disrupt-prose {
   color: hsl(var(--foreground) / 0.92);
   font-size: 0.875rem;
@@ -652,19 +256,19 @@ html:not(.light):not(.parchment) {
   font-size: 1rem;
 }
 .settings-page .text-xs {
-  font-size: 0.8125rem !important; /* 13px */
+  font-size: 0.8125rem !important;
   line-height: 1.25rem;
 }
 .settings-page .text-sm {
-  font-size: 0.9375rem !important; /* 15px */
+  font-size: 0.9375rem !important;
   line-height: 1.375rem;
 }
 .settings-page .text-base {
-  font-size: 1.0625rem !important; /* 17px */
+  font-size: 1.0625rem !important;
   line-height: 1.5rem;
 }
 .settings-page .text-xl {
-  font-size: 1.375rem !important; /* 22px */
+  font-size: 1.375rem !important;
 }
 .settings-page .text-\[10px\],
 .settings-page .text-\[11px\] {
@@ -674,238 +278,13 @@ html:not(.light):not(.parchment) {
   font-size: 14px !important;
 }
 
-/* ══════════════════════════════════════════════════
-   DARK FANTASY RPG — Surface & Card Utilities
-   ══════════════════════════════════════════════════ */
-
-/* Stone panel — primary card surface */
-.rpg-panel {
-  background: hsl(var(--surface-stone));
-  border: 1px solid hsl(var(--filigree) / 0.2);
-  box-shadow:
-    inset 0 1px 0 hsl(var(--emboss-light)),
-    inset 0 -1px 0 hsl(var(--emboss-shadow)),
-    0 4px 16px -4px hsl(0 0% 0% / 0.25);
+/* Ticker animation */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-/* Parchment inner glow — for content areas */
-.rpg-parchment {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--surface-parchment)) 0%,
-    hsl(var(--surface-stone)) 100%
-  );
-  border: 1px solid hsl(var(--filigree) / 0.15);
-}
-
-/* Filigree top border — ornate accent */
-.rpg-filigree-top {
-  border-top: 2px solid hsl(var(--filigree) / 0.5);
-  position: relative;
-}
-.rpg-filigree-top::after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    hsl(var(--filigree-glow) / 0.6),
-    transparent
-  );
-}
-
-/* Beveled card — angled fantasy corners */
-.rpg-card {
-  clip-path: polygon(
-    12px 0, calc(100% - 12px) 0,
-    100% 12px, 100% calc(100% - 12px),
-    calc(100% - 12px) 100%, 12px 100%,
-    0 calc(100% - 12px), 0 12px
-  );
-  background: hsl(var(--surface-stone));
-  border: none;
-  box-shadow: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
-  position: relative;
-}
-
-/* Territory-colored glow on hover */
-.rpg-card-glow {
-  transition: box-shadow 0.3s ease;
-}
-.rpg-card-glow:hover {
-  box-shadow:
-    0 0 20px -4px var(--territory-glow, hsl(var(--primary) / 0.3)),
-    0 8px 24px -8px hsl(0 0% 0% / 0.3);
-}
-
-/* Rarity border glow — set --rarity-hue via inline style */
-.rpg-rarity-common  { --rarity-glow: hsl(220 10% 50% / 0.3); }
-.rpg-rarity-uncommon { --rarity-glow: hsl(152 60% 50% / 0.3); }
-.rpg-rarity-rare     { --rarity-glow: hsl(210 80% 55% / 0.4); }
-.rpg-rarity-epic     { --rarity-glow: hsl(262 83% 60% / 0.5); }
-.rpg-rarity-legendary { --rarity-glow: hsl(45 85% 55% / 0.5); }
-
-.rpg-rarity-common,
-.rpg-rarity-uncommon,
-.rpg-rarity-rare,
-.rpg-rarity-epic,
-.rpg-rarity-legendary {
-  box-shadow: 0 0 12px -2px var(--rarity-glow);
-  transition: box-shadow 0.3s ease;
-}
-.rpg-rarity-legendary:hover {
-  box-shadow: 0 0 28px -2px var(--rarity-glow), 0 0 8px -1px hsl(45 85% 55% / 0.2);
-}
-
-/* Fantasy gradient text — gold filigree */
-.text-filigree {
-  background: linear-gradient(135deg, hsl(var(--filigree)), hsl(var(--filigree-glow)), hsl(var(--filigree)));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Crow logo white glow — subtle contour halo */
-.crow-glow {
-  filter: drop-shadow(0 0 6px hsl(0 0% 100% / 0.5))
-          drop-shadow(0 0 14px hsl(0 0% 100% / 0.2));
-}
-
-/* Territory accent border — set --t-color via inline style */
-.territory-accent {
-  border-left: 3px solid hsl(var(--t-color, var(--primary)));
-}
-
-/* Ember particle keyframes */
-@keyframes ember-float {
-  0% { transform: translateY(0) scale(1); opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { transform: translateY(-40px) scale(0.3); opacity: 0; }
-}
-
-.animate-ember {
-  animation: ember-float 2.5s ease-out infinite;
-}
-
-/* Fantasy font class */
-.font-fantasy {
-  font-family: 'Cinzel', serif;
-}
-
-/* ── Sentinel's Sanctum (L2) Keyframes ── */
-
-@keyframes rune-pulse {
-  0%, 100% { box-shadow: 0 0 6px hsl(262 80% 55% / 0.3); }
-  50% { box-shadow: 0 0 14px hsl(262 80% 55% / 0.6); }
-}
-
-@keyframes constellation-drift {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
-}
-
-@keyframes oracle-scan {
-  0% { transform: translateY(-100%); opacity: 0; }
-  10% { opacity: 0.4; }
-  90% { opacity: 0.4; }
-  100% { transform: translateY(100%); opacity: 0; }
-}
-
-@keyframes sentinel-sparkle {
-  0% { transform: translateY(0) scale(1); opacity: 0.8; }
-  100% { transform: translateY(-20px) scale(0.3); opacity: 0; }
-}
-
-.animate-rune-pulse {
-  animation: rune-pulse 2s ease-in-out infinite;
-}
-
-.sentinel-glow {
-  box-shadow: 0 0 20px hsl(262 80% 55% / 0.2), inset 0 0 20px hsl(262 80% 55% / 0.05);
-}
-
-.sentinel-constellation {
-  background-image:
-    radial-gradient(1px 1px at 20% 30%, hsl(262 80% 70% / 0.15) 1px, transparent 0),
-    radial-gradient(1px 1px at 60% 70%, hsl(262 80% 70% / 0.1) 1px, transparent 0),
-    radial-gradient(1px 1px at 80% 20%, hsl(262 80% 70% / 0.12) 1px, transparent 0),
-    radial-gradient(1px 1px at 40% 80%, hsl(262 80% 70% / 0.08) 1px, transparent 0);
-  background-size: 200% 200%;
-  animation: constellation-drift 30s linear infinite;
-}
-
-/* ── Rune Emoji System ── */
-
-.rune-emoji {
-  --rune-color: var(--primary);
-  background: radial-gradient(
-    circle at center,
-    hsl(var(--rune-color) / 0.15) 0%,
-    hsl(var(--rune-color) / 0.05) 60%,
-    transparent 100%
-  );
-  border: 1px solid hsl(var(--rune-color) / 0.2);
-  position: relative;
-  filter: saturate(1.2) contrast(1.05);
-}
-
-.rune-emoji::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.rune-emoji-subtle {
-  box-shadow:
-    0 0 6px hsl(var(--rune-color) / 0.12),
-    inset 0 1px 0 hsl(0 0% 100% / 0.06);
-}
-
-.rune-emoji-medium {
-  box-shadow:
-    0 0 10px hsl(var(--rune-color) / 0.2),
-    0 0 4px hsl(var(--rune-color) / 0.1),
-    inset 0 1px 0 hsl(0 0% 100% / 0.08);
-  border-color: hsl(var(--rune-color) / 0.3);
-}
-
-.rune-emoji-intense {
-  box-shadow:
-    0 0 16px hsl(var(--rune-color) / 0.35),
-    0 0 6px hsl(var(--rune-color) / 0.15),
-    inset 0 1px 0 hsl(0 0% 100% / 0.1);
-  border-color: hsl(var(--rune-color) / 0.4);
-  animation: rune-pulse 2.5s ease-in-out infinite;
-}
-
-/* Gold filigree variant for special/legendary items */
-.rune-emoji-gold {
-  border-color: hsl(45 80% 50% / 0.4);
-  box-shadow:
-    0 0 12px hsl(45 80% 50% / 0.2),
-    inset 0 1px 0 hsl(45 80% 60% / 0.15);
-}
-
-.rune-emoji-gold::after {
-  box-shadow: inset 0 0 8px hsl(45 80% 50% / 0.08);
-}
-
-/* Map diagonal glow sweep */
-@keyframes map-sweep {
-  0% { transform: translateX(-60%) translateY(-60%); }
-  100% { transform: translateX(60%) translateY(60%); }
-}
-.animate-map-sweep {
-  animation: map-sweep 10s ease-in-out infinite;
-}
-
-/* Boss bestiary marquee */
+/* Marquee */
 @keyframes scroll-marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -913,92 +292,4 @@ html:not(.light):not(.parchment) {
 .mask-marquee {
   mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-}
-
-/* Territory emblem floating animation for homepage map */
-@keyframes territory-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-.animate-territory-float {
-  animation: territory-float 3s ease-in-out infinite;
-}
-
-/* ── Phase 5: Visual Immersion — Parallax + Ambient Effects ── */
-
-/* Parallax depth container */
-.parallax-container {
-  perspective: 1200px;
-  transform-style: preserve-3d;
-  overflow: hidden;
-}
-
-.parallax-layer-back {
-  transform: translateZ(-200px) scale(1.16);
-  pointer-events: none;
-}
-
-.parallax-layer-mid {
-  transform: translateZ(-80px) scale(1.066);
-  pointer-events: none;
-}
-
-.parallax-layer-front {
-  transform: translateZ(0px);
-}
-
-/* Ambient fog drift */
-@keyframes fog-drift {
-  0% { transform: translateX(-10%) translateY(0); opacity: 0.12; }
-  50% { transform: translateX(10%) translateY(-5%); opacity: 0.18; }
-  100% { transform: translateX(-10%) translateY(0); opacity: 0.12; }
-}
-.animate-fog-drift {
-  animation: fog-drift 20s ease-in-out infinite;
-}
-
-/* Territory glow pulse for ambient lighting */
-@keyframes territory-glow-pulse {
-  0%, 100% { opacity: 0.15; filter: blur(60px); }
-  50% { opacity: 0.25; filter: blur(80px); }
-}
-.animate-territory-glow {
-  animation: territory-glow-pulse 6s ease-in-out infinite;
-}
-
-/* Cinematic vignette overlay */
-.map-vignette {
-  background: radial-gradient(
-    ellipse at center,
-    transparent 50%,
-    hsl(var(--background) / 0.3) 80%,
-    hsl(var(--background) / 0.7) 100%
-  );
-  pointer-events: none;
-}
-
-/* Particle canvas positioning */
-.particle-canvas {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  opacity: 0.6;
-}
-
-/* ── ICP Map connector line animations ── */
-@keyframes connector-flow {
-  0% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -16; }
-}
-.animate-connector-flow {
-  animation: connector-flow 1s linear infinite;
-}
-
-@keyframes connector-pulse {
-  0%, 100% { opacity: 0.3; r: 2.5; }
-  50% { opacity: 0.7; r: 3.5; }
-}
-.animate-connector-pulse {
-  animation: connector-pulse 2s ease-in-out infinite;
 }
