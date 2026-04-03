@@ -61,8 +61,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   };
 
   const inputStyle = {
-    background: "hsl(var(--surface-stone))",
-    border: "1px solid hsl(var(--filigree) / 0.2)",
+    background: "hsl(var(--background))",
+    border: "1px solid hsl(var(--border))",
   };
 
   return (
@@ -70,15 +70,15 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       <DialogContent
         className="sm:max-w-sm p-6"
         style={{
-          background: "hsl(var(--surface-stone))",
-          border: "1px solid hsl(var(--filigree) / 0.25)",
-          boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+          background: "hsl(var(--background))",
+          border: "1px solid hsl(var(--border))",
+          boxShadow: "0 8px 40px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
         }}
       >
         <DialogHeader>
           <DialogTitle
             className="text-xl font-bold"
-            style={{ fontFamily: "'Cinzel', serif", textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.2)" }}
+            
           >
             {isSignUp ? "Join the Realm" : "Welcome back"}
           </DialogTitle>
@@ -105,10 +105,10 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.15)" }} />
+            <span className="w-full" style={{ borderTop: "1px solid hsl(var(--border))" }} />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="px-2 text-muted-foreground" style={{ background: "hsl(var(--surface-stone))" }}>or</span>
+            <span className="px-2 text-muted-foreground" style={{ background: "hsl(var(--background))" }}>or</span>
           </div>
         </div>
 
@@ -155,7 +155,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             type="submit"
             className="w-full"
             disabled={loading}
-            style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.04em" }}
+            
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Begin Quest" : "Enter Realm"}
           </Button>

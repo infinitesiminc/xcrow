@@ -14,11 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Cinzel", "Syne", "Space Grotesk", "serif"],
-        heading: ["Cinzel", "Space Grotesk", "serif"],
+        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        display: ["Inter", "system-ui", "sans-serif"],
+        heading: ["Inter", "system-ui", "sans-serif"],
         body: ["Inter", "system-ui", "sans-serif"],
-        fantasy: ["Cinzel", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -62,51 +61,6 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
-        neon: {
-          purple: "hsl(var(--neon-purple))",
-          pink: "hsl(var(--neon-pink))",
-          blue: "hsl(var(--neon-blue))",
-          cyan: "hsl(var(--neon-cyan))",
-          lime: "hsl(var(--neon-lime))",
-        },
-        dot: {
-          blue: "hsl(var(--dot-blue))",
-          teal: "hsl(var(--dot-teal))",
-          purple: "hsl(var(--dot-purple))",
-          amber: "hsl(var(--dot-amber))",
-        },
-        brand: {
-          ai: "hsl(var(--brand-ai))",
-          human: "hsl(var(--brand-human))",
-          mid: "hsl(var(--brand-mid))",
-        },
-        spectrum: {
-          0: "hsl(var(--spectrum-0))",
-          1: "hsl(var(--spectrum-1))",
-          2: "hsl(var(--spectrum-2))",
-          3: "hsl(var(--spectrum-3))",
-          4: "hsl(var(--spectrum-4))",
-          5: "hsl(var(--spectrum-5))",
-          6: "hsl(var(--spectrum-6))",
-        },
-        territory: {
-          technical: "hsl(var(--territory-technical))",
-          analytical: "hsl(var(--territory-analytical))",
-          strategic: "hsl(var(--territory-strategic))",
-          communication: "hsl(var(--territory-communication))",
-          leadership: "hsl(var(--territory-leadership))",
-          creative: "hsl(var(--territory-creative))",
-          ethics: "hsl(var(--territory-ethics))",
-          humanedge: "hsl(var(--territory-humanedge))",
-        },
-        surface: {
-          stone: "hsl(var(--surface-stone))",
-          parchment: "hsl(var(--surface-parchment))",
-        },
-        filigree: {
-          DEFAULT: "hsl(var(--filigree))",
-          glow: "hsl(var(--filigree-glow))",
-        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -132,10 +86,6 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "neon-shift": {
-          "0%": { backgroundPosition: "0% center" },
-          "100%": { backgroundPosition: "200% center" },
-        },
         shimmer: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
@@ -144,7 +94,6 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "neon-shift": "neon-shift 3s linear infinite",
         shimmer: "shimmer 2s ease-in-out infinite",
       },
     },

@@ -356,7 +356,7 @@ function ReferralSection({ userId }: { userId?: string }) {
             <p className="text-xs text-muted-foreground mt-1">Friends recruited</p>
           </div>
           <div className="rounded-xl border border-border/50 p-5 text-center">
-            <p className="text-3xl font-bold" style={{ color: "hsl(var(--territory-strategic))" }}>{referralCount}</p>
+            <p className="text-3xl font-bold text-primary">{referralCount}</p>
             <p className="text-xs text-muted-foreground mt-1">Free months earned</p>
           </div>
         </div>
@@ -364,7 +364,7 @@ function ReferralSection({ userId }: { userId?: string }) {
         {/* Share link */}
         <div className="rounded-xl border border-border/50 p-5 space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <Gift className="h-4 w-4" style={{ color: "hsl(var(--territory-strategic))" }} />
+            <Gift className="h-4 w-4 text-primary" />
             Your invite link
           </div>
           {referralCode ? (
