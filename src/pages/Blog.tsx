@@ -17,9 +17,9 @@ const fadeUp = {
 };
 
 const CATEGORIES: Record<string, { bg: string; text: string }> = {
-  "Intel":            { bg: "bg-[hsl(var(--territory-analytical)/0.12)]", text: "text-[hsl(var(--territory-analytical))]" },
-  "Field Reports":    { bg: "bg-[hsl(var(--territory-creative)/0.12)]", text: "text-[hsl(var(--territory-creative))]" },
-  "Territory Guides": { bg: "bg-[hsl(var(--territory-strategic)/0.12)]", text: "text-[hsl(var(--territory-strategic))]" },
+  "Intel":            { bg: "bg-primary/10", text: "text-primary" },
+  "Field Reports":    { bg: "bg-accent", text: "text-accent-foreground" },
+  "Territory Guides": { bg: "bg-secondary", text: "text-secondary-foreground" },
 };
 
 const ARTICLES = [

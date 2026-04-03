@@ -364,7 +364,7 @@ function ReferralSection({ userId }: { userId?: string }) {
         {/* Share link */}
         <div className="rounded-xl border border-border/50 p-5 space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <Gift className="h-4 w-4" style={{ color: "hsl(var(--territory-strategic))" }} />
+            <Gift className="h-4 w-4 text-primary" />
             Your invite link
           </div>
           {referralCode ? (
