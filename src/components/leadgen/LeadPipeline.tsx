@@ -41,7 +41,7 @@ function LeadAvatar({ lead }: { lead: SavedLead }) {
   );
 }
 
-export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount }: LeadPipelineProps) {
+export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount, onSelectLead }: LeadPipelineProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
