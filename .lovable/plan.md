@@ -1,64 +1,104 @@
 
 
-# Lead Hunter — Streamlined Single-Page Workflow Layout
+# ICP Map Page — Auto-Seed Leads + Insights Panel + Table View
 
-## Current Problem
-The layout splits ICP map and pipeline into stacked sections, requiring scrolling. The niche tree takes significant vertical space before the user even sees leads. Actions are buried inside tree nodes.
+## What We're Building
 
-## Proposed Layout
+After ICP discovery, the system auto-generates 1 sample lead per persona niche. Users see exactly which URLs were analyzed and why. Leads display in a dense table. Two new actions let users scale: **"Generate More"** (batch of 5 per niche) and **"Find Lookalikes"** (from a single lead row).
+
+## Layout
 
 ```text
-┌──────────────────────────────────────────────────────────┐
-│ [website url input] ───────────────── [Map ICP]  (hero)  │
-└──────────────────────────────────────────────────────────┘
-                         ↓ after discovery ↓
-┌─────────────┬────────────────────────────────────────────┐
-│  SIDEBAR    │  ACTION BAR                                │
-│  (240px)    │  [Find] [Enrich] [Score] [Draft] [Export]  │
-│             ├────────────────────────────────────────────┤
-│ All Leads   │                                            │
-│ ▶ Healthcare│  LEAD TABLE (dense rows)                   │
-│   ├ Clinics │  NAME  TITLE  COMPANY  EMAIL  STAGE  ···   │
-│   └ Pharma  │  ─────────────────────────────────────     │
-│ ▶ SaaS      │  row row row row row                       │
-│   ├ Infra   │  row row row row row                       │
-│   └ DevTool │  row row row row row                       │
-│             │                                            │
-│ ─────────── │                                            │
-│ ⚙ Settings  │  click row → Lead Detail Drawer opens →   │
-└─────────────┴────────────────────────────────────────────┘
-│  💬 AI Chat FAB (bottom-right, existing)                 │
-└──────────────────────────────────────────────────────────┘
+┌─────────────┬──────────────────────────────────────────────┐
+│  SIDEBAR    │  ICP INSIGHTS (collapsible)                  │
+│  (niches)   │  🌐 site.com · 4 pages analyzed              │
+│             │  ✓ /about → Company signals                  │
+│             │  ✓ /solutions → Product data                 │
+│             │  Summary: "SaaS for logistics..."            │
+│             ├──────────────────────────────────────────────┤
+│             │  [+Batch] [Enrich] [Score] [Draft] [Export]  │
+│             ├──────────────────────────────────────────────┤
+│             │  NAME   TITLE   COMPANY  EMAIL  STAGE  ACT   │
+│             │  ───────────────────────────────────────────  │
+│             │  row  (👤 icon for Lookalike)                 │
+│             │  row                                          │
+└─────────────┴──────────────────────────────────────────────┘
 ```
 
-**Flow**: Website URL → Discovery → Sidebar shows niche tree, main area shows lead table. Select a niche in sidebar → table filters. Action bar at top of table applies to selected niche.
+## Changes
 
-## What Changes
+### 1. Edge function: return `pages_analyzed` metadata
+**File**: `supabase/functions/leadgen-scout/index.ts`
 
-### 1. New: `AppSidebar` component
-- Minimal collapsible sidebar using existing `shadcn/sidebar` primitives
-- Three sections: niche tree (reuse `NicheSidebar` logic), divider, Settings link
-- Collapses to icons on toggle
-- Replaces the `NicheFunnelMap` as the primary niche navigation
+The function already tracks `bestPages` and `pageResults`. Add a `pages_analyzed` array to the response:
+```json
+{ "url": "https://site.com/about", "path": "/about", "category": "about" }
+```
 
-### 2. Rewrite: `LeadgenDashboard`
-- Remove `NicheFunnelMap` from the dashboard
-- Add **action toolbar** above the lead table: Find, Enrich, Score, Draft All, Export — bound to `activeNiche`
-- Remove Pipeline/Activity tabs — merge Activity into the Lead Detail Drawer's outreach section
-- Keep `LeadPipeline` as the main content (already has table-like cards; convert to actual table in a follow-up)
+Build this from the existing `pageResults` array plus the homepage. Include in the final `json()` response alongside existing fields.
 
-### 3. Update: `Leadgen.tsx` page layout
-- Wrap post-discovery UI in `SidebarProvider` + `Sidebar` + main content area
-- Move `contextBar` into the sidebar header (company name + stats)
-- Keep discovery hero as full-screen (no sidebar until ICP is mapped)
-- Keep floating chat FAB and Lead Detail Drawer unchanged
+### 2. Auto-seed 1 lead per persona niche after discovery
+**File**: `src/pages/Leadgen.tsx`
 
-### Files affected
+After `handleDiscover` successfully returns niches, automatically trigger `handleFindLeads` for each **persona-level** niche (leaf nodes). The existing `handleFindLeads` already calls `leadgen-chat` and upserts results. We limit the prompt to request exactly 1 lead per call.
 
-| File | Change |
+Add a new function `handleAutoSeed` that:
+- Filters niches to `niche_type === "persona"` 
+- Calls `handleFindLeads` for each (sequentially to avoid rate limits)
+- Shows a progress toast: "Seeding 1 lead per niche (3/8)..."
+
+Also capture `data.pages_analyzed` from scout response into new state `pagesAnalyzed`.
+
+### 3. New component: `ICPInsightsPanel`
+**File**: `src/components/leadgen/ICPInsightsPanel.tsx`
+
+Collapsible panel above the action bar showing:
+- Website URL (clickable link)
+- Pages analyzed count + list with path and category
+- Company summary + ICP summary
+- Chevron toggle to collapse
+
+Props: `websiteUrl`, `pagesAnalyzed`, `companySummary`, `icpSummary`, `pagesScraped`
+
+### 4. Replace lead cards with table rows
+**File**: `src/components/leadgen/LeadPipeline.tsx`
+
+Replace the `<Card>` loop with a `<Table>` using existing `shadcn/table` components:
+- Columns: Avatar+Name, Title, Company, Email, Stage (dropdown), Actions
+- Actions column: Draft email button + **"Lookalike"** button (Users icon)
+- Each row clickable → opens Lead Detail Drawer
+- Keep KPI cards and filter bar above
+
+### 5. "Generate More" batch action
+**File**: `src/components/leadgen/LeadgenDashboard.tsx` + `src/pages/Leadgen.tsx`
+
+Replace the "Find" button with **"+Batch"** — calls `handleFindLeads` with a modified prompt requesting 5 leads. Same SSE flow, just different prompt text.
+
+### 6. "Find Lookalikes" per-lead action
+**File**: `src/pages/Leadgen.tsx` + `src/components/leadgen/LeadPipeline.tsx`
+
+New handler `handleFindLookalikes(lead)`:
+- Takes a single lead's name, title, company as context
+- Sends to `leadgen-chat` with prompt: "Find 3 people similar to [name] at [company] ([title]) — same industry, role, company size"
+- Upserts results with same `niche_tag`
+
+Exposed as a button (Users icon) in the Actions column of the table.
+
+### 7. Dashboard integration
+**File**: `src/components/leadgen/LeadgenDashboard.tsx`
+
+- Add `ICPInsightsPanel` above the action bar
+- Pass through new props: `pagesAnalyzed`, `companySummary`, `icpSummary`, `websiteUrl`
+- Rename "Find" → "+Batch" in action bar
+- Add `onFindLookalikes` prop, pass down to `LeadPipeline`
+
+## Files Affected
+
+| File | Action |
 |------|--------|
-| `src/components/leadgen/AppSidebar.tsx` | **New** — sidebar with niche tree + settings |
-| `src/components/leadgen/LeadgenDashboard.tsx` | Remove NicheFunnelMap, add action toolbar, remove tabs |
-| `src/pages/Leadgen.tsx` | Wrap in SidebarProvider, restructure layout |
-| `src/components/leadgen/NicheFunnelMap.tsx` | No change (kept for potential reuse, just unused) |
+| `supabase/functions/leadgen-scout/index.ts` | Add `pages_analyzed` to response |
+| `src/components/leadgen/ICPInsightsPanel.tsx` | **New** — collapsible discovery insights |
+| `src/components/leadgen/LeadPipeline.tsx` | Cards → table rows + lookalike button |
+| `src/components/leadgen/LeadgenDashboard.tsx` | Add insights panel, rename Find → +Batch |
+| `src/pages/Leadgen.tsx` | Auto-seed logic, pagesAnalyzed state, lookalikes handler |
 
