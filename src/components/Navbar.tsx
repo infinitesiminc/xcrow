@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import xcrowBattleLogo from "@/assets/xcrow-logo.webp";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import SubscriptionBadge from "@/components/SubscriptionBadge";
 import {
   DropdownMenu,
@@ -13,33 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Settings, LogOut, Sun, Moon } from "lucide-react";
+import { User, Menu, X, Compass, Settings, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Parchment mode toggle
-  const [parchment, setParchment] = useState(() => {
-    return localStorage.getItem("xcrow-theme") === "parchment";
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (parchment) {
-      root.classList.add("parchment");
-      root.classList.remove("dark");
-      root.style.colorScheme = "light";
-      localStorage.setItem("xcrow-theme", "parchment");
-    } else {
-      root.classList.remove("parchment");
-      root.classList.add("dark");
-      root.style.colorScheme = "dark";
-      localStorage.setItem("xcrow-theme", "dark");
-    }
-  }, [parchment]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -48,7 +26,7 @@ export default function Navbar() {
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
   const navItems = [
-    { label: "Leadgen", path: "/leadgen", icon: Compass },
+    { label: "Lead Hunter", path: "/leadgen", icon: Compass },
   ];
 
   const handleNav = (path: string) => {
@@ -57,26 +35,15 @@ export default function Navbar() {
   };
 
   return (
-    <header
-      className="sticky top-0 z-50 w-full backdrop-blur-xl"
-      style={{
-        background: "hsl(var(--surface-stone) / 0.85)",
-        borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
-        boxShadow: "0 2px 12px hsl(var(--emboss-shadow))",
-      }}
-    >
+    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-background/90 border-b border-border">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <button
           onClick={() => handleNav("/")}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <img src={xcrowBattleLogo} alt="Xcrow" className="h-11 w-11 object-contain crow-glow" />
-          <span
-            className="hidden sm:inline text-lg font-extrabold text-foreground tracking-tight"
-            style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.02em" }}
-          >
-            Xcrow.ai
+          <span className="text-lg font-semibold text-foreground tracking-tight">
+            Xcrow
           </span>
         </button>
 
@@ -89,15 +56,11 @@ export default function Navbar() {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all"
-                style={{
-                  fontFamily: "'Cinzel', serif",
-                  letterSpacing: "0.04em",
-                  fontSize: "0.8rem",
-                  ...(active
-                    ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.1)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.4)" }
-                    : { color: "hsl(var(--muted-foreground))" }),
-                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  active
+                    ? "text-primary bg-primary/8"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
               >
                 {Icon && <Icon className="h-4 w-4" />}
                 {item.label}
@@ -113,59 +76,40 @@ export default function Navbar() {
               <div className="hidden sm:block">
                 <SubscriptionBadge />
               </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-48"
-                style={{
-                  background: "hsl(var(--surface-stone))",
-                  border: "1px solid hsl(var(--filigree) / 0.2)",
-                }}
-              >
-                <div className="px-3 py-2">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {user.user_metadata?.display_name || user.email}
-                  </p>
-                  {user.user_metadata?.display_name && (
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                  )}
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setParchment(!parchment)}>
-                  {parchment ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
-                  {parchment ? "Dark Mode" : "Parchment Mode"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {user.user_metadata?.display_name || user.email}
+                    </p>
+                    {user.user_metadata?.display_name && (
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    )}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
-            <Button
-              size="sm"
-              onClick={openAuthModal}
-              style={{
-                background: "hsl(var(--primary))",
-                fontFamily: "'Cinzel', serif",
-                letterSpacing: "0.04em",
-              }}
-            >
+            <Button size="sm" onClick={openAuthModal}>
               <User className="mr-1.5 h-4 w-4" />
               Sign in
             </Button>
@@ -187,13 +131,7 @@ export default function Navbar() {
       {mobileOpen && (
         <>
           <div className="fixed inset-0 top-14 z-40 bg-background/60 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
-          <div
-            className="fixed left-0 right-0 top-14 z-50 md:hidden shadow-lg"
-            style={{
-              background: "hsl(var(--surface-stone))",
-              borderTop: "1px solid hsl(var(--filigree) / 0.2)",
-            }}
-          >
+          <div className="fixed left-0 right-0 top-14 z-50 md:hidden shadow-lg bg-background border-t border-border">
             <nav className="flex flex-col px-4 py-3 gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -202,13 +140,11 @@ export default function Navbar() {
                   <button
                     key={item.path}
                     onClick={() => handleNav(item.path)}
-                    className="flex items-center gap-2 text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
-                    style={{
-                      fontFamily: "'Cinzel', serif",
-                      ...(active
-                        ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.1)" }
-                        : { color: "hsl(var(--muted-foreground))" }),
-                    }}
+                    className={`flex items-center gap-2 text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                      active
+                        ? "text-primary bg-primary/8"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     {Icon && <Icon className="h-4 w-4" />}
                     {item.label}
