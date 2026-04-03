@@ -9,7 +9,7 @@ interface SEOHeadProps {
 
 const defaults = {
   title: "Xcrow.ai — 183 Skills. 1 Game. Upgrade Your Career.",
-  description: "The career game for the AI age. Assess 183 new skills, conquer territory-based quests, and build a skill profile employers value.",
+  description: "AI-powered ICP research & lead generation. Find hyper-accurate leads from a single website.",
   ogImage: "https://xcrow.ai/og-image.jpg",
 };
 
