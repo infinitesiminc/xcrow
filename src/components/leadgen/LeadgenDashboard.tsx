@@ -48,6 +48,7 @@ export function LeadgenDashboard({
   onExportNiche,
   isFinding,
   isEnriching,
+  onSelectLead,
 }: LeadgenDashboardProps) {
   const [tab, setTab] = useState("pipeline");
 
