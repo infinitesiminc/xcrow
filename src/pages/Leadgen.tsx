@@ -387,11 +387,68 @@ export default function Leadgen() {
   };
 
   // ICP Action Handlers
-  const handleFindLeads = (niche: string) => {
+  const handleFindLeads = async (niche: string) => {
     if (!user) { openAuthModal(); return; }
     setIsFindingLeads(true);
-    setChatOpen(true);
-    sendMessage(`Find leads for the "${niche}" niche. Search for prospects matching this ICP.`).finally(() => setIsFindingLeads(false));
+    toast.info(`Searching for "${niche}" leads...`);
+
+    try {
+      const nicheEntry = localNiches.find((n) => n.label === niche);
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({
+          messages: [
+            { role: "user", content: `Find leads for the "${niche}" niche${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}. Search for prospects matching this ICP.` },
+          ],
+        }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Search failed" }));
+        throw new Error(err.error || "Search failed");
+      }
+
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      const foundLeads: Lead[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let newlineIdx: number;
+        while ((newlineIdx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, newlineIdx);
+          buf = buf.slice(newlineIdx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "leads" && parsed.leads) {
+              for (const l of parsed.leads) {
+                l.niche_tag = l.niche_tag || niche;
+                foundLeads.push(l);
+              }
+            }
+          } catch {}
+        }
+      }
+
+      if (foundLeads.length > 0) {
+        await upsertLeads(foundLeads);
+        toast.success(`Added ${foundLeads.length} leads to your pipeline!`);
+      } else {
+        toast.info("No leads found for this niche. Try broadening your criteria.");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Lead search failed");
+    } finally {
+      setIsFindingLeads(false);
+    }
   };
 
   const handleEnrichLeads = async (niche: string) => {
