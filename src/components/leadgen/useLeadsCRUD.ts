@@ -116,10 +116,13 @@ export function useLeadsCRUD(userId: string | undefined) {
         status: "new" as const,
         niche_tag: l.niche_tag || null,
       }));
-      await supabase.from("saved_leads").upsert(rows, {
-        onConflict: "user_id,email,company",
-        ignoreDuplicates: true,
-      } as any);
+      // Insert one-by-one to handle expression-based unique index gracefully
+      for (const row of rows) {
+        const { error } = await supabase.from("saved_leads").insert(row);
+        if (error && !error.message?.includes("duplicate")) {
+          console.error("Failed to insert lead:", error.message);
+        }
+      }
       await fetchLeads();
     },
     [userId, fetchLeads]
