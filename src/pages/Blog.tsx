@@ -94,11 +94,11 @@ export default function Blog() {
                         </span>
                         <span className="text-xs text-muted-foreground">{article.date}</span>
                       </div>
-                      <h2 className="text-lg font-bold mb-2 group-hover:text-[hsl(var(--filigree-glow))] transition-colors leading-snug">
+                      <h2 className="text-lg font-bold mb-2 group-hover:text-[hsl(var(--primary))] transition-colors leading-snug">
                         {article.title}
                       </h2>
                       <p className="text-sm text-muted-foreground leading-relaxed mb-4">{article.excerpt}</p>
-                      <span className="text-sm font-medium text-[hsl(var(--filigree-glow))] inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-sm font-medium text-[hsl(var(--primary))] inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         Read scroll <ArrowRight className="h-3 w-3" />
                       </span>
                     </Wrapper>
@@ -110,13 +110,13 @@ export default function Blog() {
             {/* CTA */}
             <motion.div variants={fadeUp} custom={ARTICLES.length + 1}
               className="mt-14 text-center rounded-xl border border-[hsl(var(--filigree)/0.15)] p-8"
-              style={{ background: "hsl(var(--surface-stone))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
-              <h3 className="font-fantasy text-xl font-bold mb-2">Ready to see the data in action?</h3>
+              style={{ background: "hsl(var(--background))", boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.5)" }}>
+              <h3 className="font-sans font-semibold text-xl font-bold mb-2">Ready to see the data in action?</h3>
               <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
                 Scout any role, see which skills are under threat, and start practicing — free.
               </p>
               <a href="/upskill"
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-primary text-primary-foreground font-fantasy text-sm font-medium hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-primary text-primary-foreground font-sans font-semibold text-sm font-medium hover:opacity-90 transition-opacity"
                 style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.25)" }}>
                 Enter the World Map <ArrowRight className="h-4 w-4" />
               </a>

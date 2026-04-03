@@ -34,7 +34,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
             <AlertTriangle className="h-7 w-7 text-destructive" />
           </div>
-          <h2 className="text-lg font-bold" style={{ fontFamily: "'Cinzel', serif" }}>
+          <h2 className="text-lg font-bold" >
             {this.props.fallbackTitle || "Something went wrong"}
           </h2>
           <p className="text-sm text-muted-foreground max-w-md">
