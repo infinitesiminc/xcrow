@@ -85,11 +85,7 @@ export default function Blog() {
                     key={article.title}
                     variants={fadeUp}
                     custom={i + 1}
-                    className="group rounded-xl border border-[hsl(var(--filigree)/0.12)] p-6 hover:border-[hsl(var(--filigree)/0.3)] transition-colors cursor-pointer"
-                    style={{
-                      background: "hsl(var(--surface-stone))",
-                      boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
-                    }}
+                    className="group rounded-xl border border-border p-6 hover:border-primary/30 transition-colors cursor-pointer bg-card"
                   >
                     <Wrapper {...wrapperProps as any} className="block no-underline text-inherit">
                       <div className="flex items-center gap-2 mb-3">
