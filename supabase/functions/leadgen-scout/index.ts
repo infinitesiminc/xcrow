@@ -165,10 +165,12 @@ Deno.serve(async (req) => {
     console.log("Step 2: Scraping ICP-relevant pages:", bestPages);
 
     const pageResults = await Promise.all(
-      bestPages.map(async (url) => {
-        const content = await firecrawlScrape(url, firecrawlKey);
-        const path = new URL(url).pathname;
-        return { path, content: content.slice(0, 3000) };
+      bestPages.map(async (pageUrl) => {
+        const content = await firecrawlScrape(pageUrl, firecrawlKey);
+        const parsedUrl = new URL(pageUrl);
+        const path = parsedUrl.pathname;
+        const category = path.split("/").filter(Boolean)[0]?.toLowerCase() || "homepage";
+        return { url: pageUrl, path, category, content: content.slice(0, 3000), ok: !!content };
       })
     );
 
