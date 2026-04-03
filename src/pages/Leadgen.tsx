@@ -589,7 +589,6 @@ export default function Leadgen() {
     }));
   }, [user, savedLeads, filteredPanelLeads]);
 
-  const [mobileView, setMobileView] = useState<"chat" | "results">("results");
 
 
   // Discovery hero (shown when no niches)
