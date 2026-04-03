@@ -751,6 +751,17 @@ export default function Leadgen() {
         {mainContent}
       </div>
 
+      {/* Lead Detail Drawer */}
+      <LeadDetailDrawer
+        lead={selectedLead}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        outreach={outreach}
+        onUpdateStatus={updateLeadStatus}
+        onDraftEmail={handleDraftEmail}
+        userId={user?.id}
+      />
+
       {/* Email Draft Modal */}
       <Dialog open={draftModalOpen} onOpenChange={setDraftModalOpen}>
         <DialogContent className="sm:max-w-lg">
