@@ -812,7 +812,7 @@ export default function Leadgen() {
                 onUpdateStatus={updateLeadStatus}
                 onDraftEmail={handleDraftEmail}
                 onExportCSV={exportCSV}
-                onFindLeads={handleFindLeads}
+                onBatchFind={handleBatchFind}
                 onEnrichLeads={handleEnrichLeads}
                 onScoreLeads={handleScoreLeads}
                 onDraftAll={handleDraftAllOutreach}
@@ -820,6 +820,11 @@ export default function Leadgen() {
                 isFinding={isFindingLeads}
                 isEnriching={isEnrichingLeads}
                 onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+                onFindLookalikes={handleFindLookalikes}
+                websiteUrl={websiteUrl}
+                pagesAnalyzed={pagesAnalyzed}
+                companySummary={companySummary}
+                icpSummary={icpSummary}
               />
             </div>
           </div>
