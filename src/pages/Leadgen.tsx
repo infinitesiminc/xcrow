@@ -238,6 +238,9 @@ export default function Leadgen() {
       setHasDiscovered(true);
       setChatOpen(false);
       toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+
+      // Auto-seed 1 lead per persona
+      handleAutoSeed(niches);
     } catch (e: any) {
       toast.error(e.message || "Failed to analyze website");
     } finally {
