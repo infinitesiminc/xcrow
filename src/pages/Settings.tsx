@@ -356,7 +356,7 @@ function ReferralSection({ userId }: { userId?: string }) {
             <p className="text-xs text-muted-foreground mt-1">Friends recruited</p>
           </div>
           <div className="rounded-xl border border-border/50 p-5 text-center">
-            <p className="text-3xl font-bold" style={{ color: "hsl(var(--territory-strategic))" }}>{referralCount}</p>
+            <p className="text-3xl font-bold text-primary">{referralCount}</p>
             <p className="text-xs text-muted-foreground mt-1">Free months earned</p>
           </div>
         </div>
