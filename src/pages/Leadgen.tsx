@@ -394,12 +394,25 @@ export default function Leadgen() {
 
     try {
       const nicheEntry = localNiches.find((n) => n.label === niche);
+      const parentNiche = nicheEntry?.parent_label ? localNiches.find((n) => n.label === nicheEntry.parent_label) : null;
+      const grandparentNiche = parentNiche?.parent_label ? localNiches.find((n) => n.label === parentNiche.parent_label) : null;
+      
+      // Build rich context so the AI skips the discovery phase and goes straight to lead search
+      const contextParts = [
+        websiteUrl ? `My company website is ${websiteUrl}.` : "",
+        companySummary ? `Company: ${companySummary}.` : "",
+        icpSummary ? `ICP Summary: ${icpSummary}.` : "",
+        grandparentNiche ? `Industry vertical: ${grandparentNiche.label}${grandparentNiche.description ? ` — ${grandparentNiche.description}` : ""}.` : "",
+        parentNiche ? `Market segment: ${parentNiche.label}${parentNiche.description ? ` — ${parentNiche.description}` : ""}.` : "",
+        `Target persona: ${niche}${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}.`,
+      ].filter(Boolean).join(" ");
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
           messages: [
-            { role: "user", content: `Find leads for the "${niche}" niche${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}. Search for prospects matching this ICP.` },
+            { role: "user", content: `${contextParts}\n\nI've already confirmed my ICP. Skip all discovery questions. Immediately run a lead search for "${niche}" prospects. Find real people with verified emails who match this persona.` },
           ],
         }),
       });
