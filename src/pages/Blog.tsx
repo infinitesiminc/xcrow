@@ -66,12 +66,12 @@ export default function Blog() {
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
               <div className="inline-flex items-center gap-2 mb-4">
-                <Scroll className="h-5 w-5 text-[hsl(var(--filigree-glow))]" />
-                <span className="text-sm font-mono text-[hsl(var(--filigree))] tracking-widest uppercase">Scrolls & Dispatches</span>
+                <Scroll className="h-5 w-5 text-primary" />
+                <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Dispatches</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-bold font-fantasy tracking-tight mb-4">The Chronicle</h1>
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mb-4">The Chronicle</h1>
               <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-                Intel, field reports, and territory guides from the frontier of AI and work.
+                Intel, field reports, and guides from the frontier of AI and work.
               </p>
             </motion.div>
 
