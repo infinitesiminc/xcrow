@@ -481,7 +481,7 @@ export default function Leadgen() {
   const handleEnrichLeads = async (niche: string) => {
     if (!user) { openAuthModal(); return; }
     setIsEnrichingLeads(true);
-    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && !l.email);
+    const nicheLeads = savedLeads.filter((l) => leadMatchesNiche(l, niche) && !l.email);
     if (nicheLeads.length === 0) {
       toast.info("All leads in this niche already have contact details.");
       setIsEnrichingLeads(false); return;
@@ -513,7 +513,9 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) enrichedLeads.push(...parsed.leads);
+            if (parsed.type === "leads" && parsed.leads) {
+              enrichedLeads.push(...parsed.leads.map((lead: Lead) => ({ ...lead, niche_tag: niche })));
+            }
           } catch {}
         }
       }
@@ -537,13 +539,13 @@ export default function Leadgen() {
 
   const handleDraftAllOutreach = (niche: string) => {
     if (!user) { openAuthModal(); return; }
-    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && l.email && l.status === "new");
+    const nicheLeads = savedLeads.filter((l) => leadMatchesNiche(l, niche) && l.email && l.status === "new");
     if (nicheLeads.length === 0) { toast.info("No uncontacted leads with emails in this niche."); return; }
     handleDraftEmail(nicheLeads[0]);
   };
 
   const handleExportNiche = (niche: string) => {
-    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche);
+    const nicheLeads = savedLeads.filter((l) => leadMatchesNiche(l, niche));
     if (nicheLeads.length === 0) { toast.info("No leads to export in this niche."); return; }
     const headers = ["Name", "Title", "Company", "Email", "Phone", "LinkedIn", "Status", "Source"];
     const rows = nicheLeads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.status, l.source || ""]);
