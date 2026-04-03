@@ -412,7 +412,6 @@ export default function Leadgen() {
       const parentNiche = nicheEntry?.parent_label ? localNiches.find((n) => n.label === nicheEntry.parent_label) : null;
       const grandparentNiche = parentNiche?.parent_label ? localNiches.find((n) => n.label === parentNiche.parent_label) : null;
       
-      // Build rich context so the AI skips the discovery phase and goes straight to lead search
       const contextParts = [
         websiteUrl ? `My company website is ${websiteUrl}.` : "",
         companySummary ? `Company: ${companySummary}.` : "",
@@ -458,8 +457,7 @@ export default function Leadgen() {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "leads" && parsed.leads) {
               for (const l of parsed.leads) {
-                l.niche_tag = l.niche_tag || niche;
-                foundLeads.push(l);
+                foundLeads.push({ ...l, niche_tag: niche });
               }
             }
           } catch {}
@@ -468,6 +466,7 @@ export default function Leadgen() {
 
       if (foundLeads.length > 0) {
         await upsertLeads(foundLeads);
+        setActiveNiche(niche);
         toast.success(`Added ${foundLeads.length} leads to your pipeline!`);
       } else {
         toast.info("No leads found for this niche. Try broadening your criteria.");
