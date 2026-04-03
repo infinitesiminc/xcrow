@@ -51,6 +51,21 @@ const formatAssistantMessage = (text: string): string => {
   return result;
 };
 
+const normalizeNicheLabel = (value?: string | null) =>
+  (value || "")
+    .toLowerCase()
+    .replace(/[()]/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | null) => {
+  if (!niche) return true;
+  const leadTag = normalizeNicheLabel(lead.niche_tag || "Uncategorized");
+  const target = normalizeNicheLabel(niche);
+  return leadTag === target || leadTag.includes(target) || target.includes(leadTag);
+};
+
 export default function Leadgen() {
   const { user, profile, openAuthModal } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -397,7 +412,6 @@ export default function Leadgen() {
       const parentNiche = nicheEntry?.parent_label ? localNiches.find((n) => n.label === nicheEntry.parent_label) : null;
       const grandparentNiche = parentNiche?.parent_label ? localNiches.find((n) => n.label === parentNiche.parent_label) : null;
       
-      // Build rich context so the AI skips the discovery phase and goes straight to lead search
       const contextParts = [
         websiteUrl ? `My company website is ${websiteUrl}.` : "",
         companySummary ? `Company: ${companySummary}.` : "",
@@ -443,8 +457,7 @@ export default function Leadgen() {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "leads" && parsed.leads) {
               for (const l of parsed.leads) {
-                l.niche_tag = l.niche_tag || niche;
-                foundLeads.push(l);
+                foundLeads.push({ ...l, niche_tag: niche });
               }
             }
           } catch {}
@@ -453,6 +466,7 @@ export default function Leadgen() {
 
       if (foundLeads.length > 0) {
         await upsertLeads(foundLeads);
+        setActiveNiche(niche);
         toast.success(`Added ${foundLeads.length} leads to your pipeline!`);
       } else {
         toast.info("No leads found for this niche. Try broadening your criteria.");
@@ -467,7 +481,7 @@ export default function Leadgen() {
   const handleEnrichLeads = async (niche: string) => {
     if (!user) { openAuthModal(); return; }
     setIsEnrichingLeads(true);
-    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && !l.email);
+    const nicheLeads = savedLeads.filter((l) => leadMatchesNiche(l, niche) && !l.email);
     if (nicheLeads.length === 0) {
       toast.info("All leads in this niche already have contact details.");
       setIsEnrichingLeads(false); return;
@@ -499,7 +513,9 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) enrichedLeads.push(...parsed.leads);
+            if (parsed.type === "leads" && parsed.leads) {
+              enrichedLeads.push(...parsed.leads.map((lead: Lead) => ({ ...lead, niche_tag: niche })));
+            }
           } catch {}
         }
       }
@@ -523,13 +539,13 @@ export default function Leadgen() {
 
   const handleDraftAllOutreach = (niche: string) => {
     if (!user) { openAuthModal(); return; }
-    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche && l.email && l.status === "new");
+    const nicheLeads = savedLeads.filter((l) => leadMatchesNiche(l, niche) && l.email && l.status === "new");
     if (nicheLeads.length === 0) { toast.info("No uncontacted leads with emails in this niche."); return; }
     handleDraftEmail(nicheLeads[0]);
   };
 
   const handleExportNiche = (niche: string) => {
-    const nicheLeads = savedLeads.filter((l) => l.niche_tag === niche);
+    const nicheLeads = savedLeads.filter((l) => leadMatchesNiche(l, niche));
     if (nicheLeads.length === 0) { toast.info("No leads to export in this niche."); return; }
     const headers = ["Name", "Title", "Company", "Email", "Phone", "LinkedIn", "Status", "Source"];
     const rows = nicheLeads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.status, l.source || ""]);

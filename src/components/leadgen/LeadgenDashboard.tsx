@@ -54,7 +54,18 @@ export function LeadgenDashboard({
 
   const filteredLeads = useMemo(() => {
     if (!activeNiche) return leads;
-    return leads.filter((l) => (l.niche_tag || "Uncategorized") === activeNiche);
+    const normalizeNicheLabel = (value?: string | null) =>
+      (value || "")
+        .toLowerCase()
+        .replace(/[()]/g, " ")
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    const target = normalizeNicheLabel(activeNiche);
+    return leads.filter((l) => {
+      const leadTag = normalizeNicheLabel(l.niche_tag || "Uncategorized");
+      return leadTag === target || leadTag.includes(target) || target.includes(leadTag);
+    });
   }, [leads, activeNiche]);
 
   const filteredOutreach = useMemo(() => {
