@@ -28,6 +28,7 @@ interface LeadgenDashboardProps {
   onExportNiche?: (niche: string) => void;
   isFinding?: boolean;
   isEnriching?: boolean;
+  onSelectLead?: (lead: SavedLead) => void;
 }
 
 export function LeadgenDashboard({
