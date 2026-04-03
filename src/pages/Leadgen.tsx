@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { LeadgenDashboard } from "@/components/leadgen/LeadgenDashboard";
 import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import { LeadDetailDrawer } from "@/components/leadgen/LeadDetailDrawer";
+import { AppSidebar } from "@/components/leadgen/AppSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import type { Lead } from "@/components/leadgen/LeadCard";
 import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
 
