@@ -61,7 +61,7 @@ export function ICPInsightsPanel({ websiteUrl, pagesAnalyzed, companySummary, ic
             <div className="space-y-1">
               {pagesAnalyzed.map((page, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs">
-                  <CheckCircle2 className="w-3 h-3 text-green-600 shrink-0" />
+                  <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
                   <span className="font-mono text-muted-foreground w-28 truncate">{page.path}</span>
                   <span className="text-muted-foreground">→</span>
                   <span className="text-foreground">{getCategoryLabel(page.category)}</span>
