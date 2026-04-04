@@ -859,15 +859,17 @@ export default function Leadgen() {
   const handleGenerateAll = async () => {
     if (!user) { openAuthModal(); return; }
     const allNiches = localNiches.length > 0 ? localNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label || null, niche_type: n.niche_type || "vertical" }));
-    const personas = allNiches.filter(n => n.niche_type === "persona");
-    if (personas.length === 0) { toast.info("No persona niches found. Re-analyze your website first."); return; }
+    // Prefer personas, fall back to segments
+    let targets = allNiches.filter(n => n.niche_type === "persona");
+    if (targets.length === 0) targets = allNiches.filter(n => n.niche_type === "segment");
+    if (targets.length === 0) { toast.info("No niches found. Re-analyze your website first."); return; }
     setIsFindingLeads(true);
-    for (let i = 0; i < personas.length; i++) {
-      toast.info(`Generating leads ${i + 1}/${personas.length}: ${personas[i].label}`, { id: "gen-all" });
-      await handleFindLeads(personas[i].label);
+    for (let i = 0; i < targets.length; i++) {
+      toast.info(`Generating leads ${i + 1}/${targets.length}: ${targets[i].label}`, { id: "gen-all" });
+      await handleFindLeads(targets[i].label);
     }
     setIsFindingLeads(false);
-    toast.success(`Generated leads for ${personas.length} personas!`, { id: "gen-all" });
+    toast.success(`Generated leads for ${targets.length} niches!`, { id: "gen-all" });
   };
 
   // --- Enrich All: enrich all leads missing emails ---
