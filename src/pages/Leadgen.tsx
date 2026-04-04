@@ -386,7 +386,7 @@ export default function Leadgen() {
                 return merged;
               });
               if (user) {
-                const parentEntry = localNiches.find((n) => n.label === activeNicheRef.current);
+                const parentEntry = currentLocalNiches.find((n) => n.label === activeNicheRef.current);
                 const nicheType = !activeNicheRef.current ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
                 upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current, niche_type: nicheType as any })));
               }
