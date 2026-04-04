@@ -51,8 +51,8 @@ const App = () => (
           <ErrorBoundary fallbackTitle="Something went wrong">
           <Suspense fallback={null}>
             <Routes>
-              <Route path="/" element={<Suspense fallback={null}><Index /></Suspense>} />
-              <Route path="/leadgen" element={<><Leadgen /></>} />
+              <Route path="/" element={<><Leadgen /></>} />
+              <Route path="/leadgen" element={<Navigate to="/" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/blog" element={<Blog />} />
