@@ -674,18 +674,20 @@ export default function Leadgen() {
     }
   };
 
-  // --- Auto-seed: 1 lead per persona niche after discovery ---
+   // --- Auto-seed: 1 lead per persona niche after discovery ---
   const handleAutoSeed = async (niches: Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>) => {
     if (!user) return;
-    const personas = niches.filter(n => n.niche_type === "persona");
-    if (personas.length === 0) return;
+    // Prefer personas, fall back to segments if none
+    let targets = niches.filter(n => n.niche_type === "persona");
+    if (targets.length === 0) targets = niches.filter(n => n.niche_type === "segment");
+    if (targets.length === 0) return;
     setIsAutoSeeding(true);
-    for (let i = 0; i < personas.length; i++) {
-      toast.info(`Seeding lead ${i + 1}/${personas.length}: ${personas[i].label}`, { id: "auto-seed" });
-      await handleFindLeads(personas[i].label);
+    for (let i = 0; i < targets.length; i++) {
+      toast.info(`Seeding lead ${i + 1}/${targets.length}: ${targets[i].label}`, { id: "auto-seed" });
+      await handleFindLeads(targets[i].label);
     }
     setIsAutoSeeding(false);
-    toast.success(`Seeded ${personas.length} sample leads!`, { id: "auto-seed" });
+    toast.success(`Seeded ${targets.length} sample leads!`, { id: "auto-seed" });
   };
 
   const chatOnlyItems = items.filter(it => it.type !== "leads");
@@ -857,15 +859,17 @@ export default function Leadgen() {
   const handleGenerateAll = async () => {
     if (!user) { openAuthModal(); return; }
     const allNiches = localNiches.length > 0 ? localNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label || null, niche_type: n.niche_type || "vertical" }));
-    const personas = allNiches.filter(n => n.niche_type === "persona");
-    if (personas.length === 0) { toast.info("No persona niches found. Re-analyze your website first."); return; }
+    // Prefer personas, fall back to segments
+    let targets = allNiches.filter(n => n.niche_type === "persona");
+    if (targets.length === 0) targets = allNiches.filter(n => n.niche_type === "segment");
+    if (targets.length === 0) { toast.info("No niches found. Re-analyze your website first."); return; }
     setIsFindingLeads(true);
-    for (let i = 0; i < personas.length; i++) {
-      toast.info(`Generating leads ${i + 1}/${personas.length}: ${personas[i].label}`, { id: "gen-all" });
-      await handleFindLeads(personas[i].label);
+    for (let i = 0; i < targets.length; i++) {
+      toast.info(`Generating leads ${i + 1}/${targets.length}: ${targets[i].label}`, { id: "gen-all" });
+      await handleFindLeads(targets[i].label);
     }
     setIsFindingLeads(false);
-    toast.success(`Generated leads for ${personas.length} personas!`, { id: "gen-all" });
+    toast.success(`Generated leads for ${targets.length} niches!`, { id: "gen-all" });
   };
 
   // --- Enrich All: enrich all leads missing emails ---
@@ -932,6 +936,7 @@ export default function Leadgen() {
             pagesAnalyzed={pagesAnalyzed}
             companySummary={companySummary}
             icpSummary={icpSummary}
+            niches={localNiches.length > 0 ? localNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label, niche_type: n.niche_type }))}
           />
         </div>
       )}

@@ -12,6 +12,13 @@ interface PageAnalyzed {
   category: string;
 }
 
+interface NicheItem {
+  label: string;
+  description?: string | null;
+  parent_label?: string | null;
+  niche_type?: string;
+}
+
 interface LeadgenDashboardProps {
   leads: SavedLead[];
   outreach: OutreachEntry[];
@@ -31,6 +38,7 @@ interface LeadgenDashboardProps {
   pagesAnalyzed?: PageAnalyzed[];
   companySummary?: string;
   icpSummary?: string;
+  niches?: NicheItem[];
 }
 
 export function LeadgenDashboard({
@@ -51,6 +59,7 @@ export function LeadgenDashboard({
   pagesAnalyzed,
   companySummary,
   icpSummary,
+  niches,
 }: LeadgenDashboardProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -79,6 +88,7 @@ export function LeadgenDashboard({
         pagesAnalyzed={pagesAnalyzed || []}
         companySummary={companySummary || ""}
         icpSummary={icpSummary || ""}
+        niches={niches}
       />
 
       {/* Action Toolbar */}
