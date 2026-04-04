@@ -12,6 +12,13 @@ interface PageAnalyzed {
   category: string;
 }
 
+interface NicheItem {
+  label: string;
+  description?: string | null;
+  parent_label?: string | null;
+  niche_type?: string;
+}
+
 interface LeadgenDashboardProps {
   leads: SavedLead[];
   outreach: OutreachEntry[];
