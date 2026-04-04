@@ -469,7 +469,7 @@ export default function Leadgen() {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "leads" && parsed.leads) {
               for (const l of parsed.leads) {
-                foundLeads.push({ ...l, niche_tag: niche });
+              foundLeads.push({ ...l, niche_tag: niche, source: websiteUrl || "chat" });
               }
             }
           } catch {}
