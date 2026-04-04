@@ -917,20 +917,45 @@ export default function Leadgen() {
     <div className="flex flex-col h-full min-h-0">
       {!hasDiscovered ? discoveryHero : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
-          {/* Re-analyze bar */}
-          <div className="border-b border-border/40 bg-card/30 px-4 py-1.5 flex items-center gap-2 shrink-0">
-            <span className="text-xs text-muted-foreground truncate">
-              {websiteUrl && <span className="font-medium text-foreground">{websiteUrl}</span>}
-            </span>
-            <div className="flex-1" />
+          {/* Website + Location bar */}
+          <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
+            <form
+              className="flex items-center gap-2 flex-1 min-w-0"
+              onSubmit={(e) => { e.preventDefault(); handleDiscover(); }}
+            >
+              <div className="relative flex-1 min-w-[160px] max-w-xs">
+                <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="yourcompany.com"
+                  className="pl-8 h-8 text-xs"
+                  disabled={isDiscovering}
+                />
+              </div>
+              <div className="relative w-[140px]">
+                <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  value={targetLocation}
+                  onChange={(e) => setTargetLocation(e.target.value)}
+                  placeholder="Location"
+                  className="pl-8 h-8 text-xs"
+                  disabled={isDiscovering}
+                />
+              </div>
+              <Button type="submit" variant="outline" size="sm" className="h-8 text-xs gap-1.5" disabled={!websiteUrl.trim() || isDiscovering}>
+                {isDiscovering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                {isDiscovering ? "Analyzing..." : "Analyze"}
+              </Button>
+            </form>
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs gap-1 text-muted-foreground hover:text-foreground"
+              className="text-xs gap-1 text-muted-foreground hover:text-foreground h-8"
               onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
             >
               <ArrowRight className="w-3 h-3" />
-              Re-analyze
+              Reset
             </Button>
           </div>
           <LeadgenDashboard
