@@ -59,7 +59,7 @@ export function LeadgenDashboard({
   pagesAnalyzed,
   companySummary,
   icpSummary,
-}: LeadgenDashboardProps) {
+niches,
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const toggleSelect = useCallback((id: string) => {
