@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink } from "lucide-react";
+import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink, MapPin } from "lucide-react";
 import type { SavedLead, LeadStatus } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
@@ -54,6 +54,7 @@ export function LeadPipeline({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [nicheFilter, setNicheFilter] = useState<string>("all");
+  const [locationFilter, setLocationFilter] = useState<string>("all");
 
   // Unique niches for filter dropdown
   const nicheOptions = useMemo(() => {
@@ -62,16 +63,25 @@ export function LeadPipeline({
     return Array.from(set).sort();
   }, [leads]);
 
+  const locationOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of leads) {
+      if (l.address) set.add(l.address);
+    }
+    return Array.from(set).sort();
+  }, [leads]);
+
   const filtered = useMemo(() => {
     let result = leads;
     if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
     if (nicheFilter !== "all") result = result.filter((l) => (l.niche_tag || "Uncategorized") === nicheFilter);
+    if (locationFilter !== "all") result = result.filter((l) => (l.address || "") === locationFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
-      result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q));
+      result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) || l.address?.toLowerCase().includes(q));
     }
     return result;
-  }, [leads, search, statusFilter, nicheFilter]);
+  }, [leads, search, statusFilter, nicheFilter, locationFilter]);
 
   const contacted = leads.filter((l) => l.status !== "new").length;
   const replied = leads.filter((l) => l.status === "replied" || l.status === "won").length;
@@ -104,6 +114,20 @@ export function LeadPipeline({
               <SelectItem value="all">All Niches</SelectItem>
               {nicheOptions.map((n) => (
                 <SelectItem key={n} value={n}>{n}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {locationOptions.length > 0 && (
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
+            <SelectTrigger className="w-[160px] h-8 text-xs">
+              <MapPin className="w-3 h-3 mr-1 shrink-0" />
+              <SelectValue placeholder="All Locations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locationOptions.map((loc) => (
+                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
               ))}
             </SelectContent>
           </Select>
