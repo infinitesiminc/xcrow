@@ -62,6 +62,26 @@ const normalizeNicheLabel = (value?: string | null) =>
     .replace(/\s+/g, " ")
     .trim();
 
+const normalizeWorkspaceKey = (value?: string | null) => {
+  const raw = (value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw.includes("://") ? raw : `https://${raw}`);
+    return parsed.hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return raw
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .split("/")[0]
+      .trim();
+  }
+};
+
+const sourceMatchesWorkspace = (source: string | null | undefined, workspaceKey: string) =>
+  !!workspaceKey && normalizeWorkspaceKey(source) === workspaceKey;
+
 const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | null) => {
   if (!niche) return true;
   const leadTag = normalizeNicheLabel(lead.niche_tag || "Uncategorized");
@@ -76,7 +96,8 @@ export default function Leadgen() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>>([]);
-  const [activeNiche, setActiveNiche] = useState<string | null>(null); // kept for handleFindLeads internal use
+  const [localWorkspaceKey, setLocalWorkspaceKey] = useState("");
+  const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [isFindingLeads, setIsFindingLeads] = useState(false);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -84,7 +105,6 @@ export default function Leadgen() {
   const activeNicheRef = useRef<string | null>(null);
   activeNicheRef.current = activeNiche;
 
-  // Discovery state
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [targetLocation, setTargetLocation] = useState("");
   const [isDiscovering, setIsDiscovering] = useState(false);
@@ -95,29 +115,27 @@ export default function Leadgen() {
   const [pagesAnalyzed, setPagesAnalyzed] = useState<Array<{ url: string; path: string; category: string }>>([]);
   const [hasDiscovered, setHasDiscovered] = useState(false);
   const [isAutoSeeding, setIsAutoSeeding] = useState(false);
-  
+
+  const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
+
   const {
     leads: savedLeads, outreach, niches: savedNiches,
     upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV,
-  } = useLeadsCRUD(user?.id);
+  } = useLeadsCRUD(user?.id, activeWorkspaceKey || undefined);
 
-  // Email draft state
-  const [draftModalOpen, setDraftModalOpen] = useState(false);
-  const [draftLead, setDraftLead] = useState<Lead | null>(null);
-  const [draftLoading, setDraftLoading] = useState(false);
-  const [draftSubject, setDraftSubject] = useState("");
-  const [draftBody, setDraftBody] = useState("");
-  const [draftCtaText, setDraftCtaText] = useState("");
-  const [sending, setSending] = useState(false);
-  const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const currentLocalNiches = useMemo(
+    () => (activeWorkspaceKey && localWorkspaceKey === activeWorkspaceKey ? localNiches : []),
+    [activeWorkspaceKey, localWorkspaceKey, localNiches]
+  );
 
-  // Check if user already has niches from DB
   useEffect(() => {
-    if (savedNiches.length > 0) {
-      setHasDiscovered(true);
+    if (!activeWorkspaceKey) {
+      setHasDiscovered(false);
+      return;
     }
-  }, [savedNiches]);
+
+    setHasDiscovered(currentLocalNiches.length > 0 || savedNiches.length > 0);
+  }, [activeWorkspaceKey, currentLocalNiches.length, savedNiches.length]);
 
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
