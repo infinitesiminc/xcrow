@@ -142,6 +142,20 @@ export function LeadPipeline({
             </SelectContent>
           </Select>
         )}
+        {sourceOptions.length > 1 && (
+          <Select value={sourceFilter} onValueChange={setSourceFilter}>
+            <SelectTrigger className="w-[160px] h-8 text-xs">
+              <Globe className="w-3 h-3 mr-1 shrink-0" />
+              <SelectValue placeholder="All Sources" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              {sourceOptions.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[120px] h-8 text-xs">
             <SelectValue />
