@@ -72,6 +72,14 @@ export function LeadPipeline({
     return Array.from(set).sort();
   }, [leads]);
 
+  const sourceOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of leads) {
+      if (l.source) set.add(l.source);
+    }
+    return Array.from(set).sort();
+  }, [leads]);
+
   const filtered = useMemo(() => {
     let result = leads;
     if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
