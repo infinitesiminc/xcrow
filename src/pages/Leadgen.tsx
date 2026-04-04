@@ -190,7 +190,7 @@ export default function Leadgen() {
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sidebarNiches = useMemo(
-    () => localNiches.map((n, index) => ({
+    () => currentLocalNiches.map((n, index) => ({
       id: `local-${index}-${n.label}`,
       label: n.label,
       description: n.description,
@@ -200,7 +200,7 @@ export default function Leadgen() {
       parent_label: n.parent_label,
       niche_type: n.niche_type as any,
     })),
-    [localNiches]
+    [currentLocalNiches]
   );
 
   const allLeads = useMemo(() => {
