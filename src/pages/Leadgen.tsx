@@ -254,6 +254,7 @@ export default function Leadgen() {
 
       // Populate niches
       const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
+      setLocalWorkspaceKey(activeWorkspaceKey);
       setLocalNiches(niches);
 
       // Persist to DB if authed
