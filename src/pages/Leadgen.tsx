@@ -982,7 +982,7 @@ export default function Leadgen() {
               variant="ghost"
               size="sm"
               className="text-xs gap-1 text-muted-foreground hover:text-foreground h-8"
-              onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
+              onClick={() => { setHasDiscovered(false); setLocalWorkspaceKey(""); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
             >
               <ArrowRight className="w-3 h-3" />
               Reset
