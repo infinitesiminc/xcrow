@@ -605,9 +605,9 @@ export default function Leadgen() {
     setIsFindingLeads(true);
     toast.info(`Finding batch of leads for "${niche}"...`);
     try {
-      const nicheEntry = localNiches.find((n) => n.label === niche);
-      const parentNiche = nicheEntry?.parent_label ? localNiches.find((n) => n.label === nicheEntry.parent_label) : null;
-      const grandparentNiche = parentNiche?.parent_label ? localNiches.find((n) => n.label === parentNiche.parent_label) : null;
+      const nicheEntry = currentLocalNiches.find((n) => n.label === niche);
+      const parentNiche = nicheEntry?.parent_label ? currentLocalNiches.find((n) => n.label === nicheEntry.parent_label) : null;
+      const grandparentNiche = parentNiche?.parent_label ? currentLocalNiches.find((n) => n.label === parentNiche.parent_label) : null;
       const contextParts = [
         websiteUrl ? `My company website is ${websiteUrl}.` : "",
         companySummary ? `Company: ${companySummary}.` : "",
