@@ -1008,8 +1008,8 @@ export default function Leadgen() {
   return (
     <>
       <Helmet>
-        <title>Xcrow Scout — AI Lead Generation</title>
-        <meta name="description" content="Enter your website and instantly map your ideal customer profile with AI-powered lead generation." />
+        <title>Xcrow — B2B Lead Hunter | Find Perfect Leads From One Website</title>
+        <meta name="description" content="The only lead hunter that finds hyper-accurate B2B prospects from a single website entry. Drop your URL — AI finds, qualifies, and delivers your perfect leads." />
       </Helmet>
       <Navbar />
       <div className="flex flex-col h-screen pt-16">
