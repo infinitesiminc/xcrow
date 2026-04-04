@@ -778,20 +778,32 @@ export default function Leadgen() {
           </p>
 
           <form
-            className="flex gap-2 max-w-md mx-auto w-full"
+            className="flex flex-col gap-2 max-w-lg mx-auto w-full"
             onSubmit={(e) => { e.preventDefault(); handleDiscover(); }}
           >
-            <div className="relative flex-1">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                value={websiteUrl}
-                onChange={(e) => setWebsiteUrl(e.target.value)}
-                placeholder="yourcompany.com"
-                className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
-                disabled={isDiscovering}
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="yourcompany.com"
+                  className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
+                  disabled={isDiscovering}
+                />
+              </div>
+              <div className="relative w-[180px]">
+                <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={targetLocation}
+                  onChange={(e) => setTargetLocation(e.target.value)}
+                  placeholder="Location (optional)"
+                  className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
+                  disabled={isDiscovering}
+                />
+              </div>
             </div>
-            <Button type="submit" size="lg" className="h-12 px-6 gap-2" disabled={!websiteUrl.trim() || isDiscovering}>
+            <Button type="submit" size="lg" className="h-12 px-6 gap-2 w-full" disabled={!websiteUrl.trim() || isDiscovering}>
               {isDiscovering ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
