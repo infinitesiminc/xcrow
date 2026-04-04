@@ -38,6 +38,7 @@ interface LeadgenDashboardProps {
   pagesAnalyzed?: PageAnalyzed[];
   companySummary?: string;
   icpSummary?: string;
+  niches?: NicheItem[];
 }
 
 export function LeadgenDashboard({
