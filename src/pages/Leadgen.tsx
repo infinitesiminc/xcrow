@@ -903,7 +903,7 @@ export default function Leadgen() {
   // --- Generate All: seed leads for all persona niches ---
   const handleGenerateAll = async () => {
     if (!user) { openAuthModal(); return; }
-    const allNiches = localNiches.length > 0 ? localNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label || null, niche_type: n.niche_type || "vertical" }));
+    const allNiches = currentLocalNiches.length > 0 ? currentLocalNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label || null, niche_type: n.niche_type || "vertical" }));
     // Prefer personas, fall back to segments
     let targets = allNiches.filter(n => n.niche_type === "persona");
     if (targets.length === 0) targets = allNiches.filter(n => n.niche_type === "segment");
