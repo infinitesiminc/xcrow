@@ -174,6 +174,7 @@ export default function Leadgen() {
             setPagesScraped(data.pages_scraped || 1);
             setPagesAnalyzed(data.pages_analyzed || []);
             const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
+            setLocalWorkspaceKey(normalizeWorkspaceKey(website));
             setLocalNiches(niches);
             if (user) {
               upsertNiches(niches.map(n => ({ label: n.label, description: n.description || "", parent_label: n.parent_label, niche_type: n.niche_type as any })));
