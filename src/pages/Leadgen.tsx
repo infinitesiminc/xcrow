@@ -581,6 +581,7 @@ export default function Leadgen() {
       const contextParts = [
         websiteUrl ? `My company website is ${websiteUrl}.` : "",
         companySummary ? `Company: ${companySummary}.` : "",
+        targetLocation ? `Target location/geography: ${targetLocation}. Only find leads in this area.` : "",
         grandparentNiche ? `Industry vertical: ${grandparentNiche.label}.` : "",
         parentNiche ? `Market segment: ${parentNiche.label}.` : "",
         `Target persona: ${niche}${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}.`,
