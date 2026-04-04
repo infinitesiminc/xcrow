@@ -331,6 +331,7 @@ export type Database = {
           parent_label: string | null
           status: string
           user_id: string
+          workspace_key: string
         }
         Insert: {
           created_at?: string
@@ -343,6 +344,7 @@ export type Database = {
           parent_label?: string | null
           status?: string
           user_id: string
+          workspace_key?: string
         }
         Update: {
           created_at?: string
@@ -355,6 +357,7 @@ export type Database = {
           parent_label?: string | null
           status?: string
           user_id?: string
+          workspace_key?: string
         }
         Relationships: []
       }
@@ -517,6 +520,7 @@ export type Database = {
           updated_at: string
           user_id: string
           website: string | null
+          workspace_key: string
         }
         Insert: {
           address?: string | null
@@ -542,6 +546,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           website?: string | null
+          workspace_key?: string
         }
         Update: {
           address?: string | null
@@ -567,6 +572,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website?: string | null
+          workspace_key?: string
         }
         Relationships: []
       }

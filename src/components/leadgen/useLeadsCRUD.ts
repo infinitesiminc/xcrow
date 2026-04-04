@@ -10,6 +10,8 @@ export interface SavedLead extends Lead {
   created_at: string;
   updated_at: string;
   niche_tag?: string;
+  source?: string | null;
+  workspace_key?: string;
 }
 
 export interface OutreachEntry {
@@ -35,32 +37,43 @@ export interface NicheEntry {
   created_at: string;
   parent_label?: string | null;
   niche_type?: NicheType;
+  workspace_key?: string;
 }
 
-export function useLeadsCRUD(userId: string | undefined) {
+export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) {
   const [leads, setLeads] = useState<SavedLead[]>([]);
   const [outreach, setOutreach] = useState<OutreachEntry[]>([]);
   const [niches, setNiches] = useState<NicheEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLeads = useCallback(async () => {
-    if (!userId) return;
-    const { data } = await supabase
-      .from("saved_leads")
+    if (!userId || !workspaceKey) {
+      setLeads([]);
+      return;
+    }
+
+    const { data } = await (supabase.from("saved_leads") as any)
       .select("*")
       .eq("user_id", userId)
+      .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false });
+
     if (data) setLeads(data as unknown as SavedLead[]);
-  }, [userId]);
+  }, [userId, workspaceKey]);
 
   const fetchOutreach = useCallback(async () => {
-    if (!userId) return;
-    const { data } = await supabase
-      .from("outreach_log")
-      .select("*, saved_leads(name, email)")
+    if (!userId || !workspaceKey) {
+      setOutreach([]);
+      return;
+    }
+
+    const { data } = await (supabase.from("outreach_log") as any)
+      .select("*, saved_leads!inner(name, email, workspace_key)")
       .eq("user_id", userId)
+      .eq("saved_leads.workspace_key", workspaceKey)
       .order("sent_at", { ascending: false })
       .limit(100);
+
     if (data) {
       setOutreach(
         data.map((r: any) => ({
@@ -76,30 +89,44 @@ export function useLeadsCRUD(userId: string | undefined) {
         }))
       );
     }
-  }, [userId]);
+  }, [userId, workspaceKey]);
 
   const fetchNiches = useCallback(async () => {
-    if (!userId) return;
-    const { data } = await supabase
-      .from("leadgen_niches")
+    if (!userId || !workspaceKey) {
+      setNiches([]);
+      return;
+    }
+
+    const { data } = await (supabase.from("leadgen_niches") as any)
       .select("*")
       .eq("user_id", userId)
+      .eq("workspace_key", workspaceKey)
       .eq("status", "active")
       .order("created_at", { ascending: false });
+
     if (data) setNiches(data as unknown as NicheEntry[]);
-  }, [userId]);
+  }, [userId, workspaceKey]);
 
   useEffect(() => {
-    if (!userId) { setLoading(false); return; }
+    if (!userId || !workspaceKey) {
+      setLeads([]);
+      setOutreach([]);
+      setNiches([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     Promise.all([fetchLeads(), fetchOutreach(), fetchNiches()]).finally(() => setLoading(false));
-  }, [userId, fetchLeads, fetchOutreach, fetchNiches]);
+  }, [userId, workspaceKey, fetchLeads, fetchOutreach, fetchNiches]);
 
   const upsertLeads = useCallback(
     async (newLeads: Lead[]) => {
-      if (!userId || newLeads.length === 0) return;
+      if (!userId || !workspaceKey || newLeads.length === 0) return;
+
       const rows = newLeads.map((l) => ({
         user_id: userId,
+        workspace_key: workspaceKey,
         name: l.name,
         title: l.title || null,
         company: l.company || null,
@@ -108,7 +135,7 @@ export function useLeadsCRUD(userId: string | undefined) {
         linkedin: l.linkedin || null,
         website: l.website || null,
         address: l.address || null,
-        source: l.source || "chat",
+        source: l.source || workspaceKey,
         email_confidence: l.email_confidence != null ? String(l.email_confidence) : null,
         summary: l.summary || null,
         reason: l.reason || null,
@@ -116,36 +143,41 @@ export function useLeadsCRUD(userId: string | undefined) {
         status: "new" as const,
         niche_tag: l.niche_tag || null,
       }));
-      // Insert one-by-one to handle expression-based unique index gracefully
+
       for (const row of rows) {
-        const { error } = await supabase.from("saved_leads").insert(row);
+        const { error } = await (supabase.from("saved_leads") as any).insert(row);
         if (error && !error.message?.includes("duplicate")) {
           console.error("Failed to insert lead:", error.message);
         }
       }
+
       await fetchLeads();
     },
-    [userId, fetchLeads]
+    [userId, workspaceKey, fetchLeads]
   );
 
   const upsertNiches = useCallback(
     async (newNiches: { label: string; description: string; parent_label?: string | null; niche_type?: NicheType }[]) => {
-      if (!userId || newNiches.length === 0) return;
+      if (!userId || !workspaceKey || newNiches.length === 0) return;
+
       const rows = newNiches.map((n) => ({
         user_id: userId,
+        workspace_key: workspaceKey,
         label: n.label.slice(0, 120),
         description: n.description || null,
         parent_label: n.parent_label || null,
         niche_type: n.niche_type || "vertical",
         status: "active",
       }));
+
       await (supabase.from("leadgen_niches") as any).upsert(rows, {
-        onConflict: "user_id,label",
+        onConflict: "user_id,workspace_key,label",
         ignoreDuplicates: true,
       });
+
       await fetchNiches();
     },
-    [userId, fetchNiches]
+    [userId, workspaceKey, fetchNiches]
   );
 
   const updateLeadStatus = useCallback(
@@ -180,10 +212,10 @@ export function useLeadsCRUD(userId: string | undefined) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `leads-${workspaceKey || "workspace"}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [leads]);
+  }, [leads, workspaceKey]);
 
   return { leads, outreach, niches, loading, upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV, refetch: fetchLeads };
 }

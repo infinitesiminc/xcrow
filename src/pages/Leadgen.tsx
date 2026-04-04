@@ -62,6 +62,26 @@ const normalizeNicheLabel = (value?: string | null) =>
     .replace(/\s+/g, " ")
     .trim();
 
+const normalizeWorkspaceKey = (value?: string | null) => {
+  const raw = (value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw.includes("://") ? raw : `https://${raw}`);
+    return parsed.hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return raw
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .split("/")[0]
+      .trim();
+  }
+};
+
+const sourceMatchesWorkspace = (source: string | null | undefined, workspaceKey: string) =>
+  !!workspaceKey && normalizeWorkspaceKey(source) === workspaceKey;
+
 const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | null) => {
   if (!niche) return true;
   const leadTag = normalizeNicheLabel(lead.niche_tag || "Uncategorized");
@@ -76,7 +96,8 @@ export default function Leadgen() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [localNiches, setLocalNiches] = useState<Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>>([]);
-  const [activeNiche, setActiveNiche] = useState<string | null>(null); // kept for handleFindLeads internal use
+  const [localWorkspaceKey, setLocalWorkspaceKey] = useState("");
+  const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [isFindingLeads, setIsFindingLeads] = useState(false);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -84,7 +105,6 @@ export default function Leadgen() {
   const activeNicheRef = useRef<string | null>(null);
   activeNicheRef.current = activeNiche;
 
-  // Discovery state
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [targetLocation, setTargetLocation] = useState("");
   const [isDiscovering, setIsDiscovering] = useState(false);
@@ -95,13 +115,28 @@ export default function Leadgen() {
   const [pagesAnalyzed, setPagesAnalyzed] = useState<Array<{ url: string; path: string; category: string }>>([]);
   const [hasDiscovered, setHasDiscovered] = useState(false);
   const [isAutoSeeding, setIsAutoSeeding] = useState(false);
-  
+
+  const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
+
   const {
     leads: savedLeads, outreach, niches: savedNiches,
     upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV,
-  } = useLeadsCRUD(user?.id);
+  } = useLeadsCRUD(user?.id, activeWorkspaceKey || undefined);
 
-  // Email draft state
+  const currentLocalNiches = useMemo(
+    () => (activeWorkspaceKey && localWorkspaceKey === activeWorkspaceKey ? localNiches : []),
+    [activeWorkspaceKey, localWorkspaceKey, localNiches]
+  );
+
+  useEffect(() => {
+    if (!activeWorkspaceKey) {
+      setHasDiscovered(false);
+      return;
+    }
+
+    setHasDiscovered(currentLocalNiches.length > 0 || savedNiches.length > 0 || savedLeads.length > 0);
+  }, [activeWorkspaceKey, currentLocalNiches.length, savedNiches.length, savedLeads.length]);
+
   const [draftModalOpen, setDraftModalOpen] = useState(false);
   const [draftLead, setDraftLead] = useState<Lead | null>(null);
   const [draftLoading, setDraftLoading] = useState(false);
@@ -111,13 +146,6 @@ export default function Leadgen() {
   const [sending, setSending] = useState(false);
   const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // Check if user already has niches from DB
-  useEffect(() => {
-    if (savedNiches.length > 0) {
-      setHasDiscovered(true);
-    }
-  }, [savedNiches]);
 
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
@@ -146,6 +174,7 @@ export default function Leadgen() {
             setPagesScraped(data.pages_scraped || 1);
             setPagesAnalyzed(data.pages_analyzed || []);
             const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
+            setLocalWorkspaceKey(normalizeWorkspaceKey(website));
             setLocalNiches(niches);
             if (user) {
               upsertNiches(niches.map(n => ({ label: n.label, description: n.description || "", parent_label: n.parent_label, niche_type: n.niche_type as any })));
@@ -161,7 +190,7 @@ export default function Leadgen() {
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sidebarNiches = useMemo(
-    () => localNiches.map((n, index) => ({
+    () => currentLocalNiches.map((n, index) => ({
       id: `local-${index}-${n.label}`,
       label: n.label,
       description: n.description,
@@ -171,7 +200,7 @@ export default function Leadgen() {
       parent_label: n.parent_label,
       niche_type: n.niche_type as any,
     })),
-    [localNiches]
+    [currentLocalNiches]
   );
 
   const allLeads = useMemo(() => {
@@ -225,6 +254,7 @@ export default function Leadgen() {
 
       // Populate niches
       const niches = data.niches as Array<{ label: string; description: string; parent_label: string | null; niche_type: string }>;
+      setLocalWorkspaceKey(activeWorkspaceKey);
       setLocalNiches(niches);
 
       // Persist to DB if authed
@@ -356,7 +386,7 @@ export default function Leadgen() {
                 return merged;
               });
               if (user) {
-                const parentEntry = localNiches.find((n) => n.label === activeNicheRef.current);
+                const parentEntry = currentLocalNiches.find((n) => n.label === activeNicheRef.current);
                 const nicheType = !activeNicheRef.current ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
                 upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current, niche_type: nicheType as any })));
               }
@@ -393,7 +423,7 @@ export default function Leadgen() {
                 return merged;
               });
               if (user) {
-                const parentEntry = localNiches.find((n) => n.label === activeNicheRef.current);
+                const parentEntry = currentLocalNiches.find((n) => n.label === activeNicheRef.current);
                 const nicheType = !activeNicheRef.current ? "vertical" : parentEntry?.niche_type === "vertical" ? "segment" : "persona";
                 upsertNiches((parsed.niches as Array<{ label: string; description?: string }>).map(n => ({ ...n, description: n.description || "", parent_label: activeNicheRef.current, niche_type: nicheType as any })));
               }
@@ -419,9 +449,9 @@ export default function Leadgen() {
     toast.info(`Searching for "${niche}" leads...`);
 
     try {
-      const nicheEntry = localNiches.find((n) => n.label === niche);
-      const parentNiche = nicheEntry?.parent_label ? localNiches.find((n) => n.label === nicheEntry.parent_label) : null;
-      const grandparentNiche = parentNiche?.parent_label ? localNiches.find((n) => n.label === parentNiche.parent_label) : null;
+      const nicheEntry = currentLocalNiches.find((n) => n.label === niche);
+      const parentNiche = nicheEntry?.parent_label ? currentLocalNiches.find((n) => n.label === nicheEntry.parent_label) : null;
+      const grandparentNiche = parentNiche?.parent_label ? currentLocalNiches.find((n) => n.label === parentNiche.parent_label) : null;
       
       const contextParts = [
         websiteUrl ? `My company website is ${websiteUrl}.` : "",
@@ -575,9 +605,9 @@ export default function Leadgen() {
     setIsFindingLeads(true);
     toast.info(`Finding batch of leads for "${niche}"...`);
     try {
-      const nicheEntry = localNiches.find((n) => n.label === niche);
-      const parentNiche = nicheEntry?.parent_label ? localNiches.find((n) => n.label === nicheEntry.parent_label) : null;
-      const grandparentNiche = parentNiche?.parent_label ? localNiches.find((n) => n.label === parentNiche.parent_label) : null;
+      const nicheEntry = currentLocalNiches.find((n) => n.label === niche);
+      const parentNiche = nicheEntry?.parent_label ? currentLocalNiches.find((n) => n.label === nicheEntry.parent_label) : null;
+      const grandparentNiche = parentNiche?.parent_label ? currentLocalNiches.find((n) => n.label === parentNiche.parent_label) : null;
       const contextParts = [
         websiteUrl ? `My company website is ${websiteUrl}.` : "",
         companySummary ? `Company: ${companySummary}.` : "",
@@ -873,7 +903,7 @@ export default function Leadgen() {
   // --- Generate All: seed leads for all persona niches ---
   const handleGenerateAll = async () => {
     if (!user) { openAuthModal(); return; }
-    const allNiches = localNiches.length > 0 ? localNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label || null, niche_type: n.niche_type || "vertical" }));
+    const allNiches = currentLocalNiches.length > 0 ? currentLocalNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label || null, niche_type: n.niche_type || "vertical" }));
     // Prefer personas, fall back to segments
     let targets = allNiches.filter(n => n.niche_type === "persona");
     if (targets.length === 0) targets = allNiches.filter(n => n.niche_type === "segment");
@@ -952,7 +982,7 @@ export default function Leadgen() {
               variant="ghost"
               size="sm"
               className="text-xs gap-1 text-muted-foreground hover:text-foreground h-8"
-              onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
+              onClick={() => { setHasDiscovered(false); setLocalWorkspaceKey(""); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
             >
               <ArrowRight className="w-3 h-3" />
               Reset
@@ -976,7 +1006,7 @@ export default function Leadgen() {
             pagesAnalyzed={pagesAnalyzed}
             companySummary={companySummary}
             icpSummary={icpSummary}
-            niches={localNiches.length > 0 ? localNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label, niche_type: n.niche_type }))}
+            niches={currentLocalNiches.length > 0 ? currentLocalNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label, niche_type: n.niche_type }))}
           />
         </div>
       )}
