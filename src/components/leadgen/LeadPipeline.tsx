@@ -91,7 +91,7 @@ export function LeadPipeline({
       result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) || l.address?.toLowerCase().includes(q));
     }
     return result;
-  }, [leads, search, statusFilter, nicheFilter, locationFilter]);
+  }, [leads, search, statusFilter, nicheFilter, locationFilter, sourceFilter]);
 
   const contacted = leads.filter((l) => l.status !== "new").length;
   const replied = leads.filter((l) => l.status === "replied" || l.status === "won").length;
