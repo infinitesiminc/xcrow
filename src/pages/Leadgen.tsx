@@ -853,58 +853,87 @@ export default function Leadgen() {
   );
 
 
+  // --- Generate All: seed leads for all persona niches ---
+  const handleGenerateAll = async () => {
+    if (!user) { openAuthModal(); return; }
+    const allNiches = localNiches.length > 0 ? localNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label || null, niche_type: n.niche_type || "vertical" }));
+    const personas = allNiches.filter(n => n.niche_type === "persona");
+    if (personas.length === 0) { toast.info("No persona niches found. Re-analyze your website first."); return; }
+    setIsFindingLeads(true);
+    for (let i = 0; i < personas.length; i++) {
+      toast.info(`Generating leads ${i + 1}/${personas.length}: ${personas[i].label}`, { id: "gen-all" });
+      await handleFindLeads(personas[i].label);
+    }
+    setIsFindingLeads(false);
+    toast.success(`Generated leads for ${personas.length} personas!`, { id: "gen-all" });
+  };
+
+  // --- Enrich All: enrich all leads missing emails ---
+  const handleEnrichAll = async () => {
+    if (!user) { openAuthModal(); return; }
+    const leadsToEnrich = savedLeads.filter(l => !l.email);
+    if (leadsToEnrich.length === 0) { toast.info("All leads already have contact details."); return; }
+    setIsEnrichingLeads(true);
+    toast.info(`Enriching ${leadsToEnrich.length} leads...`);
+    // Use first niche as context (enrichment is cross-niche)
+    await handleEnrichLeads(leadsToEnrich[0]?.niche_tag || "all");
+    setIsEnrichingLeads(false);
+  };
+
+  // --- Draft All: draft for first uncontacted lead with email ---
+  const handleDraftAllSimple = () => {
+    if (!user) { openAuthModal(); return; }
+    const lead = savedLeads.find(l => l.email && l.status === "new");
+    if (!lead) { toast.info("No uncontacted leads with emails."); return; }
+    handleDraftEmail(lead);
+  };
+
+  // --- Score All placeholder ---
+  const handleScoreAll = () => {
+    if (!user) { openAuthModal(); return; }
+    toast.info("Scoring leads — this feature is coming soon!");
+  };
+
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
       {!hasDiscovered ? discoveryHero : (
-        <SidebarProvider defaultOpen={true}>
-          <div className="flex flex-1 min-h-0 w-full">
-            <AppSidebar
-              leads={user ? savedLeads : allLeads}
-              savedNiches={sidebarSavedNiches}
-              activeNiche={activeNiche}
-              onSelectNiche={setActiveNiche}
-              companySummary={companySummary}
-              websiteUrl={websiteUrl}
-            />
-            <div className="flex-1 flex flex-col min-w-0">
-              {/* Header with trigger + re-analyze */}
-              <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex items-center gap-2 shrink-0">
-                <SidebarTrigger />
-                <div className="flex-1" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs gap-1 text-muted-foreground hover:text-foreground"
-                  onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
-                >
-                  <ArrowRight className="w-3 h-3" />
-                  Re-analyze
-                </Button>
-              </div>
-              <LeadgenDashboard
-                leads={dashboardLeads}
-                outreach={outreach}
-                activeNiche={activeNiche}
-                onUpdateStatus={updateLeadStatus}
-                onDraftEmail={handleDraftEmail}
-                onExportCSV={exportCSV}
-                onBatchFind={handleBatchFind}
-                onEnrichLeads={handleEnrichLeads}
-                onScoreLeads={handleScoreLeads}
-                onDraftAll={handleDraftAllOutreach}
-                onExportNiche={handleExportNiche}
-                isFinding={isFindingLeads}
-                isEnriching={isEnrichingLeads}
-                onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
-                onFindLookalikes={handleFindLookalikes}
-                websiteUrl={websiteUrl}
-                pagesAnalyzed={pagesAnalyzed}
-                companySummary={companySummary}
-                icpSummary={icpSummary}
-              />
-            </div>
+        <div className="flex flex-col flex-1 min-h-0 w-full">
+          {/* Re-analyze bar */}
+          <div className="border-b border-border/40 bg-card/30 px-4 py-1.5 flex items-center gap-2 shrink-0">
+            <span className="text-xs text-muted-foreground truncate">
+              {websiteUrl && <span className="font-medium text-foreground">{websiteUrl}</span>}
+            </span>
+            <div className="flex-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs gap-1 text-muted-foreground hover:text-foreground"
+              onClick={() => { setHasDiscovered(false); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); }}
+            >
+              <ArrowRight className="w-3 h-3" />
+              Re-analyze
+            </Button>
           </div>
-        </SidebarProvider>
+          <LeadgenDashboard
+            leads={dashboardLeads}
+            outreach={outreach}
+            onUpdateStatus={updateLeadStatus}
+            onDraftEmail={handleDraftEmail}
+            onExportCSV={exportCSV}
+            onGenerateAll={handleGenerateAll}
+            onEnrichAll={handleEnrichAll}
+            onScoreAll={handleScoreAll}
+            onDraftAll={handleDraftAllSimple}
+            isGenerating={isFindingLeads}
+            isEnriching={isEnrichingLeads}
+            onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+            onFindLookalikes={handleFindLookalikes}
+            websiteUrl={websiteUrl}
+            pagesAnalyzed={pagesAnalyzed}
+            companySummary={companySummary}
+            icpSummary={icpSummary}
+          />
+        </div>
       )}
 
       {/* Floating Chat Dock */}
