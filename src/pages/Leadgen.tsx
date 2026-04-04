@@ -427,6 +427,7 @@ export default function Leadgen() {
         websiteUrl ? `My company website is ${websiteUrl}.` : "",
         companySummary ? `Company: ${companySummary}.` : "",
         icpSummary ? `ICP Summary: ${icpSummary}.` : "",
+        targetLocation ? `Target location/geography: ${targetLocation}. Only find leads physically located in or near this area.` : "",
         grandparentNiche ? `Industry vertical: ${grandparentNiche.label}${grandparentNiche.description ? ` — ${grandparentNiche.description}` : ""}.` : "",
         parentNiche ? `Market segment: ${parentNiche.label}${parentNiche.description ? ` — ${parentNiche.description}` : ""}.` : "",
         `Target persona: ${niche}${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}.`,
