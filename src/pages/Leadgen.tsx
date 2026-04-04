@@ -660,7 +660,7 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: lead.niche_tag })));
+            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: lead.niche_tag, source: websiteUrl || "chat" })));
           } catch {}
         }
       }
