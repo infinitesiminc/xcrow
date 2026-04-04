@@ -86,6 +86,7 @@ export default function Leadgen() {
 
   // Discovery state
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [targetLocation, setTargetLocation] = useState("");
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [discoveryPhase, setDiscoveryPhase] = useState("");
   const [companySummary, setCompanySummary] = useState("");
