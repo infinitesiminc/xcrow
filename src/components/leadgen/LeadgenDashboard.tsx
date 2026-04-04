@@ -88,6 +88,7 @@ export function LeadgenDashboard({
         pagesAnalyzed={pagesAnalyzed || []}
         companySummary={companySummary || ""}
         icpSummary={icpSummary || ""}
+        niches={niches}
       />
 
       {/* Action Toolbar */}
