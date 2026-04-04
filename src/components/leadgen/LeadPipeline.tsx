@@ -75,7 +75,7 @@ export function LeadPipeline({
     let result = leads;
     if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
     if (nicheFilter !== "all") result = result.filter((l) => (l.niche_tag || "Uncategorized") === nicheFilter);
-    if (locationFilter !== "all") result = result.filter((l) => (l.address || l.headquarters || "") === locationFilter);
+    if (locationFilter !== "all") result = result.filter((l) => (l.address || "") === locationFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) || l.address?.toLowerCase().includes(q));
