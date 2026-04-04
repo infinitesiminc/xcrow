@@ -137,6 +137,16 @@ export default function Leadgen() {
     setHasDiscovered(currentLocalNiches.length > 0 || savedNiches.length > 0);
   }, [activeWorkspaceKey, currentLocalNiches.length, savedNiches.length]);
 
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  const [draftLead, setDraftLead] = useState<Lead | null>(null);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftBody, setDraftBody] = useState("");
+  const [draftCtaText, setDraftCtaText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
   useEffect(() => {
