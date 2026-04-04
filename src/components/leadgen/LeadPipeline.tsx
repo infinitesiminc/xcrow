@@ -55,6 +55,7 @@ export function LeadPipeline({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [nicheFilter, setNicheFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
 
   // Unique niches for filter dropdown
   const nicheOptions = useMemo(() => {
