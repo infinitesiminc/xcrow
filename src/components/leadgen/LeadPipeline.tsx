@@ -221,6 +221,7 @@ export function LeadPipeline({
                     ) : (
                       <span className="text-xs text-muted-foreground/50">—</span>
                     )}
+                  </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     {lead.email ? (
                       <span className="text-xs text-muted-foreground truncate max-w-[180px] block">{lead.email}</span>
