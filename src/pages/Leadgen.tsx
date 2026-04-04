@@ -682,12 +682,12 @@ export default function Leadgen() {
     if (targets.length === 0) targets = niches.filter(n => n.niche_type === "segment");
     if (targets.length === 0) return;
     setIsAutoSeeding(true);
-    for (let i = 0; i < personas.length; i++) {
-      toast.info(`Seeding lead ${i + 1}/${personas.length}: ${personas[i].label}`, { id: "auto-seed" });
-      await handleFindLeads(personas[i].label);
+    for (let i = 0; i < targets.length; i++) {
+      toast.info(`Seeding lead ${i + 1}/${targets.length}: ${targets[i].label}`, { id: "auto-seed" });
+      await handleFindLeads(targets[i].label);
     }
     setIsAutoSeeding(false);
-    toast.success(`Seeded ${personas.length} sample leads!`, { id: "auto-seed" });
+    toast.success(`Seeded ${targets.length} sample leads!`, { id: "auto-seed" });
   };
 
   const chatOnlyItems = items.filter(it => it.type !== "leads");
