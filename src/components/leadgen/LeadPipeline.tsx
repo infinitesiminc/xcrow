@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink } from "lucide-react";
+import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink, MapPin } from "lucide-react";
 import type { SavedLead, LeadStatus } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
