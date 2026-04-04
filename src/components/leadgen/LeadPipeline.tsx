@@ -172,6 +172,7 @@ export function LeadPipeline({
                 <TableHead className="hidden md:table-cell">Title</TableHead>
                 <TableHead className="hidden sm:table-cell">Company</TableHead>
                 <TableHead className="hidden lg:table-cell w-[140px]">Niche</TableHead>
+                <TableHead className="hidden lg:table-cell w-[140px]">Location</TableHead>
                 <TableHead className="hidden lg:table-cell">Email</TableHead>
                 <TableHead className="w-[100px]">Stage</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
