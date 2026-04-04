@@ -674,11 +674,13 @@ export default function Leadgen() {
     }
   };
 
-  // --- Auto-seed: 1 lead per persona niche after discovery ---
+   // --- Auto-seed: 1 lead per persona niche after discovery ---
   const handleAutoSeed = async (niches: Array<{ label: string; description: string | null; parent_label: string | null; niche_type: string }>) => {
     if (!user) return;
-    const personas = niches.filter(n => n.niche_type === "persona");
-    if (personas.length === 0) return;
+    // Prefer personas, fall back to segments if none
+    let targets = niches.filter(n => n.niche_type === "persona");
+    if (targets.length === 0) targets = niches.filter(n => n.niche_type === "segment");
+    if (targets.length === 0) return;
     setIsAutoSeeding(true);
     for (let i = 0; i < personas.length; i++) {
       toast.info(`Seeding lead ${i + 1}/${personas.length}: ${personas[i].label}`, { id: "auto-seed" });
