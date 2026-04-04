@@ -134,8 +134,8 @@ export default function Leadgen() {
       return;
     }
 
-    setHasDiscovered(currentLocalNiches.length > 0 || savedNiches.length > 0);
-  }, [activeWorkspaceKey, currentLocalNiches.length, savedNiches.length]);
+    setHasDiscovered(currentLocalNiches.length > 0 || savedNiches.length > 0 || savedLeads.length > 0);
+  }, [activeWorkspaceKey, currentLocalNiches.length, savedNiches.length, savedLeads.length]);
 
   const [draftModalOpen, setDraftModalOpen] = useState(false);
   const [draftLead, setDraftLead] = useState<Lead | null>(null);
