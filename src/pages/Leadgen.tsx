@@ -469,7 +469,7 @@ export default function Leadgen() {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "leads" && parsed.leads) {
               for (const l of parsed.leads) {
-                foundLeads.push({ ...l, niche_tag: niche });
+              foundLeads.push({ ...l, niche_tag: niche, source: websiteUrl || "chat" });
               }
             }
           } catch {}
@@ -526,7 +526,7 @@ export default function Leadgen() {
           try {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "leads" && parsed.leads) {
-              enrichedLeads.push(...parsed.leads.map((lead: Lead) => ({ ...lead, niche_tag: niche })));
+              enrichedLeads.push(...parsed.leads.map((lead: Lead) => ({ ...lead, niche_tag: niche, source: websiteUrl || "chat" })));
             }
           } catch {}
         }
@@ -611,7 +611,7 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: niche })));
+            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: niche, source: websiteUrl || "chat" })));
           } catch {}
         }
       }
@@ -660,7 +660,7 @@ export default function Leadgen() {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: lead.niche_tag })));
+            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: lead.niche_tag, source: websiteUrl || "chat" })));
           } catch {}
         }
       }

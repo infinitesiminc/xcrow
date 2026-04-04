@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink, MapPin } from "lucide-react";
+import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink, MapPin, Globe } from "lucide-react";
 import type { SavedLead, LeadStatus } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
@@ -55,6 +55,7 @@ export function LeadPipeline({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [nicheFilter, setNicheFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
 
   // Unique niches for filter dropdown
   const nicheOptions = useMemo(() => {
@@ -71,17 +72,26 @@ export function LeadPipeline({
     return Array.from(set).sort();
   }, [leads]);
 
+  const sourceOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of leads) {
+      if (l.source) set.add(l.source);
+    }
+    return Array.from(set).sort();
+  }, [leads]);
+
   const filtered = useMemo(() => {
     let result = leads;
     if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
     if (nicheFilter !== "all") result = result.filter((l) => (l.niche_tag || "Uncategorized") === nicheFilter);
     if (locationFilter !== "all") result = result.filter((l) => (l.address || "") === locationFilter);
+    if (sourceFilter !== "all") result = result.filter((l) => (l.source || "") === sourceFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) || l.address?.toLowerCase().includes(q));
     }
     return result;
-  }, [leads, search, statusFilter, nicheFilter, locationFilter]);
+  }, [leads, search, statusFilter, nicheFilter, locationFilter, sourceFilter]);
 
   const contacted = leads.filter((l) => l.status !== "new").length;
   const replied = leads.filter((l) => l.status === "replied" || l.status === "won").length;
@@ -132,6 +142,20 @@ export function LeadPipeline({
             </SelectContent>
           </Select>
         )}
+        {sourceOptions.length > 1 && (
+          <Select value={sourceFilter} onValueChange={setSourceFilter}>
+            <SelectTrigger className="w-[160px] h-8 text-xs">
+              <Globe className="w-3 h-3 mr-1 shrink-0" />
+              <SelectValue placeholder="All Sources" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              {sourceOptions.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[120px] h-8 text-xs">
             <SelectValue />
@@ -172,6 +196,7 @@ export function LeadPipeline({
                 <TableHead className="hidden md:table-cell">Title</TableHead>
                 <TableHead className="hidden sm:table-cell">Company</TableHead>
                 <TableHead className="hidden lg:table-cell w-[140px]">Niche</TableHead>
+                <TableHead className="hidden lg:table-cell w-[140px]">Location</TableHead>
                 <TableHead className="hidden lg:table-cell">Email</TableHead>
                 <TableHead className="w-[100px]">Stage</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
@@ -213,6 +238,13 @@ export function LeadPipeline({
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal truncate max-w-[130px]">
                       {lead.niche_tag || "Uncategorized"}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    {lead.address ? (
+                      <span className="text-xs text-muted-foreground truncate max-w-[130px] block">{lead.address}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     {lead.email ? (
