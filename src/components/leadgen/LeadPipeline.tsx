@@ -63,6 +63,15 @@ export function LeadPipeline({
     return Array.from(set).sort();
   }, [leads]);
 
+  const locationOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of leads) {
+      const loc = l.address || l.headquarters;
+      if (loc) set.add(loc);
+    }
+    return Array.from(set).sort();
+  }, [leads]);
+
   const filtered = useMemo(() => {
     let result = leads;
     if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
