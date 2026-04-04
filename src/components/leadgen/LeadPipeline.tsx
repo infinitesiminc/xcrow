@@ -216,6 +216,12 @@ export function LeadPipeline({
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
+                    {lead.address ? (
+                      <span className="text-xs text-muted-foreground truncate max-w-[130px] block">{lead.address}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">—</span>
+                    )}
+                  <TableCell className="hidden lg:table-cell">
                     {lead.email ? (
                       <span className="text-xs text-muted-foreground truncate max-w-[180px] block">{lead.email}</span>
                     ) : (
