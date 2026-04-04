@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Users, Mail, MessageSquare, TrendingUp, Download, Search, Sparkles, ExternalLink } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink } from "lucide-react";
 import type { SavedLead, LeadStatus } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
@@ -26,6 +27,9 @@ interface LeadPipelineProps {
   outreachCount: number;
   onSelectLead?: (lead: SavedLead) => void;
   onFindLookalikes?: (lead: SavedLead) => void;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
+  onSelectAll?: () => void;
 }
 
 function LeadAvatar({ lead }: { lead: SavedLead }) {
@@ -43,23 +47,37 @@ function LeadAvatar({ lead }: { lead: SavedLead }) {
   );
 }
 
-export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount, onSelectLead, onFindLookalikes }: LeadPipelineProps) {
+export function LeadPipeline({
+  leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount,
+  onSelectLead, onFindLookalikes, selectedIds, onToggleSelect, onSelectAll,
+}: LeadPipelineProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [nicheFilter, setNicheFilter] = useState<string>("all");
+
+  // Unique niches for filter dropdown
+  const nicheOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of leads) set.add(l.niche_tag || "Uncategorized");
+    return Array.from(set).sort();
+  }, [leads]);
 
   const filtered = useMemo(() => {
     let result = leads;
     if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
+    if (nicheFilter !== "all") result = result.filter((l) => (l.niche_tag || "Uncategorized") === nicheFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q));
     }
     return result;
-  }, [leads, search, statusFilter]);
+  }, [leads, search, statusFilter, nicheFilter]);
 
   const contacted = leads.filter((l) => l.status !== "new").length;
   const replied = leads.filter((l) => l.status === "replied" || l.status === "won").length;
   const replyRate = contacted > 0 ? Math.round((replied / contacted) * 100) : 0;
+
+  const allSelected = filtered.length > 0 && selectedIds && filtered.every(l => selectedIds.has(l.id));
 
   return (
     <div className="flex flex-col h-full">
@@ -77,6 +95,19 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search leads..." className="pl-8 h-8 text-sm" />
         </div>
+        {nicheOptions.length > 1 && (
+          <Select value={nicheFilter} onValueChange={setNicheFilter}>
+            <SelectTrigger className="w-[160px] h-8 text-xs">
+              <SelectValue placeholder="All Niches" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Niches</SelectItem>
+              {nicheOptions.map((n) => (
+                <SelectItem key={n} value={n}>{n}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[120px] h-8 text-xs">
             <SelectValue />
@@ -99,15 +130,24 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
       <ScrollArea className="flex-1 px-4 pb-4">
         {filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            {leads.length === 0 ? "No leads yet — click +Batch to discover prospects!" : "No leads match your filters."}
+            {leads.length === 0 ? "No leads yet — click Generate All to discover prospects!" : "No leads match your filters."}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
+                {onToggleSelect && (
+                  <TableHead className="w-[40px]">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={() => onSelectAll?.()}
+                    />
+                  </TableHead>
+                )}
                 <TableHead className="w-[200px]">Name</TableHead>
                 <TableHead className="hidden md:table-cell">Title</TableHead>
                 <TableHead className="hidden sm:table-cell">Company</TableHead>
+                <TableHead className="hidden lg:table-cell w-[140px]">Niche</TableHead>
                 <TableHead className="hidden lg:table-cell">Email</TableHead>
                 <TableHead className="w-[100px]">Stage</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
@@ -120,6 +160,14 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => onSelectLead?.(lead)}
                 >
+                  {onToggleSelect && (
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedIds?.has(lead.id) || false}
+                        onCheckedChange={() => onToggleSelect(lead.id)}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div className="flex items-center gap-2.5">
                       <LeadAvatar lead={lead} />
@@ -136,6 +184,11 @@ export function LeadPipeline({ leads, onUpdateStatus, onDraftEmail, onExportCSV,
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <span className="text-xs text-muted-foreground truncate">{lead.company || "—"}</span>
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal truncate max-w-[130px]">
+                      {lead.niche_tag || "Uncategorized"}
+                    </Badge>
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     {lead.email ? (

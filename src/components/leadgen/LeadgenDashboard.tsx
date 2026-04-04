@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Target, Mail, Download, Loader2 } from "lucide-react";
+import { Sparkles, Target, Mail, Download, Loader2, Zap } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
 import { ICPInsightsPanel } from "./ICPInsightsPanel";
 import type { SavedLead, LeadStatus, OutreachEntry } from "./useLeadsCRUD";
@@ -15,16 +15,14 @@ interface PageAnalyzed {
 interface LeadgenDashboardProps {
   leads: SavedLead[];
   outreach: OutreachEntry[];
-  activeNiche: string | null;
   onUpdateStatus: (id: string, status: LeadStatus) => void;
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
-  onBatchFind?: (niche: string) => void;
-  onEnrichLeads?: (niche: string) => void;
-  onScoreLeads?: (niche: string) => void;
-  onDraftAll?: (niche: string) => void;
-  onExportNiche?: (niche: string) => void;
-  isFinding?: boolean;
+  onGenerateAll?: () => void;
+  onEnrichAll?: () => void;
+  onScoreAll?: () => void;
+  onDraftAll?: () => void;
+  isGenerating?: boolean;
   isEnriching?: boolean;
   onSelectLead?: (lead: SavedLead) => void;
   onFindLookalikes?: (lead: SavedLead) => void;
@@ -38,16 +36,14 @@ interface LeadgenDashboardProps {
 export function LeadgenDashboard({
   leads,
   outreach,
-  activeNiche,
   onUpdateStatus,
   onDraftEmail,
   onExportCSV,
-  onBatchFind,
-  onEnrichLeads,
-  onScoreLeads,
+  onGenerateAll,
+  onEnrichAll,
+  onScoreAll,
   onDraftAll,
-  onExportNiche,
-  isFinding,
+  isGenerating,
   isEnriching,
   onSelectLead,
   onFindLookalikes,
@@ -56,23 +52,24 @@ export function LeadgenDashboard({
   companySummary,
   icpSummary,
 }: LeadgenDashboardProps) {
-  const normalizeNicheLabel = (value?: string | null) =>
-    (value || "").toLowerCase().replace(/[()]/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const filteredLeads = useMemo(() => {
-    if (!activeNiche) return leads;
-    const target = normalizeNicheLabel(activeNiche);
-    return leads.filter((l) => {
-      const leadTag = normalizeNicheLabel(l.niche_tag || "Uncategorized");
-      return leadTag === target || leadTag.includes(target) || target.includes(leadTag);
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
-  }, [leads, activeNiche]);
+  }, []);
 
-  const filteredOutreach = useMemo(() => {
-    if (!activeNiche) return outreach;
-    const nicheLeadIds = new Set(filteredLeads.map((l) => l.id));
-    return outreach.filter((o) => nicheLeadIds.has(o.lead_id));
-  }, [outreach, activeNiche, filteredLeads]);
+  const selectAll = useCallback(() => {
+    if (selectedIds.size === leads.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(leads.map(l => l.id)));
+    }
+  }, [leads, selectedIds.size]);
 
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full">
@@ -87,25 +84,26 @@ export function LeadgenDashboard({
       {/* Action Toolbar */}
       <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground mr-1">
-          {activeNiche || "All Leads"}
+          {leads.length} leads
+          {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
         </span>
         <div className="flex-1" />
         <Button
-          variant="outline"
+          variant="default"
           size="sm"
           className="h-7 gap-1.5 text-xs"
-          disabled={!activeNiche || isFinding}
-          onClick={() => activeNiche && onBatchFind?.(activeNiche)}
+          disabled={isGenerating}
+          onClick={() => onGenerateAll?.()}
         >
-          {isFinding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-          +Batch
+          {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+          Generate All
         </Button>
         <Button
           variant="outline"
           size="sm"
           className="h-7 gap-1.5 text-xs"
-          disabled={!activeNiche || isEnriching}
-          onClick={() => activeNiche && onEnrichLeads?.(activeNiche)}
+          disabled={isEnriching || leads.length === 0}
+          onClick={() => onEnrichAll?.()}
         >
           {isEnriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
           Enrich
@@ -114,8 +112,8 @@ export function LeadgenDashboard({
           variant="outline"
           size="sm"
           className="h-7 gap-1.5 text-xs"
-          disabled={!activeNiche}
-          onClick={() => activeNiche && onScoreLeads?.(activeNiche)}
+          disabled={leads.length === 0}
+          onClick={() => onScoreAll?.()}
         >
           <Target className="w-3.5 h-3.5" />
           Score
@@ -124,8 +122,8 @@ export function LeadgenDashboard({
           variant="outline"
           size="sm"
           className="h-7 gap-1.5 text-xs"
-          disabled={!activeNiche}
-          onClick={() => activeNiche && onDraftAll?.(activeNiche)}
+          disabled={leads.length === 0}
+          onClick={() => onDraftAll?.()}
         >
           <Mail className="w-3.5 h-3.5" />
           Draft
@@ -134,8 +132,8 @@ export function LeadgenDashboard({
           variant="outline"
           size="sm"
           className="h-7 gap-1.5 text-xs"
-          disabled={!activeNiche}
-          onClick={() => activeNiche && onExportNiche?.(activeNiche)}
+          disabled={leads.length === 0}
+          onClick={onExportCSV}
         >
           <Download className="w-3.5 h-3.5" />
           Export
@@ -144,13 +142,16 @@ export function LeadgenDashboard({
 
       {/* Lead Pipeline (full area) */}
       <LeadPipeline
-        leads={filteredLeads}
+        leads={leads}
         onUpdateStatus={onUpdateStatus}
         onDraftEmail={onDraftEmail}
         onExportCSV={onExportCSV}
-        outreachCount={filteredOutreach.length}
+        outreachCount={outreach.length}
         onSelectLead={onSelectLead}
         onFindLookalikes={onFindLookalikes}
+        selectedIds={selectedIds}
+        onToggleSelect={toggleSelect}
+        onSelectAll={selectAll}
       />
     </div>
   );
