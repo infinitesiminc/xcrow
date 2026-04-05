@@ -463,8 +463,8 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
       // Search customer AND conquest domains separately to ensure both pools have leads
       console.log("Apollo search — customer domains:", customerDomains.length, "conquest domains:", conquestDomains.length, "titles:", titles.length, "page:", apolloPage);
       const [customerPeople, conquestPeople] = await Promise.all([
-        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains, apolloPage) : Promise.resolve([]),
-        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains, apolloPage) : Promise.resolve([]),
+        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains, apolloPage, locationFilter) : Promise.resolve([]),
+        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains, apolloPage, locationFilter) : Promise.resolve([]),
       ]);
       console.log("Apollo results — customer leads:", customerPeople.length, "conquest leads:", conquestPeople.length);
       let people = [...customerPeople, ...conquestPeople];
