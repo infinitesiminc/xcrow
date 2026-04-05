@@ -105,7 +105,7 @@ export default function CompanyExplorer() {
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyData[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
-  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  
 
   // Analysis state
   const [stepResults, setStepResults] = useState<Record<string, string>>({});
