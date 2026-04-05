@@ -115,16 +115,17 @@ async function searchApolloAtCompanies(
     }
     if (partialPeople.length === 0) return [];
 
-    // Enrich via bulk_match using linkedin_url (more reliable than id)
+    // Enrich via bulk_match using id (api_search often returns no linkedin_url)
     const enrichDetails = partialPeople
       .slice(0, 15)
-      .filter((p: any) => p.linkedin_url)
-      .map((p: any) => ({ linkedin_url: p.linkedin_url }));
+      .filter((p: any) => p.id)
+      .map((p: any) => ({ id: p.id }));
 
     let enrichedPeople = partialPeople;
 
     if (enrichDetails.length > 0) {
       try {
+        console.log("Apollo bulk_match with", enrichDetails.length, "IDs");
         const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match", {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
@@ -132,16 +133,19 @@ async function searchApolloAtCompanies(
         });
         if (enrichRes.ok) {
           const enrichData = await enrichRes.json();
-          console.log("Apollo bulk_match returned:", enrichData.people?.length || 0, "enriched");
-          if (enrichData.people?.length) {
-            // Merge: use enriched data where available, keep original otherwise
+          const enrichedList = (enrichData.people || []).filter(Boolean);
+          console.log("Apollo bulk_match returned:", enrichedList.length, "enriched,",
+            enrichedList.filter((p: any) => p.linkedin_url?.includes("/in/")).length, "with /in/ URLs");
+          if (enrichedList.length > 0) {
             const enrichedMap = new Map(
-              enrichData.people.filter((p: any) => p?.linkedin_url).map((p: any) => [p.linkedin_url, p])
+              enrichedList.filter((p: any) => p?.id).map((p: any) => [p.id, p])
             );
             enrichedPeople = partialPeople.map((p: any) =>
-              enrichedMap.get(p.linkedin_url) || p
+              enrichedMap.get(p.id) || p
             );
           }
+        } else {
+          console.error("Apollo bulk_match failed:", enrichRes.status);
         }
       } catch (e) {
         console.warn("Apollo bulk_match error:", e);
