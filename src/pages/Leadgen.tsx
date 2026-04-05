@@ -954,15 +954,42 @@ export default function Leadgen() {
                   disabled={isDiscovering}
                 />
               </div>
-              <div className="relative w-[140px]">
-                <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input
-                  value={targetLocation}
-                  onChange={(e) => setTargetLocation(e.target.value)}
-                  placeholder="Location"
-                  className="pl-8 h-8 text-xs"
-                  disabled={isDiscovering}
-                />
+              {/* Location chip — workspace-level targeting */}
+              <div className="flex items-center gap-1">
+                {editingLocation ? (
+                  <form
+                    className="flex items-center gap-1"
+                    onSubmit={(e) => { e.preventDefault(); setEditingLocation(false); }}
+                  >
+                    <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <Input
+                      autoFocus
+                      value={targetLocation}
+                      onChange={(e) => setTargetLocation(e.target.value)}
+                      onBlur={() => setEditingLocation(false)}
+                      placeholder="e.g. New York, USA"
+                      className="h-6 w-[140px] text-xs px-1.5"
+                    />
+                  </form>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditingLocation(true)}
+                    className="inline-flex items-center gap-1 h-6 px-2 rounded-md text-xs border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                  >
+                    <MapPin className="w-3 h-3 shrink-0" />
+                    {targetLocation || "Add location"}
+                  </button>
+                )}
+                {targetLocation && !editingLocation && (
+                  <button
+                    type="button"
+                    onClick={() => setTargetLocation("")}
+                    className="text-muted-foreground hover:text-foreground w-4 h-4 flex items-center justify-center"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
               <Button type="submit" variant="outline" size="sm" className="h-8 text-xs gap-1.5" disabled={!websiteUrl.trim() || isDiscovering}>
                 {isDiscovering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
