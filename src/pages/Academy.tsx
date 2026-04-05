@@ -1,8 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CompanyExplorer from "@/components/academy/CompanyExplorer";
 
 export default function Academy() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialWebsite = searchParams.get("website") || undefined;
 
   return (
     <div className="min-h-screen bg-background">
@@ -17,7 +19,7 @@ export default function Academy() {
           </button>
         </div>
       </div>
-      <CompanyExplorer />
+      <CompanyExplorer initialWebsite={initialWebsite} />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 /**
- * Index — Leadgen-focused landing page with URL input + logo marquee.
+ * Index — Landing page with URL input that navigates to Academy results.
  */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
@@ -26,20 +27,18 @@ const VALUE_PROPS = [
 
 export default function Index() {
   const { openAuthModal } = useAuth();
+  const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState("");
 
   const handleDiscover = (e: React.FormEvent) => {
     e.preventDefault();
     const url = websiteUrl.trim();
     if (!url) return;
-    // Store intent and prompt login — SmartHome will render Leadgen once authed
-    sessionStorage.setItem("pendingWebsite", url);
-    openAuthModal();
+    navigate(`/academy?website=${encodeURIComponent(url)}`);
   };
 
   const handleResearch = () => {
-    sessionStorage.setItem("pendingMode", "research");
-    openAuthModal();
+    navigate("/academy");
   };
 
   return (
