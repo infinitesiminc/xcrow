@@ -104,6 +104,7 @@ export default function LessonRenderer({
           lessonType: lesson.type,
           lessonContent: lesson.content,
           userResponse,
+          companyContext: companyContext || undefined,
         },
       });
       if (error) throw error;
