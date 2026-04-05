@@ -248,7 +248,16 @@ Return ONLY valid JSON (no markdown, no wrapping):
   ]
 }
 
-Be thorough — include every distinct product, add-on, or platform module. Assign sequential IDs: P1, P2, P3...`,
+Be thorough — include every distinct product line or platform module.
+
+IMPORTANT CONSOLIDATION RULES:
+- Tier/plan variants of the SAME product are ONE product (e.g. "Claude" not "Claude Opus + Claude Sonnet + Claude Haiku")
+- Pricing tiers (Free, Pro, Enterprise) are NOT separate products — mention them in pricing_model instead
+- Model versions (GPT-4, GPT-3.5) or size variants (Small, Medium, Large) are NOT separate products
+- Add-ons that only work with a parent product are NOT separate products — mention them in the parent's description
+- Ask: "Would a sales team pitch this separately to a different buyer?" — if no, consolidate
+
+Assign sequential IDs: P1, P2, P3...`,
         `Company: ${company.name}
 Website: ${company.website}
 Description: ${company.description}
