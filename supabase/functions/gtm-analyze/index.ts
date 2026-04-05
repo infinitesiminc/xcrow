@@ -147,9 +147,9 @@ serve(async (req) => {
       const people = await searchApolloContacts(searchTitles, company);
 
       if (people.length === 0) {
-        return await runAIStep(LOVABLE_API_KEY, {
-          system: "You are a sales intelligence researcher.",
-          user: `No live results for ${company.name}. Searched: ${searchTitles.join(", ")}.\n\nProvide LinkedIn Sales Navigator search filters and outreach templates.`,
+        return respond({
+          reasoning: `Apollo returned no profiles for ${company.name}. The company may be too small or new for their database.`,
+          content: `## No Profiles Found\n\nApollo returned **0 results** for employees at **${company.name}** (${domain || "no domain"}).\n\nSearched titles: ${searchTitles.join(", ")}\n\n### Manual Search\nTry LinkedIn directly: [Search ${company.name} on LinkedIn](https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(company.name)}&origin=GLOBAL_SEARCH_HEADER)`,
         });
       }
 
