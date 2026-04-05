@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   Building2, Globe, Users, ArrowRight, ArrowLeft,
   Loader2, CheckCircle2, ChevronRight, Linkedin,
-  Target, Brain, Package, UserCheck, RefreshCw,
+  Target, Package, UserCheck, RefreshCw,
 } from "lucide-react";
 
 interface CompanyData {
