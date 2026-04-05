@@ -12,9 +12,18 @@ import {
 } from "lucide-react";
 import type { GTMTreeData, GTMProduct, GTMLead, GTMBuyerMapping } from "./gtm-types";
 
+interface CompanyMeta {
+  industry?: string | null;
+  employee_range?: string | null;
+  funding_stage?: string | null;
+  headquarters?: string | null;
+  website?: string | null;
+}
+
 interface GTMTreeViewProps {
   companyName: string;
   data: GTMTreeData;
+  companyMeta?: CompanyMeta;
   onGenerateMore?: (productId: string, vertical: string | null) => void;
   isGeneratingMore?: boolean;
 }
@@ -294,7 +303,7 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
 }
 
 /* ── Main component ── */
-export default function GTMTreeView({ companyName, data, onGenerateMore, isGeneratingMore }: GTMTreeViewProps) {
+export default function GTMTreeView({ companyName, data, companyMeta, onGenerateMore, isGeneratingMore }: GTMTreeViewProps) {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVerticalIdx, setSelectedVerticalIdx] = useState<number | null>(null);
   const [selectedCompanyIdx, setSelectedCompanyIdx] = useState<number | null>(null);
@@ -519,6 +528,36 @@ export default function GTMTreeView({ companyName, data, onGenerateMore, isGener
             <span className={i === breadcrumb.length - 1 ? "text-foreground font-medium" : ""}>{b}</span>
           </span>
         ))}
+      </div>
+
+      {/* Company Banner */}
+      <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
+        <Building2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-foreground">{companyName}</span>
+            {companyMeta?.industry && (
+              <Badge variant="secondary" className="text-[10px] h-4">{companyMeta.industry}</Badge>
+            )}
+            {companyMeta?.employee_range && (
+              <Badge variant="outline" className="text-[10px] h-4">{companyMeta.employee_range}</Badge>
+            )}
+            {companyMeta?.funding_stage && (
+              <Badge variant="outline" className="text-[10px] h-4">{companyMeta.funding_stage}</Badge>
+            )}
+            {companyMeta?.headquarters && (
+              <Badge variant="outline" className="text-[10px] h-4">{companyMeta.headquarters}</Badge>
+            )}
+            {companyMeta?.website && (
+              <a href={`https://${companyMeta.website}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
+                <Globe className="w-3 h-3" /> {companyMeta.website}
+              </a>
+            )}
+          </div>
+          {data.company_summary && (
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{data.company_summary}</p>
+          )}
+        </div>
       </div>
 
       {/* Legend */}
