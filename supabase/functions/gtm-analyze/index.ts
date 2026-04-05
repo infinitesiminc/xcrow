@@ -127,8 +127,8 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-2.5-flash-lite",
           messages: [
-            { role: "system", content: "Extract the top 5 decision-maker job titles from this buyer analysis. Return ONLY a JSON array of strings." },
-            { role: "user", content: prevBuyer || `Key buyer personas for ${company.name} in ${company.industry}` },
+            { role: "system", content: `Extract the top 5 job titles of people who WORK AT ${company.name} and would be key decision makers or stakeholders. These are EMPLOYEES of the company, NOT the company's customers or target buyers. Think about who runs this company: CEO, VP Sales, Head of Partnerships, CTO, etc. Return ONLY a JSON array of short title strings like ["CEO","VP Sales","Head of Marketing"].` },
+            { role: "user", content: `Company: ${company.name}\nIndustry: ${company.industry}\nDescription: ${company.description}\nEmployees: ${company.employee_range || company.estimated_employees || "Unknown"}\n\nProduct lines:\n${prevProduct}\n\nBuyer analysis:\n${prevBuyer}` },
           ],
         }),
       });
@@ -147,9 +147,9 @@ serve(async (req) => {
       const people = await searchApolloContacts(searchTitles, company);
 
       if (people.length === 0) {
-        return await runAIStep(LOVABLE_API_KEY, {
-          system: "You are a sales intelligence researcher.",
-          user: `No live results for ${company.name}. Searched: ${searchTitles.join(", ")}.\n\nProvide LinkedIn Sales Navigator search filters and outreach templates.`,
+        return respond({
+          reasoning: `Apollo returned no profiles for ${company.name}. The company may be too small or new for their database.`,
+          content: `## No Profiles Found\n\nApollo returned **0 results** for employees at **${company.name}** (${domain || "no domain"}).\n\nSearched titles: ${searchTitles.join(", ")}\n\n### Manual Search\nTry LinkedIn directly: [Search ${company.name} on LinkedIn](https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(company.name)}&origin=GLOBAL_SEARCH_HEADER)`,
         });
       }
 
