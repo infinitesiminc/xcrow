@@ -352,9 +352,7 @@ export default function CompanyExplorer() {
                 </div>
               )}
               <div className="prose prose-sm dark:prose-invert max-w-none">
-                <div className="text-sm text-foreground leading-relaxed whitespace-pre-line">
-                  {activeResult.content}
-                </div>
+                <ReactMarkdown>{activeResult.content}</ReactMarkdown>
               </div>
             </div>
           ) : (
