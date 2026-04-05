@@ -701,7 +701,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                         >
                           {lead.type === "conquest" ? "Prospect" : "Named Customer"}
                         </Badge>
-                        {lead.competitor_using && (
+                        {lead.competitor_using && lead.competitor_using !== "null" && (
                           <Badge variant="secondary" className="text-[8px] h-3.5 px-1 border-0 bg-orange-500/10 text-orange-600">
                             <Swords className="w-2 h-2 mr-0.5" />{lead.competitor_using}
                           </Badge>
