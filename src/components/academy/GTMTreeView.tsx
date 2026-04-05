@@ -410,10 +410,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
       leads = leads.filter(l => l.company?.toLowerCase() === companyName.toLowerCase());
     } else if (selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx]) {
       const v = activeVerticals[selectedVerticalIdx];
-      const vertLeads = leads.filter(l =>
-        l.vertical?.toLowerCase().includes(v.vertical.split("/")[0].trim().toLowerCase())
-      );
-      if (vertLeads.length > 0) leads = vertLeads;
+      leads = leads.filter(l => l.vertical === v.vertical);
     }
     if (companyTypeFilter !== "all") {
       leads = leads.filter(l => l.type === companyTypeFilter);
