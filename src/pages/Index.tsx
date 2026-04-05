@@ -4,13 +4,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import heroImage from "@/assets/og-hero.png";
-import { Target, Zap, Users, BarChart3, Globe, Sparkles } from "lucide-react";
+import { Target, Zap, BarChart3, Globe, Sparkles, Building2 } from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MARQUEE_ROWS = [
   ["Apple", "Stripe", "OpenAI", "Netflix", "Figma", "Anthropic", "Canva", "Salesforce"],
@@ -25,14 +25,21 @@ const VALUE_PROPS = [
 ];
 
 export default function Index() {
-  const navigate = useNavigate();
+  const { openAuthModal } = useAuth();
   const [websiteUrl, setWebsiteUrl] = useState("");
 
   const handleDiscover = (e: React.FormEvent) => {
     e.preventDefault();
     const url = websiteUrl.trim();
     if (!url) return;
-    navigate(`/leadgen?website=${encodeURIComponent(url)}`);
+    // Store intent and prompt login — SmartHome will render Leadgen once authed
+    sessionStorage.setItem("pendingWebsite", url);
+    openAuthModal();
+  };
+
+  const handleResearch = () => {
+    sessionStorage.setItem("pendingMode", "research");
+    openAuthModal();
   };
 
   return (
@@ -106,6 +113,22 @@ export default function Index() {
                 Hunt Leads
               </Button>
             </form>
+
+            <div className="flex items-center gap-3 mt-4">
+              <div className="w-12 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="w-12 h-px bg-border" />
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 gap-2 text-muted-foreground hover:text-foreground"
+              onClick={handleResearch}
+            >
+              <Building2 className="w-4 h-4" />
+              Research a Specific Company
+            </Button>
           </motion.div>
 
           {/* Logo Marquee Social Proof */}
