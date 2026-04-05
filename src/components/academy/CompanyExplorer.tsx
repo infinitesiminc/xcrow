@@ -303,7 +303,7 @@ export default function CompanyExplorer() {
       {/* Tree view */}
       {treeData ? (
         <div>
-          <GTMTreeView companyName={selectedCompany?.name || ""} data={treeData} onGenerateMore={handleGenerateMore} isGeneratingMore={isGeneratingMore} />
+          <GTMTreeView companyName={selectedCompany?.name || ""} data={treeData} companyMeta={selectedCompany ? { industry: selectedCompany.industry, employee_range: selectedCompany.employee_range, funding_stage: selectedCompany.funding_stage, headquarters: selectedCompany.headquarters, website: selectedCompany.website } : undefined} onGenerateMore={handleGenerateMore} isGeneratingMore={isGeneratingMore} />
         </div>
       ) : !isRunning && completedCount === STEPS.length ? (
         <div className="text-center py-12 text-muted-foreground">
