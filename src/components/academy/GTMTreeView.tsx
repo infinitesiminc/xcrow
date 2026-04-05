@@ -530,7 +530,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
       {/* 4-column browser */}
       <div className="flex gap-1 h-[500px]">
         {/* Col 1: Products */}
-        <div className="flex flex-col min-w-[180px] flex-1 border border-border rounded-lg overflow-hidden bg-card">
+        <div className="flex flex-col min-w-[200px] flex-[1.3] border border-border rounded-lg overflow-hidden bg-card">
           <ColumnHeader title="Products" count={filteredProducts.length} total={data.products.length}>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
