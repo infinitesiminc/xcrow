@@ -5,16 +5,6 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    min-font-size: 12px;
-  }
-  html {
-    font-size: max(12px, 1rem);
-  }
-  /* Enforce 12px minimum on all text elements */
-  p, span, a, button, label, input, textarea, select, th, td, li, div {
-    font-size: max(12px, inherit);
-  }
   :root {
     /* Claude.ai-inspired warm light palette */
     --background: 40 23% 97%;
