@@ -561,7 +561,6 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                       {getProductLeadCount(product.id)}
                     </Badge>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{product.target_user}</p>
                   {product.competitors.length > 0 && (
                     <div className="flex flex-wrap gap-0.5 mt-1">
                       {product.competitors.slice(0, 2).map(c => (
