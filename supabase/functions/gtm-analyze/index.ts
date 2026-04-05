@@ -122,22 +122,22 @@ async function searchApolloAtCompanies(
       }
     }
 
-    return enrichedPeople.map((p: any) => {
-      const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
-      const orgName = p.organization?.name || p.organization_name || "";
-      const linkedinUrl = p.linkedin_url || `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name + " " + orgName)}`;
-      return {
-        name,
-        title: p.title || "",
-        company: orgName,
-        linkedin_url: linkedinUrl,
-        city: p.city || null,
-        state: p.state || null,
-        email: p.email || null,
-        headline: p.headline || "",
-        photo_url: p.photo_url || null,
-      };
-    });
+    return enrichedPeople
+      .filter((p: any) => p.linkedin_url && p.linkedin_url.includes("/in/"))
+      .map((p: any) => {
+        const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
+        return {
+          name,
+          title: p.title || "",
+          company: p.organization?.name || p.organization_name || "",
+          linkedin_url: p.linkedin_url,
+          city: p.city || null,
+          state: p.state || null,
+          email: p.email || null,
+          headline: p.headline || "",
+          photo_url: p.photo_url || null,
+        };
+      });
   } catch (e) {
     console.error("Apollo search error:", e);
     return [];
