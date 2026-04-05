@@ -35,10 +35,8 @@ async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
     };
 
     if (params.industries?.length) {
-      searchBody.organization_industry_tag_ids = params.industries;
-    }
-    if (params.employee_ranges?.length) {
-      searchBody.organization_num_employees_ranges = params.employee_ranges;
+      // Use keyword search for industries (free text, not tag IDs)
+      searchBody.q_organization_keyword_tags = params.industries;
     }
 
     console.log("Apollo ICP search:", JSON.stringify(searchBody));
