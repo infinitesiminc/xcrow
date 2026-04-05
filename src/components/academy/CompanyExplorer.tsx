@@ -116,8 +116,14 @@ export default function CompanyExplorer() {
 
     setAnalyzing(true);
     try {
+      // Pass previous results for context (linkedin-reveal needs buyer-id output)
+      const prevResults: Record<string, string> = {};
+      Object.entries(stepResults).forEach(([id, result]) => {
+        prevResults[id] = result.content;
+      });
+
       const { data, error } = await supabase.functions.invoke("gtm-analyze", {
-        body: { stepId: step.id, company },
+        body: { stepId: step.id, company, previousResults: prevResults },
       });
 
       if (error) throw error;
