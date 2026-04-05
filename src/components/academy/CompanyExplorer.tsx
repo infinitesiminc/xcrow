@@ -58,6 +58,7 @@ export default function CompanyExplorer() {
   const [stepResults, setStepResults] = useState<Record<string, any>>({});
   const [treeData, setTreeData] = useState<GTMTreeData | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [cancelRef] = useState({ cancelled: false });
 
   /* ── data ── */
