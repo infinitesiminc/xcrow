@@ -23,7 +23,6 @@ async function scrapeForCustomers(website: string): Promise<string> {
 
   const baseUrl = website.startsWith("http") ? website : `https://${website}`;
 
-  // Step 1: Map the site for customer-related pages
   let targetUrls: string[] = [];
   try {
     const mapRes = await fetch("https://api.firecrawl.dev/v1/map", {
@@ -34,20 +33,16 @@ async function scrapeForCustomers(website: string): Promise<string> {
     if (mapRes.ok) {
       const mapData = await mapRes.json();
       const allLinks: string[] = mapData.links || [];
-      // Filter for pages likely to contain customer info
       const customerPatterns = /customer|case.?stud|testimonial|success.?stor|partner|who.?use|trust|logo|client/i;
       targetUrls = allLinks.filter((u: string) => customerPatterns.test(u)).slice(0, 3);
-      console.log("Customer-related pages found:", targetUrls.length);
     }
   } catch (e) {
     console.warn("Firecrawl map error:", e);
   }
 
-  // Always include the homepage as it often has customer logos
   targetUrls.unshift(baseUrl);
   targetUrls = [...new Set(targetUrls)].slice(0, 4);
 
-  // Step 2: Scrape those pages for customer evidence
   const allContent: string[] = [];
   for (const url of targetUrls) {
     try {
@@ -93,8 +88,6 @@ async function searchApolloAtCompanies(
       searchBody.q_organization_domains = companyDomains.join("\n");
     }
 
-    console.log("Apollo search at customer domains:", JSON.stringify(searchBody));
-
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
@@ -102,7 +95,7 @@ async function searchApolloAtCompanies(
     });
 
     if (!searchRes.ok) {
-      console.error("Apollo api_search failed:", searchRes.status, await searchRes.text());
+      console.error("Apollo search failed:", searchRes.status);
       return [];
     }
 
@@ -110,7 +103,6 @@ async function searchApolloAtCompanies(
     const partialPeople = searchData.people || [];
     if (partialPeople.length === 0) return [];
 
-    // Enrich with bulk_match
     const details = partialPeople.slice(0, 10).map((p: any) => ({ id: p.id })).filter((d: any) => d.id);
     let enrichedPeople = partialPeople;
 
@@ -152,7 +144,37 @@ async function searchApolloAtCompanies(
   }
 }
 
-const CONCISE = "Be concise. Use bullets and short sections. Under 250 words total.";
+/* ── AI call helper ── */
+
+async function callAI(apiKey: string, system: string, user: string, model = "google/gemini-2.5-flash") {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) throw new Error("RATE_LIMITED");
+    if (response.status === 402) throw new Error("CREDITS_EXHAUSTED");
+    throw new Error("AI request failed");
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+function extractJSON(raw: string): any {
+  const cleaned = raw.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+  return JSON.parse(cleaned);
+}
+
+/* ── Main handler ── */
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -162,245 +184,269 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const prevProduct = previousResults?.["product-map"] || "";
-    const prevCustomers = previousResults?.["named-customers"] || "";
-    const prevPMF = previousResults?.["pmf-matrix"] || "";
-    const prevICP = previousResults?.["icp-tree"] || "";
-    const prevBuyer = previousResults?.["buyer-id"] || "";
+    const prev = previousResults || {};
 
-    /* ── Named Customers: scrape website + AI extraction ── */
-    if (stepId === "named-customers") {
-      const scrapedContent = await scrapeForCustomers(company.website || company.name);
+    /* ═══════════════════════════════════════════════════
+       STEP 1: Company DNA + Product Lines
+       Returns: { company_summary, products: [{ id, name, description, target_user, pricing, competitors }] }
+       ═══════════════════════════════════════════════════ */
+    if (stepId === "products") {
+      const raw = await callAI(LOVABLE_API_KEY,
+        `You are a GTM product analyst. Analyze the company and map ALL product lines.
 
-      const extractRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: `You are a GTM researcher extracting named customers from a company's website content. ${CONCISE}
+Return ONLY valid JSON (no markdown, no wrapping):
+{
+  "company_summary": "One sentence: what they do, business model, market position",
+  "products": [
+    {
+      "id": "P1",
+      "name": "Product Name",
+      "description": "What it does in one sentence",
+      "target_user": "Who buys it",
+      "pricing_model": "freemium / subscription / usage / enterprise",
+      "competitors": ["Competitor A", "Competitor B"]
+    }
+  ]
+}
 
-Extract every company name mentioned as a customer, client, partner, case study, or testimonial. For each, note:
-- Company name
-- Industry (infer if not stated)
-- Which product line (P1, P2...) they likely use (based on context)
-- Any quoted results or metrics
+Be thorough — include every distinct product, add-on, or platform module. Assign sequential IDs: P1, P2, P3...`,
+        `Company: ${company.name}
+Website: ${company.website}
+Description: ${company.description}
+Industry: ${company.industry}
+Employees: ${company.employee_range || "Unknown"}
+Funding: ${company.funding_stage || "Unknown"}
+HQ: ${company.headquarters || "Unknown"}`
+      );
 
-Format:
-## Named Customers Found
-
-| Customer | Industry | Product | Evidence |
-|----------|----------|---------|----------|
-| Shopify | E-commerce | P1 | "Case study: 40% faster checkout" |
-
-If NO customers are found, say so clearly and list what pages were checked.
-
-Also extract any customer LOGOS mentioned (company names visible in logo bars/grids).` },
-            { role: "user", content: `Company: ${company.name} (${company.industry})\nWebsite: ${company.website}\n\nProduct lines:\n${prevProduct}\n\nScraped website content:\n${scrapedContent || "No content could be scraped from the website."}` },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "submit_analysis",
-              description: "Submit extracted customer list",
-              parameters: {
-                type: "object",
-                properties: {
-                  reasoning: { type: "string" },
-                  content: { type: "string" },
-                },
-                required: ["reasoning", "content"],
-                additionalProperties: false,
-              },
-            },
-          }],
-          tool_choice: { type: "function", function: { name: "submit_analysis" } },
-        }),
-      });
-
-      if (!extractRes.ok) throw new Error("AI extraction failed");
-      const extractData = await extractRes.json();
-      const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
-      if (!toolCall) throw new Error("No customer data returned");
-      return respond(JSON.parse(toolCall.function.arguments));
+      const parsed = extractJSON(raw);
+      return respond({ structured: parsed, content: raw, reasoning: "Product map extracted" });
     }
 
-    /* ── LinkedIn Reveal: find DMs at named customer companies ── */
-    if (stepId === "linkedin-reveal") {
-      // Extract customer domains + buyer titles from prior analysis
-      const extractRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: `Extract search parameters to find decision makers at companies that BUY from ${company.name}.
+    /* ═══════════════════════════════════════════════════
+       STEP 2: Named Customers + Competitors (Firecrawl)
+       Returns: { customers: [{ name, domain, industry, product_id, evidence }], competitors_customers: [...] }
+       ═══════════════════════════════════════════════════ */
+    if (stepId === "customers") {
+      const productsJSON = prev["products"]?.structured;
+      const scrapedContent = await scrapeForCustomers(company.website || company.name);
 
-From the named customers and ICP analysis, extract:
-1. Company domains of NAMED CUSTOMERS (real companies found on the website)
-2. Buyer titles (the decision-maker roles who purchase ${company.name}'s products)
+      const raw = await callAI(LOVABLE_API_KEY,
+        `You are a GTM researcher extracting named customers AND competitor intelligence.
+
+Given scraped website content and product lines, extract:
+1. Named customers — real companies found on the website (case studies, testimonials, logos)
+2. Competitor customers — companies known to use the competitors listed in the product map (infer from industry knowledge)
 
 Return ONLY valid JSON:
 {
-  "customer_domains": ["shopify.com", "airbnb.com", "uber.com"],
-  "titles": ["VP Engineering", "CTO", "Head of Payments"],
-  "seniority": ["director", "vp", "c_suite"]
+  "customers": [
+    {
+      "name": "Shopify",
+      "domain": "shopify.com",
+      "industry": "E-commerce",
+      "product_ids": ["P1"],
+      "evidence": "Case study: 40% faster checkout",
+      "type": "customer"
+    }
+  ],
+  "conquest_targets": [
+    {
+      "name": "Basecamp",
+      "domain": "basecamp.com",
+      "industry": "SaaS",
+      "uses_competitor": "Competitor Name",
+      "product_ids": ["P2"],
+      "switch_angle": "Lacks enterprise SSO",
+      "type": "conquest"
+    }
+  ]
 }
 
-If no named customers were found, return empty customer_domains array.` },
-            { role: "user", content: `Company: ${company.name}\n\nNamed customers:\n${prevCustomers}\n\nICP:\n${prevICP}\n\nBuyer personas:\n${prevBuyer}` },
-          ],
-        }),
-      });
+Rules:
+- Only include REAL companies, not generic descriptions
+- Infer domain from company name if not explicit
+- Map each customer to specific product IDs (P1, P2...)
+- For conquest targets, use your knowledge of which companies use the listed competitors
+- Include at least 3-5 conquest targets if competitors are known`,
+        `Company: ${company.name}
+Website: ${company.website}
+Industry: ${company.industry}
 
-      let customerDomains: string[] = [];
-      let searchTitles = ["VP Engineering", "CTO", "Head of Product", "Director of Operations", "VP Sales"];
+Product lines:
+${JSON.stringify(productsJSON?.products || [], null, 2)}
 
-      if (extractRes.ok) {
-        const extractData = await extractRes.json();
-        const raw = extractData.choices?.[0]?.message?.content || "";
-        try {
-          const parsed = JSON.parse(raw.replace(/```json?\n?/g, "").replace(/```/g, "").trim());
-          if (parsed.customer_domains?.length) customerDomains = parsed.customer_domains.slice(0, 10);
-          if (parsed.titles?.length) searchTitles = parsed.titles.slice(0, 5);
-        } catch { /* use defaults */ }
-      }
+Scraped website content:
+${scrapedContent || "No content could be scraped."}`
+      );
 
-      console.log("Customer domains:", customerDomains, "Titles:", searchTitles);
-      const people = await searchApolloAtCompanies(searchTitles, customerDomains);
-
-      if (people.length === 0) {
-        return respond({
-          reasoning: `No profiles found at named customer companies of ${company.name}.`,
-          content: `## No Profiles Found\n\nApollo returned **0 results** for decision makers at ${company.name}'s customer companies.\n\nSearched domains: ${customerDomains.join(", ") || "none found"}\nSearched titles: ${searchTitles.join(", ")}\n\n### Manual Search\n[Search on LinkedIn](https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(searchTitles[0])}&origin=GLOBAL_SEARCH_HEADER)`,
-        });
-      }
-
-      const peopleList = people.map((p: any, i: number) =>
-        `${i + 1}. ${p.name} — ${p.title} at ${p.company}${p.city ? ` (${p.city}${p.state ? `, ${p.state}` : ""})` : ""}${p.linkedin_url ? `\n   LinkedIn: ${p.linkedin_url}` : ""}${p.email ? `\n   Email: ${p.email}` : ""}`
-      ).join("\n\n");
-
-      const formatRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: `You are a GTM analyst mapping real decision makers at ${company.name}'s CUSTOMER companies. ${CONCISE}
-
-These people work at companies that BUY from ${company.name}. Map each to:
-- Which ${company.name} product (P1, P2...) their company uses
-- Their buying role for that product
-
-Format per person:
-**Name** — Title at Customer Company
-📦 Buys: P# (Product Name) — why
-🎯 Role: Decision Maker / Champion / Influencer
-🔗 LinkedIn: url
-📧 Email: email (or "Not available")
-
-Do NOT invent people. Only format real data.` },
-            { role: "user", content: `${company.name}'s products:\n${prevProduct}\n\nNamed customers:\n${prevCustomers}\n\nBuyer personas:\n${prevBuyer}\n\nReal people found at customer companies:\n\n${peopleList}` },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "submit_analysis",
-              description: "Submit formatted prospect list",
-              parameters: {
-                type: "object",
-                properties: {
-                  reasoning: { type: "string" },
-                  content: { type: "string" },
-                },
-                required: ["reasoning", "content"],
-                additionalProperties: false,
-              },
-            },
-          }],
-          tool_choice: { type: "function", function: { name: "submit_analysis" } },
-        }),
-      });
-
-      if (!formatRes.ok) throw new Error("AI formatting failed");
-      const formatData = await formatRes.json();
-      const toolCall = formatData.choices?.[0]?.message?.tool_calls?.[0];
-      if (!toolCall) throw new Error("No formatted result");
-      return respond(JSON.parse(toolCall.function.arguments));
+      const parsed = extractJSON(raw);
+      return respond({ structured: parsed, content: raw, reasoning: "Customer and competitor discovery complete" });
     }
 
-    /* ── All other analysis steps ── */
-    const stepPrompts: Record<string, { system: string; user: string }> = {
-      "company-dna": {
-        system: `You are a GTM analyst extracting company signals. ${CONCISE}`,
-        user: `Analyze this company:\nName: ${company.name}\nWebsite: ${company.website}\nDescription: ${company.description}\nIndustry: ${company.industry}\nEmployees: ${company.employee_range || company.estimated_employees || "Unknown"}\nFunding: ${company.funding_stage || "Unknown"}\nHQ: ${company.headquarters || "Unknown"}\n\nExtract:\n1. What they do (one sentence)\n2. Who their customers are\n3. Business model\n4. Buying signals\n5. Tech maturity`,
-      },
-      "product-map": {
-        system: `You are a product analyst. ${CONCISE}\n\nCRITICAL: Assign each product line a short ID: P1, P2, P3, etc. These IDs will be referenced in all subsequent steps.\n\nFormat:\n## P1 — Product Name\n- **Target user:** ...\n- **Pricing:** ...\n- **Competitors:** ...`,
-        user: `Company: ${company.name}\nDescription: ${company.description}\nWebsite: ${company.website}\nIndustry: ${company.industry}\n\nMap every product line with a unique ID (P1, P2, P3...).`,
-      },
-      "pmf-matrix": {
-        system: `You are a GTM strategist. ${CONCISE}\n\nReference product IDs (P1, P2...) from the product map. Use named customers as evidence where available.\n\nPresent each product as its own section:\n\n## P1 — Product Name\n- **Pain:** ...\n- **Who feels it:** ...\n- **Budget source:** ...\n- **Entry point:** ...\n- **Known customers:** (from customer discovery)`,
-        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nNamed customers found:\n${prevCustomers}\n\nFor each product (using P# IDs), analyze pain, buyer, budget source, entry point. Reference real customers where applicable.`,
-      },
-      "icp-tree": {
-        system: `You are an ICP mapping specialist. ${CONCISE}\n\nBuild the ICP tree PER PRODUCT LINE using their P# IDs. Use named customers to ground the ICP in reality — these are PROVEN buyer segments.\n\nFormat:\n## P1 — Product Name\n### Vertical: Industry\n- **Segment:** Company type → Persona (DM/Champion/Influencer)\n- **Known customers in segment:** Company A, Company B`,
-        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nNamed customers:\n${prevCustomers}\n\nPMF matrix:\n${prevPMF}\n\nBuild a 3-layer ICP tree (Vertical→Segment→Persona) for each product line. Place named customers in their correct segments.`,
-      },
-      "buyer-id": {
-        system: `You are a sales intelligence analyst. ${CONCISE}\n\nGroup buyers BY PRODUCT LINE using P# IDs. For each buyer specify:\n- Title + seniority\n- Role: Decision Maker / Champion / Influencer\n- Why they buy THIS specific product\n- Best outreach channel\n- Example customer companies where this buyer exists\n\nFormat:\n## P1 — Product Name\n1. **Title** — Role (DM/Champion) — Why — Channel\n   Known at: Customer A, Customer B`,
-        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nNamed customers:\n${prevCustomers}\n\nICP tree:\n${prevICP}\n\nIdentify the top buyers PER PRODUCT LINE. Reference named customers where those buyers exist.`,
-      },
-    };
+    /* ═══════════════════════════════════════════════════
+       STEP 3: ICP Tree + Buyer Mapping
+       Returns: { mappings: [{ product_id, vertical, segment, dm_title, champion_title, customer_names }] }
+       ═══════════════════════════════════════════════════ */
+    if (stepId === "icp-buyers") {
+      const productsJSON = prev["products"]?.structured;
+      const customersJSON = prev["customers"]?.structured;
 
-    const prompt = stepPrompts[stepId];
-    if (!prompt) return respond({ content: "Unknown step.", reasoning: "" });
-    return await runAIStep(LOVABLE_API_KEY, prompt);
+      const raw = await callAI(LOVABLE_API_KEY,
+        `You are an ICP and buyer mapping specialist.
+
+Build a full ICP tree with buyer roles PER PRODUCT LINE. Ground it in real customer data where available.
+
+Return ONLY valid JSON:
+{
+  "mappings": [
+    {
+      "product_id": "P1",
+      "product_name": "Product Name",
+      "vertical": "SaaS / B2B Tech",
+      "segment": "Mid-market PLG companies (50-500 emp)",
+      "dm": {
+        "title": "VP Marketing",
+        "seniority": "vp",
+        "why_they_buy": "Needs to prove ROI on content spend",
+        "outreach_channel": "LinkedIn + case study"
+      },
+      "champion": {
+        "title": "Marketing Ops Manager",
+        "seniority": "manager",
+        "why_they_care": "Drowning in manual workflows",
+        "outreach_channel": "Email + demo"
+      },
+      "known_customers": ["Canva", "Trello"]
+    }
+  ]
+}
+
+Rules:
+- Each product should have 2-4 vertical mappings
+- Each mapping must have both dm and champion
+- Reference real customers in known_customers where they fit
+- Be specific on titles — not "Senior Leader" but "VP of Engineering"`,
+        `Company: ${company.name}
+Industry: ${company.industry}
+
+Products:
+${JSON.stringify(productsJSON?.products || [], null, 2)}
+
+Named customers:
+${JSON.stringify(customersJSON?.customers || [], null, 2)}
+
+Conquest targets:
+${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
+      );
+
+      const parsed = extractJSON(raw);
+      return respond({ structured: parsed, content: raw, reasoning: "ICP tree with buyer roles mapped" });
+    }
+
+    /* ═══════════════════════════════════════════════════
+       STEP 4: LinkedIn Profiles (Apollo search)
+       Returns: { leads: [{ name, title, company, linkedin_url, product_id, vertical, role, type }] }
+       ═══════════════════════════════════════════════════ */
+    if (stepId === "linkedin-profiles") {
+      const customersJSON = prev["customers"]?.structured;
+      const icpJSON = prev["icp-buyers"]?.structured;
+
+      // Collect customer domains for Apollo search
+      const allCompanies = [
+        ...(customersJSON?.customers || []),
+        ...(customersJSON?.conquest_targets || []),
+      ];
+      const customerDomains = allCompanies
+        .map((c: any) => c.domain)
+        .filter(Boolean)
+        .slice(0, 15);
+
+      // Collect buyer titles from ICP mappings
+      const mappings = icpJSON?.mappings || [];
+      const titles = [...new Set(
+        mappings.flatMap((m: any) => [m.dm?.title, m.champion?.title]).filter(Boolean)
+      )].slice(0, 8) as string[];
+
+      if (titles.length === 0) {
+        titles.push("VP Marketing", "VP Sales", "CTO", "VP Engineering", "Head of Product");
+      }
+
+      console.log("Apollo search — domains:", customerDomains.length, "titles:", titles.length);
+      const people = await searchApolloAtCompanies(titles, customerDomains);
+
+      // Map each person to a product + role using AI
+      if (people.length > 0) {
+        const peopleList = people.map((p: any, i: number) =>
+          `${i + 1}. ${p.name} — ${p.title} at ${p.company} (${p.city || ""})\n   LinkedIn: ${p.linkedin_url}\n   Email: ${p.email || "N/A"}`
+        ).join("\n");
+
+        const raw = await callAI(LOVABLE_API_KEY,
+          `You are mapping real people to the GTM tree. Each person works at a company that BUYS FROM or COMPETES WITH ${company.name}.
+
+Map each person to:
+- Which product (P1, P2...) they relate to
+- Which vertical they're in
+- Whether they're a Decision Maker or Champion
+- Whether they're at a customer or conquest target
+
+Return ONLY valid JSON:
+{
+  "leads": [
+    {
+      "name": "Jane Smith",
+      "title": "VP Marketing",
+      "company": "Canva",
+      "linkedin_url": "https://linkedin.com/in/...",
+      "email": "jane@canva.com",
+      "photo_url": null,
+      "product_id": "P1",
+      "product_name": "Marketing Hub",
+      "vertical": "SaaS / B2B Tech",
+      "role": "dm",
+      "type": "customer",
+      "competitor_using": null
+    }
+  ]
+}
+
+role must be "dm" or "champion".
+type must be "customer" or "conquest".
+If conquest, set competitor_using to the competitor name.
+Do NOT invent people — only map the real data provided.`,
+          `${company.name}'s products:
+${JSON.stringify((prev["products"]?.structured?.products || []).map((p: any) => ({ id: p.id, name: p.name })), null, 2)}
+
+ICP mappings:
+${JSON.stringify(mappings.map((m: any) => ({ product_id: m.product_id, vertical: m.vertical, dm: m.dm?.title, champion: m.champion?.title, customers: m.known_customers })), null, 2)}
+
+Customer companies: ${allCompanies.map((c: any) => `${c.name} (${c.type}${c.uses_competitor ? ", uses " + c.uses_competitor : ""})`).join(", ")}
+
+Real people found:
+${peopleList}`
+        );
+
+        try {
+          const parsed = extractJSON(raw);
+          return respond({ structured: parsed, content: raw, reasoning: `Found ${parsed.leads?.length || 0} mapped leads` });
+        } catch {
+          return respond({ structured: { leads: people.map((p: any) => ({ ...p, product_id: "P1", vertical: "Unknown", role: "dm", type: "customer" })) }, content: raw, reasoning: "Partial mapping" });
+        }
+      }
+
+      return respond({
+        structured: { leads: [] },
+        content: `No profiles found. Searched ${customerDomains.length} domains for ${titles.join(", ")}.`,
+        reasoning: "No Apollo results",
+      });
+    }
+
+    return respond({ error: "Unknown stepId: " + stepId }, 400);
   } catch (e) {
     console.error("gtm-analyze error:", e);
-    return respond({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    if (msg === "RATE_LIMITED") return respond({ error: "Rate limited — please try again." }, 429);
+    if (msg === "CREDITS_EXHAUSTED") return respond({ error: "Credits exhausted." }, 402);
+    return respond({ error: msg }, 500);
   }
 });
-
-async function runAIStep(apiKey: string, prompt: { system: string; user: string }) {
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        { role: "system", content: prompt.system },
-        { role: "user", content: prompt.user },
-      ],
-      tools: [{
-        type: "function",
-        function: {
-          name: "submit_analysis",
-          description: "Submit the GTM analysis result",
-          parameters: {
-            type: "object",
-            properties: {
-              reasoning: { type: "string", description: "Brief explanation (1-2 sentences)" },
-              content: { type: "string", description: "Full analysis, markdown formatted" },
-            },
-            required: ["reasoning", "content"],
-            additionalProperties: false,
-          },
-        },
-      }],
-      tool_choice: { type: "function", function: { name: "submit_analysis" } },
-    }),
-  });
-
-  if (!response.ok) {
-    const status = response.status;
-    if (status === 429) return respond({ error: "Rate limited — please try again." }, 429);
-    if (status === 402) return respond({ error: "Credits exhausted." }, 402);
-    throw new Error("AI request failed");
-  }
-
-  const data = await response.json();
-  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-  if (!toolCall) throw new Error("No analysis returned");
-  return respond(JSON.parse(toolCall.function.arguments));
-}
