@@ -114,7 +114,8 @@ export default function Leadgen() {
   const [pagesScraped, setPagesScraped] = useState(0);
   const [pagesAnalyzed, setPagesAnalyzed] = useState<Array<{ url: string; path: string; category: string }>>([]);
   const [hasDiscovered, setHasDiscovered] = useState(false);
-  const [isAutoSeeding, setIsAutoSeeding] = useState(false);
+   const [isAutoSeeding, setIsAutoSeeding] = useState(false);
+   const [editingLocation, setEditingLocation] = useState(false);
 
   const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
 
