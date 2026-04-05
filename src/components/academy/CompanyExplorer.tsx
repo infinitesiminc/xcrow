@@ -265,7 +265,18 @@ export default function CompanyExplorer() {
                   <div className="font-medium text-foreground group-hover:text-primary transition-colors">{c.name}</div>
                   <p className="text-xs text-muted-foreground truncate">{c.description?.slice(0, 80)}...</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
+                  {(() => {
+                    const depth = getContentDepth(c);
+                    return (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full" style={{ width: `${depth.pct}%` }} />
+                        </div>
+                        <span className={`text-[10px] font-medium ${depth.color}`}>{depth.label}</span>
+                      </div>
+                    );
+                  })()}
                   {c.employee_range && <Badge variant="secondary" className="text-xs">{c.employee_range}</Badge>}
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
                 </div>
