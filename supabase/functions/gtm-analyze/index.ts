@@ -426,8 +426,9 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
        Returns: { leads: [{ name, title, company, linkedin_url, product_id, vertical, role, type }] }
        ═══════════════════════════════════════════════════ */
     if (stepId === "linkedin-profiles") {
-      const generateMore = body.generateMore as { count?: number; productId?: string; vertical?: string | null; existingLeads?: string[] } | undefined;
-      const requestedCount = generateMore?.count || 20;
+      const generateMore = body.generateMore as { count?: number; productId?: string; vertical?: string | null; existingLeads?: string[]; productName?: string } | undefined;
+      const locationFilter = body.location as string | undefined;
+      const requestedCount = generateMore?.count || body.batchSize || 5;
       const existingNames = new Set((generateMore?.existingLeads || []).map((n: string) => n.toLowerCase()));
 
       const customersJSON = prev["customers"]?.structured;
