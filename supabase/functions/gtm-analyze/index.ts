@@ -128,10 +128,10 @@ async function searchApolloAtCompanies(
     if (enrichDetails.length > 0) {
       try {
         console.log("Apollo bulk_match with", enrichDetails.length, "IDs");
-        const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match", {
+        const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match?reveal_personal_emails=false&reveal_phone_number=false", {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
-          body: JSON.stringify({ details: enrichDetails, reveal_personal_emails: false }),
+          body: JSON.stringify({ details: enrichDetails }),
         });
         if (enrichRes.ok) {
           const enrichData = await enrichRes.json();
