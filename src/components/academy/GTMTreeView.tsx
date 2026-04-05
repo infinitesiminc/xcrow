@@ -530,6 +530,36 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
         ))}
       </div>
 
+      {/* Company Banner */}
+      <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
+        <Building2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-foreground">{companyName}</span>
+            {companyMeta?.industry && (
+              <Badge variant="secondary" className="text-[10px] h-4">{companyMeta.industry}</Badge>
+            )}
+            {companyMeta?.employee_range && (
+              <Badge variant="outline" className="text-[10px] h-4">{companyMeta.employee_range}</Badge>
+            )}
+            {companyMeta?.funding_stage && (
+              <Badge variant="outline" className="text-[10px] h-4">{companyMeta.funding_stage}</Badge>
+            )}
+            {companyMeta?.headquarters && (
+              <Badge variant="outline" className="text-[10px] h-4">{companyMeta.headquarters}</Badge>
+            )}
+            {companyMeta?.website && (
+              <a href={`https://${companyMeta.website}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
+                <Globe className="w-3 h-3" /> {companyMeta.website}
+              </a>
+            )}
+          </div>
+          {data.company_summary && (
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{data.company_summary}</p>
+          )}
+        </div>
+      </div>
+
       {/* Legend */}
       <div className="flex items-center gap-3 text-[10px] text-muted-foreground px-1">
         <span className="flex items-center gap-1"><Building2 className="w-3 h-3 text-primary" /> Named Customer</span>
