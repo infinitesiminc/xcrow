@@ -147,7 +147,8 @@ async function searchApolloAtCompanies(
             );
           }
         } else {
-          console.error("Apollo bulk_match failed:", enrichRes.status);
+          const errBody = await enrichRes.text();
+          console.error("Apollo bulk_match failed:", enrichRes.status, errBody);
         }
       } catch (e) {
         console.warn("Apollo bulk_match error:", e);
