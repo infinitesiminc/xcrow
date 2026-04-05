@@ -415,6 +415,9 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
       );
       if (vertLeads.length > 0) leads = vertLeads;
     }
+    if (companyTypeFilter !== "all") {
+      leads = leads.filter(l => l.type === companyTypeFilter);
+    }
     if (leadRoleFilter !== "all") {
       leads = leads.filter(l => l.role === leadRoleFilter);
     }
@@ -427,7 +430,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
       );
     }
     return leads;
-  }, [selectedProductId, selectedCompanyIdx, selectedVerticalIdx, activeCompanies, activeVerticals, leadsByProduct, leadRoleFilter, leadFilter]);
+  }, [selectedProductId, selectedCompanyIdx, selectedVerticalIdx, activeCompanies, activeVerticals, leadsByProduct, companyTypeFilter, leadRoleFilter, leadFilter]);
 
   const totalLeadsForContext = useMemo(() => {
     if (!selectedProductId) return 0;
@@ -616,81 +619,20 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
           </ScrollArea>
         </div>
 
-        {/* Col 3: Companies */}
-        <div className="flex flex-col min-w-[140px] flex-[0.8] border border-border rounded-lg overflow-hidden bg-card">
-          <ColumnHeader title="Companies" count={activeCompanies.length} total={allCompaniesForVertical.length}>
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-              <Input
-                placeholder="Filter..."
-                value={companyFilter}
-                onChange={e => setCompanyFilter(e.target.value)}
-                className="h-7 text-xs pl-7 bg-background"
-                disabled={selectedVerticalIdx === null}
-              />
-            </div>
-            <div className="flex gap-0.5">
-              {(["all", "customer", "conquest"] as const).map(t => (
-                <button
-                  key={t}
-                  onClick={() => setCompanyTypeFilter(t)}
-                  className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${
-                    companyTypeFilter === t
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-accent"
-                  }`}
-                >
-                  {t === "all" ? "All" : t === "customer" ? "Cust" : "Conq"}
-                </button>
-              ))}
-            </div>
-          </ColumnHeader>
-          <ScrollArea className="flex-1">
-            <div className="p-1.5 space-y-1">
-              {selectedVerticalIdx === null ? (
-                <p className="text-[10px] text-muted-foreground p-2 text-center">Select a vertical</p>
-              ) : activeCompanies.length === 0 ? (
-                <p className="text-[10px] text-muted-foreground p-2 text-center">No companies</p>
-              ) : activeCompanies.map((c, i) => (
-                <SelectableCard
-                  key={c.name}
-                  active={selectedCompanyIdx === i}
-                  onClick={() => selectCompany(i)}
-                  onInfoClick={() => setDetailItem({ type: "company", data: c, leadCount: getCompanyLeadCount(c) })}
-                  className={c.type === "conquest" ? "border-orange-500/20" : "border-primary/20"}
-                >
-                  <div className="flex items-center gap-1.5">
-                    {c.type === "conquest"
-                      ? <Swords className="w-3 h-3 text-orange-500 shrink-0" />
-                      : <Building2 className="w-3 h-3 text-primary shrink-0" />}
-                    <span className="text-[11px] font-medium text-foreground truncate flex-1">{c.name}</span>
-                    <Badge variant="secondary" className="text-[9px] h-3.5 px-1 shrink-0">
-                      {getCompanyLeadCount(c)}
-                    </Badge>
-                  </div>
-                  {c.type === "conquest" && c.uses_competitor && (
-                    <p className="text-[9px] text-orange-600 mt-0.5 truncate">Uses {c.uses_competitor}</p>
-                  )}
-                </SelectableCard>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Col 4: Leads */}
-        <div className="flex flex-col min-w-[200px] flex-[1.2] border border-border rounded-lg overflow-hidden bg-card">
+        {/* Col 3: Leads (with company pills) */}
+        <div className="flex flex-col min-w-[260px] flex-[1.5] border border-border rounded-lg overflow-hidden bg-card">
           <ColumnHeader title="Leads" count={activeLeads.length} total={totalLeadsForContext}>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <Input
-                placeholder="Search name, title..."
+                placeholder="Search name, title, company..."
                 value={leadFilter}
                 onChange={e => { setLeadFilter(e.target.value); setLeadPage(1); }}
                 className="h-7 text-xs pl-7 bg-background"
                 disabled={!selectedProductId}
               />
             </div>
-            <div className="flex gap-0.5">
+            <div className="flex gap-0.5 flex-wrap">
               {(["all", "dm", "champion"] as const).map(r => (
                 <button
                   key={r}
@@ -702,6 +644,20 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                   }`}
                 >
                   {r === "all" ? "All" : r === "dm" ? "DM" : "Champ"}
+                </button>
+              ))}
+              <span className="w-px bg-border mx-0.5" />
+              {(["all", "customer", "conquest"] as const).map(t => (
+                <button
+                  key={t}
+                  onClick={() => setCompanyTypeFilter(t)}
+                  className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${
+                    companyTypeFilter === t
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  {t === "all" ? "All" : t === "customer" ? "Cust" : "Conq"}
                 </button>
               ))}
             </div>
@@ -731,13 +687,31 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                     <div className="min-w-0 flex-1">
                       <div className="text-[11px] font-medium text-foreground truncate">{lead.name}</div>
                       <div className="text-[10px] text-muted-foreground truncate">{lead.title}</div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {lead.company && (
+                          <Badge variant="outline" className="text-[8px] h-3.5 px-1.5 bg-muted/50">
+                            <Building2 className="w-2 h-2 mr-0.5" />{lead.company}
+                          </Badge>
+                        )}
+                        <Badge
+                          variant="secondary"
+                          className={`text-[8px] h-3.5 px-1 border-0 ${lead.role === "dm" ? "bg-blue-500/15 text-blue-700" : "bg-green-500/15 text-green-700"}`}
+                        >
+                          {lead.role === "dm" ? "DM" : "Champion"}
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className={`text-[8px] h-3.5 px-1 border-0 ${lead.type === "conquest" ? "bg-orange-500/15 text-orange-600" : "bg-primary/10 text-primary"}`}
+                        >
+                          {lead.type === "conquest" ? "Conquest" : "Customer"}
+                        </Badge>
+                        {lead.competitor_using && (
+                          <Badge variant="secondary" className="text-[8px] h-3.5 px-1 border-0 bg-orange-500/10 text-orange-600">
+                            <Swords className="w-2 h-2 mr-0.5" />{lead.competitor_using}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    <Badge
-                      variant="secondary"
-                      className={`text-[8px] h-3 px-1 border-0 shrink-0 ${lead.role === "dm" ? "bg-blue-500/15 text-blue-700" : "bg-green-500/15 text-green-700"}`}
-                    >
-                      {lead.role === "dm" ? "DM" : "CH"}
-                    </Badge>
                   </div>
                 </SelectableCard>
               ))}
