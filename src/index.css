@@ -295,8 +295,15 @@ html {
 }
 
 /* Enforce minimum 12px font size across the app */
+@layer base {
+  :root {
+    --min-font: 12px;
+  }
+}
 @layer utilities {
-  * {
-    font-size: clamp(0.75rem, 1em, 100em);
+  .\!text-xs, .text-xs,
+  .text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\] {
+    font-size: var(--min-font) !important;
+    line-height: 1.4 !important;
   }
 }
