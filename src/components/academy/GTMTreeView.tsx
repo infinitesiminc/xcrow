@@ -699,7 +699,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                           variant="secondary"
                           className={`text-[8px] h-3.5 px-1 border-0 ${lead.type === "conquest" ? "bg-orange-500/15 text-orange-600" : "bg-primary/10 text-primary"}`}
                         >
-                          {lead.type === "conquest" ? "Conquest" : "Customer"}
+                          {lead.type === "conquest" ? "Prospect" : "Named Customer"}
                         </Badge>
                         {lead.competitor_using && (
                           <Badge variant="secondary" className="text-[8px] h-3.5 px-1 border-0 bg-orange-500/10 text-orange-600">
