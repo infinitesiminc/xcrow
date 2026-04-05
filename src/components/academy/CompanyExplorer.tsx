@@ -328,6 +328,45 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         <div>
           <GTMTreeView companyName={selectedCompany?.name || ""} data={treeData} companyMeta={selectedCompany ? { industry: selectedCompany.industry, employee_range: selectedCompany.employee_range, funding_stage: selectedCompany.funding_stage, headquarters: selectedCompany.headquarters, website: selectedCompany.website } : undefined} onGenerateMore={handleGenerateMore} isGeneratingMore={isGeneratingMore} />
         </div>
+      ) : isRunning ? (
+        <div className="space-y-4 animate-pulse">
+          {/* Company banner skeleton */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="h-4 w-2/3 bg-muted rounded mb-2" />
+            <div className="flex gap-3 mt-3">
+              <div className="h-5 w-20 bg-muted rounded-full" />
+              <div className="h-5 w-24 bg-muted rounded-full" />
+              <div className="h-5 w-16 bg-muted rounded-full" />
+            </div>
+          </div>
+          {/* Two-column skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="h-4 w-32 bg-muted rounded" />
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-muted" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-3/4 bg-muted rounded" />
+                    <div className="h-2.5 w-1/2 bg-muted rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="h-4 w-24 bg-muted rounded" />
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-muted" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-2/3 bg-muted rounded" />
+                    <div className="h-2.5 w-1/3 bg-muted rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       ) : !isRunning && completedCount === STEPS.length ? (
         <div className="text-center py-12 text-muted-foreground">
           <p>Analysis complete but no structured data could be extracted.</p>
