@@ -375,63 +375,63 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
       console.log("Apollo search — domains:", customerDomains.length, "titles:", titles.length);
       const people = await searchApolloAtCompanies(titles, customerDomains);
 
-      // Map each person to a product + role using AI
+      // Map each person to a product + role using AI — but preserve Apollo's real data
       if (people.length > 0) {
-        const peopleList = people.map((p: any, i: number) =>
-          `${i + 1}. ${p.name} — ${p.title} at ${p.company} (${p.city || ""})\n   LinkedIn: ${p.linkedin_url}\n   Email: ${p.email || "N/A"}`
+        // Build a compact list for AI to classify (no URLs — AI only assigns product/role)
+        const classifyList = people.map((p: any, i: number) =>
+          `${i}: ${p.name} — ${p.title} at ${p.company}`
         ).join("\n");
 
         const raw = await callAI(LOVABLE_API_KEY,
-          `You are mapping real people to the GTM tree. Each person works at a company that BUYS FROM or COMPETES WITH ${company.name}.
+          `Classify each person by index. They work at companies that BUY FROM or COMPETE WITH ${company.name}.
 
-Map each person to:
-- Which product (P1, P2...) they relate to
-- Which vertical they're in
-- Whether they're a Decision Maker or Champion
-- Whether they're at a customer or conquest target
+For each person (by index number), assign:
+- product_id: which product (P1, P2...) they most relate to
+- product_name: the product name
+- vertical: which vertical they're in
+- role: "dm" or "champion"
+- type: "customer" or "conquest"
+- competitor_using: if conquest, which competitor; else null
 
-Return ONLY valid JSON:
-{
-  "leads": [
-    {
-      "name": "Jane Smith",
-      "title": "VP Marketing",
-      "company": "Canva",
-      "linkedin_url": "https://linkedin.com/in/...",
-      "email": "jane@canva.com",
-      "photo_url": null,
-      "product_id": "P1",
-      "product_name": "Marketing Hub",
-      "vertical": "SaaS / B2B Tech",
-      "role": "dm",
-      "type": "customer",
-      "competitor_using": null
-    }
-  ]
-}
-
-role must be "dm" or "champion".
-type must be "customer" or "conquest".
-If conquest, set competitor_using to the competitor name.
-Do NOT invent people — only map the real data provided.`,
-          `${company.name}'s products:
+Return ONLY valid JSON array:
+[
+  { "idx": 0, "product_id": "P1", "product_name": "Product Name", "vertical": "SaaS", "role": "dm", "type": "customer", "competitor_using": null }
+]`,
+          `Products:
 ${JSON.stringify((prev["products"]?.structured?.products || []).map((p: any) => ({ id: p.id, name: p.name })), null, 2)}
 
 ICP mappings:
-${JSON.stringify(mappings.map((m: any) => ({ product_id: m.product_id, vertical: m.vertical, dm: m.dm?.title, champion: m.champion?.title, customers: m.known_customers })), null, 2)}
+${JSON.stringify(mappings.map((m: any) => ({ product_id: m.product_id, vertical: m.vertical, dm: m.dm?.title, champion: m.champion?.title })), null, 2)}
 
-Customer companies: ${allCompanies.map((c: any) => `${c.name} (${c.type}${c.uses_competitor ? ", uses " + c.uses_competitor : ""})`).join(", ")}
+Companies: ${allCompanies.map((c: any) => `${c.name} (${c.type}${c.uses_competitor ? ", uses " + c.uses_competitor : ""})`).join(", ")}
 
-Real people found:
-${peopleList}`
+People to classify:
+${classifyList}`
         );
 
-        try {
-          const parsed = extractJSON(raw);
-          return respond({ structured: parsed, content: raw, reasoning: `Found ${parsed.leads?.length || 0} mapped leads` });
-        } catch {
-          return respond({ structured: { leads: people.map((p: any) => ({ ...p, product_id: "P1", vertical: "Unknown", role: "dm", type: "customer" })) }, content: raw, reasoning: "Partial mapping" });
-        }
+        // Merge AI classifications back onto real Apollo data
+        let classifications: any[] = [];
+        try { classifications = extractJSON(raw); } catch { /* use defaults */ }
+
+        const leads = people.map((p: any, i: number) => {
+          const cls = classifications.find((c: any) => c.idx === i) || {};
+          return {
+            name: p.name,
+            title: p.title,
+            company: p.company,
+            linkedin_url: p.linkedin_url,
+            email: p.email || null,
+            photo_url: p.photo_url || null,
+            product_id: cls.product_id || "P1",
+            product_name: cls.product_name || "",
+            vertical: cls.vertical || "Unknown",
+            role: cls.role || "dm",
+            type: cls.type || "customer",
+            competitor_using: cls.competitor_using || null,
+          };
+        });
+
+        return respond({ structured: { leads }, content: raw, reasoning: `Found ${leads.length} mapped leads with real LinkedIn profiles` });
       }
 
       return respond({
