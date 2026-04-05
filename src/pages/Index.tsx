@@ -1,7 +1,8 @@
 /**
- * Index — Leadgen-focused landing page with URL input + logo marquee.
+ * Index — Landing page with URL input that navigates to Academy results.
  */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
