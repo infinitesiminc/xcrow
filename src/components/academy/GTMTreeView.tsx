@@ -523,8 +523,8 @@ export default function GTMTreeView({ companyName, data, onGenerateMore, isGener
 
       {/* Legend */}
       <div className="flex items-center gap-3 text-[10px] text-muted-foreground px-1">
-        <span className="flex items-center gap-1"><Building2 className="w-3 h-3 text-primary" /> Customer</span>
-        <span className="flex items-center gap-1"><Swords className="w-3 h-3 text-orange-500" /> Conquest</span>
+        <span className="flex items-center gap-1"><Building2 className="w-3 h-3 text-primary" /> Named Customer</span>
+        <span className="flex items-center gap-1"><Swords className="w-3 h-3 text-orange-500" /> Prospect</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" /> DM</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Champion</span>
         <span className="flex items-center gap-1 ml-2"><Info className="w-3 h-3" /> Hover card for details</span>

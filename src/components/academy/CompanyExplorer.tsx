@@ -28,7 +28,7 @@ type ExplorerPhase = "pick-industry" | "pick-company" | "analysis";
 /* ── pipeline steps ── */
 const STEPS = [
   { id: "products", label: "Products & DNA", description: "Mapping product lines and competitors" },
-  { id: "customers", label: "Customer Discovery", description: "Scraping website for named customers + conquest targets" },
+  { id: "customers", label: "Customer Discovery", description: "Scraping website for named customers + prospect targets" },
   { id: "icp-buyers", label: "ICP & Buyer Mapping", description: "Building vertical → segment → persona tree" },
   { id: "linkedin-profiles", label: "LinkedIn Profiles", description: "Finding real decision makers at customer companies" },
 ];
