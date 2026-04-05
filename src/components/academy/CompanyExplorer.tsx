@@ -62,6 +62,9 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [cancelRef] = useState({ cancelled: false });
   const autoStarted = useRef(false);
+  const [locationInput, setLocationInput] = useState("");
+  const [icpSummary, setIcpSummary] = useState<{ verticals: string[]; roles: string[] } | null>(null);
+  const accumulatedRef = useRef<Record<string, any>>({});
 
   // Auto-start analysis from URL param
   useEffect(() => {
