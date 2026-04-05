@@ -12,36 +12,36 @@ function respond(body: unknown, status = 200) {
   });
 }
 
-async function searchApolloContacts(titles: string[], company: any): Promise<any[]> {
+interface IcpSearchParams {
+  titles: string[];
+  industries?: string[];
+  employee_ranges?: string[];
+  seniority?: string[];
+}
+
+async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
   const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
   if (!APOLLO_API_KEY) {
     console.warn("APOLLO_API_KEY not set — skipping people search");
     return [];
   }
 
-  // Extract domain from company website for precise matching
-  let domain = "";
-  try {
-    if (company.website) {
-      domain = new URL(company.website.startsWith("http") ? company.website : `https://${company.website}`).hostname.replace(/^www\./, "");
-    }
-  } catch { /* ignore */ }
-
   try {
     const searchBody: Record<string, unknown> = {
-      person_titles: titles,
+      person_titles: params.titles,
       per_page: 10,
       page: 1,
+      person_seniorities: params.seniority || ["director", "vp", "c_suite", "owner"],
     };
 
-    // Prefer domain match (finds people AT this company), fall back to name
-    if (domain) {
-      searchBody.q_organization_domains = domain;
-    } else {
-      searchBody.q_organization_name = company.name;
+    if (params.industries?.length) {
+      searchBody.organization_industry_tag_ids = params.industries;
+    }
+    if (params.employee_ranges?.length) {
+      searchBody.organization_num_employees_ranges = params.employee_ranges;
     }
 
-    console.log("Apollo search:", JSON.stringify(searchBody));
+    console.log("Apollo ICP search:", JSON.stringify(searchBody));
 
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
@@ -57,7 +57,7 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
     const searchData = await searchRes.json();
     const partialPeople = searchData.people || [];
     if (partialPeople.length === 0) {
-      console.log("Apollo returned 0 people for domain:", domain, "name:", company.name);
+      console.log("Apollo returned 0 prospects for ICP titles:", params.titles);
       return [];
     }
 
@@ -83,8 +83,7 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
 
     return enrichedPeople.map((p: any) => {
       const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
-      const orgName = p.organization?.name || p.organization_name || company.name;
-      // Build LinkedIn search URL as fallback when direct URL not available
+      const orgName = p.organization?.name || p.organization_name || "";
       const linkedinUrl = p.linkedin_url || `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name + " " + orgName)}`;
       return {
         name,
@@ -99,7 +98,7 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
       };
     });
   } catch (e) {
-    console.error("Apollo people search error:", e);
+    console.error("Apollo prospect search error:", e);
     return [];
   }
 }
