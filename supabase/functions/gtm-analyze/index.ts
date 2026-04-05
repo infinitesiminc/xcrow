@@ -83,7 +83,7 @@ async function searchApolloAtCompanies(
       person_titles: titles,
       per_page: 25,
       page,
-      person_seniorities: ["director", "vp", "c_suite", "owner", "manager"],
+      person_seniorities: ["director", "vp", "c_suite", "owner"],
     };
 
     if (companyDomains.length > 0) {
