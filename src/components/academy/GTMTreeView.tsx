@@ -192,7 +192,7 @@ function CompanyDetail({ company, leadCount }: { company: DerivedCompany; leadCo
         <div>
           <div className="text-base font-semibold text-foreground">{company.name}</div>
           <Badge variant="outline" className={`text-[10px] mt-0.5 ${company.type === "conquest" ? "bg-orange-500/15 text-orange-700 border-orange-500/30" : "bg-primary/15 text-primary border-primary/30"}`}>
-            {company.type === "conquest" ? "Conquest Target" : "Customer"}
+            {company.type === "conquest" ? "Potential Prospect" : "Named Customer"}
           </Badge>
         </div>
       </div>
@@ -249,7 +249,7 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
           {lead.role === "dm" ? "Decision Maker" : "Champion"}
         </Badge>
         <Badge className={`text-xs ${lead.type === "conquest" ? "bg-orange-500/15 text-orange-700 border-orange-500/30" : "bg-primary/15 text-primary border-primary/30"}`} variant="outline">
-          {lead.type === "conquest" ? "Conquest" : "Customer"}
+          {lead.type === "conquest" ? "Prospect" : "Named Customer"}
         </Badge>
       </div>
       <div className="space-y-2 text-sm">
@@ -639,7 +639,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                       : "bg-muted text-muted-foreground hover:bg-accent"
                   }`}
                 >
-                  {r === "all" ? "All" : r === "dm" ? "DM" : "Champ"}
+                  {r === "all" ? "All" : r === "dm" ? "Decision Maker" : "Champion"}
                 </button>
               ))}
               <span className="w-px bg-border mx-0.5" />
@@ -653,7 +653,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                       : "bg-muted text-muted-foreground hover:bg-accent"
                   }`}
                 >
-                  {t === "all" ? "All" : t === "customer" ? "Cust" : "Conq"}
+                  {t === "all" ? "All" : t === "customer" ? "Named" : "Prospect"}
                 </button>
               ))}
             </div>
@@ -693,13 +693,13 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                           variant="secondary"
                           className={`text-[8px] h-3.5 px-1 border-0 ${lead.role === "dm" ? "bg-blue-500/15 text-blue-700" : "bg-green-500/15 text-green-700"}`}
                         >
-                          {lead.role === "dm" ? "DM" : "Champion"}
+                          {lead.role === "dm" ? "Decision Maker" : "Champion"}
                         </Badge>
                         <Badge
                           variant="secondary"
                           className={`text-[8px] h-3.5 px-1 border-0 ${lead.type === "conquest" ? "bg-orange-500/15 text-orange-600" : "bg-primary/10 text-primary"}`}
                         >
-                          {lead.type === "conquest" ? "Conquest" : "Customer"}
+                          {lead.type === "conquest" ? "Prospect" : "Named Customer"}
                         </Badge>
                         {lead.competitor_using && (
                           <Badge variant="secondary" className="text-[8px] h-3.5 px-1 border-0 bg-orange-500/10 text-orange-600">
