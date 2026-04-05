@@ -69,6 +69,7 @@ async function scrapeForCustomers(website: string): Promise<string> {
 async function searchApolloAtCompanies(
   titles: string[],
   companyDomains: string[],
+  page = 1,
 ): Promise<any[]> {
   const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
   if (!APOLLO_API_KEY) {
@@ -77,11 +78,10 @@ async function searchApolloAtCompanies(
   }
 
   try {
-    // Use organization_domains filter (not q_organization_domains) for exact domain matching
     const searchBody: Record<string, unknown> = {
       person_titles: titles,
       per_page: 25,
-      page: 1,
+      page,
       person_seniorities: ["director", "vp", "c_suite", "owner", "manager"],
     };
 
@@ -219,7 +219,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { stepId, company, previousResults } = await req.json();
+    const body = await req.json();
+    const { stepId, company, previousResults } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -397,6 +398,10 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
        Returns: { leads: [{ name, title, company, linkedin_url, product_id, vertical, role, type }] }
        ═══════════════════════════════════════════════════ */
     if (stepId === "linkedin-profiles") {
+      const generateMore = body.generateMore as { count?: number; productId?: string; vertical?: string | null; existingLeads?: string[] } | undefined;
+      const requestedCount = generateMore?.count || 20;
+      const existingNames = new Set((generateMore?.existingLeads || []).map((n: string) => n.toLowerCase()));
+
       const customersJSON = prev["customers"]?.structured;
       const icpJSON = prev["icp-buyers"]?.structured;
 
@@ -409,22 +414,37 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
 
       // Collect buyer titles from ICP mappings
       const mappings = icpJSON?.mappings || [];
+      let filteredMappings = mappings;
+      if (generateMore?.vertical) {
+        const vFilter = generateMore.vertical.toLowerCase();
+        const vertMatches = mappings.filter((m: any) => m.vertical?.toLowerCase().includes(vFilter));
+        if (vertMatches.length > 0) filteredMappings = vertMatches;
+      }
       const titles = [...new Set(
-        mappings.flatMap((m: any) => [m.dm?.title, m.champion?.title]).filter(Boolean)
+        filteredMappings.flatMap((m: any) => [m.dm?.title, m.champion?.title]).filter(Boolean)
       )].slice(0, 8) as string[];
 
       if (titles.length === 0) {
         titles.push("VP Marketing", "VP Sales", "CTO", "VP Engineering", "Head of Product");
       }
 
+      // Use page 2 when generating more to get fresh results
+      const apolloPage = generateMore ? 2 : 1;
+
       // Search customer AND conquest domains separately to ensure both pools have leads
-      console.log("Apollo search — customer domains:", customerDomains.length, "conquest domains:", conquestDomains.length, "titles:", titles.length);
+      console.log("Apollo search — customer domains:", customerDomains.length, "conquest domains:", conquestDomains.length, "titles:", titles.length, "page:", apolloPage);
       const [customerPeople, conquestPeople] = await Promise.all([
-        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains) : Promise.resolve([]),
-        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains) : Promise.resolve([]),
+        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains, apolloPage) : Promise.resolve([]),
+        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains, apolloPage) : Promise.resolve([]),
       ]);
       console.log("Apollo results — customer leads:", customerPeople.length, "conquest leads:", conquestPeople.length);
-      const people = [...customerPeople, ...conquestPeople];
+      let people = [...customerPeople, ...conquestPeople];
+
+      // Filter out existing leads and limit to requested count
+      if (existingNames.size > 0) {
+        people = people.filter((p: any) => !existingNames.has(p.name?.toLowerCase()));
+      }
+      people = people.slice(0, requestedCount);
 
       // Map each person to a product + role using AI — but preserve Apollo's real data
       if (people.length > 0) {
