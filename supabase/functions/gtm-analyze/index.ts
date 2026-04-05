@@ -175,7 +175,7 @@ async function searchApolloAtCompanies(
         };
       });
 
-    console.log("Final leads with /in/ URLs:", results.length, "of", enrichedPeople.length, "total");
+    console.log("Final leads with /in/ URLs:", results.length, "of", finalPeople.length, "total");
     return results;
   } catch (e) {
     console.error("Apollo search error:", e);
