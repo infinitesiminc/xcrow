@@ -38,7 +38,7 @@ export default function Index() {
   };
 
   const handleResearch = () => {
-    navigate("/academy");
+    navigate("/leadhunter");
   };
 
   return (

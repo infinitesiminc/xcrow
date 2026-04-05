@@ -65,8 +65,10 @@ const App = () => (
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/use-cases" element={<><UseCasesIndex /></>} />
               <Route path="/use-cases/:slug" element={<><UseCasePage /></>} />
-              <Route path="/academy" element={<AuthGate><Academy /></AuthGate>} />
-              <Route path="/academy/*" element={<Navigate to="/academy" replace />} />
+              <Route path="/leadhunter" element={<AuthGate><Academy /></AuthGate>} />
+              <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/academy/*" element={<Navigate to="/leadhunter" replace />} />
 
               {/* Redirects — old routes */}
               <Route path="/upskill" element={<Navigate to="/" replace />} />

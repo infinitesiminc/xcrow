@@ -944,7 +944,7 @@ export default function Leadgen() {
           <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
             <form
               className="flex items-center gap-2 flex-1 min-w-0"
-              onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/academy?website=${encodeURIComponent(url)}`); }}
+              onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
             >
               <div className="relative flex-1 min-w-[160px] max-w-xs">
                 <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
