@@ -1,17 +1,21 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
 import { toast } from "sonner";
 import {
-  Building2, Globe, Users, ArrowRight, ArrowLeft,
-  Loader2, CheckCircle2, ChevronRight, Linkedin,
-  Target, Package, UserCheck, RefreshCw,
+  Building2, Globe, ArrowLeft, Loader2, CheckCircle2,
+  ChevronRight, Linkedin, Target, Package, UserCheck,
+  RefreshCw, Users, Lock,
 } from "lucide-react";
+
+/* ── types ─────────────────────────────────────────── */
 
 interface CompanyData {
   id: string;
@@ -26,14 +30,6 @@ interface CompanyData {
   estimated_employees: string | null;
 }
 
-interface StepResult {
-  title: string;
-  content: string;
-  reasoning: string;
-}
-
-type ExplorerPhase = "pick-industry" | "pick-company" | "running" | "results";
-
 interface StepConfig {
   id: string;
   label: string;
@@ -41,13 +37,17 @@ interface StepConfig {
   description: string;
 }
 
+type ExplorerPhase = "pick-industry" | "pick-company" | "analysis";
+
+/* ── constants ─────────────────────────────────────── */
+
 const STEPS: StepConfig[] = [
-  { id: "company-dna", label: "Company DNA", icon: <Building2 className="w-4 h-4" />, description: "Extract what this company does, who they serve, and their buying signals" },
-  { id: "product-map", label: "Product Lines", icon: <Package className="w-4 h-4" />, description: "Map every product line, its target user, and pricing model" },
-  { id: "pmf-matrix", label: "Product-Market Fit", icon: <Target className="w-4 h-4" />, description: "Which product solves which pain for which buyer?" },
-  { id: "icp-tree", label: "ICP Tree", icon: <Users className="w-4 h-4" />, description: "Build 3-layer niche tree: Vertical → Segment → Persona" },
-  { id: "buyer-id", label: "Decision Makers", icon: <UserCheck className="w-4 h-4" />, description: "Identify the budget holders and champions to contact" },
-  { id: "linkedin-reveal", label: "LinkedIn Profiles", icon: <Linkedin className="w-4 h-4" />, description: "Real profiles of people who match your ICP" },
+  { id: "company-dna", label: "Company DNA", icon: <Building2 className="w-4 h-4" />, description: "Key signals, model, and buying triggers" },
+  { id: "product-map", label: "Product Lines", icon: <Package className="w-4 h-4" />, description: "Every product mapped with ID (P1, P2…)" },
+  { id: "pmf-matrix", label: "Product-Market Fit", icon: <Target className="w-4 h-4" />, description: "Pain / Buyer / Entry per product" },
+  { id: "icp-tree", label: "ICP Tree", icon: <Users className="w-4 h-4" />, description: "Vertical → Segment → Persona per product" },
+  { id: "buyer-id", label: "Decision Makers", icon: <UserCheck className="w-4 h-4" />, description: "DM vs Champion grouped by product" },
+  { id: "linkedin-reveal", label: "LinkedIn Profiles", icon: <Linkedin className="w-4 h-4" />, description: "Real profiles tagged to products & roles" },
 ];
 
 const INDUSTRY_GROUPS = [
@@ -63,17 +63,63 @@ const INDUSTRY_GROUPS = [
   { label: "All Industries", query: "" },
 ];
 
+/* ── markdown renderer ─────────────────────────────── */
+
+function StepMarkdown({ content }: { content: string }) {
+  return (
+    <div className="prose prose-sm max-w-none
+      prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2
+      prose-h2:text-base prose-h3:text-sm prose-h3:text-muted-foreground prose-h3:uppercase prose-h3:tracking-wide
+      prose-p:text-foreground/90 prose-p:leading-relaxed
+      prose-li:text-foreground/90 prose-li:leading-relaxed
+      prose-strong:text-foreground prose-strong:font-semibold
+      prose-ul:my-2 prose-ol:my-2
+    ">
+      <ReactMarkdown
+        components={{
+          table: ({ children }) => (
+            <div className="overflow-x-auto -mx-2 my-4">
+              <table className="min-w-full text-sm border-collapse">{children}</table>
+            </div>
+          ),
+          thead: ({ children }) => <thead className="bg-muted/60">{children}</thead>,
+          th: ({ children }) => (
+            <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-2 border-b border-border whitespace-nowrap">{children}</th>
+          ),
+          td: ({ children }) => (
+            <td className="px-3 py-3 text-foreground/90 border-b border-border/40 align-top leading-relaxed">{children}</td>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+/* ── main component ────────────────────────────────── */
+
 export default function CompanyExplorer() {
-  
   const [phase, setPhase] = useState<ExplorerPhase>("pick-industry");
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyData[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
   const [loadingCompanies, setLoadingCompanies] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [stepResults, setStepResults] = useState<Record<string, StepResult>>({});
-  const [analyzing, setAnalyzing] = useState(false);
-  const [allComplete, setAllComplete] = useState(false);
+
+  // Analysis state
+  const [stepResults, setStepResults] = useState<Record<string, string>>({});
+  const [activeStepId, setActiveStepId] = useState<string | null>(null);
+  const [runningRef] = useState({ cancelled: false });
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Auto-scroll to active step
+  useEffect(() => {
+    if (activeStepId && sectionRefs.current[activeStepId]) {
+      sectionRefs.current[activeStepId]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [activeStepId]);
+
+  /* ── data loading ──────────────────────────────── */
 
   async function loadCompanies(industryQuery: string) {
     setLoadingCompanies(true);
@@ -83,17 +129,42 @@ export default function CompanyExplorer() {
         .select("id, name, industry, website, description, employee_range, funding_stage, headquarters, estimated_arr, estimated_employees")
         .not("website", "is", null)
         .not("description", "is", null);
-
-      if (industryQuery) {
-        query = query.ilike("industry", `%${industryQuery}%`);
-      }
-
+      if (industryQuery) query = query.ilike("industry", `%${industryQuery}%`);
       const { data } = await query.limit(20).order("name");
       setCompanies((data || []) as CompanyData[]);
     } finally {
       setLoadingCompanies(false);
     }
   }
+
+  /* ── sequential analysis runner ────────────────── */
+
+  const runAllSteps = useCallback(async (company: CompanyData) => {
+    runningRef.cancelled = false;
+    const accumulated: Record<string, string> = {};
+
+    for (const step of STEPS) {
+      if (runningRef.cancelled) break;
+      setActiveStepId(step.id);
+
+      try {
+        const { data, error } = await supabase.functions.invoke("gtm-analyze", {
+          body: { stepId: step.id, company, previousResults: accumulated },
+        });
+        if (error) throw error;
+        const content = data?.content || data?.feedback || "Analysis complete.";
+        accumulated[step.id] = content;
+        setStepResults(prev => ({ ...prev, [step.id]: content }));
+      } catch (e) {
+        console.error(`Step ${step.id} failed:`, e);
+        toast.error(`${step.label} failed — try again.`);
+        break;
+      }
+    }
+    setActiveStepId(null);
+  }, [runningRef]);
+
+  /* ── handlers ──────────────────────────────────── */
 
   function handleIndustryPick(group: typeof INDUSTRY_GROUPS[0]) {
     setSelectedIndustry(group.label);
@@ -103,92 +174,34 @@ export default function CompanyExplorer() {
 
   function handleCompanyPick(company: CompanyData) {
     setSelectedCompany(company);
-    setCurrentStep(0);
     setStepResults({});
-    setAllComplete(false);
-    setPhase("running");
-    runStep(0, company);
-  }
-
-  async function runStep(stepIdx: number, company: CompanyData) {
-    const step = STEPS[stepIdx];
-    if (!step) return;
-
-    setAnalyzing(true);
-    try {
-      // Pass previous results for context (linkedin-reveal needs buyer-id output)
-      const prevResults: Record<string, string> = {};
-      Object.entries(stepResults).forEach(([id, result]) => {
-        prevResults[id] = result.content;
-      });
-
-      const { data, error } = await supabase.functions.invoke("gtm-analyze", {
-        body: { stepId: step.id, company, previousResults: prevResults },
-      });
-
-      if (error) throw error;
-
-      setStepResults(prev => ({
-        ...prev,
-        [step.id]: {
-          title: step.label,
-          content: data?.content || data?.feedback || "Analysis complete.",
-          reasoning: data?.reasoning || "",
-        },
-      }));
-
-      setCurrentStep(stepIdx);
-
-      if (stepIdx === STEPS.length - 1) {
-        setAllComplete(true);
-      }
-    } catch (e) {
-      console.error("Step analysis failed:", e);
-      toast.error("Analysis failed. Please try again.");
-    } finally {
-      setAnalyzing(false);
-    }
-  }
-
-  function handleNextStep() {
-    if (!selectedCompany) return;
-    const next = currentStep + 1;
-    if (next < STEPS.length) {
-      setCurrentStep(next);
-      if (!stepResults[STEPS[next].id]) {
-        runStep(next, selectedCompany);
-      }
-    }
-  }
-
-  function handlePrevStep() {
-    if (currentStep > 0) setCurrentStep(currentStep - 1);
+    setActiveStepId(null);
+    setPhase("analysis");
+    runAllSteps(company);
   }
 
   function handleReset() {
+    runningRef.cancelled = true;
     setPhase("pick-industry");
     setSelectedIndustry(null);
     setSelectedCompany(null);
     setCompanies([]);
     setStepResults({});
-    setCurrentStep(0);
-    setAllComplete(false);
+    setActiveStepId(null);
   }
 
-  // ─── INDUSTRY PICKER ────────────────────────────────
+  /* ── INDUSTRY PICKER ───────────────────────────── */
+
   if (phase === "pick-industry") {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-foreground mb-3">GTM Company Explorer</h1>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-            Pick an industry, choose a company, and watch AI walk you through the full GTM reasoning — from DNA to LinkedIn profiles.
+            Pick an industry, choose a company, and watch the full GTM analysis build — from DNA to LinkedIn profiles.
           </p>
         </div>
-
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Select an industry</h2>
-        </div>
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Select an industry</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {INDUSTRY_GROUPS.map(group => (
             <button
@@ -205,29 +218,23 @@ export default function CompanyExplorer() {
     );
   }
 
-  // ─── COMPANY PICKER ─────────────────────────────────
+  /* ── COMPANY PICKER ────────────────────────────── */
+
   if (phase === "pick-company") {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
         <Button variant="ghost" size="sm" onClick={() => setPhase("pick-industry")} className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to industries
         </Button>
-
-        <h2 className="text-xl font-bold text-foreground mb-1">
-          {selectedIndustry} Companies
-        </h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          Pick a company to analyze through the full GTM pipeline
-        </p>
+        <h2 className="text-xl font-bold text-foreground mb-1">{selectedIndustry} Companies</h2>
+        <p className="text-sm text-muted-foreground mb-6">Pick a company to analyze through the full GTM pipeline</p>
 
         {loadingCompanies ? (
           <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
             <Loader2 className="w-5 h-5 animate-spin" /> Loading companies...
           </div>
         ) : companies.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            No companies found for this industry. Try "All Industries".
-          </div>
+          <div className="text-center py-12 text-muted-foreground">No companies found. Try "All Industries".</div>
         ) : (
           <div className="space-y-2">
             {companies.map(c => (
@@ -244,9 +251,7 @@ export default function CompanyExplorer() {
                   <p className="text-xs text-muted-foreground truncate">{c.description?.slice(0, 80)}...</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {c.employee_range && (
-                    <Badge variant="secondary" className="text-xs">{c.employee_range}</Badge>
-                  )}
+                  {c.employee_range && <Badge variant="secondary" className="text-xs">{c.employee_range}</Badge>}
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
                 </div>
               </button>
@@ -257,10 +262,11 @@ export default function CompanyExplorer() {
     );
   }
 
-  // ─── RUNNING / RESULTS ──────────────────────────────
-  const activeStep = STEPS[currentStep];
-  const activeResult = activeStep ? stepResults[activeStep.id] : null;
-  const progressPct = Math.round(((Object.keys(stepResults).length) / STEPS.length) * 100);
+  /* ── ANALYSIS VIEW (single-screen accordion) ───── */
+
+  const completedCount = Object.keys(stepResults).length;
+  const progressPct = Math.round((completedCount / STEPS.length) * 100);
+  const isRunning = activeStepId !== null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -284,116 +290,70 @@ export default function CompanyExplorer() {
         </div>
         <div className="text-right">
           <div className="text-xs text-muted-foreground mb-1">
-            Step {currentStep + 1} of {STEPS.length}
+            {isRunning ? `Analyzing step ${completedCount + 1} of ${STEPS.length}` : `${completedCount}/${STEPS.length} complete`}
           </div>
           <Progress value={progressPct} className="h-1.5 w-32" />
         </div>
       </div>
 
-      {/* Step navigation */}
-      <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
-        {STEPS.map((step, i) => {
-          const isDone = !!stepResults[step.id];
-          const isActive = i === currentStep;
-          const isLocked = i > Object.keys(stepResults).length;
+      {/* All steps as accordion */}
+      <Accordion type="multiple" defaultValue={STEPS.map(s => s.id)} className="space-y-3">
+        {STEPS.map((step) => {
+          const result = stepResults[step.id];
+          const isActive = activeStepId === step.id;
+          const isDone = !!result;
+          const isPending = !isDone && !isActive;
 
           return (
-            <button
+            <AccordionItem
               key={step.id}
-              disabled={isLocked}
-              onClick={() => !isLocked && setCurrentStep(i)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : isDone
-                  ? "bg-primary/10 text-primary"
-                  : isLocked
-                  ? "bg-muted text-muted-foreground/50 cursor-not-allowed"
-                  : "bg-muted text-muted-foreground hover:bg-accent"
-              }`}
+              value={step.id}
+              ref={(el) => { sectionRefs.current[step.id] = el; }}
+              className="border rounded-xl bg-card overflow-hidden"
             >
-              {isDone && !isActive ? <CheckCircle2 className="w-3.5 h-3.5" /> : step.icon}
-              <span className="hidden sm:inline">{step.label}</span>
-            </button>
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-3 w-full">
+                  <div className={`shrink-0 ${isDone ? "text-primary" : isActive ? "text-primary" : "text-muted-foreground/50"}`}>
+                    {isDone ? <CheckCircle2 className="w-5 h-5" /> : isActive ? <Loader2 className="w-5 h-5 animate-spin" /> : <Lock className="w-5 h-5" />}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="flex items-center gap-2">
+                      {step.icon}
+                      <span className={`font-medium text-sm ${isPending ? "text-muted-foreground/60" : "text-foreground"}`}>
+                        {step.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{step.description}</p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                {isActive && !result ? (
+                  <div className="flex items-center gap-2 py-8 justify-center text-muted-foreground">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-sm">Analyzing {selectedCompany?.name}...</span>
+                  </div>
+                ) : result ? (
+                  <StepMarkdown content={result} />
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground/50 text-sm">
+                    Waiting for previous steps...
+                  </div>
+                )}
+              </AccordionContent>
+            </AccordionItem>
           );
         })}
-      </div>
+      </Accordion>
 
-      {/* Step content */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            {activeStep?.icon}
-            <CardTitle className="text-base">{activeStep?.label}</CardTitle>
-          </div>
-          <p className="text-sm text-muted-foreground">{activeStep?.description}</p>
-        </CardHeader>
-        <CardContent>
-          {analyzing && !activeResult ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">
-                Analyzing {selectedCompany?.name}...
-              </p>
-            </div>
-          ) : activeResult ? (
-            <div className="prose prose-sm max-w-none
-              prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-2
-              prose-h2:text-base prose-h3:text-sm prose-h3:text-muted-foreground prose-h3:uppercase prose-h3:tracking-wide
-              prose-p:text-foreground/90 prose-p:leading-relaxed
-              prose-li:text-foreground/90 prose-li:leading-relaxed
-              prose-strong:text-foreground prose-strong:font-semibold
-              prose-ul:my-2 prose-ol:my-2
-            ">
-              <ReactMarkdown
-                components={{
-                  table: ({ children }) => (
-                    <div className="overflow-x-auto -mx-2 my-4">
-                      <table className="min-w-full text-sm border-collapse">{children}</table>
-                    </div>
-                  ),
-                  thead: ({ children }) => (
-                    <thead className="bg-muted/60">{children}</thead>
-                  ),
-                  th: ({ children }) => (
-                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-2 border-b border-border whitespace-nowrap">{children}</th>
-                  ),
-                  td: ({ children }) => (
-                    <td className="px-3 py-3 text-foreground/90 border-b border-border/40 align-top leading-relaxed">{children}</td>
-                  ),
-                }}
-              >
-                {activeResult.content}
-              </ReactMarkdown>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground text-sm">
-              Complete previous steps to unlock this analysis.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={handlePrevStep} disabled={currentStep === 0}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Previous
-        </Button>
-
-        {currentStep < STEPS.length - 1 ? (
-          <Button
-            onClick={handleNextStep}
-            disabled={analyzing || !activeResult}
-          >
-            Next: {STEPS[currentStep + 1]?.label}
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Button>
-        ) : allComplete ? (
+      {/* Footer */}
+      {!isRunning && completedCount === STEPS.length && (
+        <div className="flex justify-center mt-6">
           <Button onClick={handleReset} variant="outline">
             <RefreshCw className="w-4 h-4 mr-1" /> Explore another company
           </Button>
-        ) : null}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
