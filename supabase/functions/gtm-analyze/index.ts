@@ -98,15 +98,6 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
   }
 }
 
-function mapEmployeeRangeToApollo(range: string): string {
-  const map: Record<string, string> = {
-    "1-10": "1,10", "11-50": "11,50", "51-200": "51,200",
-    "201-500": "201,500", "501-1000": "501,1000", "1001-5000": "1001,5000",
-    "5001-10000": "5001,10000", "10000+": "10001,1000000",
-  };
-  return map[range] || "1,10000";
-}
-
 const CONCISE = "Be concise. Use bullets and short sections. Under 250 words total.";
 
 serve(async (req) => {
