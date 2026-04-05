@@ -83,7 +83,7 @@ async function searchApolloAtCompanies(
       person_titles: titles,
       per_page: 25,
       page,
-      person_seniorities: ["director", "vp", "c_suite", "owner", "manager"],
+      person_seniorities: ["director", "vp", "c_suite", "owner"],
     };
 
     if (companyDomains.length > 0) {
@@ -489,13 +489,15 @@ For each person (by index number), assign:
 - product_id: which product (P1, P2...) they most relate to
 - product_name: the product name
 - vertical: which vertical they're in
-- role: "dm" or "champion"
+- role: "dm" (decision maker with budget authority)
 - type: "customer" or "conquest"
 - competitor_using: if conquest, which competitor; else null
+- lead_score: 0-100 score based on seniority fit, vertical relevance, and purchasing authority
+- recommendation_reason: 1-2 sentence explanation of why this person is a strong prospect for ${company.name}
 
 Return ONLY valid JSON array:
 [
-  { "idx": 0, "product_id": "P1", "product_name": "Product Name", "vertical": "SaaS", "role": "dm", "type": "customer", "competitor_using": null }
+  { "idx": 0, "product_id": "P1", "product_name": "Product Name", "vertical": "SaaS", "role": "dm", "type": "customer", "competitor_using": null, "lead_score": 85, "recommendation_reason": "VP-level buyer at a company already using competitor X, strong switch opportunity." }
 ]`,
           `Products:
 ${JSON.stringify((prev["products"]?.structured?.products || []).map((p: any) => ({ id: p.id, name: p.name })), null, 2)}
@@ -525,9 +527,11 @@ ${classifyList}`
             product_id: cls.product_id || "P1",
             product_name: cls.product_name || "",
             vertical: cls.vertical || "Unknown",
-            role: cls.role || "dm",
+            role: "dm",
             type: cls.type || "customer",
             competitor_using: cls.competitor_using || null,
+            lead_score: cls.lead_score || null,
+            recommendation_reason: cls.recommendation_reason || null,
           };
         });
 
