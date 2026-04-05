@@ -324,6 +324,74 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     );
   }
 
+  /* ── CONFIRM LOCATION ── */
+  if (phase === "confirm-location" && icpSummary) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <Button variant="ghost" size="sm" onClick={handleReset} className="mb-6">
+          <ArrowLeft className="w-4 h-4 mr-1" /> Start over
+        </Button>
+
+        <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+          <div>
+            <h2 className="text-xl font-bold text-foreground mb-1">ICP Analysis Complete</h2>
+            <p className="text-sm text-muted-foreground">
+              We mapped {selectedCompany?.name}'s buyer profile. Review below, then generate your first 5 leads.
+            </p>
+          </div>
+
+          {/* ICP Summary */}
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Target Verticals</p>
+              <div className="flex flex-wrap gap-1.5">
+                {icpSummary.verticals.map((v) => (
+                  <Badge key={v} variant="secondary" className="text-xs">{v}</Badge>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Decision-Maker Roles</p>
+              <div className="flex flex-wrap gap-1.5">
+                {icpSummary.roles.slice(0, 8).map((r) => (
+                  <Badge key={r} variant="outline" className="text-xs">{r}</Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Location Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              Location preference
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </label>
+            <Input
+              placeholder="e.g. New York, USA or London, UK"
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+              className="text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave blank to search globally, or enter a city/region to focus leads there.
+            </p>
+          </div>
+
+          {/* CTA */}
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={() => runLeadGeneration(locationInput.trim())}
+          >
+            <Rocket className="w-4 h-4 mr-2" />
+            Generate first 5 leads
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   /* ── ANALYSIS VIEW ── */
   const completedCount = Object.keys(stepResults).length;
   const progressPct = Math.round((completedCount / STEPS.length) * 100);
