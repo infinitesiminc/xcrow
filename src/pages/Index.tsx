@@ -4,13 +4,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import heroImage from "@/assets/og-hero.png";
-import { Target, Zap, Users, BarChart3, Globe, Sparkles } from "lucide-react";
+import { Target, Zap, BarChart3, Globe, Sparkles, Building2 } from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MARQUEE_ROWS = [
   ["Apple", "Stripe", "OpenAI", "Netflix", "Figma", "Anthropic", "Canva", "Salesforce"],
