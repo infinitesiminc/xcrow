@@ -10,80 +10,65 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-async function aiCall(prompt: string, userContent: string) {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: userContent },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("AI gateway error:", res.status, err);
-    throw new Error(`AI call failed: ${res.status}`);
-  }
-
-  const data = await res.json();
-  return data?.choices?.[0]?.message?.content || "";
+/** Lightweight HTML-to-text: strip tags, collapse whitespace */
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-async function firecrawlScrape(url: string, apiKey: string): Promise<string> {
+/** Scrape a page using native fetch — no Firecrawl needed */
+async function scrapePage(url: string): Promise<{ text: string; title: string }> {
   try {
-    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
+    const res = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)",
+        Accept: "text/html,application/xhtml+xml",
       },
-      body: JSON.stringify({
-        url,
-        formats: ["markdown"],
-        onlyMainContent: true,
-      }),
+      redirect: "follow",
     });
-    const data = await res.json();
-    return data?.data?.markdown || data?.markdown || "";
+    if (!res.ok) return { text: "", title: "" };
+    const html = await res.text();
+    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : "";
+    // Extract main content (try <main>, <article>, or <body>)
+    const mainMatch = html.match(/<main[\s\S]*?<\/main>/i) ||
+                      html.match(/<article[\s\S]*?<\/article>/i) ||
+                      html.match(/<body[\s\S]*?<\/body>/i);
+    const text = htmlToText(mainMatch ? mainMatch[0] : html);
+    return { text: text.slice(0, 8000), title };
   } catch (e) {
     console.error("Scrape failed for", url, e);
-    return "";
+    return { text: "", title: "" };
   }
 }
 
-async function firecrawlMap(url: string, apiKey: string): Promise<string[]> {
-  try {
-    const res = await fetch("https://api.firecrawl.dev/v1/map", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        url,
-        limit: 100,
-        includeSubdomains: false,
-      }),
-    });
-    const data = await res.json();
-    return data?.links || [];
-  } catch (e) {
-    console.error("Map failed for", url, e);
-    return [];
+/** Discover internal links from HTML */
+function extractLinks(html: string, baseUrl: string): string[] {
+  const links: string[] = [];
+  const re = /href=["']([^"']+)["']/gi;
+  let match;
+  while ((match = re.exec(html)) !== null) {
+    try {
+      const resolved = new URL(match[1], baseUrl).href;
+      if (new URL(resolved).hostname === new URL(baseUrl).hostname) {
+        links.push(resolved);
+      }
+    } catch {}
   }
+  return [...new Set(links)];
 }
 
-// Prioritize pages that reveal ICP signals
+// ICP-relevant page patterns
 const ICP_PAGE_PATTERNS = [
   /\/(about|company|who-we-are)/i,
   /\/(solutions?|products?|services?|offerings?|platform)/i,
@@ -99,34 +84,30 @@ function scoreUrl(url: string): number {
   for (const pattern of ICP_PAGE_PATTERNS) {
     if (pattern.test(url)) score += 10;
   }
-  // Penalize deep paths, blog posts, legal pages
   if (/\/(blog|news|press|careers|jobs|legal|privacy|terms|cookie|sitemap|feed|wp-)/i.test(url)) score -= 20;
-  // Penalize very deep URLs (4+ segments)
-  const segments = new URL(url).pathname.split("/").filter(Boolean);
-  if (segments.length > 3) score -= 5;
+  try {
+    const segments = new URL(url).pathname.split("/").filter(Boolean);
+    if (segments.length > 3) score -= 5;
+  } catch {}
   return score;
 }
 
-function pickBestPages(allUrls: string[], baseUrl: string, max: number): string[] {
-  // Always include homepage
+function pickBestPages(allUrls: string[], max: number): string[] {
   const scored = allUrls
-    .filter((u) => {
-      try { return new URL(u).hostname === new URL(baseUrl).hostname; } catch { return false; }
-    })
     .map((u) => ({ url: u, score: scoreUrl(u) }))
     .filter((u) => u.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  // Dedupe by path pattern (don't scrape /solutions/a and /solutions/b — pick top one per category)
   const picked: string[] = [];
   const seenCategories = new Set<string>();
   for (const { url } of scored) {
-    const path = new URL(url).pathname;
-    const category = path.split("/").filter(Boolean)[0]?.toLowerCase() || "root";
-    if (!seenCategories.has(category)) {
-      seenCategories.add(category);
-      picked.push(url);
-    }
+    try {
+      const category = new URL(url).pathname.split("/").filter(Boolean)[0]?.toLowerCase() || "root";
+      if (!seenCategories.has(category)) {
+        seenCategories.add(category);
+        picked.push(url);
+      }
+    } catch {}
     if (picked.length >= max) break;
   }
   return picked;
@@ -139,79 +120,90 @@ Deno.serve(async (req) => {
     const { website } = await req.json();
     if (!website) return json({ success: false, error: "website is required" }, 400);
 
-    const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
-    if (!firecrawlKey) return json({ success: false, error: "Firecrawl not configured" }, 500);
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) return json({ success: false, error: "AI not configured" }, 500);
 
     let formattedUrl = website.trim();
     if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
 
-    console.log("=== Deep ICP Discovery for:", formattedUrl, "===");
+    console.log("=== ICP Discovery for:", formattedUrl, "===");
 
-    // --- Step 1: Map the site to discover all URLs ---
-    console.log("Step 1: Mapping site URLs...");
-    const [siteUrls, homepageContent] = await Promise.all([
-      firecrawlMap(formattedUrl, firecrawlKey),
-      firecrawlScrape(formattedUrl, firecrawlKey),
-    ]);
-
-    console.log(`Found ${siteUrls.length} URLs on site`);
-
-    if (!homepageContent) {
+    // --- Step 1: Scrape homepage and discover internal links ---
+    console.log("Step 1: Scraping homepage...");
+    const homeRes = await fetch(formattedUrl, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)", Accept: "text/html" },
+      redirect: "follow",
+    });
+    if (!homeRes.ok) {
       return json({ success: false, error: "Could not read your website. Check the URL." }, 400);
     }
+    const homeHtml = await homeRes.text();
+    const homepageText = htmlToText(homeHtml).slice(0, 5000);
+    const homeTitle = homeHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || "";
 
-    // --- Step 2: Pick the most ICP-relevant pages and scrape them ---
-    const bestPages = pickBestPages(siteUrls, formattedUrl, 5);
-    console.log("Step 2: Scraping ICP-relevant pages:", bestPages);
+    if (!homepageText || homepageText.length < 50) {
+      return json({ success: false, error: "Website returned insufficient content." }, 400);
+    }
+
+    // --- Step 2: Find and scrape ICP-relevant subpages ---
+    const allLinks = extractLinks(homeHtml, formattedUrl);
+    const bestPages = pickBestPages(allLinks, 4);
+    console.log("Step 2: Scraping subpages:", bestPages);
 
     const pageResults = await Promise.all(
       bestPages.map(async (pageUrl) => {
-        const content = await firecrawlScrape(pageUrl, firecrawlKey);
-        const parsedUrl = new URL(pageUrl);
-        const path = parsedUrl.pathname;
+        const { text, title } = await scrapePage(pageUrl);
+        const path = new URL(pageUrl).pathname;
         const category = path.split("/").filter(Boolean)[0]?.toLowerCase() || "homepage";
-        return { url: pageUrl, path, category, content: content.slice(0, 3000), ok: !!content };
+        return { url: pageUrl, path, category, content: text.slice(0, 3000), ok: !!text };
       })
     );
 
     // --- Step 3: Combine all content ---
     const combinedContent = [
-      `## Homepage\n${homepageContent.slice(0, 4000)}`,
-      ...pageResults
-        .filter((p) => p.content)
-        .map((p) => `## ${p.path}\n${p.content}`),
+      `## Homepage (${homeTitle})\n${homepageText}`,
+      ...pageResults.filter((p) => p.content).map((p) => `## ${p.path}\n${p.content}`),
     ].join("\n\n---\n\n");
 
     const pagesScraped = 1 + pageResults.filter((p) => p.content).length;
     console.log(`Step 3: Combined content from ${pagesScraped} pages (${combinedContent.length} chars)`);
 
-    // --- Step 4: AI builds full 3-layer ICP tree from deep content ---
-    const icpText = await aiCall(
-      `You are an elite B2B go-to-market strategist. You have been given deep website content from multiple pages (homepage, about, solutions, pricing, customers, industries). Use ALL available signals to build a precise ICP tree.
+    // --- Step 4: AI builds 3-layer ICP tree ---
+    const aiRes = await fetch(AI_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `You are an elite B2B go-to-market strategist. Analyze deep website content to build a precise ICP tree.
 
 Analyze:
 - What the company sells (products/services/platform)
 - Who their existing customers are (case studies, testimonials, logos)
-- Which industries they serve (industry pages, verticals)
+- Which industries they serve
 - Their pricing model (enterprise vs SMB signals)
-- Integration partners (ecosystem signals)
+- Integration partners
 - Use cases mentioned
 
 Build a complete ICP tree with exactly 3 layers:
 
-Layer 1 — Industry Verticals: 3-5 distinct industries/sectors that would buy this product/service. Use evidence from the site.
-Layer 2 — Company Segments: For each vertical, 2-3 specific company segments (by size, stage, or sub-type).
-Layer 3 — Buyer Personas: For each segment, 1-2 specific decision-maker job title clusters who would champion the purchase.
+Layer 1 — Industry Verticals: 3-5 distinct industries that would buy this product/service.
+Layer 2 — Company Segments: For each vertical, 2-3 specific company segments.
+Layer 3 — Buyer Personas: For each segment, 1-2 decision-maker job title clusters.
 
 Return JSON ONLY (no markdown fences):
 {
   "company_summary": "one sentence about what this company does",
-  "icp_summary": "one sentence describing their ideal customer based on evidence",
-  "pages_analyzed": ${pagesScraped},
+  "icp_summary": "one sentence describing their ideal customer",
   "verticals": [
     {
       "label": "Industry Vertical Name",
-      "description": "Why this vertical needs the product — cite evidence from site",
+      "description": "Why this vertical needs the product",
       "segments": [
         {
           "label": "Company Segment Name",
@@ -229,14 +221,21 @@ Return JSON ONLY (no markdown fences):
 }
 
 Rules:
-- Be specific: "Mid-Market 3PLs (50-500 employees)" not just "Logistics"
-- Use EVIDENCE from the scraped pages — mention customer names, use cases, or industry pages you found
-- Verticals should be distinct industries, segments should be company types within that vertical
-- Personas should be actual job title clusters (e.g. "VP of Operations / Warehouse Director")
+- Be specific: "Mid-Market 3PLs (50-200 employees)" not just "Logistics"
+- Use EVIDENCE from the scraped pages
+- Personas should be decision-maker job title clusters
 - Focus on WHO BUYS, not who uses`,
-      `Website: ${formattedUrl}\nPages scraped: ${pagesScraped}\n\n${combinedContent.slice(0, 12000)}`
-    );
+          },
+          {
+            role: "user",
+            content: `Website: ${formattedUrl}\nPages scraped: ${pagesScraped}\n\n${combinedContent.slice(0, 12000)}`,
+          },
+        ],
+      }),
+    });
 
+    const aiData = await aiRes.json();
+    const icpText = aiData?.choices?.[0]?.message?.content || "";
     console.log("Step 4: AI ICP response:", icpText.slice(0, 500));
 
     let icpData: {
