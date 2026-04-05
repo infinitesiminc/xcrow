@@ -91,6 +91,7 @@ const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | n
 
 export default function Leadgen() {
   const { user, profile, openAuthModal } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<ChatItem[]>([]);
   const [input, setInput] = useState("");
