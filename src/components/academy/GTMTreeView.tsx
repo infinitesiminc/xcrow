@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -7,13 +8,15 @@ import {
 } from "@/components/ui/sheet";
 import {
   Building2, Package, Users, Linkedin, Target, Swords,
-  UserCheck, Globe, Mail, Search, ChevronLeft, ChevronRight, Info,
+  UserCheck, Globe, Mail, Search, ChevronLeft, ChevronRight, Info, Plus, Loader2,
 } from "lucide-react";
 import type { GTMTreeData, GTMProduct, GTMLead, GTMBuyerMapping } from "./gtm-types";
 
 interface GTMTreeViewProps {
   companyName: string;
   data: GTMTreeData;
+  onGenerateMore?: (productId: string, vertical: string | null) => void;
+  isGeneratingMore?: boolean;
 }
 
 const LEADS_PER_PAGE = 25;
@@ -291,7 +294,7 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
 }
 
 /* ── Main component ── */
-export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
+export default function GTMTreeView({ companyName, data, onGenerateMore, isGeneratingMore }: GTMTreeViewProps) {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVerticalIdx, setSelectedVerticalIdx] = useState<number | null>(null);
   const [selectedCompanyIdx, setSelectedCompanyIdx] = useState<number | null>(null);
@@ -573,7 +576,32 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
 
         {/* Col 2: Leads (with vertical + role + type filters) */}
         <div className="flex flex-col min-w-[300px] flex-[2] border border-border rounded-lg overflow-hidden bg-card">
-          <ColumnHeader title="Leads" count={activeLeads.length} total={totalLeadsForContext}>
+          <div className="flex flex-col gap-1.5 p-2 border-b border-border/50 shrink-0">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">Leads</span>
+              <div className="flex items-center gap-1.5">
+                {onGenerateMore && selectedProductId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-5 text-[9px] px-1.5 gap-0.5"
+                    disabled={isGeneratingMore}
+                    onClick={() => onGenerateMore(
+                      selectedProductId,
+                      selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx]
+                        ? activeVerticals[selectedVerticalIdx].vertical
+                        : null
+                    )}
+                  >
+                    {isGeneratingMore ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
+                    +5 Leads
+                  </Button>
+                )}
+                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                  {activeLeads.length === totalLeadsForContext ? totalLeadsForContext : `${activeLeads.length}/${totalLeadsForContext}`}
+                </Badge>
+              </div>
+            </div>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <Input
@@ -642,7 +670,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                 </button>
               ))}
             </div>
-          </ColumnHeader>
+          </div>
           <ScrollArea className="flex-1">
             <div className="p-1.5 space-y-1">
               {!selectedProductId ? (
