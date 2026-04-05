@@ -303,7 +303,7 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
 }
 
 /* ── Main component ── */
-export default function GTMTreeView({ companyName, data, onGenerateMore, isGeneratingMore }: GTMTreeViewProps) {
+export default function GTMTreeView({ companyName, data, companyMeta, onGenerateMore, isGeneratingMore }: GTMTreeViewProps) {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVerticalIdx, setSelectedVerticalIdx] = useState<number | null>(null);
   const [selectedCompanyIdx, setSelectedCompanyIdx] = useState<number | null>(null);
