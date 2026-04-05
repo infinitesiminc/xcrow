@@ -693,7 +693,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                           variant="secondary"
                           className={`text-[8px] h-3.5 px-1 border-0 ${lead.role === "dm" ? "bg-blue-500/15 text-blue-700" : "bg-green-500/15 text-green-700"}`}
                         >
-                          {lead.role === "dm" ? "DM" : "Champion"}
+                          {lead.role === "dm" ? "Decision Maker" : "Champion"}
                         </Badge>
                         <Badge
                           variant="secondary"
