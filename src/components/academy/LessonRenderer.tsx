@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Brain, Pencil, CheckCircle2, Loader2, Trophy, Star, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Pencil, CheckCircle2, Loader2, Trophy, Star, AlertTriangle, Building2, RefreshCw, Globe, MapPin, Users } from "lucide-react";
 
 interface GradeResult {
   judgment_score: number;
