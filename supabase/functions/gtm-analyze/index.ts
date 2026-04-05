@@ -77,16 +77,19 @@ async function searchApolloAtCompanies(
   }
 
   try {
+    // Use organization_domains filter (not q_organization_domains) for exact domain matching
     const searchBody: Record<string, unknown> = {
       person_titles: titles,
-      per_page: 10,
+      per_page: 25,
       page: 1,
-      person_seniorities: ["director", "vp", "c_suite", "owner"],
+      person_seniorities: ["director", "vp", "c_suite", "owner", "manager"],
     };
 
     if (companyDomains.length > 0) {
-      searchBody.q_organization_domains = companyDomains.join("\n");
+      searchBody.organization_domains = companyDomains;
     }
+
+    console.log("Apollo search body:", JSON.stringify(searchBody));
 
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
@@ -95,34 +98,57 @@ async function searchApolloAtCompanies(
     });
 
     if (!searchRes.ok) {
-      console.error("Apollo search failed:", searchRes.status);
+      const errText = await searchRes.text();
+      console.error("Apollo search failed:", searchRes.status, errText);
       return [];
     }
 
     const searchData = await searchRes.json();
     const partialPeople = searchData.people || [];
+    console.log("Apollo search returned:", partialPeople.length, "people");
+    if (partialPeople.length > 0) {
+      console.log("Sample person:", JSON.stringify({
+        name: partialPeople[0].name,
+        linkedin_url: partialPeople[0].linkedin_url,
+        title: partialPeople[0].title,
+      }));
+    }
     if (partialPeople.length === 0) return [];
 
-    const details = partialPeople.slice(0, 10).map((p: any) => ({ id: p.id })).filter((d: any) => d.id);
+    // Enrich via bulk_match using linkedin_url (more reliable than id)
+    const enrichDetails = partialPeople
+      .slice(0, 15)
+      .filter((p: any) => p.linkedin_url)
+      .map((p: any) => ({ linkedin_url: p.linkedin_url }));
+
     let enrichedPeople = partialPeople;
 
-    if (details.length > 0) {
+    if (enrichDetails.length > 0) {
       try {
         const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match", {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
-          body: JSON.stringify({ details, reveal_personal_emails: false }),
+          body: JSON.stringify({ details: enrichDetails, reveal_personal_emails: false }),
         });
         if (enrichRes.ok) {
           const enrichData = await enrichRes.json();
-          if (enrichData.people?.length) enrichedPeople = enrichData.people;
+          console.log("Apollo bulk_match returned:", enrichData.people?.length || 0, "enriched");
+          if (enrichData.people?.length) {
+            // Merge: use enriched data where available, keep original otherwise
+            const enrichedMap = new Map(
+              enrichData.people.filter((p: any) => p?.linkedin_url).map((p: any) => [p.linkedin_url, p])
+            );
+            enrichedPeople = partialPeople.map((p: any) =>
+              enrichedMap.get(p.linkedin_url) || p
+            );
+          }
         }
       } catch (e) {
         console.warn("Apollo bulk_match error:", e);
       }
     }
 
-    return enrichedPeople
+    const results = enrichedPeople
       .filter((p: any) => p.linkedin_url && p.linkedin_url.includes("/in/"))
       .map((p: any) => {
         const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
@@ -138,6 +164,9 @@ async function searchApolloAtCompanies(
           photo_url: p.photo_url || null,
         };
       });
+
+    console.log("Final leads with /in/ URLs:", results.length, "of", enrichedPeople.length, "total");
+    return results;
   } catch (e) {
     console.error("Apollo search error:", e);
     return [];
