@@ -4,9 +4,10 @@ import { CURATED_COMPANIES, getAllCuratedCompanies, type CuratedCompany } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
-  Building2, ArrowLeft, Loader2, ChevronRight, RefreshCw,
+  Building2, ArrowLeft, Loader2, ChevronRight, RefreshCw, MapPin, Rocket,
 } from "lucide-react";
 import GTMTreeView from "./GTMTreeView";
 import type { GTMTreeData } from "./gtm-types";
