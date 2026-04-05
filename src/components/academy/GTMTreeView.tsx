@@ -249,7 +249,7 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
           {lead.role === "dm" ? "Decision Maker" : "Champion"}
         </Badge>
         <Badge className={`text-xs ${lead.type === "conquest" ? "bg-orange-500/15 text-orange-700 border-orange-500/30" : "bg-primary/15 text-primary border-primary/30"}`} variant="outline">
-          {lead.type === "conquest" ? "Conquest" : "Customer"}
+          {lead.type === "conquest" ? "Prospect" : "Named Customer"}
         </Badge>
       </div>
       <div className="space-y-2 text-sm">
