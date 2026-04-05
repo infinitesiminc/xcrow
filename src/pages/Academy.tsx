@@ -1,10 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import CompanyExplorer from "@/components/academy/CompanyExplorer";
 
 export default function Academy() {
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   return (
