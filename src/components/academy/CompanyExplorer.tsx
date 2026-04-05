@@ -45,10 +45,11 @@ type ExplorerPhase = "pick-industry" | "pick-company" | "analysis";
 const STEPS: StepConfig[] = [
   { id: "company-dna", label: "Company DNA", icon: <Building2 className="w-4 h-4" />, description: "Key signals, model, and buying triggers" },
   { id: "product-map", label: "Product Lines", icon: <Package className="w-4 h-4" />, description: "Every product mapped with ID (P1, P2…)" },
+  { id: "named-customers", label: "Named Customers", icon: <Globe className="w-4 h-4" />, description: "Real customers scraped from website" },
   { id: "pmf-matrix", label: "Product-Market Fit", icon: <Target className="w-4 h-4" />, description: "Pain / Buyer / Entry per product" },
   { id: "icp-tree", label: "ICP Tree", icon: <Users className="w-4 h-4" />, description: "Vertical → Segment → Persona per product" },
   { id: "buyer-id", label: "Decision Makers", icon: <UserCheck className="w-4 h-4" />, description: "DM vs Champion grouped by product" },
-  { id: "linkedin-reveal", label: "LinkedIn Profiles", icon: <Linkedin className="w-4 h-4" />, description: "Real profiles tagged to products & roles" },
+  { id: "linkedin-reveal", label: "LinkedIn Profiles", icon: <Linkedin className="w-4 h-4" />, description: "Real profiles at named customer companies" },
 ];
 
 const INDUSTRY_GROUPS = [
