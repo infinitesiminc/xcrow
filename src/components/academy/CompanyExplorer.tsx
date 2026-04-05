@@ -98,13 +98,14 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     setCompanies(list.map(curatedToCompanyData));
   }
 
-  /* ── run pipeline ── */
+  /* ── run pipeline (steps 1-3, pauses before step 4) ── */
   const runPipeline = useCallback(async (company: CompanyData) => {
     cancelRef.cancelled = false;
     setIsRunning(true);
     const accumulated: Record<string, any> = {};
 
-    for (let i = 0; i < STEPS.length; i++) {
+    // Run steps 1-3 only (products, customers, icp-buyers)
+    for (let i = 0; i < 3; i++) {
       if (cancelRef.cancelled) break;
       const step = STEPS[i];
       setCurrentStepIdx(i);
@@ -119,8 +120,49 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       } catch (e) {
         console.error(`Step ${step.id} failed:`, e);
         toast.error(`${step.label} failed — try again.`);
-        break;
+        setIsRunning(false);
+        setCurrentStepIdx(-1);
+        return;
       }
+    }
+
+    // Extract ICP summary for the confirmation dialog
+    const mappings = accumulated["icp-buyers"]?.structured?.mappings || [];
+    const verticals = [...new Set(mappings.map((m: any) => m.vertical).filter(Boolean))] as string[];
+    const roles = [...new Set(mappings.flatMap((m: any) => [m.dm?.title, m.champion?.title]).filter(Boolean))] as string[];
+    setIcpSummary({ verticals, roles });
+    accumulatedRef.current = accumulated;
+
+    setIsRunning(false);
+    setCurrentStepIdx(-1);
+    setPhase("confirm-location");
+  }, [cancelRef]);
+
+  /* ── run step 4 after user confirms location ── */
+  const runLeadGeneration = useCallback(async (location: string) => {
+    if (!selectedCompany) return;
+    setPhase("analysis");
+    setIsRunning(true);
+    setCurrentStepIdx(3);
+
+    const accumulated = accumulatedRef.current;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("gtm-analyze", {
+        body: {
+          stepId: "linkedin-profiles",
+          company: selectedCompany,
+          previousResults: accumulated,
+          location: location || undefined,
+          batchSize: 5,
+        },
+      });
+      if (error) throw error;
+      accumulated["linkedin-profiles"] = data;
+      setStepResults((prev) => ({ ...prev, "linkedin-profiles": data }));
+    } catch (e) {
+      console.error("LinkedIn profiles step failed:", e);
+      toast.error("Lead generation failed — try again.");
     }
 
     // Assemble tree data
@@ -142,7 +184,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
 
     setIsRunning(false);
     setCurrentStepIdx(-1);
-  }, [cancelRef]);
+  }, [selectedCompany]);
 
   /* ── generate more leads ── */
   const handleGenerateMore = useCallback(async (productId: string, vertical: string | null) => {
