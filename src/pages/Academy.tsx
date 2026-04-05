@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ACADEMY_CURRICULUM } from "@/data/academy-curriculum";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Lock, Trophy, Zap, CheckCircle2, Circle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Flame, Lock, Trophy, Zap, CheckCircle2, Circle, ArrowLeft } from "lucide-react";
+import LessonRenderer from "@/components/academy/LessonRenderer";
+import { toast } from "sonner";
 
 interface UserProgress {
   totalXp: number;
@@ -40,15 +43,33 @@ function getLevelXpRange(level: number) {
 export default function Academy() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { moduleId } = useParams();
   const [progress, setProgress] = useState<UserProgress>({
     totalXp: 0, level: 1, streak: 0, completedModules: new Set(), completedLessons: new Set(), moduleScores: {},
   });
   const [loading, setLoading] = useState(true);
+  const [currentLessonIdx, setCurrentLessonIdx] = useState(0);
+  const [dbLessonIds, setDbLessonIds] = useState<string[]>([]);
+
+  const activeModule = moduleId ? ACADEMY_CURRICULUM.find(m => m.id === moduleId) : null;
 
   useEffect(() => {
     if (!user) return;
     loadProgress();
   }, [user]);
+
+  useEffect(() => {
+    if (moduleId && user) loadModuleLessons(moduleId);
+  }, [moduleId, user]);
+
+  async function loadModuleLessons(modId: string) {
+    const { data } = await supabase
+      .from("academy_lessons")
+      .select("id")
+      .eq("module_id", modId)
+      .order("sort_order");
+    setDbLessonIds((data || []).map((r: any) => r.id));
+  }
 
   async function loadProgress() {
     if (!user) return;
@@ -61,21 +82,21 @@ export default function Academy() {
     const totalXp = (xpRes.data as number) || 0;
     const streak = streakRes.data?.current_streak || 0;
     const completedLessons = new Set<string>();
-    const moduleScores: Record<string, number[]> = {};
+    const moduleScoreMap: Record<string, number[]> = {};
 
     (progressRes.data || []).forEach((p: any) => {
       if (p.status === "completed") {
         completedLessons.add(p.lesson_id);
-        if (!moduleScores[p.module_id]) moduleScores[p.module_id] = [];
-        if (p.score != null) moduleScores[p.module_id].push(p.score);
+        if (!moduleScoreMap[p.module_id]) moduleScoreMap[p.module_id] = [];
+        if (p.score != null) moduleScoreMap[p.module_id].push(p.score);
       }
     });
 
     const completedModules = new Set<string>();
     const avgScores: Record<string, number> = {};
-    for (const [modId, scores] of Object.entries(moduleScores)) {
+    for (const [modId, scores] of Object.entries(moduleScoreMap)) {
       const mod = ACADEMY_CURRICULUM.find(m => m.id === modId);
-      if (mod && scores.length === mod.lessons.length) {
+      if (mod && scores.length >= mod.lessons.length) {
         const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
         avgScores[modId] = avg;
         if (avg >= (mod.passThreshold || 70)) completedModules.add(modId);
@@ -92,20 +113,61 @@ export default function Academy() {
     setLoading(false);
   }
 
-  function isModuleUnlocked(moduleId: string) {
-    const mod = ACADEMY_CURRICULUM.find(m => m.id === moduleId);
+  function isModuleUnlocked(id: string) {
+    const mod = ACADEMY_CURRICULUM.find(m => m.id === id);
     if (!mod?.prerequisite) return true;
     return progress.completedModules.has(mod.prerequisite);
   }
 
-  function getModuleLessonProgress(moduleId: string) {
-    const mod = ACADEMY_CURRICULUM.find(m => m.id === moduleId);
-    if (!mod) return { done: 0, total: 0 };
-    // We don't have lesson IDs from the config so we count from DB
-    const total = mod.lessons.length;
-    // This is approximate — in a full build we'd match by lesson_id
-    const done = progress.moduleScores[moduleId] ? mod.lessons.length : 0;
-    return { done, total };
+  async function handleLessonComplete(grade?: any) {
+    if (!user || !activeModule || !dbLessonIds[currentLessonIdx]) return;
+    const lessonId = dbLessonIds[currentLessonIdx];
+    const lesson = activeModule.lessons[currentLessonIdx];
+    const score = grade?.overall_score ?? 100;
+
+    // Save progress
+    await supabase.from("user_lesson_progress").upsert({
+      user_id: user.id,
+      lesson_id: lessonId,
+      module_id: activeModule.id,
+      status: "completed",
+      score,
+      judgment_score: grade?.judgment_score ?? null,
+      speed_score: grade?.speed_score ?? null,
+      override_score: grade?.override_score ?? null,
+      tool_score: grade?.tool_score ?? null,
+      attempts: 1,
+      completed_at: new Date().toISOString(),
+    }, { onConflict: "user_id,lesson_id" });
+
+    // Award XP
+    await supabase.from("xp_ledger").insert({
+      user_id: user.id,
+      delta: lesson.xpReward,
+      reason: `Completed: ${lesson.title}`,
+      lesson_id: lessonId,
+    });
+
+    // Update streak
+    const today = new Date().toISOString().split("T")[0];
+    await supabase.from("user_streaks").upsert({
+      user_id: user.id,
+      current_streak: (progress.streak || 0) + 1,
+      last_activity_date: today,
+    }, { onConflict: "user_id" });
+
+    toast.success(`+${lesson.xpReward} XP earned!`);
+    await loadProgress();
+  }
+
+  function handleNext() {
+    if (!activeModule) return;
+    if (currentLessonIdx < activeModule.lessons.length - 1) {
+      setCurrentLessonIdx(currentLessonIdx + 1);
+    } else {
+      toast.success("Module complete! 🎉");
+      navigate("/academy");
+    }
   }
 
   const xpRange = getLevelXpRange(progress.level);
@@ -121,9 +183,47 @@ export default function Academy() {
     );
   }
 
+  // Module lesson view
+  if (activeModule) {
+    const lesson = activeModule.lessons[currentLessonIdx];
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="border-b border-border bg-card">
+          <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+            <Button variant="ghost" size="sm" onClick={() => { setCurrentLessonIdx(0); navigate("/academy"); }}>
+              <ArrowLeft className="w-4 h-4 mr-1" /> {activeModule.icon} {activeModule.title}
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Trophy className="w-3.5 h-3.5 text-primary" />
+                <span>{progress.totalXp} XP</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Flame className="w-3.5 h-3.5 text-orange-500" />
+                <span>{progress.streak}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 py-8">
+          <LessonRenderer
+            lesson={lesson}
+            lessonId={dbLessonIds[currentLessonIdx] || ""}
+            moduleId={activeModule.id}
+            lessonIndex={currentLessonIdx}
+            totalLessons={activeModule.lessons.length}
+            onComplete={handleLessonComplete}
+            onNext={handleNext}
+            onPrev={() => setCurrentLessonIdx(Math.max(0, currentLessonIdx - 1))}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Module grid view
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="border-b border-border bg-card">
         <div className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-4">
@@ -135,10 +235,7 @@ export default function Academy() {
               ← Back to Lead Hunter
             </button>
           </div>
-
-          {/* Stats bar */}
           <div className="flex items-center gap-6 flex-wrap">
-            {/* Level + XP */}
             <div className="flex items-center gap-3 min-w-[200px]">
               <div className="flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1">
                 <Trophy className="w-4 h-4 text-primary" />
@@ -152,14 +249,10 @@ export default function Academy() {
                 <Progress value={xpPercent} className="h-2" />
               </div>
             </div>
-
-            {/* Streak */}
             <div className="flex items-center gap-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-full px-3 py-1">
               <Flame className="w-4 h-4 text-orange-500" />
               <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">{progress.streak} day streak</span>
             </div>
-
-            {/* Modules completed */}
             <div className="flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-full px-3 py-1">
               <Zap className="w-4 h-4 text-emerald-500" />
               <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
@@ -170,7 +263,6 @@ export default function Academy() {
         </div>
       </div>
 
-      {/* Module Grid */}
       <div className="max-w-5xl mx-auto px-4 py-8">
         {(["find", "outreach", "crm"] as const).map(phase => (
           <div key={phase} className="mb-10">
@@ -183,7 +275,7 @@ export default function Academy() {
               {ACADEMY_CURRICULUM.filter(m => m.phase === phase).map(mod => {
                 const unlocked = isModuleUnlocked(mod.id);
                 const completed = progress.completedModules.has(mod.id);
-                const prog = getModuleLessonProgress(mod.id);
+                const doneLessons = progress.completedLessons.size; // simplified
 
                 return (
                   <Card
@@ -210,10 +302,10 @@ export default function Academy() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           {mod.lessons.map((_, i) => (
-                            <Circle key={i} className={`w-2 h-2 ${i < prog.done ? "fill-primary text-primary" : "text-border"}`} />
+                            <Circle key={i} className="w-2 h-2 text-border" />
                           ))}
                         </div>
-                        <span>{prog.done}/{prog.total} lessons</span>
+                        <span>0/{mod.lessons.length} lessons</span>
                       </div>
                     </CardContent>
                   </Card>
