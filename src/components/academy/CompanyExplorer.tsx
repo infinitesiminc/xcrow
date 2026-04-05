@@ -117,6 +117,48 @@ export default function CompanyExplorer() {
     setCurrentStepIdx(-1);
   }, [cancelRef]);
 
+  /* ── generate more leads ── */
+  const handleGenerateMore = useCallback(async (productId: string, vertical: string | null) => {
+    if (!selectedCompany || !treeData) return;
+    setIsGeneratingMore(true);
+    try {
+      const product = treeData.products.find(p => p.id === productId);
+      const { data, error } = await supabase.functions.invoke("gtm-analyze", {
+        body: {
+          stepId: "linkedin-profiles",
+          company: selectedCompany,
+          previousResults: {
+            products: { structured: { products: treeData.products, company_summary: treeData.company_summary } },
+            customers: { structured: { customers: treeData.customers, conquest_targets: treeData.conquest_targets } },
+            "icp-buyers": { structured: { mappings: treeData.mappings } },
+          },
+          generateMore: {
+            count: 5,
+            productId,
+            productName: product?.name || productId,
+            vertical,
+            existingLeads: treeData.leads
+              .filter(l => l.product_id === productId && (!vertical || l.vertical === vertical))
+              .map(l => l.name),
+          },
+        },
+      });
+      if (error) throw error;
+      const newLeads = data?.structured?.leads || [];
+      if (newLeads.length > 0) {
+        setTreeData(prev => prev ? { ...prev, leads: [...prev.leads, ...newLeads] } : prev);
+        toast.success(`Added ${newLeads.length} new leads`);
+      } else {
+        toast.info("No additional leads found");
+      }
+    } catch (e) {
+      console.error("Generate more failed:", e);
+      toast.error("Failed to generate more leads");
+    } finally {
+      setIsGeneratingMore(false);
+    }
+  }, [selectedCompany, treeData]);
+
   /* ── handlers ── */
   function handleIndustryPick(group: typeof INDUSTRY_GROUPS[0]) {
     setSelectedIndustry(group.label);
