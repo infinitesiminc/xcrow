@@ -1,63 +1,24 @@
 
 
-## Scaling the Column Browser for High-Volume Leads
+## Option A: Right-side Sheet Panel for Full Details
 
-**Problem**: A company like HubSpot with 10 products, multiple verticals, and conquest targets can easily produce 100-500+ leads from Apollo. Scrolling through a flat list in column 4 becomes unusable.
+Replace the fixed-width Detail column (col 5) with a slide-out `Sheet` panel that opens when any card is clicked. The 4 remaining columns can now be wider, reducing truncation. The Sheet shows full untruncated text at 400px width.
 
-### Design Additions
+### Changes
 
-**1. Search + Filter Bar per Column**
-Each column gets a compact input at the top:
-- Products column: filter by name
-- Verticals column: filter by segment
-- Companies column: toggle Customer/Conquest, search by name
-- Leads column: search by name/title, filter by role (DM/Champion), filter by type (Customer/Conquest)
+**`src/components/academy/GTMTreeView.tsx`**:
 
-**2. Virtual Scrolling for Leads Column**
-Use `react-window` (lightweight virtualizer) for column 4 when lead count exceeds ~50. Only renders visible rows, keeping DOM light even with 500+ leads.
+1. **Remove column 5 (Detail)** — delete the `w-56` detail column entirely
+2. **Add Sheet state** — `detailItem` state holding the type (`product | vertical | company | lead`) and the data object
+3. **Widen remaining columns** — change from `w-48`/`w-44` to `min-w-[180px] flex-1` so they share available space
+4. **Wire clicks to open Sheet** — clicking any card sets `detailItem` and opens the Sheet; clicking the same card again closes it
+5. **Render Sheet content contextually**:
+   - **Product**: full name, target user, all competitors listed, lead count
+   - **Vertical**: full segment, DM title, champion title, customer list
+   - **Company**: full name, domain, industry, type badge, evidence text, competitor info
+   - **Lead**: photo, full name, full title, company, role/type badges, LinkedIn button, email button, product + vertical context
+6. **Remove `truncate`** from text inside the Sheet — all text wraps freely at 400px width
+7. **Keep `truncate` on column cards** — cards stay compact and scannable
 
-**3. Count Badges + Summary Row**
-Each selectable card shows a count badge of children below it:
-- Product card: "47 leads" badge
-- Vertical card: "12 leads" badge  
-- Company card: "5 leads" badge
-
-A summary bar at the top of each column shows: "Showing 23 of 147 leads"
-
-**4. Pagination Fallback**
-If virtual scroll feels heavy, paginate leads column at 25 per page using the existing `Pagination` component.
-
-**5. Bulk Actions Bar**
-When leads exceed 20, show a "Save all to pipeline" button at the bottom of the leads column to batch-import into the leadgen pipeline.
-
-### Technical Plan
-
-```text
-Column Layout (unchanged)
-┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐ ┌──────────┐
-│ Products │→│Verticals │→│Companies │→│ [🔍 Search...  ] │→│  Detail  │
-│          │ │          │ │          │ │ [DM|Champ|All]   │ │          │
-│ P1 (47)  │ │ SaaS (12)│ │ Acme (5) │ │ Showing 12/147   │ │ Full     │
-│ P2 (31)  │ │ Health(8)│ │ Zen  (3) │ │ ┌──────────────┐ │ │ Profile  │
-│ ...      │ │ ...      │ │ ...      │ │ │ virtual list │ │ │          │
-│          │ │          │ │          │ │ │ or paginated │ │ │          │
-│          │ │          │ │          │ │ └──────────────┘ │ │          │
-└──────────┘ └──────────┘ └──────────┘ └──────────────────┘ └──────────┘
-```
-
-### Files Changed
-
-**`src/components/academy/GTMTreeView.tsx`** — Full rewrite:
-- 5-column master-detail layout with `ScrollArea` per column
-- Search input + role filter in leads column header
-- Count badges on all cards
-- Pagination (25/page) for leads column using existing `Pagination` component
-- Summary bar showing filtered vs total counts
-
-**`src/components/academy/CompanyExplorer.tsx`** — Minor:
-- Remove horizontal overflow wrapper, tree self-contains its scroll
-
-**`package.json`** — No new deps needed (pagination component exists, `ScrollArea` exists)
-
-No backend changes required.
+### No other files change. No backend changes.
 
