@@ -620,7 +620,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
 
         {/* Col 3: Leads (with company pills) */}
         <div className="flex flex-col min-w-[260px] flex-[1.5] border border-border rounded-lg overflow-hidden bg-card">
-          <ColumnHeader title="Leads" count={activeLeads.length} total={totalLeadsForContext}>
+          <ColumnHeader title={selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx] ? `Leads · ${activeVerticals[selectedVerticalIdx].vertical}` : "Leads"} count={activeLeads.length} total={totalLeadsForContext}>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <Input
