@@ -113,6 +113,22 @@ export default function Index() {
                 Hunt Leads
               </Button>
             </form>
+
+            <div className="flex items-center gap-3 mt-4">
+              <div className="w-12 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="w-12 h-px bg-border" />
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 gap-2 text-muted-foreground hover:text-foreground"
+              onClick={handleResearch}
+            >
+              <Building2 className="w-4 h-4" />
+              Research a Specific Company
+            </Button>
           </motion.div>
 
           {/* Logo Marquee Social Proof */}
