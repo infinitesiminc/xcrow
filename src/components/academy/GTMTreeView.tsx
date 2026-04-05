@@ -716,7 +716,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                 <SelectableCard
                   key={lead.linkedin_url + i}
                   active={selectedLeadIdx === i}
-                  onClick={() => setSelectedLeadIdx(prev => prev === i ? null : i)}
+                  onClick={() => { setSelectedLeadIdx(prev => prev === i ? null : i); setDetailItem({ type: "lead", data: lead }); }}
                   onInfoClick={() => setDetailItem({ type: "lead", data: lead })}
                   className={lead.role === "dm" ? "border-blue-500/20" : "border-green-500/20"}
                 >
