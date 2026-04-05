@@ -259,7 +259,7 @@ export default function CompanyExplorer() {
 
       {/* Tree view */}
       {treeData ? (
-        <div className="overflow-x-auto">
+        <div>
           <GTMTreeView companyName={selectedCompany?.name || ""} data={treeData} />
         </div>
       ) : !isRunning && completedCount === STEPS.length ? (
