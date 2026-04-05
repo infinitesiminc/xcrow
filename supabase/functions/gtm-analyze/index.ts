@@ -117,43 +117,46 @@ async function searchApolloAtCompanies(
     }
     if (partialPeople.length === 0) return [];
 
-    // Enrich via bulk_match using id (api_search often returns no linkedin_url)
-    const enrichDetails = partialPeople
-      .slice(0, 15)
-      .filter((p: any) => p.id)
-      .map((p: any) => ({ id: p.id }));
+    // Enrich via individual people/match calls (bulk_match requires special scope)
+    const enrichedPeople: any[] = [];
+    const toEnrich = partialPeople.slice(0, 10).filter((p: any) => p.id);
 
-    let enrichedPeople = partialPeople;
-
-    if (enrichDetails.length > 0) {
+    for (const person of toEnrich) {
       try {
-        console.log("Apollo bulk_match with", enrichDetails.length, "IDs");
-        const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match?reveal_personal_emails=false&reveal_phone_number=false", {
+        const enrichRes = await fetch(`https://api.apollo.io/api/v1/people/match`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
-          body: JSON.stringify({ details: enrichDetails }),
+          body: JSON.stringify({ id: person.id }),
         });
         if (enrichRes.ok) {
           const enrichData = await enrichRes.json();
-          const enrichedList = (enrichData.people || []).filter(Boolean);
-          console.log("Apollo bulk_match returned:", enrichedList.length, "enriched,",
-            enrichedList.filter((p: any) => p.linkedin_url?.includes("/in/")).length, "with /in/ URLs");
-          if (enrichedList.length > 0) {
-            const enrichedMap = new Map(
-              enrichedList.filter((p: any) => p?.id).map((p: any) => [p.id, p])
-            );
-            enrichedPeople = partialPeople.map((p: any) =>
-              enrichedMap.get(p.id) || p
-            );
+          if (enrichData.person) {
+            enrichedPeople.push(enrichData.person);
           }
         } else {
-          const errBody = await enrichRes.text();
-          console.error("Apollo bulk_match failed:", enrichRes.status, errBody);
+          console.warn("Apollo match failed for", person.id, "status:", enrichRes.status);
+          // If individual match also fails, the API key may lack enrichment scope
+          if (enrichRes.status === 400 || enrichRes.status === 403) {
+            console.error("Apollo enrichment not available — API key may lack scope");
+            break;
+          }
         }
       } catch (e) {
-        console.warn("Apollo bulk_match error:", e);
+        console.warn("Apollo match error:", e);
       }
     }
+
+    console.log("Apollo enriched:", enrichedPeople.length, "of", toEnrich.length);
+    if (enrichedPeople.length > 0) {
+      console.log("Enriched sample:", JSON.stringify({
+        name: enrichedPeople[0].name,
+        linkedin_url: enrichedPeople[0].linkedin_url,
+        title: enrichedPeople[0].title,
+      }));
+    }
+
+    // Use enriched people if available, otherwise fallback to partial
+    const finalPeople = enrichedPeople.length > 0 ? enrichedPeople : partialPeople;
 
     const results = enrichedPeople
       .filter((p: any) => p.linkedin_url && p.linkedin_url.includes("/in/"))
