@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
+import { CURATED_COMPANIES, getAllCuratedCompanies, type CuratedCompany } from "@/data/curated-companies";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
