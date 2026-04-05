@@ -24,7 +24,7 @@ interface CompanyData {
   headquarters: string | null;
 }
 
-type ExplorerPhase = "pick-industry" | "pick-company" | "analysis";
+type ExplorerPhase = "pick-industry" | "pick-company" | "analysis" | "confirm-location";
 
 /* ── pipeline steps ── */
 const STEPS = [
