@@ -27,20 +27,18 @@ const VALUE_PROPS = [
 
 export default function Index() {
   const { openAuthModal } = useAuth();
+  const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState("");
 
   const handleDiscover = (e: React.FormEvent) => {
     e.preventDefault();
     const url = websiteUrl.trim();
     if (!url) return;
-    // Store intent and prompt login — SmartHome will render Leadgen once authed
-    sessionStorage.setItem("pendingWebsite", url);
-    openAuthModal();
+    navigate(`/academy?website=${encodeURIComponent(url)}`);
   };
 
   const handleResearch = () => {
-    sessionStorage.setItem("pendingMode", "research");
-    openAuthModal();
+    navigate("/academy");
   };
 
   return (
