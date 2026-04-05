@@ -17,13 +17,9 @@ async function searchApolloContacts(titles: string[], industry: string, company:
   if (!APOLLO_API_KEY) return [];
 
   try {
-    // Step 1: Search for people (returns partial data + IDs)
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Api-Key": APOLLO_API_KEY,
-      },
+      headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
       body: JSON.stringify({
         person_titles: titles,
         q_organization_keyword_tags: industry ? [industry] : undefined,
@@ -43,7 +39,6 @@ async function searchApolloContacts(titles: string[], industry: string, company:
     const partialPeople = searchData.people || [];
     if (partialPeople.length === 0) return [];
 
-    // Step 2: Enrich with bulk_match for full profiles (linkedin_url, email, etc.)
     const details = partialPeople.slice(0, 10).map((p: any) => ({ id: p.id })).filter((d: any) => d.id);
     let enrichedPeople = partialPeople;
 
@@ -51,18 +46,12 @@ async function searchApolloContacts(titles: string[], industry: string, company:
       try {
         const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Api-Key": APOLLO_API_KEY,
-          },
+          headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
           body: JSON.stringify({ details, reveal_personal_emails: false }),
         });
         if (enrichRes.ok) {
           const enrichData = await enrichRes.json();
           if (enrichData.people?.length) enrichedPeople = enrichData.people;
-        } else {
-          const errBody = await enrichRes.text();
-          console.warn("Apollo bulk_match failed:", enrichRes.status, errBody);
         }
       } catch (e) {
         console.warn("Apollo bulk_match error, using partial data:", e);
@@ -90,17 +79,14 @@ async function searchApolloContacts(titles: string[], industry: string, company:
 
 function mapEmployeeRangeToApollo(range: string): string {
   const map: Record<string, string> = {
-    "1-10": "1,10",
-    "11-50": "11,50",
-    "51-200": "51,200",
-    "201-500": "201,500",
-    "501-1000": "501,1000",
-    "1001-5000": "1001,5000",
-    "5001-10000": "5001,10000",
-    "10000+": "10001,1000000",
+    "1-10": "1,10", "11-50": "11,50", "51-200": "51,200",
+    "201-500": "201,500", "501-1000": "501,1000", "1001-5000": "1001,5000",
+    "5001-10000": "5001,10000", "10000+": "10001,1000000",
   };
   return map[range] || "1,10000";
 }
+
+const CONCISE = "Be concise. Use bullets and short sections. Under 250 words total.";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -110,23 +96,21 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // LinkedIn Reveal: use Apollo people search + AI formatting
+    const prevProduct = previousResults?.["product-map"] || "";
+    const prevPMF = previousResults?.["pmf-matrix"] || "";
+    const prevICP = previousResults?.["icp-tree"] || "";
+    const prevBuyer = previousResults?.["buyer-id"] || "";
+
+    // LinkedIn Reveal: Apollo + AI formatting with product traceability
     if (stepId === "linkedin-reveal") {
-      // Extract buyer titles from previous buyer-id step
-      const buyerContent = previousResults?.["buyer-id"] || "";
-      
-      // Use AI to extract search titles from prior analysis
       const extractRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash-lite",
           messages: [
-            { role: "system", content: "Extract the top 5 job titles to search for from this buyer analysis. Return ONLY a JSON array of strings, nothing else." },
-            { role: "user", content: buyerContent || `Key buyer personas for ${company.name} in ${company.industry}` },
+            { role: "system", content: "Extract the top 5 decision-maker job titles from this buyer analysis. Return ONLY a JSON array of strings." },
+            { role: "user", content: prevBuyer || `Key buyer personas for ${company.name} in ${company.industry}` },
           ],
         }),
       });
@@ -141,35 +125,39 @@ serve(async (req) => {
         } catch { /* use defaults */ }
       }
 
-      console.log("Searching Apollo for titles:", searchTitles, "industry:", company.industry);
-
-      // Search Apollo for real people
+      console.log("Searching Apollo for titles:", searchTitles);
       const people = await searchApolloContacts(searchTitles, company.industry || "", company);
 
       if (people.length === 0) {
-        // Fallback: AI-generated guidance if Apollo returns nothing
         return await runAIStep(LOVABLE_API_KEY, {
           system: "You are a sales intelligence researcher.",
-          user: `No live results found for ${company.name} (${company.industry}). Searched titles: ${searchTitles.join(", ")}.\n\nProvide LinkedIn Sales Navigator search filters and outreach templates that would find these buyers. Explain what to search.`,
+          user: `No live results for ${company.name}. Searched: ${searchTitles.join(", ")}.\n\nProvide LinkedIn Sales Navigator search filters and outreach templates.`,
         });
       }
 
-      // Format real results with AI
-      const peopleList = people.map((p, i) => 
-        `${i + 1}. **${p.name}** — ${p.title} at ${p.company}${p.city ? ` (${p.city}${p.state ? `, ${p.state}` : ""})` : ""}${p.linkedin_url ? `\n   LinkedIn: ${p.linkedin_url}` : ""}${p.email ? `\n   Email: ${p.email}` : ""}${p.org_website ? `\n   Company: ${p.org_website}` : ""}`
+      const peopleList = people.map((p: any, i: number) =>
+        `${i + 1}. ${p.name} — ${p.title} at ${p.company}${p.city ? ` (${p.city}${p.state ? `, ${p.state}` : ""})` : ""}${p.linkedin_url ? `\n   LinkedIn: ${p.linkedin_url}` : ""}${p.email ? `\n   Email: ${p.email}` : ""}`
       ).join("\n\n");
 
       const formatRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: "You are a GTM analyst presenting real prospect data. Format the results clearly. Add a brief note on why each person is a good prospect based on their title and company. Do NOT invent additional people." },
-            { role: "user", content: `Company being analyzed: ${company.name} (${company.industry})\nDescription: ${company.description}\n\nReal prospects found matching your ICP:\n\n${peopleList}\n\nFormat these results with:\n1. A summary header (how many found, what titles)\n2. Each person as a clean profile card\n3. For the top 3, add a one-line personalized outreach opener` },
+            { role: "system", content: `You are a GTM analyst mapping real prospects to specific product lines. ${CONCISE}
+
+CRITICAL: For each person, map them to a specific product line (P1, P2, etc.) from the product analysis and tag their role (Decision Maker, Champion, or Influencer).
+
+Use this format per person:
+**Name** — Title at Company
+📦 Product: P# (Product Name)
+🎯 Role: Decision Maker / Champion / Influencer — why
+🔗 LinkedIn: url
+📧 Email: email
+
+Do NOT invent people. Only format the real data provided.` },
+            { role: "user", content: `Company: ${company.name}\nProduct lines:\n${prevProduct}\n\nBuyer personas:\n${prevBuyer}\n\nReal prospects found:\n\n${peopleList}\n\nMap each person to a product line and role.` },
           ],
           tools: [{
             type: "function",
@@ -198,33 +186,32 @@ serve(async (req) => {
       return respond(JSON.parse(toolCall.function.arguments));
     }
 
-    // All other steps: AI-only analysis
+    // All other steps
     const stepPrompts: Record<string, { system: string; user: string }> = {
       "company-dna": {
-        system: "You are a GTM analyst. Analyze this company and extract key signals. Be specific and factual.",
-        user: `Analyze this company:\nName: ${company.name}\nWebsite: ${company.website}\nDescription: ${company.description}\nIndustry: ${company.industry}\nEmployees: ${company.employee_range || company.estimated_employees || "Unknown"}\nFunding: ${company.funding_stage || "Unknown"}\nHQ: ${company.headquarters || "Unknown"}\nARR: ${company.estimated_arr || "Unknown"}\n\nExtract:\n1. What they actually do (one sentence)\n2. Who their customers are\n3. Their business model (SaaS, marketplace, etc.)\n4. Buying signals (are they growing? hiring? expanding?)\n5. Tech maturity level`
+        system: `You are a GTM analyst extracting company signals. ${CONCISE}`,
+        user: `Analyze this company:\nName: ${company.name}\nWebsite: ${company.website}\nDescription: ${company.description}\nIndustry: ${company.industry}\nEmployees: ${company.employee_range || company.estimated_employees || "Unknown"}\nFunding: ${company.funding_stage || "Unknown"}\nHQ: ${company.headquarters || "Unknown"}\n\nExtract:\n1. What they do (one sentence)\n2. Who their customers are\n3. Business model\n4. Buying signals\n5. Tech maturity`,
       },
       "product-map": {
-        system: "You are a product analyst. Map this company's product lines.",
-        user: `Company: ${company.name}\nDescription: ${company.description}\nWebsite: ${company.website}\nIndustry: ${company.industry}\n\nMap their product portfolio:\n- Product Line name\n- Target user (who uses it)\n- Pricing model (per-seat, usage, enterprise, freemium)\n- Key competitors for THIS specific product line\n\nList each product line separately. Be accurate over comprehensive.`
+        system: `You are a product analyst. ${CONCISE}\n\nCRITICAL: Assign each product line a short ID: P1, P2, P3, etc. These IDs will be referenced in all subsequent steps.\n\nFormat:\n## P1 — Product Name\n- **Target user:** ...\n- **Pricing:** ...\n- **Competitors:** ...`,
+        user: `Company: ${company.name}\nDescription: ${company.description}\nWebsite: ${company.website}\nIndustry: ${company.industry}\n\nMap every product line with a unique ID (P1, P2, P3...).`,
       },
       "pmf-matrix": {
-        system: "You are a GTM strategist building a Product-Market Fit matrix. IMPORTANT: Do NOT use wide tables. Instead, present each product line as its own section with headers and bullet points. Use this format for each product:\n\n## Product Name\n- **Pain it solves:** ...\n- **Who feels this pain:** ...\n- **Budget source:** ...\n- **Entry point:** ...",
-        user: `Company: ${company.name}\nDescription: ${company.description}\nIndustry: ${company.industry}\n\nFor each product line, analyze:\n- What PAIN does it solve?\n- WHO feels this pain? (job title + company type)\n- Where does the BUDGET come from? (IT, marketing, ops, C-suite)\n- What's the ENTRY POINT? (how would a seller get in the door?)\n\nPresent each product line as its own section. Be specific about pain points.`
+        system: `You are a GTM strategist. ${CONCISE}\n\nReference product IDs (P1, P2...) from the product map. Present each product as its own section:\n\n## P1 — Product Name\n- **Pain:** ...\n- **Who feels it:** ...\n- **Budget source:** ...\n- **Entry point:** ...`,
+        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines identified:\n${prevProduct}\n\nFor each product (using their P# IDs), analyze pain, buyer, budget source, and entry point.`,
       },
       "icp-tree": {
-        system: "You are an ICP mapping specialist. Build a 3-layer niche tree.",
-        user: `Company: ${company.name}\nDescription: ${company.description}\nIndustry: ${company.industry}\nEmployees: ${company.employee_range || "Unknown"}\n\nBuild a 3-layer ICP tree showing WHO would buy from this company:\n\nLevel 1 — Verticals (industries): 3-4 verticals\nLevel 2 — Segments (company types within each vertical): 2-3 per vertical\nLevel 3 — Personas (job titles): 2-3 per segment\n\nFor each persona, note if they're a Decision Maker (DM), Champion, or Influencer.`
+        system: `You are an ICP mapping specialist. ${CONCISE}\n\nBuild the ICP tree PER PRODUCT LINE using their P# IDs.\n\nFormat:\n## P1 — Product Name\n### Vertical: Industry\n- **Segment:** Company type → Persona (DM/Champion/Influencer)`,
+        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nPMF matrix:\n${prevPMF}\n\nBuild a 3-layer ICP tree (Vertical→Segment→Persona) for each product line. Tag each persona as DM, Champion, or Influencer.`,
       },
       "buyer-id": {
-        system: "You are a sales intelligence analyst identifying decision makers.",
-        user: `Company: ${company.name}\nDescription: ${company.description}\nIndustry: ${company.industry}\n\nIdentify the TOP 5 buyer personas who would purchase from ${company.name}:\n\n1. Job title + seniority\n2. Why THEY would buy (what pain do they feel?)\n3. Their role in the buying committee (DM / Champion / Influencer / Blocker)\n4. Best channel to reach them (LinkedIn / Email / Event / Referral)\n5. What would make them reply to cold outreach?\n\nBe specific — e.g. "VP of Engineering at Series B fintech with 50-200 employees scaling their data team".`
+        system: `You are a sales intelligence analyst. ${CONCISE}\n\nGroup buyers BY PRODUCT LINE using P# IDs. For each buyer specify:\n- Title + seniority\n- Role: Decision Maker / Champion / Influencer\n- Why they buy THIS specific product\n- Best outreach channel\n\nFormat:\n## P1 — Product Name\n1. **Title** — Role (DM/Champion) — Why they buy — Channel`,
+        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nICP tree:\n${prevICP}\n\nIdentify the top buyers PER PRODUCT LINE. Group by P# ID. Tag each as DM, Champion, or Influencer.`,
       },
     };
 
     const prompt = stepPrompts[stepId];
     if (!prompt) return respond({ content: "Unknown step.", reasoning: "" });
-
     return await runAIStep(LOVABLE_API_KEY, prompt);
   } catch (e) {
     console.error("gtm-analyze error:", e);
@@ -235,10 +222,7 @@ serve(async (req) => {
 async function runAIStep(apiKey: string, prompt: { system: string; user: string }) {
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "google/gemini-3-flash-preview",
       messages: [
