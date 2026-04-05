@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight, Target, Zap, BarChart3 } from "lucide-react";
+import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight, Target, Zap, BarChart3, MapPin } from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import crowHero from "@/assets/crow-hero.png";
 import ReactMarkdown from "react-markdown";
