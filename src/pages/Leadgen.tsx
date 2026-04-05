@@ -814,7 +814,7 @@ export default function Leadgen() {
 
           <form
             className="flex flex-col gap-2 max-w-lg mx-auto w-full"
-            onSubmit={(e) => { e.preventDefault(); handleDiscover(); }}
+            onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/academy?website=${encodeURIComponent(url)}`); }}
           >
             <div className="flex gap-2">
               <div className="relative flex-1">
