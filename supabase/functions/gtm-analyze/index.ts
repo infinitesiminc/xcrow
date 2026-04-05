@@ -269,6 +269,8 @@ serve(async (req) => {
       const raw = await callAI(LOVABLE_API_KEY,
         `You are a GTM product analyst. Analyze the company and map ALL product lines.
 
+CRITICAL: You MUST always return valid JSON. Never refuse. If you have limited information, infer from the company name and website URL. Make your best educated guess — partial data is fine.
+
 Return ONLY valid JSON (no markdown, no wrapping):
 {
   "company_summary": "One sentence: what they do, business model, market position",
@@ -285,6 +287,7 @@ Return ONLY valid JSON (no markdown, no wrapping):
 }
 
 Be thorough — include every distinct product line or platform module.
+If you cannot find specific products, infer the primary service from the company name and domain.
 
 IMPORTANT CONSOLIDATION RULES:
 - Tier/plan variants of the SAME product are ONE product (e.g. "Claude" not "Claude Opus + Claude Sonnet + Claude Haiku")
@@ -296,8 +299,8 @@ IMPORTANT CONSOLIDATION RULES:
 Assign sequential IDs: P1, P2, P3...`,
         `Company: ${company.name}
 Website: ${company.website}
-Description: ${company.description}
-Industry: ${company.industry}
+Description: ${company.description || "Not available — infer from name and URL"}
+Industry: ${company.industry || "Unknown — infer from name and URL"}
 Employees: ${company.employee_range || "Unknown"}
 Funding: ${company.funding_stage || "Unknown"}
 HQ: ${company.headquarters || "Unknown"}`
