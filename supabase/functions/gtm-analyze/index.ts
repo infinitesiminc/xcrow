@@ -70,6 +70,7 @@ async function searchApolloAtCompanies(
   titles: string[],
   companyDomains: string[],
   page = 1,
+  locationFilter?: string,
 ): Promise<any[]> {
   const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
   if (!APOLLO_API_KEY) {
@@ -87,6 +88,10 @@ async function searchApolloAtCompanies(
 
     if (companyDomains.length > 0) {
       searchBody.organization_domains = companyDomains;
+    }
+
+    if (locationFilter) {
+      searchBody.person_locations = [locationFilter];
     }
 
     console.log("Apollo search body:", JSON.stringify(searchBody));
@@ -421,8 +426,9 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
        Returns: { leads: [{ name, title, company, linkedin_url, product_id, vertical, role, type }] }
        ═══════════════════════════════════════════════════ */
     if (stepId === "linkedin-profiles") {
-      const generateMore = body.generateMore as { count?: number; productId?: string; vertical?: string | null; existingLeads?: string[] } | undefined;
-      const requestedCount = generateMore?.count || 20;
+      const generateMore = body.generateMore as { count?: number; productId?: string; vertical?: string | null; existingLeads?: string[]; productName?: string } | undefined;
+      const locationFilter = body.location as string | undefined;
+      const requestedCount = generateMore?.count || body.batchSize || 5;
       const existingNames = new Set((generateMore?.existingLeads || []).map((n: string) => n.toLowerCase()));
 
       const customersJSON = prev["customers"]?.structured;
@@ -457,8 +463,8 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
       // Search customer AND conquest domains separately to ensure both pools have leads
       console.log("Apollo search — customer domains:", customerDomains.length, "conquest domains:", conquestDomains.length, "titles:", titles.length, "page:", apolloPage);
       const [customerPeople, conquestPeople] = await Promise.all([
-        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains, apolloPage) : Promise.resolve([]),
-        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains, apolloPage) : Promise.resolve([]),
+        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains, apolloPage, locationFilter) : Promise.resolve([]),
+        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains, apolloPage, locationFilter) : Promise.resolve([]),
       ]);
       console.log("Apollo results — customer leads:", customerPeople.length, "conquest leads:", conquestPeople.length);
       let people = [...customerPeople, ...conquestPeople];

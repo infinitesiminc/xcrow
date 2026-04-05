@@ -4,9 +4,10 @@ import { CURATED_COMPANIES, getAllCuratedCompanies, type CuratedCompany } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
-  Building2, ArrowLeft, Loader2, ChevronRight, RefreshCw,
+  Building2, ArrowLeft, Loader2, ChevronRight, RefreshCw, MapPin, Rocket,
 } from "lucide-react";
 import GTMTreeView from "./GTMTreeView";
 import type { GTMTreeData } from "./gtm-types";
@@ -23,7 +24,7 @@ interface CompanyData {
   headquarters: string | null;
 }
 
-type ExplorerPhase = "pick-industry" | "pick-company" | "analysis";
+type ExplorerPhase = "pick-industry" | "pick-company" | "analysis" | "confirm-location";
 
 /* ── pipeline steps ── */
 const STEPS = [
@@ -61,6 +62,9 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [cancelRef] = useState({ cancelled: false });
   const autoStarted = useRef(false);
+  const [locationInput, setLocationInput] = useState("");
+  const [icpSummary, setIcpSummary] = useState<{ verticals: string[]; roles: string[] } | null>(null);
+  const accumulatedRef = useRef<Record<string, any>>({});
 
   // Auto-start analysis from URL param
   useEffect(() => {
@@ -94,13 +98,14 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     setCompanies(list.map(curatedToCompanyData));
   }
 
-  /* ── run pipeline ── */
+  /* ── run pipeline (steps 1-3, pauses before step 4) ── */
   const runPipeline = useCallback(async (company: CompanyData) => {
     cancelRef.cancelled = false;
     setIsRunning(true);
     const accumulated: Record<string, any> = {};
 
-    for (let i = 0; i < STEPS.length; i++) {
+    // Run steps 1-3 only (products, customers, icp-buyers)
+    for (let i = 0; i < 3; i++) {
       if (cancelRef.cancelled) break;
       const step = STEPS[i];
       setCurrentStepIdx(i);
@@ -115,8 +120,49 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       } catch (e) {
         console.error(`Step ${step.id} failed:`, e);
         toast.error(`${step.label} failed — try again.`);
-        break;
+        setIsRunning(false);
+        setCurrentStepIdx(-1);
+        return;
       }
+    }
+
+    // Extract ICP summary for the confirmation dialog
+    const mappings = accumulated["icp-buyers"]?.structured?.mappings || [];
+    const verticals = [...new Set(mappings.map((m: any) => m.vertical).filter(Boolean))] as string[];
+    const roles = [...new Set(mappings.flatMap((m: any) => [m.dm?.title, m.champion?.title]).filter(Boolean))] as string[];
+    setIcpSummary({ verticals, roles });
+    accumulatedRef.current = accumulated;
+
+    setIsRunning(false);
+    setCurrentStepIdx(-1);
+    setPhase("confirm-location");
+  }, [cancelRef]);
+
+  /* ── run step 4 after user confirms location ── */
+  const runLeadGeneration = useCallback(async (location: string) => {
+    if (!selectedCompany) return;
+    setPhase("analysis");
+    setIsRunning(true);
+    setCurrentStepIdx(3);
+
+    const accumulated = accumulatedRef.current;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("gtm-analyze", {
+        body: {
+          stepId: "linkedin-profiles",
+          company: selectedCompany,
+          previousResults: accumulated,
+          location: location || undefined,
+          batchSize: 5,
+        },
+      });
+      if (error) throw error;
+      accumulated["linkedin-profiles"] = data;
+      setStepResults((prev) => ({ ...prev, "linkedin-profiles": data }));
+    } catch (e) {
+      console.error("LinkedIn profiles step failed:", e);
+      toast.error("Lead generation failed — try again.");
     }
 
     // Assemble tree data
@@ -138,7 +184,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
 
     setIsRunning(false);
     setCurrentStepIdx(-1);
-  }, [cancelRef]);
+  }, [selectedCompany]);
 
   /* ── generate more leads ── */
   const handleGenerateMore = useCallback(async (productId: string, vertical: string | null) => {
@@ -207,6 +253,9 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     setTreeData(null);
     setIsRunning(false);
     setCurrentStepIdx(-1);
+    setLocationInput("");
+    setIcpSummary(null);
+    accumulatedRef.current = {};
   }
 
   /* ── INDUSTRY PICKER ── */
@@ -271,6 +320,74 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             ))}
           </div>
         )}
+      </div>
+    );
+  }
+
+  /* ── CONFIRM LOCATION ── */
+  if (phase === "confirm-location" && icpSummary) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <Button variant="ghost" size="sm" onClick={handleReset} className="mb-6">
+          <ArrowLeft className="w-4 h-4 mr-1" /> Start over
+        </Button>
+
+        <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+          <div>
+            <h2 className="text-xl font-bold text-foreground mb-1">ICP Analysis Complete</h2>
+            <p className="text-sm text-muted-foreground">
+              We mapped {selectedCompany?.name}'s buyer profile. Review below, then generate your first 5 leads.
+            </p>
+          </div>
+
+          {/* ICP Summary */}
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Target Verticals</p>
+              <div className="flex flex-wrap gap-1.5">
+                {icpSummary.verticals.map((v) => (
+                  <Badge key={v} variant="secondary" className="text-xs">{v}</Badge>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Decision-Maker Roles</p>
+              <div className="flex flex-wrap gap-1.5">
+                {icpSummary.roles.slice(0, 8).map((r) => (
+                  <Badge key={r} variant="outline" className="text-xs">{r}</Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Location Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              Location preference
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </label>
+            <Input
+              placeholder="e.g. New York, USA or London, UK"
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+              className="text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave blank to search globally, or enter a city/region to focus leads there.
+            </p>
+          </div>
+
+          {/* CTA */}
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={() => runLeadGeneration(locationInput.trim())}
+          >
+            <Rocket className="w-4 h-4 mr-2" />
+            Generate first 5 leads
+          </Button>
+        </div>
       </div>
     );
   }
