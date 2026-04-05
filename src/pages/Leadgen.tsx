@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -91,6 +91,7 @@ const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | n
 
 export default function Leadgen() {
   const { user, profile, openAuthModal } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<ChatItem[]>([]);
   const [input, setInput] = useState("");
@@ -813,7 +814,7 @@ export default function Leadgen() {
 
           <form
             className="flex flex-col gap-2 max-w-lg mx-auto w-full"
-            onSubmit={(e) => { e.preventDefault(); handleDiscover(); }}
+            onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/academy?website=${encodeURIComponent(url)}`); }}
           >
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -943,7 +944,7 @@ export default function Leadgen() {
           <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
             <form
               className="flex items-center gap-2 flex-1 min-w-0"
-              onSubmit={(e) => { e.preventDefault(); handleDiscover(); }}
+              onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/academy?website=${encodeURIComponent(url)}`); }}
             >
               <div className="relative flex-1 min-w-[160px] max-w-xs">
                 <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
