@@ -415,6 +415,9 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
       );
       if (vertLeads.length > 0) leads = vertLeads;
     }
+    if (companyTypeFilter !== "all") {
+      leads = leads.filter(l => l.type === companyTypeFilter);
+    }
     if (leadRoleFilter !== "all") {
       leads = leads.filter(l => l.role === leadRoleFilter);
     }
@@ -427,7 +430,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
       );
     }
     return leads;
-  }, [selectedProductId, selectedCompanyIdx, selectedVerticalIdx, activeCompanies, activeVerticals, leadsByProduct, leadRoleFilter, leadFilter]);
+  }, [selectedProductId, selectedCompanyIdx, selectedVerticalIdx, activeCompanies, activeVerticals, leadsByProduct, companyTypeFilter, leadRoleFilter, leadFilter]);
 
   const totalLeadsForContext = useMemo(() => {
     if (!selectedProductId) return 0;
