@@ -825,16 +825,6 @@ export default function Leadgen() {
                   disabled={isDiscovering}
                 />
               </div>
-              <div className="relative w-[180px]">
-                <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  value={targetLocation}
-                  onChange={(e) => setTargetLocation(e.target.value)}
-                  placeholder="Location (optional)"
-                  className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
-                  disabled={isDiscovering}
-                />
-              </div>
             </div>
             <Button type="submit" size="lg" className="h-12 px-6 gap-2 w-full" disabled={!websiteUrl.trim() || isDiscovering}>
               {isDiscovering ? (
