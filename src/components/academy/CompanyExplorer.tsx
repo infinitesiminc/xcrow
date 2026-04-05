@@ -116,13 +116,8 @@ export default function CompanyExplorer() {
 
     setAnalyzing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("grade-lesson", {
-        body: {
-          lessonType: "explorer_step",
-          lessonContent: { stepId: step.id, stepLabel: step.label, stepDescription: step.description },
-          userResponse: "__auto__",
-          companyContext: company,
-        },
+      const { data, error } = await supabase.functions.invoke("gtm-analyze", {
+        body: { stepId: step.id, company },
       });
 
       if (error) throw error;
