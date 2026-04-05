@@ -253,6 +253,9 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     setTreeData(null);
     setIsRunning(false);
     setCurrentStepIdx(-1);
+    setLocationInput("");
+    setIcpSummary(null);
+    accumulatedRef.current = {};
   }
 
   /* ── INDUSTRY PICKER ── */
