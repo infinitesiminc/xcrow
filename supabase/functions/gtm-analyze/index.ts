@@ -43,11 +43,11 @@ async function searchApolloContacts(titles: string[], industry: string, company:
     const partialPeople = searchData.people || [];
     if (partialPeople.length === 0) return [];
 
-    // Step 2: Enrich with bulk_match for full profiles
-    const ids = partialPeople.map((p: any) => p.id).filter(Boolean);
+    // Step 2: Enrich with bulk_match for full profiles (linkedin_url, email, etc.)
+    const details = partialPeople.slice(0, 10).map((p: any) => ({ id: p.id })).filter((d: any) => d.id);
     let enrichedPeople = partialPeople;
 
-    if (ids.length > 0) {
+    if (details.length > 0) {
       try {
         const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match", {
           method: "POST",
@@ -55,7 +55,7 @@ async function searchApolloContacts(titles: string[], industry: string, company:
             "Content-Type": "application/json",
             "X-Api-Key": APOLLO_API_KEY,
           },
-          body: JSON.stringify({ ids }),
+          body: JSON.stringify({ details, reveal_personal_emails: false }),
         });
         if (enrichRes.ok) {
           const enrichData = await enrichRes.json();
