@@ -90,6 +90,10 @@ async function searchApolloAtCompanies(
       searchBody.organization_domains = companyDomains;
     }
 
+    if (locationFilter) {
+      searchBody.person_locations = [locationFilter];
+    }
+
     console.log("Apollo search body:", JSON.stringify(searchBody));
 
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
