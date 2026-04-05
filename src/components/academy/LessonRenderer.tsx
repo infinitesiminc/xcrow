@@ -35,6 +35,16 @@ interface LessonRendererProps {
 
 type Step = "think" | "prompt" | "validate";
 
+interface CompanyContext {
+  name: string;
+  industry: string | null;
+  website: string | null;
+  description: string | null;
+  employee_range: string | null;
+  funding_stage: string | null;
+  headquarters: string | null;
+}
+
 export default function LessonRenderer({
   lesson, lessonId, moduleId, lessonIndex, totalLessons, onComplete, onNext, onPrev,
 }: LessonRendererProps) {
@@ -44,8 +54,11 @@ export default function LessonRenderer({
   const [grading, setGrading] = useState(false);
   const [grade, setGrade] = useState<GradeResult | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [companyContext, setCompanyContext] = useState<CompanyContext | null>(null);
+  const [loadingCompany, setLoadingCompany] = useState(false);
 
   const isConcept = lesson.type === "concept";
+  const needsCompany = !isConcept;
   const hasPrompt = !!lesson.content.prompt;
   const hasValidate = !!lesson.content.validate;
 
@@ -54,6 +67,30 @@ export default function LessonRenderer({
   if (hasValidate) steps.push("validate");
 
   const stepIndex = steps.indexOf(step);
+
+  useEffect(() => {
+    if (needsCompany && !companyContext) fetchRandomCompany();
+  }, [lessonId]);
+
+  async function fetchRandomCompany() {
+    setLoadingCompany(true);
+    try {
+      const { data } = await supabase
+        .from("companies")
+        .select("name, industry, website, description, employee_range, funding_stage, headquarters")
+        .not("website", "is", null)
+        .not("description", "is", null)
+        .limit(50);
+      if (data && data.length > 0) {
+        const pick = data[Math.floor(Math.random() * data.length)];
+        setCompanyContext(pick as CompanyContext);
+      }
+    } catch (e) {
+      console.error("Failed to load company context", e);
+    } finally {
+      setLoadingCompany(false);
+    }
+  }
 
   async function handleSubmit() {
     if (!userResponse.trim()) {
