@@ -77,16 +77,19 @@ async function searchApolloAtCompanies(
   }
 
   try {
+    // Use organization_domains filter (not q_organization_domains) for exact domain matching
     const searchBody: Record<string, unknown> = {
       person_titles: titles,
-      per_page: 10,
+      per_page: 25,
       page: 1,
-      person_seniorities: ["director", "vp", "c_suite", "owner"],
+      person_seniorities: ["director", "vp", "c_suite", "owner", "manager"],
     };
 
     if (companyDomains.length > 0) {
-      searchBody.q_organization_domains = companyDomains.join("\n");
+      searchBody.organization_domains = companyDomains;
     }
+
+    console.log("Apollo search body:", JSON.stringify(searchBody));
 
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
@@ -95,34 +98,67 @@ async function searchApolloAtCompanies(
     });
 
     if (!searchRes.ok) {
-      console.error("Apollo search failed:", searchRes.status);
+      const errText = await searchRes.text();
+      console.error("Apollo search failed:", searchRes.status, errText);
       return [];
     }
 
     const searchData = await searchRes.json();
     const partialPeople = searchData.people || [];
+    console.log("Apollo search returned:", partialPeople.length, "people");
+    if (partialPeople.length > 0) {
+      const p0 = partialPeople[0];
+      console.log("Sample person keys:", Object.keys(p0).join(", "));
+      console.log("Sample person data:", JSON.stringify({
+        id: p0.id, name: p0.name, first_name: p0.first_name, last_name: p0.last_name,
+        linkedin_url: p0.linkedin_url, title: p0.title,
+        org: p0.organization?.name || p0.organization_name,
+      }));
+    }
     if (partialPeople.length === 0) return [];
 
-    const details = partialPeople.slice(0, 10).map((p: any) => ({ id: p.id })).filter((d: any) => d.id);
-    let enrichedPeople = partialPeople;
+    // Enrich via individual people/match calls (bulk_match requires special scope)
+    const enrichedPeople: any[] = [];
+    const toEnrich = partialPeople.slice(0, 10).filter((p: any) => p.id);
 
-    if (details.length > 0) {
+    for (const person of toEnrich) {
       try {
-        const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match", {
+        const enrichRes = await fetch(`https://api.apollo.io/api/v1/people/match`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
-          body: JSON.stringify({ details, reveal_personal_emails: false }),
+          body: JSON.stringify({ id: person.id }),
         });
         if (enrichRes.ok) {
           const enrichData = await enrichRes.json();
-          if (enrichData.people?.length) enrichedPeople = enrichData.people;
+          if (enrichData.person) {
+            enrichedPeople.push(enrichData.person);
+          }
+        } else {
+          console.warn("Apollo match failed for", person.id, "status:", enrichRes.status);
+          // If individual match also fails, the API key may lack enrichment scope
+          if (enrichRes.status === 400 || enrichRes.status === 403) {
+            console.error("Apollo enrichment not available — API key may lack scope");
+            break;
+          }
         }
       } catch (e) {
-        console.warn("Apollo bulk_match error:", e);
+        console.warn("Apollo match error:", e);
       }
     }
 
-    return enrichedPeople
+    console.log("Apollo enriched:", enrichedPeople.length, "of", toEnrich.length);
+    if (enrichedPeople.length > 0) {
+      console.log("Enriched sample:", JSON.stringify({
+        name: enrichedPeople[0].name,
+        linkedin_url: enrichedPeople[0].linkedin_url,
+        title: enrichedPeople[0].title,
+      }));
+    }
+
+    // Use enriched people if available, otherwise fallback to partial
+    const finalPeople = enrichedPeople.length > 0 ? enrichedPeople : partialPeople;
+
+    const results = finalPeople
       .filter((p: any) => p.linkedin_url && p.linkedin_url.includes("/in/"))
       .map((p: any) => {
         const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
@@ -138,6 +174,9 @@ async function searchApolloAtCompanies(
           photo_url: p.photo_url || null,
         };
       });
+
+    console.log("Final leads with /in/ URLs:", results.length, "of", finalPeople.length, "total");
+    return results;
   } catch (e) {
     console.error("Apollo search error:", e);
     return [];
