@@ -81,17 +81,23 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
       }
     }
 
-    return enrichedPeople.map((p: any) => ({
-      name: p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown")),
-      title: p.title || "",
-      company: p.organization?.name || p.organization_name || company.name,
-      linkedin_url: p.linkedin_url || null,
-      city: p.city || null,
-      state: p.state || null,
-      email: p.email || null,
-      headline: p.headline || "",
-      photo_url: p.photo_url || null,
-    }));
+    return enrichedPeople.map((p: any) => {
+      const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
+      const orgName = p.organization?.name || p.organization_name || company.name;
+      // Build LinkedIn search URL as fallback when direct URL not available
+      const linkedinUrl = p.linkedin_url || `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name + " " + orgName)}`;
+      return {
+        name,
+        title: p.title || "",
+        company: orgName,
+        linkedin_url: linkedinUrl,
+        city: p.city || null,
+        state: p.state || null,
+        email: p.email || null,
+        headline: p.headline || "",
+        photo_url: p.photo_url || null,
+      };
+    });
   } catch (e) {
     console.error("Apollo people search error:", e);
     return [];
