@@ -14,6 +14,8 @@ import type { GTMTreeData, GTMProduct, GTMLead, GTMBuyerMapping } from "./gtm-ty
 interface GTMTreeViewProps {
   companyName: string;
   data: GTMTreeData;
+  onGenerateMore?: (productId: string, vertical: string | null) => void;
+  isGeneratingMore?: boolean;
 }
 
 const LEADS_PER_PAGE = 25;
