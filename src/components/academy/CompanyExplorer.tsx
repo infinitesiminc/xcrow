@@ -344,10 +344,27 @@ export default function CompanyExplorer() {
               prose-li:text-foreground/90 prose-li:leading-relaxed
               prose-strong:text-foreground prose-strong:font-semibold
               prose-ul:my-2 prose-ol:my-2
-              prose-table:text-sm prose-th:text-left prose-th:text-muted-foreground prose-th:font-medium prose-th:pb-2 prose-th:border-b prose-th:border-border
-              prose-td:py-1.5 prose-td:pr-4 prose-td:text-foreground/90 prose-td:border-b prose-td:border-border/50
             ">
-              <ReactMarkdown>{activeResult.content}</ReactMarkdown>
+              <ReactMarkdown
+                components={{
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto -mx-2 my-4">
+                      <table className="min-w-full text-sm border-collapse">{children}</table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-muted/60">{children}</thead>
+                  ),
+                  th: ({ children }) => (
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-2 border-b border-border whitespace-nowrap">{children}</th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="px-3 py-3 text-foreground/90 border-b border-border/40 align-top leading-relaxed">{children}</td>
+                  ),
+                }}
+              >
+                {activeResult.content}
+              </ReactMarkdown>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground text-sm">
