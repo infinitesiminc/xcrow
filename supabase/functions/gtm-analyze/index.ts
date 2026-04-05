@@ -391,15 +391,12 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
       const customersJSON = prev["customers"]?.structured;
       const icpJSON = prev["icp-buyers"]?.structured;
 
-      // Collect customer domains for Apollo search
-      const allCompanies = [
-        ...(customersJSON?.customers || []),
-        ...(customersJSON?.conquest_targets || []),
-      ];
-      const customerDomains = allCompanies
-        .map((c: any) => c.domain)
-        .filter(Boolean)
-        .slice(0, 15);
+      const customers = customersJSON?.customers || [];
+      const conquestTargets = customersJSON?.conquest_targets || [];
+      const allCompanies = [...customers, ...conquestTargets];
+
+      const customerDomains = customers.map((c: any) => c.domain).filter(Boolean).slice(0, 8);
+      const conquestDomains = conquestTargets.map((c: any) => c.domain).filter(Boolean).slice(0, 8);
 
       // Collect buyer titles from ICP mappings
       const mappings = icpJSON?.mappings || [];
@@ -411,8 +408,14 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
         titles.push("VP Marketing", "VP Sales", "CTO", "VP Engineering", "Head of Product");
       }
 
-      console.log("Apollo search — domains:", customerDomains.length, "titles:", titles.length);
-      const people = await searchApolloAtCompanies(titles, customerDomains);
+      // Search customer AND conquest domains separately to ensure both pools have leads
+      console.log("Apollo search — customer domains:", customerDomains.length, "conquest domains:", conquestDomains.length, "titles:", titles.length);
+      const [customerPeople, conquestPeople] = await Promise.all([
+        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains) : Promise.resolve([]),
+        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains) : Promise.resolve([]),
+      ]);
+      console.log("Apollo results — customer leads:", customerPeople.length, "conquest leads:", conquestPeople.length);
+      const people = [...customerPeople, ...conquestPeople];
 
       // Map each person to a product + role using AI — but preserve Apollo's real data
       if (people.length > 0) {
