@@ -150,7 +150,8 @@ export default function Leadgen() {
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
   useEffect(() => {
-    const website = searchParams.get("website");
+    const website = searchParams.get("website") || sessionStorage.getItem("pendingWebsite");
+    if (website) sessionStorage.removeItem("pendingWebsite");
     if (website && !autoDiscoverRef.current && !hasDiscovered && !isDiscovering) {
       autoDiscoverRef.current = true;
       setWebsiteUrl(website);
