@@ -209,8 +209,43 @@ async function callAI(apiKey: string, system: string, user: string, model = "goo
 }
 
 function extractJSON(raw: string): any {
-  const cleaned = raw.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
-  return JSON.parse(cleaned);
+  // Detect LLM refusals
+  const refusalIndicators = [
+    "I am sorry", "I cannot", "I'm unable", "I apologize",
+    "As a language model", "I don't have the ability",
+  ];
+  const lower = raw.toLowerCase();
+  if (refusalIndicators.some(r => lower.startsWith(r.toLowerCase()))) {
+    // Try to find JSON embedded after the refusal text
+    const jsonStart = raw.search(/[\{\[]/);
+    if (jsonStart === -1) {
+      throw new Error("AI refused to process this company. It may lack sufficient public information.");
+    }
+  }
+
+  let cleaned = raw.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+
+  // Find JSON boundaries
+  const start = cleaned.search(/[\{\[]/);
+  const isArray = start !== -1 && cleaned[start] === '[';
+  const end = cleaned.lastIndexOf(isArray ? ']' : '}');
+
+  if (start === -1 || end === -1) {
+    throw new Error("No JSON found in AI response");
+  }
+
+  cleaned = cleaned.substring(start, end + 1);
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // Fix common issues
+    cleaned = cleaned
+      .replace(/,\s*}/g, "}")
+      .replace(/,\s*]/g, "]")
+      .replace(/[\x00-\x1F\x7F]/g, "");
+    return JSON.parse(cleaned);
+  }
 }
 
 /* ── Main handler ── */
