@@ -66,7 +66,7 @@ const App = () => (
               <Route path="/use-cases" element={<><UseCasesIndex /></>} />
               <Route path="/use-cases/:slug" element={<><UseCasePage /></>} />
               <Route path="/academy" element={<AuthGate><Academy /></AuthGate>} />
-              <Route path="/academy/:moduleId" element={<AuthGate><Academy /></AuthGate>} />
+              <Route path="/academy/*" element={<Navigate to="/academy" replace />} />
 
               {/* Redirects — old routes */}
               <Route path="/upskill" element={<Navigate to="/" replace />} />
