@@ -158,7 +158,7 @@ async function searchApolloAtCompanies(
     // Use enriched people if available, otherwise fallback to partial
     const finalPeople = enrichedPeople.length > 0 ? enrichedPeople : partialPeople;
 
-    const results = enrichedPeople
+    const results = finalPeople
       .filter((p: any) => p.linkedin_url && p.linkedin_url.includes("/in/"))
       .map((p: any) => {
         const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
