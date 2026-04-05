@@ -47,7 +47,7 @@ const INDUSTRY_GROUPS = [
 ];
 
 /* ── main component ── */
-export default function CompanyExplorer() {
+export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: string }) {
   const [phase, setPhase] = useState<ExplorerPhase>("pick-industry");
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyData[]>([]);
@@ -60,6 +60,29 @@ export default function CompanyExplorer() {
   const [isRunning, setIsRunning] = useState(false);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [cancelRef] = useState({ cancelled: false });
+  const autoStarted = useRef(false);
+
+  // Auto-start analysis from URL param
+  useEffect(() => {
+    if (initialWebsite && !autoStarted.current) {
+      autoStarted.current = true;
+      const domain = initialWebsite.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+      const name = domain.split(".")[0].charAt(0).toUpperCase() + domain.split(".")[0].slice(1);
+      const company: CompanyData = {
+        id: initialWebsite,
+        name,
+        industry: null,
+        website: initialWebsite.includes("://") ? initialWebsite : `https://${initialWebsite}`,
+        description: null,
+        employee_range: null,
+        funding_stage: null,
+        headquarters: null,
+      };
+      setSelectedCompany(company);
+      setPhase("analysis");
+      runPipeline(company);
+    }
+  }, [initialWebsite]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── data ── */
   function curatedToCompanyData(c: CuratedCompany): CompanyData {
