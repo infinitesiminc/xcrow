@@ -1,76 +1,63 @@
 
 
-## Single-Screen GTM Explorer with Product→Person Traceability
+## Scaling the Column Browser for High-Volume Leads
 
-**Core insight**: The current pipeline treats each step as isolated text. For a company with 10 products, you can't trace "this LinkedIn profile is the decision maker for THIS product line." The fix requires threading product IDs through the entire chain so the final output maps each person back to the specific product they buy.
+**Problem**: A company like HubSpot with 10 products, multiple verticals, and conquest targets can easily produce 100-500+ leads from Apollo. Scrolling through a flat list in column 4 becomes unusable.
 
-### Layout
+### Design Additions
 
-```text
-┌─────────────────────────────────────────────────┐
-│  Company Header  |  Overall Progress  | Reset   │
-├─────────────────────────────────────────────────┤
-│  ▼ Company DNA              ✓                   │
-│    3-4 bullet summary                           │
-│  ▼ Product Lines            ✓                   │
-│    Compact cards per product                    │
-│  ▼ Product-Market Fit       ✓                   │
-│    Pain/Buyer/Entry per product                 │
-│  ▼ ICP Tree                 ✓                   │
-│    Vertical→Segment→Persona per product         │
-│  ▼ Decision Makers          ⏳                   │
-│    Grouped by product line                      │
-│  ▼ LinkedIn Profiles        🔒                   │
-│    Each profile tagged: Product + Role (DM/Champ)│
-└─────────────────────────────────────────────────┘
-```
+**1. Search + Filter Bar per Column**
+Each column gets a compact input at the top:
+- Products column: filter by name
+- Verticals column: filter by segment
+- Companies column: toggle Customer/Conquest, search by name
+- Leads column: search by name/title, filter by role (DM/Champion), filter by type (Customer/Conquest)
 
-### Changes
+**2. Virtual Scrolling for Leads Column**
+Use `react-window` (lightweight virtualizer) for column 4 when lead count exceeds ~50. Only renders visible rows, keeping DOM light even with 500+ leads.
 
-**1. Frontend — `CompanyExplorer.tsx`** (full rewrite of results view)
+**3. Count Badges + Summary Row**
+Each selectable card shows a count badge of children below it:
+- Product card: "47 leads" badge
+- Vertical card: "12 leads" badge  
+- Company card: "5 leads" badge
 
-- Replace step-by-step wizard with Accordion (Radix, already installed) showing all 6 sections
-- After company pick, auto-run all steps sequentially — each step triggers the next on completion
-- All sections default expanded; completed ones show checkmark, in-progress shows spinner, pending shows lock icon
-- Auto-scroll to currently-analyzing section via `useRef` + `scrollIntoView`
-- Remove prev/next buttons, step tab bar, and `currentStep` navigation logic
-- Keep industry picker and company picker screens unchanged
+A summary bar at the top of each column shows: "Showing 23 of 147 leads"
 
-**2. Edge Function — `gtm-analyze/index.ts`** (prompt restructure for traceability)
+**4. Pagination Fallback**
+If virtual scroll feels heavy, paginate leads column at 25 per page using the existing `Pagination` component.
 
-- Add conciseness instruction to ALL step prompts: "Be concise. Use bullets. Under 250 words."
-- **product-map**: Instruct AI to assign each product a short ID (P1, P2, P3...) for cross-referencing
-- **pmf-matrix**: Reference product IDs from product-map step (passed via `previousResults`)
-- **icp-tree**: Build tree PER product ID, not globally — "For P1: Vertical→Segment→Persona"
-- **buyer-id**: Group buyers by product ID, tag each as DM/Champion/Influencer
-- **linkedin-reveal**: 
-  - Extract product-tagged buyer titles from buyer-id output
-  - Search Apollo with those titles
-  - AI formatting step explicitly maps each found person to: which product (P1/P2/etc), their role (Decision Maker vs Champion), and why
-  - Output format per profile:
-    ```
-    **Name** — Title at Company
-    📦 Product: P2 (Cash Offer Upgrade)
-    🎯 Role: Decision Maker — controls broker partnerships budget
-    🔗 LinkedIn: url
-    📧 Email: email
-    ```
+**5. Bulk Actions Bar**
+When leads exceed 20, show a "Save all to pipeline" button at the bottom of the leads column to batch-import into the leadgen pipeline.
 
-**3. No other files change** — Academy page, routing, UI components all stay the same.
-
-### How traceability flows
+### Technical Plan
 
 ```text
-product-map → assigns P1, P2, P3...
-     ↓ (previousResults)
-pmf-matrix → pain/buyer per P1, P2, P3
-     ↓
-icp-tree → personas grouped by product
-     ↓
-buyer-id → "VP Sales (DM for P1), Office Manager (Champion for P2)"
-     ↓
-linkedin-reveal → real profiles tagged to specific products + roles
+Column Layout (unchanged)
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐ ┌──────────┐
+│ Products │→│Verticals │→│Companies │→│ [🔍 Search...  ] │→│  Detail  │
+│          │ │          │ │          │ │ [DM|Champ|All]   │ │          │
+│ P1 (47)  │ │ SaaS (12)│ │ Acme (5) │ │ Showing 12/147   │ │ Full     │
+│ P2 (31)  │ │ Health(8)│ │ Zen  (3) │ │ ┌──────────────┐ │ │ Profile  │
+│ ...      │ │ ...      │ │ ...      │ │ │ virtual list │ │ │          │
+│          │ │          │ │          │ │ │ or paginated │ │ │          │
+│          │ │          │ │          │ │ └──────────────┘ │ │          │
+└──────────┘ └──────────┘ └──────────┘ └──────────────────┘ └──────────┘
 ```
 
-Each step receives all prior results via `previousResults`, which already works. The key change is making prompts reference product IDs so the chain stays connected.
+### Files Changed
+
+**`src/components/academy/GTMTreeView.tsx`** — Full rewrite:
+- 5-column master-detail layout with `ScrollArea` per column
+- Search input + role filter in leads column header
+- Count badges on all cards
+- Pagination (25/page) for leads column using existing `Pagination` component
+- Summary bar showing filtered vs total counts
+
+**`src/components/academy/CompanyExplorer.tsx`** — Minor:
+- Remove horizontal overflow wrapper, tree self-contains its scroll
+
+**`package.json`** — No new deps needed (pagination component exists, `ScrollArea` exists)
+
+No backend changes required.
 
