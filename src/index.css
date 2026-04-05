@@ -293,3 +293,17 @@ html {
   mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
 }
+
+/* Enforce minimum 12px font size across the app */
+@layer base {
+  :root {
+    --min-font: 12px;
+  }
+}
+@layer utilities {
+  .\!text-xs, .text-xs,
+  .text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\] {
+    font-size: var(--min-font) !important;
+    line-height: 1.4 !important;
+  }
+}
