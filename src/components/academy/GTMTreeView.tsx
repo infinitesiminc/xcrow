@@ -12,9 +12,18 @@ import {
 } from "lucide-react";
 import type { GTMTreeData, GTMProduct, GTMLead, GTMBuyerMapping } from "./gtm-types";
 
+interface CompanyMeta {
+  industry?: string | null;
+  employee_range?: string | null;
+  funding_stage?: string | null;
+  headquarters?: string | null;
+  website?: string | null;
+}
+
 interface GTMTreeViewProps {
   companyName: string;
   data: GTMTreeData;
+  companyMeta?: CompanyMeta;
   onGenerateMore?: (productId: string, vertical: string | null) => void;
   isGeneratingMore?: boolean;
 }
