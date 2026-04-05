@@ -61,7 +61,8 @@ async function searchApolloContacts(titles: string[], industry: string, company:
           const enrichData = await enrichRes.json();
           if (enrichData.people?.length) enrichedPeople = enrichData.people;
         } else {
-          console.warn("Apollo bulk_match failed, using partial data:", enrichRes.status);
+          const errBody = await enrichRes.text();
+          console.warn("Apollo bulk_match failed:", enrichRes.status, errBody);
         }
       } catch (e) {
         console.warn("Apollo bulk_match error, using partial data:", e);
@@ -69,7 +70,7 @@ async function searchApolloContacts(titles: string[], industry: string, company:
     }
 
     return enrichedPeople.map((p: any) => ({
-      name: p.name || p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : "Unknown",
+      name: p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown")),
       title: p.title || "",
       company: p.organization?.name || p.organization_name || "",
       linkedin_url: p.linkedin_url || null,
