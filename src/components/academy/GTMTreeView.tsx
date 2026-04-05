@@ -639,7 +639,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                       : "bg-muted text-muted-foreground hover:bg-accent"
                   }`}
                 >
-                  {r === "all" ? "All" : r === "dm" ? "DM" : "Champ"}
+                  {r === "all" ? "All" : r === "dm" ? "Decision Maker" : "Champion"}
                 </button>
               ))}
               <span className="w-px bg-border mx-0.5" />
