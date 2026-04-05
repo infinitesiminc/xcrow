@@ -17,7 +17,8 @@ async function searchApolloContacts(titles: string[], industry: string, company:
   if (!APOLLO_API_KEY) return [];
 
   try {
-    const res = await fetch("https://api.apollo.io/v1/mixed_people/search", {
+    // Step 1: Search for people (returns partial data + IDs)
+    const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,16 +34,45 @@ async function searchApolloContacts(titles: string[], industry: string, company:
       }),
     });
 
-    if (!res.ok) {
-      console.error("Apollo people search failed:", res.status, await res.text());
+    if (!searchRes.ok) {
+      console.error("Apollo api_search failed:", searchRes.status, await searchRes.text());
       return [];
     }
 
-    const data = await res.json();
-    return (data.people || []).map((p: any) => ({
-      name: p.name || "Unknown",
+    const searchData = await searchRes.json();
+    const partialPeople = searchData.people || [];
+    if (partialPeople.length === 0) return [];
+
+    // Step 2: Enrich with bulk_match for full profiles (linkedin_url, email, etc.)
+    const details = partialPeople.slice(0, 10).map((p: any) => ({ id: p.id })).filter((d: any) => d.id);
+    let enrichedPeople = partialPeople;
+
+    if (details.length > 0) {
+      try {
+        const enrichRes = await fetch("https://api.apollo.io/api/v1/people/bulk_match", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Api-Key": APOLLO_API_KEY,
+          },
+          body: JSON.stringify({ details, reveal_personal_emails: false }),
+        });
+        if (enrichRes.ok) {
+          const enrichData = await enrichRes.json();
+          if (enrichData.people?.length) enrichedPeople = enrichData.people;
+        } else {
+          const errBody = await enrichRes.text();
+          console.warn("Apollo bulk_match failed:", enrichRes.status, errBody);
+        }
+      } catch (e) {
+        console.warn("Apollo bulk_match error, using partial data:", e);
+      }
+    }
+
+    return enrichedPeople.map((p: any) => ({
+      name: p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown")),
       title: p.title || "",
-      company: p.organization?.name || "",
+      company: p.organization?.name || p.organization_name || "",
       linkedin_url: p.linkedin_url || null,
       city: p.city || null,
       state: p.state || null,
