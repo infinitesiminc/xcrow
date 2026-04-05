@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
-  Building2, Globe, Users, MapPin, ArrowRight, ArrowLeft,
-  Loader2, CheckCircle2, Search, ChevronRight, Linkedin,
-  Target, Brain, Package, Zap, UserCheck, RefreshCw,
+  Building2, Globe, Users, ArrowRight, ArrowLeft,
+  Loader2, CheckCircle2, ChevronRight, Linkedin,
+  Target, Brain, Package, UserCheck, RefreshCw,
 } from "lucide-react";
 
 interface CompanyData {
