@@ -25,6 +25,7 @@ const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
+const Academy = lazy(() => import("./pages/Academy.tsx"));
 
 
 const queryClient = new QueryClient();
