@@ -107,10 +107,12 @@ async function searchApolloAtCompanies(
     const partialPeople = searchData.people || [];
     console.log("Apollo search returned:", partialPeople.length, "people");
     if (partialPeople.length > 0) {
-      console.log("Sample person:", JSON.stringify({
-        name: partialPeople[0].name,
-        linkedin_url: partialPeople[0].linkedin_url,
-        title: partialPeople[0].title,
+      const p0 = partialPeople[0];
+      console.log("Sample person keys:", Object.keys(p0).join(", "));
+      console.log("Sample person data:", JSON.stringify({
+        id: p0.id, name: p0.name, first_name: p0.first_name, last_name: p0.last_name,
+        linkedin_url: p0.linkedin_url, title: p0.title,
+        org: p0.organization?.name || p0.organization_name,
       }));
     }
     if (partialPeople.length === 0) return [];
