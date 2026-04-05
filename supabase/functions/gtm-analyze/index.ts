@@ -70,6 +70,7 @@ async function searchApolloAtCompanies(
   titles: string[],
   companyDomains: string[],
   page = 1,
+  locationFilter?: string,
 ): Promise<any[]> {
   const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
   if (!APOLLO_API_KEY) {
