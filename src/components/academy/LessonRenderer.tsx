@@ -223,6 +223,36 @@ export default function LessonRenderer({
 
           {step === "prompt" && (
             <div>
+              {/* Company target card */}
+              {companyContext && (
+                <div className="bg-muted rounded-lg p-4 mb-5 border border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Your Target Company</span>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setCompanyContext(null); fetchRandomCompany(); }}>
+                      <RefreshCw className="w-3 h-3 mr-1" /> New company
+                    </Button>
+                  </div>
+                  <h4 className="text-base font-bold text-foreground mb-1">{companyContext.name}</h4>
+                  {companyContext.description && (
+                    <p className="text-xs text-foreground/70 mb-2 line-clamp-2">{companyContext.description}</p>
+                  )}
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    {companyContext.industry && <span className="flex items-center gap-1"><Star className="w-3 h-3" />{companyContext.industry}</span>}
+                    {companyContext.website && <a href={companyContext.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Globe className="w-3 h-3" />{companyContext.website.replace(/^https?:\/\//, '')}</a>}
+                    {companyContext.employee_range && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{companyContext.employee_range} employees</span>}
+                    {companyContext.headquarters && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{companyContext.headquarters}</span>}
+                  </div>
+                </div>
+              )}
+              {loadingCompany && (
+                <div className="bg-muted rounded-lg p-4 mb-5 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Assigning a company...
+                </div>
+              )}
+
               <div className="flex items-start gap-3 mb-4">
                 <Pencil className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
