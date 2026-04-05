@@ -653,7 +653,7 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                       : "bg-muted text-muted-foreground hover:bg-accent"
                   }`}
                 >
-                  {t === "all" ? "All" : t === "customer" ? "Cust" : "Conq"}
+                  {t === "all" ? "All" : t === "customer" ? "Named" : "Prospect"}
                 </button>
               ))}
             </div>
