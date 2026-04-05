@@ -64,7 +64,7 @@ const INDUSTRY_GROUPS = [
 ];
 
 export default function CompanyExplorer() {
-  const { user } = useAuth();
+  
   const [phase, setPhase] = useState<ExplorerPhase>("pick-industry");
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyData[]>([]);
