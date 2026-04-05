@@ -25,6 +25,7 @@ const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
+const Academy = lazy(() => import("./pages/Academy.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -64,6 +65,8 @@ const App = () => (
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/use-cases" element={<><UseCasesIndex /></>} />
               <Route path="/use-cases/:slug" element={<><UseCasePage /></>} />
+              <Route path="/academy" element={<AuthGate><Academy /></AuthGate>} />
+              <Route path="/academy/:moduleId" element={<AuthGate><Academy /></AuthGate>} />
 
               {/* Redirects — old routes */}
               <Route path="/upskill" element={<Navigate to="/" replace />} />
