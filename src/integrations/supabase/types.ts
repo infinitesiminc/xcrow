@@ -14,6 +14,91 @@ export type Database = {
   }
   public: {
     Tables: {
+      academy_lessons: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          lesson_type: string
+          module_id: string
+          sort_order: number
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          lesson_type?: string
+          module_id: string
+          sort_order?: number
+          title: string
+          xp_reward?: number
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          lesson_type?: string
+          module_id?: string
+          sort_order?: number
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "academy_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_modules: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon_emoji: string | null
+          id: string
+          pass_threshold: number
+          phase: string
+          prerequisite_module_id: string | null
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon_emoji?: string | null
+          id: string
+          pass_threshold?: number
+          phase?: string
+          prerequisite_module_id?: string | null
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          pass_threshold?: number
+          phase?: string
+          prerequisite_module_id?: string | null
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_modules_prerequisite_module_id_fkey"
+            columns: ["prerequisite_module_id"]
+            isOneToOne: false
+            referencedRelation: "academy_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -1176,6 +1261,99 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_emoji: string | null
+          badge_key: string
+          badge_label: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_emoji?: string | null
+          badge_key: string
+          badge_label: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_emoji?: string | null
+          badge_key?: string
+          badge_label?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_lesson_progress: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          id: string
+          judgment_score: number | null
+          lesson_id: string
+          module_id: string
+          override_score: number | null
+          score: number | null
+          speed_score: number | null
+          status: string
+          tool_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          judgment_score?: number | null
+          lesson_id: string
+          module_id: string
+          override_score?: number | null
+          score?: number | null
+          speed_score?: number | null
+          status?: string
+          tool_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          judgment_score?: number | null
+          lesson_id?: string
+          module_id?: string
+          override_score?: number | null
+          score?: number | null
+          speed_score?: number | null
+          status?: string
+          tool_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academy_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_lesson_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "academy_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_presence: {
         Row: {
           current_activity: string | null
@@ -1228,6 +1406,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_streaks: {
+        Row: {
+          current_streak: number
+          freeze_remaining: number
+          last_activity_date: string
+          longest_streak: number
+          streak_multiplier: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          freeze_remaining?: number
+          last_activity_date?: string
+          longest_streak?: number
+          streak_multiplier?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          freeze_remaining?: number
+          last_activity_date?: string
+          longest_streak?: number
+          streak_multiplier?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_subscriptions: {
         Row: {
@@ -1366,6 +1574,44 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: []
+      }
+      xp_ledger: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          lesson_id: string | null
+          metadata: Json | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          lesson_id?: string | null
+          metadata?: Json | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          lesson_id?: string | null
+          metadata?: Json | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_ledger_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academy_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -1551,6 +1797,8 @@ export type Database = {
           skill_name: string
         }[]
       }
+      get_user_level: { Args: { _user_id: string }; Returns: number }
+      get_user_xp: { Args: { _user_id: string }; Returns: number }
       get_workspace_progress: {
         Args: { p_workspace_id: string }
         Returns: {
