@@ -209,20 +209,6 @@ async function callAI(apiKey: string, system: string, user: string, model = "goo
 }
 
 function extractJSON(raw: string): any {
-  // Detect LLM refusals
-  const refusalIndicators = [
-    "I am sorry", "I cannot", "I'm unable", "I apologize",
-    "As a language model", "I don't have the ability",
-  ];
-  const lower = raw.toLowerCase();
-  if (refusalIndicators.some(r => lower.startsWith(r.toLowerCase()))) {
-    // Try to find JSON embedded after the refusal text
-    const jsonStart = raw.search(/[\{\[]/);
-    if (jsonStart === -1) {
-      throw new Error("AI refused to process this company. It may lack sufficient public information.");
-    }
-  }
-
   let cleaned = raw.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
 
   // Find JSON boundaries
@@ -231,7 +217,7 @@ function extractJSON(raw: string): any {
   const end = cleaned.lastIndexOf(isArray ? ']' : '}');
 
   if (start === -1 || end === -1) {
-    throw new Error("No JSON found in AI response");
+    throw new Error("No JSON found in AI response. The company may lack sufficient public information.");
   }
 
   cleaned = cleaned.substring(start, end + 1);
@@ -239,7 +225,6 @@ function extractJSON(raw: string): any {
   try {
     return JSON.parse(cleaned);
   } catch {
-    // Fix common issues
     cleaned = cleaned
       .replace(/,\s*}/g, "}")
       .replace(/,\s*]/g, "]")
