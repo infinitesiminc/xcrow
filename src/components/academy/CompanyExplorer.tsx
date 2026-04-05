@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   Building2, Globe, Users, ArrowRight, ArrowLeft,
   Loader2, CheckCircle2, ChevronRight, Linkedin,
-  Target, Brain, Package, UserCheck, RefreshCw,
+  Target, Package, UserCheck, RefreshCw,
 } from "lucide-react";
 
 interface CompanyData {
@@ -324,31 +324,24 @@ export default function CompanyExplorer() {
         </CardHeader>
         <CardContent>
           {analyzing && !activeResult ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">
-                AI is analyzing {selectedCompany?.name}...
-              </p>
-              <p className="text-xs text-muted-foreground/60">
-                {activeStep?.description}
+                Analyzing {selectedCompany?.name}...
               </p>
             </div>
           ) : activeResult ? (
-            <div className="space-y-4">
-              {activeResult.reasoning && (
-                <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Brain className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">AI Reasoning</span>
-                  </div>
-                  <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">
-                    {activeResult.reasoning}
-                  </p>
-                </div>
-              )}
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <ReactMarkdown>{activeResult.content}</ReactMarkdown>
-              </div>
+            <div className="prose prose-sm max-w-none
+              prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-2
+              prose-h2:text-base prose-h3:text-sm prose-h3:text-muted-foreground prose-h3:uppercase prose-h3:tracking-wide
+              prose-p:text-foreground/90 prose-p:leading-relaxed
+              prose-li:text-foreground/90 prose-li:leading-relaxed
+              prose-strong:text-foreground prose-strong:font-semibold
+              prose-ul:my-2 prose-ol:my-2
+              prose-table:text-sm prose-th:text-left prose-th:text-muted-foreground prose-th:font-medium prose-th:pb-2 prose-th:border-b prose-th:border-border
+              prose-td:py-1.5 prose-td:pr-4 prose-td:text-foreground/90 prose-td:border-b prose-td:border-border/50
+            ">
+              <ReactMarkdown>{activeResult.content}</ReactMarkdown>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground text-sm">
