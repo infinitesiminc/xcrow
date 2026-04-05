@@ -147,7 +147,7 @@ serve(async (req) => {
       }
 
       console.log("Searching Apollo for titles:", searchTitles);
-      const people = await searchApolloContacts(searchTitles, company.industry || "", company);
+      const people = await searchApolloContacts(searchTitles, company);
 
       if (people.length === 0) {
         return await runAIStep(LOVABLE_API_KEY, {
