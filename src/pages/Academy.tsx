@@ -15,7 +15,7 @@ export default function Academy() {
             onClick={() => navigate("/")}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Back to Lead Hunter
+            ← Back home
           </button>
         </div>
       </div>

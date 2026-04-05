@@ -34,11 +34,11 @@ export default function Index() {
     e.preventDefault();
     const url = websiteUrl.trim();
     if (!url) return;
-    navigate(`/academy?website=${encodeURIComponent(url)}`);
+    navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
   };
 
   const handleResearch = () => {
-    navigate("/academy");
+    navigate("/leadhunter");
   };
 
   return (
