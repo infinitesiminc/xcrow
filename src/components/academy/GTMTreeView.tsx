@@ -192,7 +192,7 @@ function CompanyDetail({ company, leadCount }: { company: DerivedCompany; leadCo
         <div>
           <div className="text-base font-semibold text-foreground">{company.name}</div>
           <Badge variant="outline" className={`text-[10px] mt-0.5 ${company.type === "conquest" ? "bg-orange-500/15 text-orange-700 border-orange-500/30" : "bg-primary/15 text-primary border-primary/30"}`}>
-            {company.type === "conquest" ? "Conquest Target" : "Customer"}
+            {company.type === "conquest" ? "Potential Prospect" : "Named Customer"}
           </Badge>
         </div>
       </div>
