@@ -12,36 +12,34 @@ function respond(body: unknown, status = 200) {
   });
 }
 
-async function searchApolloContacts(titles: string[], company: any): Promise<any[]> {
+interface IcpSearchParams {
+  titles: string[];
+  industries?: string[];
+  employee_ranges?: string[];
+  seniority?: string[];
+}
+
+async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
   const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
   if (!APOLLO_API_KEY) {
     console.warn("APOLLO_API_KEY not set — skipping people search");
     return [];
   }
 
-  // Extract domain from company website for precise matching
-  let domain = "";
-  try {
-    if (company.website) {
-      domain = new URL(company.website.startsWith("http") ? company.website : `https://${company.website}`).hostname.replace(/^www\./, "");
-    }
-  } catch { /* ignore */ }
-
   try {
     const searchBody: Record<string, unknown> = {
-      person_titles: titles,
+      person_titles: params.titles,
       per_page: 10,
       page: 1,
+      person_seniorities: params.seniority || ["director", "vp", "c_suite", "owner"],
     };
 
-    // Prefer domain match (finds people AT this company), fall back to name
-    if (domain) {
-      searchBody.q_organization_domains = domain;
-    } else {
-      searchBody.q_organization_name = company.name;
+    if (params.industries?.length) {
+      // Use keyword search for industries (free text, not tag IDs)
+      searchBody.q_organization_keyword_tags = params.industries;
     }
 
-    console.log("Apollo search:", JSON.stringify(searchBody));
+    console.log("Apollo ICP search:", JSON.stringify(searchBody));
 
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
@@ -57,7 +55,7 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
     const searchData = await searchRes.json();
     const partialPeople = searchData.people || [];
     if (partialPeople.length === 0) {
-      console.log("Apollo returned 0 people for domain:", domain, "name:", company.name);
+      console.log("Apollo returned 0 prospects for ICP titles:", params.titles);
       return [];
     }
 
@@ -83,8 +81,7 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
 
     return enrichedPeople.map((p: any) => {
       const name = p.name || (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : (p.first_name || "Unknown"));
-      const orgName = p.organization?.name || p.organization_name || company.name;
-      // Build LinkedIn search URL as fallback when direct URL not available
+      const orgName = p.organization?.name || p.organization_name || "";
       const linkedinUrl = p.linkedin_url || `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name + " " + orgName)}`;
       return {
         name,
@@ -99,7 +96,7 @@ async function searchApolloContacts(titles: string[], company: any): Promise<any
       };
     });
   } catch (e) {
-    console.error("Apollo people search error:", e);
+    console.error("Apollo prospect search error:", e);
     return [];
   }
 }
@@ -121,35 +118,53 @@ serve(async (req) => {
 
     // LinkedIn Reveal: Apollo + AI formatting with product traceability
     if (stepId === "linkedin-reveal") {
+      // Extract ICP buyer titles and target industries from prior analysis
       const extractRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
+          model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: `Extract the top 5 job titles of people who WORK AT ${company.name} and would be key decision makers or stakeholders. These are EMPLOYEES of the company, NOT the company's customers or target buyers. Think about who runs this company: CEO, VP Sales, Head of Partnerships, CTO, etc. Return ONLY a JSON array of short title strings like ["CEO","VP Sales","Head of Marketing"].` },
-            { role: "user", content: `Company: ${company.name}\nIndustry: ${company.industry}\nDescription: ${company.description}\nEmployees: ${company.employee_range || company.estimated_employees || "Unknown"}\n\nProduct lines:\n${prevProduct}\n\nBuyer analysis:\n${prevBuyer}` },
+            { role: "system", content: `You are extracting ICP search parameters from a GTM analysis of ${company.name}.
+
+${company.name} SELLS TO certain buyer personas. Extract the job titles of people who would BUY ${company.name}'s products — these are the company's TARGET CUSTOMERS, not its employees.
+
+Return ONLY valid JSON with this structure:
+{
+  "titles": ["VP Engineering", "CTO", "Head of Payments"],
+  "industries": ["SaaS", "E-commerce", "Fintech"],
+  "seniority": ["director", "vp", "c_suite"]
+}
+
+The titles should be specific decision-maker titles from the ICP and buyer analysis. Industries are the verticals where these buyers work.` },
+            { role: "user", content: `Company selling: ${company.name} (${company.industry})\nDescription: ${company.description}\n\nProduct lines:\n${prevProduct}\n\nICP Tree:\n${prevICP}\n\nBuyer personas:\n${prevBuyer}` },
           ],
         }),
       });
 
-      let searchTitles = ["VP Sales", "Head of Marketing", "CTO", "CEO", "Director of Operations"];
+      let searchParams: IcpSearchParams = {
+        titles: ["VP Engineering", "CTO", "Head of Product", "Director of Operations", "VP Sales"],
+        seniority: ["director", "vp", "c_suite"],
+      };
+
       if (extractRes.ok) {
         const extractData = await extractRes.json();
         const raw = extractData.choices?.[0]?.message?.content || "";
         try {
           const parsed = JSON.parse(raw.replace(/```json?\n?/g, "").replace(/```/g, "").trim());
-          if (Array.isArray(parsed) && parsed.length > 0) searchTitles = parsed.slice(0, 5);
+          if (parsed.titles?.length) searchParams.titles = parsed.titles.slice(0, 5);
+          if (parsed.industries?.length) searchParams.industries = parsed.industries.slice(0, 5);
+          if (parsed.seniority?.length) searchParams.seniority = parsed.seniority;
         } catch { /* use defaults */ }
       }
 
-      console.log("Searching Apollo for titles:", searchTitles);
-      const people = await searchApolloContacts(searchTitles, company);
+      console.log("ICP search params:", JSON.stringify(searchParams));
+      const people = await searchApolloProspects(searchParams);
 
       if (people.length === 0) {
         return respond({
-          reasoning: `Apollo returned no profiles for ${company.name}. The company may be too small or new for their database.`,
-          content: `## No Profiles Found\n\nApollo returned **0 results** for employees at **${company.name}** (${domain || "no domain"}).\n\nSearched titles: ${searchTitles.join(", ")}\n\n### Manual Search\nTry LinkedIn directly: [Search ${company.name} on LinkedIn](https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(company.name)}&origin=GLOBAL_SEARCH_HEADER)`,
+          reasoning: `Apollo returned no prospects matching ${company.name}'s ICP. Try broader search criteria.`,
+          content: `## No Prospects Found\n\nApollo returned **0 results** matching the ICP for **${company.name}**.\n\nSearched buyer titles: ${searchParams.titles.join(", ")}\n\n### Manual Search\nUse LinkedIn Sales Navigator with these filters:\n- **Titles:** ${searchParams.titles.join(", ")}\n- **Seniority:** Director, VP, C-Suite\n\n[Search on LinkedIn](https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(searchParams.titles[0])}&origin=GLOBAL_SEARCH_HEADER)`,
         });
       }
 
@@ -163,19 +178,19 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: `You are a GTM analyst mapping real prospects to specific product lines. ${CONCISE}
+            { role: "system", content: `You are a GTM analyst mapping real PROSPECTS (potential buyers) to ${company.name}'s product lines. ${CONCISE}
 
-CRITICAL: For each person, map them to a specific product line (P1, P2, etc.) from the product analysis and tag their role (Decision Maker, Champion, or Influencer).
+These people are potential CUSTOMERS of ${company.name}. Map each prospect to the product line (P1, P2...) they would most likely BUY, and their buying role.
 
 Use this format per person:
-**Name** — Title at Company
-📦 Product: P# (Product Name)
-🎯 Role: Decision Maker / Champion / Influencer — why
+**Name** — Title at Their Company
+📦 Would buy: P# (Product Name) — why this product fits their role
+🎯 Buying role: Decision Maker / Champion / Influencer
 🔗 LinkedIn: url
-📧 Email: email
+📧 Email: email (or "Not available")
 
 Do NOT invent people. Only format the real data provided.` },
-            { role: "user", content: `Company: ${company.name}\nProduct lines:\n${prevProduct}\n\nBuyer personas:\n${prevBuyer}\n\nReal prospects found:\n\n${peopleList}\n\nMap each person to a product line and role.` },
+            { role: "user", content: `${company.name} sells these products:\n${prevProduct}\n\nICP personas:\n${prevICP}\n\nBuyer profiles:\n${prevBuyer}\n\nReal prospects found matching ICP:\n\n${peopleList}\n\nMap each prospect to the product they'd buy and their buying role.` },
           ],
           tools: [{
             type: "function",
