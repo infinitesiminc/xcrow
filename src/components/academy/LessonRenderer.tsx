@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Brain, Pencil, CheckCircle2, Loader2, Trophy, Star, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Pencil, CheckCircle2, Loader2, Trophy, Star, AlertTriangle, Building2, RefreshCw, Globe, MapPin, Users } from "lucide-react";
 
 interface GradeResult {
   judgment_score: number;
@@ -35,6 +35,16 @@ interface LessonRendererProps {
 
 type Step = "think" | "prompt" | "validate";
 
+interface CompanyContext {
+  name: string;
+  industry: string | null;
+  website: string | null;
+  description: string | null;
+  employee_range: string | null;
+  funding_stage: string | null;
+  headquarters: string | null;
+}
+
 export default function LessonRenderer({
   lesson, lessonId, moduleId, lessonIndex, totalLessons, onComplete, onNext, onPrev,
 }: LessonRendererProps) {
@@ -44,8 +54,11 @@ export default function LessonRenderer({
   const [grading, setGrading] = useState(false);
   const [grade, setGrade] = useState<GradeResult | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [companyContext, setCompanyContext] = useState<CompanyContext | null>(null);
+  const [loadingCompany, setLoadingCompany] = useState(false);
 
   const isConcept = lesson.type === "concept";
+  const needsCompany = !isConcept;
   const hasPrompt = !!lesson.content.prompt;
   const hasValidate = !!lesson.content.validate;
 
@@ -54,6 +67,30 @@ export default function LessonRenderer({
   if (hasValidate) steps.push("validate");
 
   const stepIndex = steps.indexOf(step);
+
+  useEffect(() => {
+    if (needsCompany && !companyContext) fetchRandomCompany();
+  }, [lessonId]);
+
+  async function fetchRandomCompany() {
+    setLoadingCompany(true);
+    try {
+      const { data } = await supabase
+        .from("companies")
+        .select("name, industry, website, description, employee_range, funding_stage, headquarters")
+        .not("website", "is", null)
+        .not("description", "is", null)
+        .limit(50);
+      if (data && data.length > 0) {
+        const pick = data[Math.floor(Math.random() * data.length)];
+        setCompanyContext(pick as CompanyContext);
+      }
+    } catch (e) {
+      console.error("Failed to load company context", e);
+    } finally {
+      setLoadingCompany(false);
+    }
+  }
 
   async function handleSubmit() {
     if (!userResponse.trim()) {
@@ -67,6 +104,7 @@ export default function LessonRenderer({
           lessonType: lesson.type,
           lessonContent: lesson.content,
           userResponse,
+          companyContext: companyContext || undefined,
         },
       });
       if (error) throw error;
@@ -185,6 +223,36 @@ export default function LessonRenderer({
 
           {step === "prompt" && (
             <div>
+              {/* Company target card */}
+              {companyContext && (
+                <div className="bg-muted rounded-lg p-4 mb-5 border border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Your Target Company</span>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setCompanyContext(null); fetchRandomCompany(); }}>
+                      <RefreshCw className="w-3 h-3 mr-1" /> New company
+                    </Button>
+                  </div>
+                  <h4 className="text-base font-bold text-foreground mb-1">{companyContext.name}</h4>
+                  {companyContext.description && (
+                    <p className="text-xs text-foreground/70 mb-2 line-clamp-2">{companyContext.description}</p>
+                  )}
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    {companyContext.industry && <span className="flex items-center gap-1"><Star className="w-3 h-3" />{companyContext.industry}</span>}
+                    {companyContext.website && <a href={companyContext.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Globe className="w-3 h-3" />{companyContext.website.replace(/^https?:\/\//, '')}</a>}
+                    {companyContext.employee_range && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{companyContext.employee_range} employees</span>}
+                    {companyContext.headquarters && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{companyContext.headquarters}</span>}
+                  </div>
+                </div>
+              )}
+              {loadingCompany && (
+                <div className="bg-muted rounded-lg p-4 mb-5 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Assigning a company...
+                </div>
+              )}
+
               <div className="flex items-start gap-3 mb-4">
                 <Pencil className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
