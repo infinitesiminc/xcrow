@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -7,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   Building2, Package, Users, Linkedin, Target, Swords,
-  UserCheck, Globe, Mail, Search, ChevronLeft, ChevronRight, Info,
+  UserCheck, Globe, Mail, Search, ChevronLeft, ChevronRight, Info, Plus, Loader2,
 } from "lucide-react";
 import type { GTMTreeData, GTMProduct, GTMLead, GTMBuyerMapping } from "./gtm-types";
 
