@@ -179,8 +179,8 @@ serve(async (req) => {
         user: `Company: ${company.name}\nDescription: ${company.description}\nWebsite: ${company.website}\nIndustry: ${company.industry}\n\nMap their product portfolio:\n- Product Line name\n- Target user (who uses it)\n- Pricing model (per-seat, usage, enterprise, freemium)\n- Key competitors for THIS specific product line\n\nList each product line separately. Be accurate over comprehensive.`
       },
       "pmf-matrix": {
-        system: "You are a GTM strategist building a Product-Market Fit matrix.",
-        user: `Company: ${company.name}\nDescription: ${company.description}\nIndustry: ${company.industry}\n\nFor each product line:\n- What PAIN does it solve?\n- WHO feels this pain? (job title + company type)\n- Where does the BUDGET come from? (IT, marketing, ops, C-suite)\n- What's the ENTRY POINT? (how would a seller get in the door?)\n\nFormat as a clear matrix. Be specific about pain points.`
+        system: "You are a GTM strategist building a Product-Market Fit matrix. IMPORTANT: Do NOT use wide tables. Instead, present each product line as its own section with headers and bullet points. Use this format for each product:\n\n## Product Name\n- **Pain it solves:** ...\n- **Who feels this pain:** ...\n- **Budget source:** ...\n- **Entry point:** ...",
+        user: `Company: ${company.name}\nDescription: ${company.description}\nIndustry: ${company.industry}\n\nFor each product line, analyze:\n- What PAIN does it solve?\n- WHO feels this pain? (job title + company type)\n- Where does the BUDGET come from? (IT, marketing, ops, C-suite)\n- What's the ENTRY POINT? (how would a seller get in the door?)\n\nPresent each product line as its own section. Be specific about pain points.`
       },
       "icp-tree": {
         system: "You are an ICP mapping specialist. Build a 3-layer niche tree.",
