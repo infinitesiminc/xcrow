@@ -27,8 +27,8 @@ interface CompanyData {
   employee_range: string | null;
   funding_stage: string | null;
   headquarters: string | null;
-  estimated_arr: string | null;
-  estimated_employees: string | null;
+  estimated_arr?: string | null;
+  estimated_employees?: string | null;
 }
 
 interface StepConfig {
