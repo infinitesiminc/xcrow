@@ -527,10 +527,10 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
         <span className="flex items-center gap-1 ml-2"><Info className="w-3 h-3" /> Hover card for details</span>
       </div>
 
-      {/* 4-column browser */}
+      {/* 2-column browser */}
       <div className="flex gap-1 h-[500px]">
         {/* Col 1: Products */}
-        <div className="flex flex-col min-w-[200px] flex-[1.3] border border-border rounded-lg overflow-hidden bg-card">
+        <div className="flex flex-col min-w-[200px] flex-[1] border border-border rounded-lg overflow-hidden bg-card">
           <ColumnHeader title="Products" count={filteredProducts.length} total={data.products.length}>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
@@ -571,53 +571,9 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
           </ScrollArea>
         </div>
 
-        {/* Col 2: Verticals */}
-        <div className="flex flex-col min-w-[200px] flex-[1.3] border border-border rounded-lg overflow-hidden bg-card">
-          <ColumnHeader title="Verticals" count={activeVerticals.length} total={allVerticalsForProduct.length}>
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-              <Input
-                placeholder="Filter..."
-                value={verticalFilter}
-                onChange={e => setVerticalFilter(e.target.value)}
-                className="h-7 text-xs pl-7 bg-background"
-                disabled={!selectedProductId}
-              />
-            </div>
-          </ColumnHeader>
-          <ScrollArea className="flex-1">
-            <div className="p-1.5 space-y-1">
-              {!selectedProductId ? (
-                <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product</p>
-              ) : activeVerticals.length === 0 ? (
-                <p className="text-[10px] text-muted-foreground p-2 text-center">No verticals</p>
-              ) : activeVerticals.map((v, i) => (
-                <SelectableCard
-                  key={`${v.vertical}-${i}`}
-                  active={selectedVerticalIdx === i}
-                  onClick={() => selectVertical(i)}
-                  onInfoClick={() => setDetailItem({ type: "vertical", data: v })}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <Target className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[11px] font-medium text-foreground truncate flex-1">{v.vertical}</span>
-                    <Badge variant="secondary" className="text-[9px] h-3.5 px-1 shrink-0">
-                      {getVerticalLeadCount(v)}
-                    </Badge>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{v.segment}</p>
-                  <div className="flex items-center gap-2 mt-1 text-[9px] text-muted-foreground">
-                    <span className="flex items-center gap-0.5 truncate"><UserCheck className="w-2.5 h-2.5 shrink-0" /> {v.dm}</span>
-                  </div>
-                </SelectableCard>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Col 3: Leads (with company pills) */}
-        <div className="flex flex-col min-w-[260px] flex-[1.5] border border-border rounded-lg overflow-hidden bg-card">
-          <ColumnHeader title={selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx] ? `Leads · ${activeVerticals[selectedVerticalIdx].vertical}` : "Leads"} count={activeLeads.length} total={totalLeadsForContext}>
+        {/* Col 2: Leads (with vertical + role + type filters) */}
+        <div className="flex flex-col min-w-[300px] flex-[2] border border-border rounded-lg overflow-hidden bg-card">
+          <ColumnHeader title="Leads" count={activeLeads.length} total={totalLeadsForContext}>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <Input
@@ -628,6 +584,35 @@ export default function GTMTreeView({ companyName, data }: GTMTreeViewProps) {
                 disabled={!selectedProductId}
               />
             </div>
+            {/* Vertical filter pills */}
+            {selectedProductId && activeVerticals.length > 0 && (
+              <div className="flex gap-0.5 flex-wrap">
+                <button
+                  onClick={() => { setSelectedVerticalIdx(null); setLeadPage(1); }}
+                  className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${
+                    selectedVerticalIdx === null
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  All Verticals
+                </button>
+                {activeVerticals.map((v, i) => (
+                  <button
+                    key={`${v.vertical}-${i}`}
+                    onClick={() => { setSelectedVerticalIdx(prev => prev === i ? null : i); setLeadPage(1); }}
+                    className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${
+                      selectedVerticalIdx === i
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-accent"
+                    }`}
+                  >
+                    {v.vertical} ({getVerticalLeadCount(v)})
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* Role + Type filters */}
             <div className="flex gap-0.5 flex-wrap">
               {(["all", "dm", "champion"] as const).map(r => (
                 <button
