@@ -69,6 +69,7 @@ async function scrapeForCustomers(website: string): Promise<string> {
 async function searchApolloAtCompanies(
   titles: string[],
   companyDomains: string[],
+  page = 1,
 ): Promise<any[]> {
   const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
   if (!APOLLO_API_KEY) {
@@ -77,11 +78,10 @@ async function searchApolloAtCompanies(
   }
 
   try {
-    // Use organization_domains filter (not q_organization_domains) for exact domain matching
     const searchBody: Record<string, unknown> = {
       person_titles: titles,
       per_page: 25,
-      page: 1,
+      page,
       person_seniorities: ["director", "vp", "c_suite", "owner", "manager"],
     };
 
