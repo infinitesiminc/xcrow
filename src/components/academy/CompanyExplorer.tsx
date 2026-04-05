@@ -122,35 +122,24 @@ export default function CompanyExplorer() {
 
   /* ── data loading ──────────────────────────────── */
 
-  function getContentDepth(c: CompanyData): { label: string; color: string; pct: number } {
-    const fields = [c.description, c.industry, c.website, c.employee_range, c.funding_stage, c.headquarters, c.estimated_arr, c.estimated_employees];
-    const filled = fields.filter(Boolean).length;
-    const pct = Math.round((filled / fields.length) * 100);
-    if (pct >= 75) return { label: "Rich", color: "text-green-600", pct };
-    if (pct >= 50) return { label: "Good", color: "text-yellow-600", pct };
-    return { label: "Basic", color: "text-muted-foreground", pct };
+  function curatedToCompanyData(c: CuratedCompany): CompanyData {
+    return {
+      id: c.website,
+      name: c.name,
+      industry: c.industry,
+      website: c.website,
+      description: c.description,
+      employee_range: c.employee_range,
+      funding_stage: c.funding_stage,
+      headquarters: c.headquarters,
+    };
   }
 
-  async function loadCompanies(industryQuery: string) {
-    setLoadingCompanies(true);
-    try {
-      let query = supabase
-        .from("companies")
-        .select("id, name, industry, website, description, employee_range, funding_stage, headquarters, estimated_arr, estimated_employees")
-        .not("website", "is", null)
-        .not("description", "is", null)
-        .not("website", "ilike", "%example.com%");
-      if (industryQuery) query = query.ilike("industry", `%${industryQuery}%`);
-      const { data } = await query.limit(40).order("name");
-      // Filter out companies with clearly dead domains
-      const filtered = ((data || []) as CompanyData[]).filter(c => {
-        const w = c.website?.toLowerCase() || "";
-        return !w.includes("example.") && !w.includes("placeholder") && w.length > 5;
-      });
-      setCompanies(filtered.slice(0, 20));
-    } finally {
-      setLoadingCompanies(false);
-    }
+  function loadCompanies(industryQuery: string) {
+    const list = industryQuery
+      ? (CURATED_COMPANIES[industryQuery] || [])
+      : getAllCuratedCompanies().slice(0, 20);
+    setCompanies(list.map(curatedToCompanyData));
   }
 
   /* ── sequential analysis runner ────────────────── */
