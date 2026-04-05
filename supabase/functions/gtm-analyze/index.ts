@@ -12,14 +12,69 @@ function respond(body: unknown, status = 200) {
   });
 }
 
-interface IcpSearchParams {
-  titles: string[];
-  industries?: string[];
-  employee_ranges?: string[];
-  seniority?: string[];
+/* ── Firecrawl: scrape a company website for customer evidence ── */
+
+async function scrapeForCustomers(website: string): Promise<string> {
+  const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+  if (!FIRECRAWL_API_KEY) {
+    console.warn("FIRECRAWL_API_KEY not set — skipping customer scrape");
+    return "";
+  }
+
+  const baseUrl = website.startsWith("http") ? website : `https://${website}`;
+
+  // Step 1: Map the site for customer-related pages
+  let targetUrls: string[] = [];
+  try {
+    const mapRes = await fetch("https://api.firecrawl.dev/v1/map", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ url: baseUrl, search: "customers case studies testimonials", limit: 20 }),
+    });
+    if (mapRes.ok) {
+      const mapData = await mapRes.json();
+      const allLinks: string[] = mapData.links || [];
+      // Filter for pages likely to contain customer info
+      const customerPatterns = /customer|case.?stud|testimonial|success.?stor|partner|who.?use|trust|logo|client/i;
+      targetUrls = allLinks.filter((u: string) => customerPatterns.test(u)).slice(0, 3);
+      console.log("Customer-related pages found:", targetUrls.length);
+    }
+  } catch (e) {
+    console.warn("Firecrawl map error:", e);
+  }
+
+  // Always include the homepage as it often has customer logos
+  targetUrls.unshift(baseUrl);
+  targetUrls = [...new Set(targetUrls)].slice(0, 4);
+
+  // Step 2: Scrape those pages for customer evidence
+  const allContent: string[] = [];
+  for (const url of targetUrls) {
+    try {
+      const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
+      });
+      if (scrapeRes.ok) {
+        const scrapeData = await scrapeRes.json();
+        const md = scrapeData.data?.markdown || scrapeData.markdown || "";
+        if (md) allContent.push(`--- Source: ${url} ---\n${md.slice(0, 3000)}`);
+      }
+    } catch (e) {
+      console.warn("Scrape error for", url, e);
+    }
+  }
+
+  return allContent.join("\n\n");
 }
 
-async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
+/* ── Apollo: search for DMs at specific companies ── */
+
+async function searchApolloAtCompanies(
+  titles: string[],
+  companyDomains: string[],
+): Promise<any[]> {
   const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
   if (!APOLLO_API_KEY) {
     console.warn("APOLLO_API_KEY not set — skipping people search");
@@ -28,18 +83,17 @@ async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
 
   try {
     const searchBody: Record<string, unknown> = {
-      person_titles: params.titles,
+      person_titles: titles,
       per_page: 10,
       page: 1,
-      person_seniorities: params.seniority || ["director", "vp", "c_suite", "owner"],
+      person_seniorities: ["director", "vp", "c_suite", "owner"],
     };
 
-    if (params.industries?.length) {
-      // Use keyword search for industries (free text, not tag IDs)
-      searchBody.q_organization_keyword_tags = params.industries;
+    if (companyDomains.length > 0) {
+      searchBody.q_organization_domains = companyDomains.join("\n");
     }
 
-    console.log("Apollo ICP search:", JSON.stringify(searchBody));
+    console.log("Apollo search at customer domains:", JSON.stringify(searchBody));
 
     const searchRes = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
@@ -54,12 +108,9 @@ async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
 
     const searchData = await searchRes.json();
     const partialPeople = searchData.people || [];
-    if (partialPeople.length === 0) {
-      console.log("Apollo returned 0 prospects for ICP titles:", params.titles);
-      return [];
-    }
+    if (partialPeople.length === 0) return [];
 
-    // Enrich with bulk_match for full profiles
+    // Enrich with bulk_match
     const details = partialPeople.slice(0, 10).map((p: any) => ({ id: p.id })).filter((d: any) => d.id);
     let enrichedPeople = partialPeople;
 
@@ -75,7 +126,7 @@ async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
           if (enrichData.people?.length) enrichedPeople = enrichData.people;
         }
       } catch (e) {
-        console.warn("Apollo bulk_match error, using partial data:", e);
+        console.warn("Apollo bulk_match error:", e);
       }
     }
 
@@ -96,7 +147,7 @@ async function searchApolloProspects(params: IcpSearchParams): Promise<any[]> {
       };
     });
   } catch (e) {
-    console.error("Apollo prospect search error:", e);
+    console.error("Apollo search error:", e);
     return [];
   }
 }
@@ -112,59 +163,116 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const prevProduct = previousResults?.["product-map"] || "";
+    const prevCustomers = previousResults?.["named-customers"] || "";
     const prevPMF = previousResults?.["pmf-matrix"] || "";
     const prevICP = previousResults?.["icp-tree"] || "";
     const prevBuyer = previousResults?.["buyer-id"] || "";
 
-    // LinkedIn Reveal: Apollo + AI formatting with product traceability
-    if (stepId === "linkedin-reveal") {
-      // Extract ICP buyer titles and target industries from prior analysis
+    /* ── Named Customers: scrape website + AI extraction ── */
+    if (stepId === "named-customers") {
+      const scrapedContent = await scrapeForCustomers(company.website || company.name);
+
       const extractRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: `You are extracting ICP search parameters from a GTM analysis of ${company.name}.
+            { role: "system", content: `You are a GTM researcher extracting named customers from a company's website content. ${CONCISE}
 
-${company.name} SELLS TO certain buyer personas. Extract the job titles of people who would BUY ${company.name}'s products — these are the company's TARGET CUSTOMERS, not its employees.
+Extract every company name mentioned as a customer, client, partner, case study, or testimonial. For each, note:
+- Company name
+- Industry (infer if not stated)
+- Which product line (P1, P2...) they likely use (based on context)
+- Any quoted results or metrics
 
-Return ONLY valid JSON with this structure:
+Format:
+## Named Customers Found
+
+| Customer | Industry | Product | Evidence |
+|----------|----------|---------|----------|
+| Shopify | E-commerce | P1 | "Case study: 40% faster checkout" |
+
+If NO customers are found, say so clearly and list what pages were checked.
+
+Also extract any customer LOGOS mentioned (company names visible in logo bars/grids).` },
+            { role: "user", content: `Company: ${company.name} (${company.industry})\nWebsite: ${company.website}\n\nProduct lines:\n${prevProduct}\n\nScraped website content:\n${scrapedContent || "No content could be scraped from the website."}` },
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "submit_analysis",
+              description: "Submit extracted customer list",
+              parameters: {
+                type: "object",
+                properties: {
+                  reasoning: { type: "string" },
+                  content: { type: "string" },
+                },
+                required: ["reasoning", "content"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "submit_analysis" } },
+        }),
+      });
+
+      if (!extractRes.ok) throw new Error("AI extraction failed");
+      const extractData = await extractRes.json();
+      const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall) throw new Error("No customer data returned");
+      return respond(JSON.parse(toolCall.function.arguments));
+    }
+
+    /* ── LinkedIn Reveal: find DMs at named customer companies ── */
+    if (stepId === "linkedin-reveal") {
+      // Extract customer domains + buyer titles from prior analysis
+      const extractRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: `Extract search parameters to find decision makers at companies that BUY from ${company.name}.
+
+From the named customers and ICP analysis, extract:
+1. Company domains of NAMED CUSTOMERS (real companies found on the website)
+2. Buyer titles (the decision-maker roles who purchase ${company.name}'s products)
+
+Return ONLY valid JSON:
 {
+  "customer_domains": ["shopify.com", "airbnb.com", "uber.com"],
   "titles": ["VP Engineering", "CTO", "Head of Payments"],
-  "industries": ["SaaS", "E-commerce", "Fintech"],
   "seniority": ["director", "vp", "c_suite"]
 }
 
-The titles should be specific decision-maker titles from the ICP and buyer analysis. Industries are the verticals where these buyers work.` },
-            { role: "user", content: `Company selling: ${company.name} (${company.industry})\nDescription: ${company.description}\n\nProduct lines:\n${prevProduct}\n\nICP Tree:\n${prevICP}\n\nBuyer personas:\n${prevBuyer}` },
+If no named customers were found, return empty customer_domains array.` },
+            { role: "user", content: `Company: ${company.name}\n\nNamed customers:\n${prevCustomers}\n\nICP:\n${prevICP}\n\nBuyer personas:\n${prevBuyer}` },
           ],
         }),
       });
 
-      let searchParams: IcpSearchParams = {
-        titles: ["VP Engineering", "CTO", "Head of Product", "Director of Operations", "VP Sales"],
-        seniority: ["director", "vp", "c_suite"],
-      };
+      let customerDomains: string[] = [];
+      let searchTitles = ["VP Engineering", "CTO", "Head of Product", "Director of Operations", "VP Sales"];
 
       if (extractRes.ok) {
         const extractData = await extractRes.json();
         const raw = extractData.choices?.[0]?.message?.content || "";
         try {
           const parsed = JSON.parse(raw.replace(/```json?\n?/g, "").replace(/```/g, "").trim());
-          if (parsed.titles?.length) searchParams.titles = parsed.titles.slice(0, 5);
-          if (parsed.industries?.length) searchParams.industries = parsed.industries.slice(0, 5);
-          if (parsed.seniority?.length) searchParams.seniority = parsed.seniority;
+          if (parsed.customer_domains?.length) customerDomains = parsed.customer_domains.slice(0, 10);
+          if (parsed.titles?.length) searchTitles = parsed.titles.slice(0, 5);
         } catch { /* use defaults */ }
       }
 
-      console.log("ICP search params:", JSON.stringify(searchParams));
-      const people = await searchApolloProspects(searchParams);
+      console.log("Customer domains:", customerDomains, "Titles:", searchTitles);
+      const people = await searchApolloAtCompanies(searchTitles, customerDomains);
 
       if (people.length === 0) {
         return respond({
-          reasoning: `Apollo returned no prospects matching ${company.name}'s ICP. Try broader search criteria.`,
-          content: `## No Prospects Found\n\nApollo returned **0 results** matching the ICP for **${company.name}**.\n\nSearched buyer titles: ${searchParams.titles.join(", ")}\n\n### Manual Search\nUse LinkedIn Sales Navigator with these filters:\n- **Titles:** ${searchParams.titles.join(", ")}\n- **Seniority:** Director, VP, C-Suite\n\n[Search on LinkedIn](https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(searchParams.titles[0])}&origin=GLOBAL_SEARCH_HEADER)`,
+          reasoning: `No profiles found at named customer companies of ${company.name}.`,
+          content: `## No Profiles Found\n\nApollo returned **0 results** for decision makers at ${company.name}'s customer companies.\n\nSearched domains: ${customerDomains.join(", ") || "none found"}\nSearched titles: ${searchTitles.join(", ")}\n\n### Manual Search\n[Search on LinkedIn](https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(searchTitles[0])}&origin=GLOBAL_SEARCH_HEADER)`,
         });
       }
 
@@ -178,19 +286,21 @@ The titles should be specific decision-maker titles from the ICP and buyer analy
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: `You are a GTM analyst mapping real PROSPECTS (potential buyers) to ${company.name}'s product lines. ${CONCISE}
+            { role: "system", content: `You are a GTM analyst mapping real decision makers at ${company.name}'s CUSTOMER companies. ${CONCISE}
 
-These people are potential CUSTOMERS of ${company.name}. Map each prospect to the product line (P1, P2...) they would most likely BUY, and their buying role.
+These people work at companies that BUY from ${company.name}. Map each to:
+- Which ${company.name} product (P1, P2...) their company uses
+- Their buying role for that product
 
-Use this format per person:
-**Name** — Title at Their Company
-📦 Would buy: P# (Product Name) — why this product fits their role
-🎯 Buying role: Decision Maker / Champion / Influencer
+Format per person:
+**Name** — Title at Customer Company
+📦 Buys: P# (Product Name) — why
+🎯 Role: Decision Maker / Champion / Influencer
 🔗 LinkedIn: url
 📧 Email: email (or "Not available")
 
-Do NOT invent people. Only format the real data provided.` },
-            { role: "user", content: `${company.name} sells these products:\n${prevProduct}\n\nICP personas:\n${prevICP}\n\nBuyer profiles:\n${prevBuyer}\n\nReal prospects found matching ICP:\n\n${peopleList}\n\nMap each prospect to the product they'd buy and their buying role.` },
+Do NOT invent people. Only format real data.` },
+            { role: "user", content: `${company.name}'s products:\n${prevProduct}\n\nNamed customers:\n${prevCustomers}\n\nBuyer personas:\n${prevBuyer}\n\nReal people found at customer companies:\n\n${peopleList}` },
           ],
           tools: [{
             type: "function",
@@ -219,7 +329,7 @@ Do NOT invent people. Only format the real data provided.` },
       return respond(JSON.parse(toolCall.function.arguments));
     }
 
-    // All other steps
+    /* ── All other analysis steps ── */
     const stepPrompts: Record<string, { system: string; user: string }> = {
       "company-dna": {
         system: `You are a GTM analyst extracting company signals. ${CONCISE}`,
@@ -230,16 +340,16 @@ Do NOT invent people. Only format the real data provided.` },
         user: `Company: ${company.name}\nDescription: ${company.description}\nWebsite: ${company.website}\nIndustry: ${company.industry}\n\nMap every product line with a unique ID (P1, P2, P3...).`,
       },
       "pmf-matrix": {
-        system: `You are a GTM strategist. ${CONCISE}\n\nReference product IDs (P1, P2...) from the product map. Present each product as its own section:\n\n## P1 — Product Name\n- **Pain:** ...\n- **Who feels it:** ...\n- **Budget source:** ...\n- **Entry point:** ...`,
-        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines identified:\n${prevProduct}\n\nFor each product (using their P# IDs), analyze pain, buyer, budget source, and entry point.`,
+        system: `You are a GTM strategist. ${CONCISE}\n\nReference product IDs (P1, P2...) from the product map. Use named customers as evidence where available.\n\nPresent each product as its own section:\n\n## P1 — Product Name\n- **Pain:** ...\n- **Who feels it:** ...\n- **Budget source:** ...\n- **Entry point:** ...\n- **Known customers:** (from customer discovery)`,
+        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nNamed customers found:\n${prevCustomers}\n\nFor each product (using P# IDs), analyze pain, buyer, budget source, entry point. Reference real customers where applicable.`,
       },
       "icp-tree": {
-        system: `You are an ICP mapping specialist. ${CONCISE}\n\nBuild the ICP tree PER PRODUCT LINE using their P# IDs.\n\nFormat:\n## P1 — Product Name\n### Vertical: Industry\n- **Segment:** Company type → Persona (DM/Champion/Influencer)`,
-        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nPMF matrix:\n${prevPMF}\n\nBuild a 3-layer ICP tree (Vertical→Segment→Persona) for each product line. Tag each persona as DM, Champion, or Influencer.`,
+        system: `You are an ICP mapping specialist. ${CONCISE}\n\nBuild the ICP tree PER PRODUCT LINE using their P# IDs. Use named customers to ground the ICP in reality — these are PROVEN buyer segments.\n\nFormat:\n## P1 — Product Name\n### Vertical: Industry\n- **Segment:** Company type → Persona (DM/Champion/Influencer)\n- **Known customers in segment:** Company A, Company B`,
+        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nNamed customers:\n${prevCustomers}\n\nPMF matrix:\n${prevPMF}\n\nBuild a 3-layer ICP tree (Vertical→Segment→Persona) for each product line. Place named customers in their correct segments.`,
       },
       "buyer-id": {
-        system: `You are a sales intelligence analyst. ${CONCISE}\n\nGroup buyers BY PRODUCT LINE using P# IDs. For each buyer specify:\n- Title + seniority\n- Role: Decision Maker / Champion / Influencer\n- Why they buy THIS specific product\n- Best outreach channel\n\nFormat:\n## P1 — Product Name\n1. **Title** — Role (DM/Champion) — Why they buy — Channel`,
-        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nICP tree:\n${prevICP}\n\nIdentify the top buyers PER PRODUCT LINE. Group by P# ID. Tag each as DM, Champion, or Influencer.`,
+        system: `You are a sales intelligence analyst. ${CONCISE}\n\nGroup buyers BY PRODUCT LINE using P# IDs. For each buyer specify:\n- Title + seniority\n- Role: Decision Maker / Champion / Influencer\n- Why they buy THIS specific product\n- Best outreach channel\n- Example customer companies where this buyer exists\n\nFormat:\n## P1 — Product Name\n1. **Title** — Role (DM/Champion) — Why — Channel\n   Known at: Customer A, Customer B`,
+        user: `Company: ${company.name}\nIndustry: ${company.industry}\n\nProduct lines:\n${prevProduct}\n\nNamed customers:\n${prevCustomers}\n\nICP tree:\n${prevICP}\n\nIdentify the top buyers PER PRODUCT LINE. Reference named customers where those buyers exist.`,
       },
     };
 
