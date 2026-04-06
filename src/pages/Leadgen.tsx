@@ -1428,11 +1428,7 @@ export default function Leadgen() {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
-                <Textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} className="text-sm min-h-[140px]" placeholder="Email body..." />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">CTA Button (optional)</label>
-                <Input value={draftCtaText} onChange={(e) => setDraftCtaText(e.target.value)} className="text-sm" placeholder="e.g. Schedule a Call" />
+                <Textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} className="text-sm min-h-[180px] whitespace-pre-wrap" placeholder="Email body..." />
               </div>
             </div>
           )}
