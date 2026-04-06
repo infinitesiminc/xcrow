@@ -235,6 +235,15 @@ export function LeadPipeline({
                   <TableCell className="hidden sm:table-cell">
                     <span className="text-xs text-muted-foreground truncate">{lead.company || "—"}</span>
                   </TableCell>
+                  <TableCell>
+                    {lead.score != null ? (
+                      <span className={`text-xs font-semibold ${lead.score >= 90 ? "text-emerald-600" : lead.score >= 70 ? "text-primary" : lead.score >= 50 ? "text-amber-600" : "text-muted-foreground"}`}>
+                        {lead.score}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">—</span>
+                    )}
+                  </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal truncate max-w-[130px]">
                       {lead.niche_tag || "Uncategorized"}
