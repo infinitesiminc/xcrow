@@ -594,8 +594,9 @@ export default function Leadgen() {
       matchedLead.status === "new"
         ? updateLeadStatus(matchedLead.id, "contacted")
         : Promise.resolve(),
+      saveDraftToDb(matchedLead.id, draftLead.email, draftSubject, draftBody),
     ]);
-  }, [draftBody, draftLead, draftSubject, logOutreach, savedLeads, updateLeadStatus, user]);
+  }, [draftBody, draftLead, draftSubject, logOutreach, savedLeads, updateLeadStatus, user, saveDraftToDb]);
 
   const handleSendEmail = async () => {
     if (!draftLead?.email || !draftSubject || !draftBody) return;
