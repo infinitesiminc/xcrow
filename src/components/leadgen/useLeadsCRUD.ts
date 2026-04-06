@@ -12,6 +12,8 @@ export interface SavedLead extends Lead {
   niche_tag?: string;
   source?: string | null;
   workspace_key?: string;
+  rating?: number | null;
+  score?: number;
 }
 
 export interface OutreachEntry {
