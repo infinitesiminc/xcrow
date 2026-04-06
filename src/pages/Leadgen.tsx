@@ -885,11 +885,6 @@ export default function Leadgen() {
 
 
 
-  const MARQUEE_ROWS = [
-    ["Apple", "Stripe", "OpenAI", "Netflix", "Figma", "Anthropic", "Canva", "Salesforce"],
-    ["Datadog", "Notion", "Shopify", "HubSpot", "Snowflake", "Cloudflare", "Twilio", "Zoom"],
-  ];
-
   // Redirect to homepage if no website param and no existing data
   useEffect(() => {
     if (!hasDiscovered && !isDiscovering && !searchParams.get("website") && !sessionStorage.getItem("pendingWebsite") && !websiteUrl) {
