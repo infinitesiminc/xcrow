@@ -971,6 +971,21 @@ export default function Leadgen() {
     toast.success("Workspace removed");
   }, [deleteWorkspace, activeWorkspaceKey]);
 
+  const handleNewWorkspace = useCallback(() => {
+    autoDiscoverRef.current = false;
+    setWebsiteUrl("");
+    setHasDiscovered(false);
+    setLocalWorkspaceKey("");
+    setLocalNiches([]);
+    setCompanySummary("");
+    setIcpSummary("");
+    setPagesScraped(0);
+    setPagesAnalyzed([]);
+    setGtmTreeData(null);
+    setIsGtmLoading(false);
+    setGtmPersonasLoading(false);
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
 
   // Auto-load most recent workspace for logged-in users with no context
   const autoLoadedRef = useRef(false);
