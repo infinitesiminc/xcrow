@@ -415,13 +415,11 @@ export default function GTMTreeView({
                 <span className="text-sm font-semibold text-foreground">Verticals & Buyer Roles</span>
               </div>
               <div className="p-2">
-                {!selectedProductId ? (
-                  <p className="text-sm text-muted-foreground p-3 text-center">Select a product to view target verticals</p>
-                ) : activeVerticals.length === 0 ? (
+                {data.mappings.length === 0 ? (
                   <p className="text-sm text-muted-foreground p-3 text-center">No verticals mapped</p>
                 ) : (
                   <div className="flex gap-2 overflow-x-auto pb-1">
-                    {activeVerticals.map((v, i) => {
+                    {data.mappings.map((v, i) => {
                       const Icon = getVerticalIcon(v.vertical);
                       return (
                         <div key={`${v.vertical}-${i}`} className="p-3 rounded-lg border border-border bg-card min-w-[200px] max-w-[240px] shrink-0">
@@ -431,7 +429,7 @@ export default function GTMTreeView({
                           </div>
                           <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{v.segment}</p>
                           <Badge variant="secondary" className="text-xs h-5 px-2 gap-1 bg-blue-500/15 text-blue-700 border-0">
-                            <UserCheck className="w-3 h-3" /> DM: {v.dm}
+                            <UserCheck className="w-3 h-3" /> DM: {v.dm.title}
                           </Badge>
                         </div>
                       );
