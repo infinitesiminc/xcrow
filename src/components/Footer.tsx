@@ -27,7 +27,7 @@ const LEGAL = [
   { label: "Privacy", to: "/privacy" },
   { label: "Terms", to: "/terms" },
   { label: "Cookies", to: "/cookies" },
-  { label: "Contact", to: "/contact" },
+  
   { label: "About", to: "/about" },
 ];
 
