@@ -352,7 +352,7 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
         {/* ── Compact Header Row ── */}
         <div className="flex items-center gap-2 px-1">
           <Building2 className="w-4 h-4 text-primary shrink-0" />
-          <span className="text-sm font-semibold text-foreground truncate">{companyName}</span>
+          <span className="text-sm font-semibold text-foreground">{companyName}</span>
           {companyMeta?.website && (
             <a href={`https://${companyMeta.website}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5 shrink-0">
               <Globe className="w-3 h-3" /> {companyMeta.website}
@@ -366,7 +366,7 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
         </div>
 
         {data.company_summary && (
-          <p className="text-[10px] text-muted-foreground px-1 line-clamp-1">{data.company_summary}</p>
+          <p className="text-[10px] text-muted-foreground px-1">{data.company_summary}</p>
         )}
 
         {/* ── Named Customers (expandable FYI) ── */}
@@ -416,11 +416,11 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
                       >
                         <div className="flex items-center gap-1.5">
                           <Package className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span className="text-[11px] font-medium text-foreground truncate flex-1">{product.name}</span>
+                          <span className="text-[11px] font-medium text-foreground flex-1">{product.name}</span>
                         </div>
                         {product.competitors.length > 0 && (
                           <div className="flex flex-wrap gap-0.5 mt-1">
-                            {product.competitors.slice(0, 2).map(c => (
+                            {product.competitors.map(c => (
                               <Badge key={c} variant="secondary" className="text-[8px] h-3 px-1 bg-orange-500/10 text-orange-600 border-0">{c}</Badge>
                             ))}
                           </div>
@@ -506,12 +506,12 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
                     >
                       <div className="flex items-center gap-1.5">
                         <Package className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="text-[11px] font-medium text-foreground truncate flex-1">{product.name}</span>
+                        <span className="text-[11px] font-medium text-foreground flex-1">{product.name}</span>
                         <Badge variant="secondary" className="text-[9px] h-3.5 px-1 shrink-0">{getProductLeadCount(product.id)}</Badge>
                       </div>
                       {product.competitors.length > 0 && (
                         <div className="flex flex-wrap gap-0.5 mt-1">
-                          {product.competitors.slice(0, 2).map(c => (
+                          {product.competitors.map(c => (
                             <Badge key={c} variant="secondary" className="text-[8px] h-3 px-1 bg-orange-500/10 text-orange-600 border-0">{c}</Badge>
                           ))}
                         </div>
@@ -622,14 +622,14 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
                           )}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-medium text-foreground truncate">{lead.name}</span>
+                              <span className="text-[11px] font-medium text-foreground">{lead.name}</span>
                               {score != null && (
                                 <Badge variant="secondary" className="text-[8px] h-3.5 px-1 shrink-0 gap-0.5">
                                   <Star className="w-2 h-2 fill-current" />{score}
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-[10px] text-muted-foreground truncate">{lead.title} · {lead.company}</div>
+                            <div className="text-[10px] text-muted-foreground">{lead.title} · {lead.company}</div>
                             <div className="flex flex-wrap gap-0.5 mt-0.5">
                               <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-blue-500/15 text-blue-700">DM</Badge>
                               {lead.type === "conquest" && lead.competitor_using && lead.competitor_using !== "null" && (
