@@ -989,12 +989,12 @@ export default function Leadgen() {
   }, [user, savedLeads, filteredPanelLeads]);
 
   // Workspace switch handler — load cached data for selected workspace
-  const handleSwitchWorkspace = useCallback((websiteKey: string) => {
+  const handleSwitchWorkspace = useCallback(async (websiteKey: string) => {
     touchWorkspace(websiteKey);
-    autoDiscoverRef.current = false;
+    autoDiscoverRef.current = true; // prevent autoDiscover from re-triggering
     setWebsiteUrl(websiteKey);
     setSearchParams({}, { replace: true });
-    // Reset state, let cache kick in
+    // Reset state
     setLocalNiches([]);
     setLocalWorkspaceKey("");
     setCompanySummary("");
@@ -1003,9 +1003,39 @@ export default function Leadgen() {
     setPagesAnalyzed([]);
     setGtmTreeData(null);
     setHasDiscovered(false);
-    // Trigger fresh analysis which will hit cache
+    setIsGtmLoading(true);
+
+    // Load directly from GTM cache — no scout re-run
+    try {
+      const { data: cached } = await supabase
+        .from("leadhunter_cache")
+        .select("*")
+        .eq("website_key", websiteKey)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
+
+      if (cached?.tree_data) {
+        const cachedTree = cached.tree_data as any;
+        if (cachedTree.company_summary) setCompanySummary(cachedTree.company_summary);
+        setGtmTreeData({
+          company_summary: cachedTree.company_summary || "",
+          products: cachedTree.products || [],
+          customers: cachedTree.customers || [],
+          conquest_targets: cachedTree.conquest_targets || [],
+          mappings: cachedTree.mappings || [],
+          leads: cachedTree.leads || [],
+        });
+        setHasDiscovered(true);
+        setIsGtmLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.warn("[Workspace] Cache miss, triggering fresh analysis:", e);
+    }
+
+    // Cache miss — trigger fresh analysis via URL param
+    setIsGtmLoading(false);
     navigate(`/leadhunter?website=${encodeURIComponent(websiteKey)}`, { replace: true });
-    // Need to reset autoDiscoverRef so the useEffect picks it up
     setTimeout(() => { autoDiscoverRef.current = false; }, 0);
   }, [touchWorkspace, navigate, setSearchParams]);
 
