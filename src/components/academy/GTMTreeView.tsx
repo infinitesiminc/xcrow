@@ -34,10 +34,15 @@ interface GTMTreeViewProps {
   companyMeta?: CompanyMeta;
   onGenerateMore?: (productId: string, vertical: string | null) => void;
   isGeneratingMore?: boolean;
-  /** Phase 2: show products + verticals + customers only, no leads column */
   frameworkOnly?: boolean;
-  /** Phase 2: CTA to proceed to strategy chat */
   onContinueToStrategy?: () => void;
+  /** Slot for the top strategy strip */
+  strategyStrip?: React.ReactNode;
+  /** Slot for the left chat panel */
+  chatPanel?: React.ReactNode;
+  /** Controlled product selection */
+  selectedProductId?: string | null;
+  onSelectProduct?: (id: string) => void;
 }
 
 const LEADS_PER_PAGE = 25;
@@ -81,21 +86,9 @@ interface DerivedVertical {
   championDetails?: { title: string; seniority: string; why_they_care: string; outreach_channel: string };
 }
 
-interface DerivedCompany {
-  name: string;
-  domain?: string;
-  industry?: string;
-  type: "customer" | "conquest";
-  uses_competitor?: string;
-  evidence?: string;
-  product_ids: string[];
-  switch_angle?: string;
-}
-
 type DetailItem =
   | { type: "product"; data: GTMProduct; leadCount: number }
   | { type: "vertical"; data: DerivedVertical }
-  | { type: "company"; data: DerivedCompany; leadCount: number }
   | { type: "lead"; data: GTMLead };
 
 /* ── Selectable card ── */
@@ -133,7 +126,7 @@ function SelectableCard({
   );
 }
 
-/* ── Lead Detail (enriched with recommendation + score) ── */
+/* ── Lead Detail ── */
 function LeadDetail({ lead }: { lead: GTMLead }) {
   const score = (lead as any).lead_score as number | undefined;
   const reason = (lead as any).recommendation_reason as string | undefined;
@@ -150,14 +143,12 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
           <span className="text-xs text-muted-foreground ml-1">Lead Score</span>
         </div>
       )}
-
       {reason && (
         <div className="p-3 rounded-lg border border-accent bg-accent/30">
           <p className="text-xs font-semibold text-muted-foreground mb-1">Why this prospect?</p>
           <p className="text-sm text-foreground leading-relaxed">{reason}</p>
         </div>
       )}
-
       <div className="flex flex-col items-center text-center gap-2">
         {lead.photo_url ? (
           <img src={lead.photo_url} alt="" className="w-14 h-14 rounded-full" />
@@ -172,16 +163,12 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
           <div className="text-sm text-muted-foreground">@ {lead.company}</div>
         </div>
       </div>
-
       <div className="flex flex-wrap gap-1.5 justify-center">
-        <Badge className="text-xs bg-blue-500/15 text-blue-700 border-blue-500/30" variant="outline">
-          Decision Maker
-        </Badge>
+        <Badge className="text-xs bg-blue-500/15 text-blue-700 border-blue-500/30" variant="outline">Decision Maker</Badge>
         <Badge className={`text-xs ${lead.type === "conquest" ? "bg-orange-500/15 text-orange-700 border-orange-500/30" : "bg-primary/15 text-primary border-primary/30"}`} variant="outline">
           {lead.type === "conquest" ? "Prospect" : "Named Customer"}
         </Badge>
       </div>
-
       <div className="space-y-2 text-sm">
         <div className="flex items-start gap-2">
           <Package className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
@@ -200,7 +187,6 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
           </div>
         )}
       </div>
-
       <div className="space-y-2">
         {lead.linkedin_url && (
           <a href={lead.linkedin_url} target="_blank" rel="noopener noreferrer"
@@ -252,8 +238,15 @@ function ProductDetail({ product, leadCount }: { product: GTMProduct; leadCount:
 }
 
 /* ── Main component ── */
-export default function GTMTreeView({ companyName, data, companyMeta, onGenerateMore, isGeneratingMore, frameworkOnly, onContinueToStrategy }: GTMTreeViewProps) {
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+export default function GTMTreeView({
+  companyName, data, companyMeta, onGenerateMore, isGeneratingMore,
+  frameworkOnly, onContinueToStrategy, strategyStrip, chatPanel,
+  selectedProductId: controlledProductId, onSelectProduct,
+}: GTMTreeViewProps) {
+  const [internalProductId, setInternalProductId] = useState<string | null>(null);
+  const selectedProductId = controlledProductId !== undefined ? controlledProductId : internalProductId;
+  const setSelectedProductId = onSelectProduct || setInternalProductId;
+
   const [selectedVerticalIdx, setSelectedVerticalIdx] = useState<number | null>(null);
   const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
   const [customersOpen, setCustomersOpen] = useState(false);
@@ -265,12 +258,9 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
     }
   }, [data.products, selectedProductId]);
 
-  // Filters
-  const [productFilter, setProductFilter] = useState("");
   const [leadFilter, setLeadFilter] = useState("");
   const [leadPage, setLeadPage] = useState(1);
 
-  // ── Derived data ──
   const verticalsByProduct = useMemo(() => {
     const map: Record<string, DerivedVertical[]> = {};
     for (const m of data.mappings) {
@@ -294,10 +284,6 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
     }
     return map;
   }, [data.leads]);
-
-  const filteredProducts = useMemo(() =>
-    data.products.filter(p => p.name.toLowerCase().includes(productFilter.toLowerCase())),
-    [data.products, productFilter]);
 
   const activeVerticals = useMemo(() =>
     selectedProductId ? (verticalsByProduct[selectedProductId] || []) : [],
@@ -334,7 +320,7 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
   const paginatedLeads = activeLeads.slice((safePage - 1) * LEADS_PER_PAGE, safePage * LEADS_PER_PAGE);
 
   function selectProduct(id: string) {
-    setSelectedProductId(prev => prev === id ? null : id);
+    setSelectedProductId(id);
     setSelectedVerticalIdx(null);
     setLeadPage(1);
   }
@@ -348,10 +334,12 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
     switch (detailItem.type) {
       case "product": return detailItem.data.name;
       case "vertical": return detailItem.data.vertical;
-      case "company": return detailItem.data.name;
       case "lead": return detailItem.data.name;
     }
   }
+
+  const hasLeads = data.leads.length > 0;
+  const showFullMode = !frameworkOnly && hasLeads;
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -404,19 +392,21 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
           </Collapsible>
         )}
 
+        {/* ══════════════════════════════════════════════════════ */}
         {/* ── Framework-only mode: Products + Verticals only ── */}
-        {frameworkOnly ? (
+        {/* ══════════════════════════════════════════════════════ */}
+        {frameworkOnly && (
           <div className="space-y-3">
             <div className="flex gap-1 h-[320px] lg:h-[480px]">
               {/* Products column */}
               <div className="flex flex-col w-[220px] shrink-0 border border-border rounded-lg overflow-hidden bg-card">
                 <div className="flex items-center justify-between p-2 border-b border-border/50">
                   <span className="text-xs font-semibold text-foreground">Products</span>
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{filteredProducts.length}</Badge>
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{data.products.length}</Badge>
                 </div>
                 <ScrollArea className="flex-1">
                   <div className="p-1.5 space-y-1">
-                    {filteredProducts.map(product => (
+                    {data.products.map(product => (
                       <SelectableCard key={product.id} active={selectedProductId === product.id}
                         onClick={() => selectProduct(product.id)}
                         onInfoClick={() => setDetailItem({ type: "product", data: product, leadCount: 0 })}
@@ -471,7 +461,6 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
               </div>
             </div>
 
-            {/* CTA to proceed */}
             {onContinueToStrategy && (
               <div className="flex justify-center">
                 <Button onClick={onContinueToStrategy} size="lg" className="gap-2">
@@ -481,179 +470,168 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
               </div>
             )}
           </div>
-        ) : (
-          /* ── Full mode: Products + Leads ── */
-          <div className="flex gap-1 h-[520px]">
-            {/* Col 1: Products */}
-            <div className="flex flex-col w-[220px] shrink-0 border border-border rounded-lg overflow-hidden bg-card">
-              <div className="flex items-center justify-between p-2 border-b border-border/50">
-                <span className="text-xs font-semibold text-foreground">Products</span>
-                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{filteredProducts.length}</Badge>
-              </div>
-              <div className="px-1.5 pt-1.5">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                  <Input placeholder="Filter..." value={productFilter} onChange={e => setProductFilter(e.target.value)}
-                    className="h-7 text-xs pl-7 bg-background" />
-                </div>
-              </div>
-              <ScrollArea className="flex-1">
-                <div className="p-1.5 space-y-1">
-                  {filteredProducts.map(product => (
-                    <SelectableCard key={product.id} active={selectedProductId === product.id}
-                      onClick={() => selectProduct(product.id)}
-                      onInfoClick={() => setDetailItem({ type: "product", data: product, leadCount: getProductLeadCount(product.id) })}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <Package className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="text-[11px] font-medium text-foreground flex-1">{product.name}</span>
-                        <Badge variant="secondary" className="text-[9px] h-3.5 px-1 shrink-0">{getProductLeadCount(product.id)}</Badge>
-                      </div>
-                    </SelectableCard>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
+        )}
 
-            {/* Col 2: Leads */}
-            <div className="flex flex-col flex-1 border border-border rounded-lg overflow-hidden bg-card">
-              <div className="flex flex-col gap-1 p-2 border-b border-border/50 shrink-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">Prospects</span>
-                  <div className="flex items-center gap-1.5">
-                    {onGenerateMore && selectedProductId && (
-                      <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5 gap-0.5"
-                        disabled={isGeneratingMore}
-                        onClick={() => onGenerateMore(selectedProductId,
-                          selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx]
-                            ? activeVerticals[selectedVerticalIdx].vertical : null
-                        )}
-                      >
-                        {isGeneratingMore ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
-                        +5
-                      </Button>
-                    )}
-                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                      {activeLeads.length}/{totalLeadsForProduct}
-                    </Badge>
-                  </div>
+        {/* ══════════════════════════════════════════════════════ */}
+        {/* ── Full mode: Top Strip + Chat/Leads Split          ── */}
+        {/* ══════════════════════════════════════════════════════ */}
+        {showFullMode && (
+          <div className="rounded-lg border border-border overflow-hidden bg-card">
+            {/* Top horizontal strip */}
+            {strategyStrip}
+
+            {/* Bottom split: Chat | Leads */}
+            <div className="flex h-[520px]">
+              {/* Left: Chat panel */}
+              {chatPanel && (
+                <div className="w-[280px] lg:w-[320px] shrink-0">
+                  {chatPanel}
                 </div>
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                  <Input placeholder="Search name, title, company..."
-                    value={leadFilter} onChange={e => { setLeadFilter(e.target.value); setLeadPage(1); }}
-                    className="h-7 text-xs pl-7 bg-background" disabled={!selectedProductId} />
-                </div>
-                {selectedProductId && activeVerticals.length > 0 && (
-                  <div className="flex gap-1 flex-wrap">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => { setSelectedVerticalIdx(null); setLeadPage(1); }}
-                          className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
-                            selectedVerticalIdx === null
-                              ? "border-primary bg-primary/10 text-primary font-medium"
-                              : "border-border bg-card text-muted-foreground hover:border-primary/30"
-                          }`}
+              )}
+
+              {/* Right: Lead list */}
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex flex-col gap-1 p-2 border-b border-border/50 shrink-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">Prospects</span>
+                    <div className="flex items-center gap-1.5">
+                      {onGenerateMore && selectedProductId && (
+                        <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5 gap-0.5"
+                          disabled={isGeneratingMore}
+                          onClick={() => onGenerateMore(selectedProductId,
+                            selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx]
+                              ? activeVerticals[selectedVerticalIdx].vertical : null
+                          )}
                         >
-                          <Zap className="w-3 h-3" />
-                          All
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom"><p className="text-xs">All verticals</p></TooltipContent>
-                    </Tooltip>
-                    {activeVerticals.map((v, i) => {
-                      const Icon = getVerticalIcon(v.vertical);
+                          {isGeneratingMore ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
+                          +5
+                        </Button>
+                      )}
+                      <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                        {activeLeads.length}/{totalLeadsForProduct}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                    <Input placeholder="Search name, title, company..."
+                      value={leadFilter} onChange={e => { setLeadFilter(e.target.value); setLeadPage(1); }}
+                      className="h-7 text-xs pl-7 bg-background" disabled={!selectedProductId} />
+                  </div>
+                  {selectedProductId && activeVerticals.length > 0 && (
+                    <div className="flex gap-1 flex-wrap">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => { setSelectedVerticalIdx(null); setLeadPage(1); }}
+                            className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
+                              selectedVerticalIdx === null
+                                ? "border-primary bg-primary/10 text-primary font-medium"
+                                : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                            }`}
+                          >
+                            <Zap className="w-3 h-3" /> All
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom"><p className="text-xs">All verticals</p></TooltipContent>
+                      </Tooltip>
+                      {activeVerticals.map((v, i) => {
+                        const Icon = getVerticalIcon(v.vertical);
+                        return (
+                          <Tooltip key={`${v.vertical}-${i}`}>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => { setSelectedVerticalIdx(prev => prev === i ? null : i); setLeadPage(1); }}
+                                className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
+                                  selectedVerticalIdx === i
+                                    ? "border-primary bg-primary/10 text-primary font-medium"
+                                    : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                                }`}
+                              >
+                                <Icon className="w-3 h-3" /> {getVerticalShortLabel(v.vertical)}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-[220px]">
+                              <p className="text-xs font-medium">{v.vertical}</p>
+                              <p className="text-[10px] text-muted-foreground">{v.segment}</p>
+                              <p className="text-[10px] text-muted-foreground">DM: {v.dm}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <ScrollArea className="flex-1">
+                  <div className="p-1.5 space-y-1">
+                    {!selectedProductId ? (
+                      <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view prospects</p>
+                    ) : paginatedLeads.length === 0 ? (
+                      <p className="text-[10px] text-muted-foreground p-2 text-center">No prospects found</p>
+                    ) : paginatedLeads.map((lead, i) => {
+                      const score = (lead as any).lead_score as number | undefined;
                       return (
-                        <Tooltip key={`${v.vertical}-${i}`}>
-                          <TooltipTrigger asChild>
-                            <button
-                              onClick={() => { setSelectedVerticalIdx(prev => prev === i ? null : i); setLeadPage(1); }}
-                              className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
-                                selectedVerticalIdx === i
-                                  ? "border-primary bg-primary/10 text-primary font-medium"
-                                  : "border-border bg-card text-muted-foreground hover:border-primary/30"
-                              }`}
-                            >
-                              <Icon className="w-3 h-3" />
-                              {getVerticalShortLabel(v.vertical)}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="max-w-[220px]">
-                            <p className="text-xs font-medium">{v.vertical}</p>
-                            <p className="text-[10px] text-muted-foreground">{v.segment}</p>
-                            <p className="text-[10px] text-muted-foreground">DM: {v.dm}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <SelectableCard
+                          key={lead.linkedin_url + i}
+                          onClick={() => setDetailItem({ type: "lead", data: lead })}
+                          onInfoClick={() => setDetailItem({ type: "lead", data: lead })}
+                        >
+                          <div className="flex items-start gap-2">
+                            {lead.photo_url ? (
+                              <img src={lead.photo_url} alt="" className="w-6 h-6 rounded-full shrink-0 mt-0.5" />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                                <Users className="w-3 h-3 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-medium text-foreground">{lead.name}</span>
+                                {score != null && (
+                                  <Badge variant="secondary" className="text-[8px] h-3.5 px-1 shrink-0 gap-0.5">
+                                    <Star className="w-2 h-2 fill-current" />{score}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground">{lead.title} · {lead.company}</div>
+                              <div className="flex flex-wrap gap-0.5 mt-0.5">
+                                <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-blue-500/15 text-blue-700">DM</Badge>
+                                {lead.type === "conquest" && lead.competitor_using && lead.competitor_using !== "null" && (
+                                  <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-orange-500/10 text-orange-600">
+                                    <Swords className="w-2 h-2 mr-0.5" />{lead.competitor_using}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </SelectableCard>
                       );
                     })}
                   </div>
+                </ScrollArea>
+
+                {totalLeadPages > 1 && (
+                  <div className="flex items-center justify-between px-2 py-1.5 border-t border-border/50 shrink-0">
+                    <button onClick={() => setLeadPage(p => Math.max(1, p - 1))} disabled={safePage <= 1}
+                      className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
+                      <ChevronLeft className="w-3 h-3" /> Prev
+                    </button>
+                    <span className="text-[10px] text-muted-foreground">{safePage}/{totalLeadPages}</span>
+                    <button onClick={() => setLeadPage(p => Math.min(totalLeadPages, p + 1))} disabled={safePage >= totalLeadPages}
+                      className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
+                      Next <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
                 )}
               </div>
-
-              <ScrollArea className="flex-1">
-                <div className="p-1.5 space-y-1">
-                  {!selectedProductId ? (
-                    <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view prospects</p>
-                  ) : paginatedLeads.length === 0 ? (
-                    <p className="text-[10px] text-muted-foreground p-2 text-center">No prospects found</p>
-                  ) : paginatedLeads.map((lead, i) => {
-                    const score = (lead as any).lead_score as number | undefined;
-                    return (
-                      <SelectableCard
-                        key={lead.linkedin_url + i}
-                        onClick={() => setDetailItem({ type: "lead", data: lead })}
-                        onInfoClick={() => setDetailItem({ type: "lead", data: lead })}
-                      >
-                        <div className="flex items-start gap-2">
-                          {lead.photo_url ? (
-                            <img src={lead.photo_url} alt="" className="w-6 h-6 rounded-full shrink-0 mt-0.5" />
-                          ) : (
-                            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                              <Users className="w-3 h-3 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-medium text-foreground">{lead.name}</span>
-                              {score != null && (
-                                <Badge variant="secondary" className="text-[8px] h-3.5 px-1 shrink-0 gap-0.5">
-                                  <Star className="w-2 h-2 fill-current" />{score}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-[10px] text-muted-foreground">{lead.title} · {lead.company}</div>
-                            <div className="flex flex-wrap gap-0.5 mt-0.5">
-                              <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-blue-500/15 text-blue-700">DM</Badge>
-                              {lead.type === "conquest" && lead.competitor_using && lead.competitor_using !== "null" && (
-                                <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-orange-500/10 text-orange-600">
-                                  <Swords className="w-2 h-2 mr-0.5" />{lead.competitor_using}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </SelectableCard>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-
-              {totalLeadPages > 1 && (
-                <div className="flex items-center justify-between px-2 py-1.5 border-t border-border/50 shrink-0">
-                  <button onClick={() => setLeadPage(p => Math.max(1, p - 1))} disabled={safePage <= 1}
-                    className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
-                    <ChevronLeft className="w-3 h-3" /> Prev
-                  </button>
-                  <span className="text-[10px] text-muted-foreground">{safePage}/{totalLeadPages}</span>
-                  <button onClick={() => setLeadPage(p => Math.min(totalLeadPages, p + 1))} disabled={safePage >= totalLeadPages}
-                    className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
-                    Next <ChevronRight className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
             </div>
           </div>
+        )}
+
+        {/* ── Full mode without strip/chat (backward compat) ── */}
+        {!frameworkOnly && !hasLeads && !strategyStrip && (
+          <p className="text-[10px] text-muted-foreground p-4 text-center">No leads generated yet</p>
         )}
 
         {/* Detail Sheet */}
