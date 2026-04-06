@@ -35,14 +35,14 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-background/90 border-b border-border">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/60">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <button
           onClick={() => handleNav("/")}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <span className="text-lg font-semibold text-foreground tracking-tight">
+          <span className="text-lg font-bold text-foreground tracking-tight">
             Xcrow
           </span>
         </button>
@@ -109,8 +109,7 @@ export default function Navbar() {
               </DropdownMenu>
             </>
           ) : (
-            <Button size="sm" onClick={openAuthModal}>
-              <User className="mr-1.5 h-4 w-4" />
+            <Button size="sm" onClick={openAuthModal} className="font-semibold">
               Sign in
             </Button>
           )}
