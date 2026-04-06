@@ -26,12 +26,14 @@ function htmlToText(html: string): string {
     .trim();
 }
 
+const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
+
 /** Scrape a page using native fetch — no Firecrawl needed */
 async function scrapePage(url: string): Promise<{ text: string; title: string }> {
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)",
+        "User-Agent": BROWSER_UA,
         Accept: "text/html,application/xhtml+xml",
       },
       redirect: "follow",
@@ -131,18 +133,26 @@ Deno.serve(async (req) => {
     // --- Step 1: Scrape homepage and discover internal links ---
     console.log("Step 1: Scraping homepage...");
     const homeRes = await fetch(formattedUrl, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)", Accept: "text/html" },
+      headers: { "User-Agent": BROWSER_UA, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
       redirect: "follow",
     });
-    if (!homeRes.ok) {
-      return json({ success: false, error: "Could not read your website. Check the URL." }, 400);
+
+    let homeHtml = "";
+    let homepageText = "";
+    if (homeRes.ok) {
+      homeHtml = await homeRes.text();
+      homepageText = htmlToText(homeHtml).slice(0, 5000);
+    } else {
+      console.warn(`Homepage returned ${homeRes.status}, proceeding with domain name only`);
+      await homeRes.text(); // consume body
     }
-    const homeHtml = await homeRes.text();
-    const homepageText = htmlToText(homeHtml).slice(0, 5000);
+
     const homeTitle = homeHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || "";
 
+    // If we got no content, use domain name as context for AI
+    const domain = new URL(formattedUrl).hostname.replace("www.", "");
     if (!homepageText || homepageText.length < 50) {
-      return json({ success: false, error: "Website returned insufficient content." }, 400);
+      homepageText = `Company website: ${domain}. (Content could not be scraped — infer from the domain name.)`;
     }
 
     // --- Step 2: Find and scrape ICP-relevant subpages ---
