@@ -555,9 +555,19 @@ export default function GTMTreeView({
                 <ScrollArea className="flex-1">
                   <div className="p-1.5 space-y-1">
                     {!selectedProductId ? (
-                      <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view prospects</p>
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Target className="w-8 h-8 text-muted-foreground/30 mb-3" />
+                        <p className="text-sm font-medium text-muted-foreground">Select a product above</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Then configure your strategy and generate leads</p>
+                      </div>
+                    ) : !hasLeads ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Users className="w-8 h-8 text-muted-foreground/30 mb-3" />
+                        <p className="text-sm font-medium text-muted-foreground">No leads yet</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Use the strategy cards above to configure targeting, then click Generate</p>
+                      </div>
                     ) : paginatedLeads.length === 0 ? (
-                      <p className="text-[10px] text-muted-foreground p-2 text-center">No prospects found</p>
+                      <p className="text-xs text-muted-foreground p-4 text-center">No prospects match your filter</p>
                     ) : paginatedLeads.map((lead, i) => {
                       const score = (lead as any).lead_score as number | undefined;
                       return (
