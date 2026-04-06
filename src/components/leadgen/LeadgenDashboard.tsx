@@ -69,6 +69,7 @@ export function LeadgenDashboard({
   niches,
   gtmTreeData,
   onGenerateFromTargeting,
+  onStopGenerating,
 }: LeadgenDashboardProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
