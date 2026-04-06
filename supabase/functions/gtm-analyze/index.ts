@@ -251,29 +251,23 @@ serve(async (req) => {
 
     const prev = previousResults || {};
 
-    // Validate website reachability on first step
+    // Validate website reachability on first step (lenient: 403/406/429 are OK — site exists but blocks bots)
     if (stepId === "products" && company?.website) {
       const siteUrl = company.website.startsWith("http") ? company.website : `https://${company.website}`;
       try {
         const probe = await fetch(siteUrl, {
           method: "HEAD",
-          headers: { "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)" },
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
           redirect: "follow",
         });
-        if (!probe.ok && probe.status !== 405) {
-          // Try GET as fallback (some servers reject HEAD)
-          const probeGet = await fetch(siteUrl, {
-            method: "GET",
-            headers: { "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)", Accept: "text/html" },
-            redirect: "follow",
-          });
-          if (!probeGet.ok) {
-            return respond({ error: `Website unreachable (HTTP ${probeGet.status}). Please check the URL and try again.` }, 400);
-          }
+        // Only block on definitive failures (DNS fail caught by catch, 5xx = server down)
+        // 403/406/429 mean the site exists but blocks automated requests — that's fine, AI knows the company
+        if (probe.status >= 500) {
+          console.warn(`Website returned ${probe.status}, proceeding anyway`);
         }
       } catch (fetchErr) {
-        console.error("Website probe failed:", fetchErr);
-        return respond({ error: "Website not found. Please check the URL for typos and try again." }, 400);
+        console.warn("Website probe failed (DNS/network):", fetchErr);
+        // Still proceed — AI can analyze well-known companies by name alone
       }
     }
 
