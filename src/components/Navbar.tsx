@@ -39,6 +39,8 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
 
   const navItems = [
     { label: "Lead Hunter", path: "/leadhunter", icon: Compass },
+    { label: "How It Works", path: "/how-it-works", icon: undefined },
+    { label: "Pricing", path: "/pricing", icon: undefined },
   ];
 
   const handleNav = (path: string) => {
