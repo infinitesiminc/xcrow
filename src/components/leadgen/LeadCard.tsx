@@ -21,6 +21,7 @@ export interface Lead {
   reason?: string;
   photo_url?: string;
   niche_tag?: string;
+  score?: number;
 }
 
 function getLeadPhotoUrl(lead: Lead): string | null {
