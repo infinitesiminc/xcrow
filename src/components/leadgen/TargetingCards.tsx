@@ -43,7 +43,7 @@ interface TargetingCardsProps {
   loadingPersonas?: boolean;
 }
 
-export default function TargetingCards({ treeData, selectedIds, onToggle }: TargetingCardsProps) {
+export default function TargetingCards({ treeData, selectedIds, onToggle, loadingProducts, loadingPersonas }: TargetingCardsProps) {
   const productItems: TargetItem[] = useMemo(() =>
     treeData.products.map(p => ({
       type: "product" as const,
