@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
-  Building2, ArrowLeft, Loader2, RefreshCw,
+  Building2, ArrowLeft, Loader2, RefreshCw, Package, Users,
 } from "lucide-react";
 import GTMTreeView from "./GTMTreeView";
 
