@@ -95,7 +95,6 @@ const FAQ = [
   { q: "How are leads counted?", a: "Each lead is a verified prospect with name, title, LinkedIn, and email. Your monthly count resets on your billing date." },
   { q: "Can I cancel anytime?", a: "Yes. Starter and Pro are month-to-month with no contracts. Cancel from your Settings page and you'll keep access until the end of your billing period." },
   { q: "What's the Enterprise plan?", a: "Enterprise is for teams with high-volume needs. Contact jackson@xcrow.ai for custom pricing, onboarding, and integrations." },
-  { q: "What's the Enterprise plan?", a: "Enterprise is for teams with high-volume needs. Contact jackson@xcrow.ai for custom pricing, onboarding, and integrations." },
 ];
 
 export default function Pricing() {
