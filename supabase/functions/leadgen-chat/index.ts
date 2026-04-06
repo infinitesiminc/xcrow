@@ -279,7 +279,7 @@ async function searchApollopeople(
             name,
             title: p.title || null,
             company: p.organization?.name || null,
-            linkedin: p.linkedin_url || null,
+            linkedin: validLinkedIn(p.linkedin_url),
             email: p.email || null,
             website: p.organization?.website_url || null,
             photo_url: p.photo_url || null,
