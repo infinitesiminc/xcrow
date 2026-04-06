@@ -26,6 +26,19 @@ import { useWorkspaces } from "@/hooks/use-workspaces";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 const SCOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-scout`;
+const FETCH_TIMEOUT_MS = 120_000;
+
+/** Fetch with automatic timeout via AbortSignal */
+function fetchWithTimeout(url: string, opts: RequestInit & { timeout?: number } = {}): Promise<Response> {
+  const { timeout = FETCH_TIMEOUT_MS, ...fetchOpts } = opts;
+  const controller = new AbortController();
+  const existingSignal = fetchOpts.signal;
+  if (existingSignal) {
+    existingSignal.addEventListener("abort", () => controller.abort());
+  }
+  const timer = setTimeout(() => controller.abort(), timeout);
+  return fetch(url, { ...fetchOpts, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
 
 type ChatItem =
   | { type: "user"; content: string }
