@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
+import founderImg from "@/assets/founder-jackson.png";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import logoCrow from "@/assets/logo-crow.png";
@@ -78,7 +79,9 @@ export default function About() {
         {/* Founder */}
         <section className="py-20">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <motion.div {...fade()} className="bg-card border border-border rounded-2xl p-8 sm:p-10">
+            <motion.div {...fade()} className="bg-card border border-border rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row gap-8 items-start">
+              <img src={founderImg} alt="Jackson Lam, Founder of Xcrow" className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover shrink-0" />
+              <div>
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">Founder</p>
               <h2 className="text-2xl font-extrabold text-foreground tracking-tight mb-4">Jackson Lam</h2>
               <div className="text-muted-foreground leading-relaxed space-y-4">
@@ -99,6 +102,7 @@ export default function About() {
                 <a href="mailto:jackson@xcrow.ai" className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline">
                   <Mail className="w-4 h-4" /> jackson@xcrow.ai
                 </a>
+              </div>
               </div>
             </motion.div>
           </div>
