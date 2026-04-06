@@ -339,7 +339,7 @@ export default function GTMTreeView({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="space-y-1">
+      <div className="space-y-0">
         {/* ── Executive Overview ── */}
         <div className="px-4 py-4 border-b border-border/50 bg-card/50 rounded-t-lg">
           <div className="flex items-start justify-between gap-4">
