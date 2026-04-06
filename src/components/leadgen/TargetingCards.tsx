@@ -83,14 +83,15 @@ export default function TargetingCards({ treeData, selectedIds, onToggle }: Targ
               <button
                 key={item.id}
                 onClick={() => onToggle({ id: item.id, type: item.type, label: item.label, description: item.description, meta: item.meta })}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-md border text-xs font-medium transition-all text-left w-full ${
+                className={`flex items-center gap-2 px-2.5 py-2 rounded-md border text-xs font-medium transition-all text-left w-full ${
                   selected
                     ? "border-primary bg-primary/10 ring-1 ring-primary/30"
                     : "border-border bg-card hover:border-primary/30 hover:bg-accent/30"
                 }`}
               >
-                {selected && <Check className="w-3 h-3 text-primary shrink-0" />}
-                <span className="text-foreground truncate">{item.label}</span>
+                <Package className={`w-3.5 h-3.5 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+                <span className="text-foreground">{item.label}</span>
+                {selected && <Check className="w-3 h-3 text-primary shrink-0 ml-auto" />}
               </button>
             );
           })}
@@ -106,20 +107,24 @@ export default function TargetingCards({ treeData, selectedIds, onToggle }: Targ
         </div>
         <div className="flex flex-col gap-1.5">
           {verticalItems.map(item => {
+            const Icon = item.icon;
             const selected = selectedIds.has(item.id);
             return (
               <button
                 key={item.id}
                 onClick={() => onToggle({ id: item.id, type: item.type, label: item.label, description: item.description, meta: item.meta })}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-md border text-xs transition-all text-left w-full ${
+                className={`flex items-center gap-2 px-2.5 py-2 rounded-md border text-xs transition-all text-left w-full ${
                   selected
                     ? "border-primary bg-primary/10 ring-1 ring-primary/30"
                     : "border-border bg-card hover:border-primary/30 hover:bg-accent/30"
                 }`}
               >
-                {selected && <Check className="w-3 h-3 text-primary shrink-0" />}
-                <span className="font-medium text-foreground truncate">{item.label}</span>
-                {item.meta && <span className="text-muted-foreground truncate ml-auto text-[10px]">{item.meta}</span>}
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+                <div className="flex flex-col min-w-0">
+                  <span className="font-medium text-foreground">{item.label}</span>
+                  {item.meta && <span className="text-muted-foreground text-[10px]">{item.meta}</span>}
+                </div>
+                {selected && <Check className="w-3 h-3 text-primary shrink-0 ml-auto" />}
               </button>
             );
           })}
