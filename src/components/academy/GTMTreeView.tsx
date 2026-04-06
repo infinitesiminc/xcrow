@@ -33,8 +33,7 @@ interface GTMTreeViewProps {
   isGeneratingMore?: boolean;
   frameworkOnly?: boolean;
   onContinueToStrategy?: () => void;
-  /** Slot for the top strategy strip */
-  strategyStrip?: React.ReactNode;
+  /** Slot for the left chat panel */
   /** Slot for the left chat panel */
   chatPanel?: React.ReactNode;
   /** Controlled product selection */
@@ -237,7 +236,7 @@ function ProductDetail({ product, leadCount }: { product: GTMProduct; leadCount:
 /* ── Main component ── */
 export default function GTMTreeView({
   companyName, data, companyMeta, onGenerateMore, isGeneratingMore,
-  frameworkOnly, onContinueToStrategy, strategyStrip, chatPanel,
+  frameworkOnly, onContinueToStrategy, chatPanel,
   selectedProductId: controlledProductId, onSelectProduct,
 }: GTMTreeViewProps) {
   const [internalProductId, setInternalProductId] = useState<string | null>(null);
@@ -463,8 +462,7 @@ export default function GTMTreeView({
         {/* ══════════════════════════════════════════════════════ */}
         {showFullMode && (
           <div className="rounded-lg border border-border overflow-hidden bg-card">
-            {/* Top horizontal strip */}
-            {strategyStrip}
+            {/* Chat/Leads Split */}
 
             {/* Bottom split: Chat | Leads */}
             <div className="flex h-[520px]">
@@ -614,7 +612,7 @@ export default function GTMTreeView({
         )}
 
         {/* ── Full mode without strip/chat (backward compat) ── */}
-        {!frameworkOnly && !hasLeads && !strategyStrip && (
+        {!frameworkOnly && !hasLeads && !chatPanel && (
           <p className="text-[10px] text-muted-foreground p-4 text-center">No leads generated yet</p>
         )}
 
