@@ -509,8 +509,8 @@ CRITICAL:
 - Use your knowledge of real companies and executives
 - Every lead must be from a DIFFERENT company
 - Focus on decision-makers: Owner, CEO, VP, Director, Head of
-- Include LinkedIn profile URLs when you know them
-- Every lead MUST have a "score" (0-100 ICP fit): 90+ perfect, 70-89 strong, 50-69 moderate
+- Do NOT include LinkedIn profile URLs — they are usually wrong. Set linkedin to null.
+- Only include people you're confident exist
 - Be honest — only include people you're confident exist`,
         },
         {
