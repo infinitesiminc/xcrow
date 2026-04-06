@@ -167,6 +167,7 @@ export default function Leadgen() {
   const [sending, setSending] = useState(false);
   const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [leadViewCount, setLeadViewCount] = useState(0);
 
   // Normalize domain for cache key
   const normalizeWebsiteKey = (url: string): string =>
@@ -1261,7 +1262,17 @@ export default function Leadgen() {
             onDraftAll={handleDraftAllSimple}
             isGenerating={isFindingLeads}
             isEnriching={isEnrichingLeads}
-            onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+            onSelectLead={(lead) => {
+              const nextCount = leadViewCount + 1;
+              setLeadViewCount(nextCount);
+              if (!user && nextCount >= 2) {
+                toast("Sign up to save leads & unlock full details", { icon: "🔒" });
+                openAuthModal();
+                return;
+              }
+              setSelectedLead(lead);
+              setDrawerOpen(true);
+            }}
             onFindLookalikes={handleFindLookalikes}
             websiteUrl={websiteUrl}
             pagesAnalyzed={pagesAnalyzed}
