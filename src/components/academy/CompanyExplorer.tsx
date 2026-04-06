@@ -477,6 +477,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
                 ))}
               </div>
             </div>
+          </div>
 
           {/* Centered loading overlay */}
           <div className="absolute inset-0 flex items-center justify-center">
