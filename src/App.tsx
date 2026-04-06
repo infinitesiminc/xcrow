@@ -21,7 +21,6 @@ const SmartHomeRoute = () => {
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const Blog = lazy(() => import("./pages/Blog.tsx"));
 
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
@@ -29,8 +28,6 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
-const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
-const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
 
 
 const queryClient = new QueryClient();
