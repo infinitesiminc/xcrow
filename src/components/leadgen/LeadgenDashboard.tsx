@@ -132,6 +132,7 @@ export function LeadgenDashboard({
               cards={droppedCards}
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
+              onStop={onStopGenerating}
             />
           </div>
         </div>
