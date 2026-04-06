@@ -48,8 +48,8 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — Find Hyper-Accurate Leads From a Single Website"
-        description="The only lead hunter that turns one website into a full pipeline. Enter your URL — AI finds, qualifies, and delivers your perfect prospects in seconds."
+        title="Xcrow — The #1 Outbound Lead Hunter"
+        description="Enter one website. Get a full prospect map, qualified decision-makers, and outreach-ready leads — in seconds."
         path="/"
       />
       <div className="min-h-screen bg-background flex flex-col">
