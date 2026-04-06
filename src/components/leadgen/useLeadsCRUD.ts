@@ -12,6 +12,8 @@ export interface SavedLead extends Lead {
   niche_tag?: string;
   source?: string | null;
   workspace_key?: string;
+  rating?: number | null;
+  score?: number;
 }
 
 export interface OutreachEntry {
@@ -58,7 +60,7 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
       .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false });
 
-    if (data) setLeads(data as unknown as SavedLead[]);
+    if (data) setLeads((data as any[]).map((d: any) => ({ ...d, score: d.rating ?? undefined })) as unknown as SavedLead[]);
   }, [userId, workspaceKey]);
 
   const fetchOutreach = useCallback(async () => {
@@ -142,6 +144,7 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
         photo_url: l.photo_url || null,
         status: "new" as const,
         niche_tag: l.niche_tag || null,
+        rating: l.score != null ? l.score : null,
       }));
 
       for (const row of rows) {

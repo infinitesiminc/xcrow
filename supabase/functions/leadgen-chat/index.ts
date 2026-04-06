@@ -448,12 +448,14 @@ async function executeLeadSearch(
           {
             role: "system",
             content: `You are scoring and enriching leads for relevance. Given an ICP and a list of Apollo results, return the top ${extractLimit} most relevant leads as JSON (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin url or null","email":"email or null","website":"company website or null","photo_url":"photo url or null","source":"Apollo People Search","summary":"1-2 sentence summary of who this person is","reason":"1-2 sentence explanation of why they match the ICP","is_decision_maker":true}]}
+{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin url or null","email":"email or null","website":"company website or null","photo_url":"photo url or null","source":"Apollo People Search","summary":"1-2 sentence summary of who this person is","reason":"1-2 sentence explanation of why they match the ICP","score":85,"is_decision_maker":true}]}
 
 CRITICAL:
 - Rank by ICP fit — closest matches first
 - ONLY keep decision-makers with purchasing authority
-- Every lead MUST have summary and reason fields
+- Every lead MUST have summary, reason, and score fields
+- "score" is 0-100 ICP fit score: 90+ = perfect match, 70-89 = strong, 50-69 = moderate, <50 = weak
+- Score based on: title seniority, company relevance to ICP, industry alignment, location match
 - Preserve all Apollo data (linkedin, email, photo_url)`,
           },
           {
@@ -492,13 +494,14 @@ CRITICAL:
         {
           role: "system",
           content: `Find up to ${extractLimit} real decision-makers matching this ICP. Return JSON only (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin profile url or null","email":"null","website":"company website or null","source":"AI Discovery","summary":"1-2 sentence summary","reason":"1-2 sentence ICP match explanation","is_decision_maker":true}]}
+{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin profile url or null","email":"null","website":"company website or null","source":"AI Discovery","summary":"1-2 sentence summary","reason":"1-2 sentence ICP match explanation","score":85,"is_decision_maker":true}]}
 
 CRITICAL:
 - Use your knowledge of real companies and executives
 - Every lead must be from a DIFFERENT company
 - Focus on decision-makers: Owner, CEO, VP, Director, Head of
 - Include LinkedIn profile URLs when you know them
+- Every lead MUST have a "score" (0-100 ICP fit): 90+ perfect, 70-89 strong, 50-69 moderate
 - Be honest — only include people you're confident exist`,
         },
         {
