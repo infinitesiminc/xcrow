@@ -417,62 +417,64 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     <div className="max-w-[1200px] mx-auto px-4 py-2">
       {/* Loading: blurred dashboard preview + centered overlay */}
       {isRunning && !treeData && (
-        <div className="relative">
+        <div className="relative min-h-[540px] overflow-hidden rounded-[28px] border border-border/60 bg-muted/20 p-3">
           {/* Blurred dashboard skeleton background */}
-          <div className="blur-[2px] opacity-70 pointer-events-none select-none">
+          <div className="pointer-events-none select-none blur-[1px] opacity-100">
             {/* Executive overview bar */}
-            <div className="rounded-xl border border-border bg-card p-4 mb-4">
-              <div className="flex items-center justify-between">
+            <div className="mb-4 rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted animate-pulse" />
+                  <div className="h-10 w-10 rounded-lg bg-foreground/10 animate-pulse" />
                   <div>
-                    <div className="h-5 w-40 bg-muted rounded mb-1.5 animate-pulse" />
+                    <div className="mb-1.5 h-5 w-40 rounded bg-foreground/10 animate-pulse" />
                     <div className="flex gap-2">
-                      <div className="h-4 w-20 bg-muted rounded-full animate-pulse" />
-                      <div className="h-4 w-24 bg-muted rounded-full animate-pulse" />
-                      <div className="h-4 w-16 bg-muted rounded-full animate-pulse" />
+                      <div className="h-4 w-20 rounded-full bg-foreground/10 animate-pulse" />
+                      <div className="h-4 w-24 rounded-full bg-foreground/10 animate-pulse" />
+                      <div className="h-4 w-16 rounded-full bg-foreground/10 animate-pulse" />
                     </div>
                   </div>
                 </div>
-                <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+                <div className="h-4 w-48 rounded bg-foreground/10 animate-pulse" />
               </div>
             </div>
+
             {/* Two-column layout matching GTMTreeView */}
-            <div className="grid grid-cols-[40%_1fr] gap-4 min-h-[400px]">
+            <div className="grid min-h-[420px] grid-cols-[40%_1fr] gap-4">
               {/* Left: Products */}
-              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Package className="w-4 h-4 text-muted-foreground/40" />
-                  <div className="h-4 w-28 bg-muted rounded animate-pulse" />
+              <div className="space-y-3 rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+                <div className="mb-2 flex items-center gap-2">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <div className="h-4 w-28 rounded bg-foreground/10 animate-pulse" />
                 </div>
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+                  <div key={i} className="space-y-2 rounded-xl border border-border/70 bg-background/80 p-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-md bg-muted animate-pulse" />
-                      <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                      <div className="h-7 w-7 rounded-md bg-foreground/10 animate-pulse" />
+                      <div className="h-4 w-32 rounded bg-foreground/10 animate-pulse" />
                     </div>
-                    <div className="h-3 w-full bg-muted rounded animate-pulse" />
+                    <div className="h-3 w-full rounded bg-foreground/10 animate-pulse" />
                     <div className="flex gap-2">
-                      <div className="h-5 w-16 bg-muted rounded-full animate-pulse" />
-                      <div className="h-5 w-20 bg-muted rounded-full animate-pulse" />
+                      <div className="h-5 w-16 rounded-full bg-foreground/10 animate-pulse" />
+                      <div className="h-5 w-20 rounded-full bg-foreground/10 animate-pulse" />
                     </div>
                   </div>
                 ))}
               </div>
+
               {/* Right: Personas */}
-              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="w-4 h-4 text-muted-foreground/40" />
-                  <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+              <div className="space-y-3 rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+                <div className="mb-2 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <div className="h-4 w-32 rounded bg-foreground/10 animate-pulse" />
                 </div>
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="flex items-center gap-3 p-2 rounded-lg border border-border">
-                    <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                  <div key={i} className="flex items-center gap-3 rounded-xl border border-border/70 bg-background/80 p-2.5">
+                    <div className="h-8 w-8 rounded-full bg-foreground/10 animate-pulse" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 w-3/4 bg-muted rounded animate-pulse" />
-                      <div className="h-3 w-1/2 bg-muted rounded animate-pulse" />
+                      <div className="h-3.5 w-3/4 rounded bg-foreground/10 animate-pulse" />
+                      <div className="h-3 w-1/2 rounded bg-foreground/10 animate-pulse" />
                     </div>
-                    <div className="h-5 w-12 bg-muted rounded-full animate-pulse" />
+                    <div className="h-5 w-12 rounded-full bg-foreground/10 animate-pulse" />
                   </div>
                 ))}
               </div>
