@@ -1,52 +1,41 @@
 /**
- * Index — Landing page: zero-knowledge outbound lead hunter
+ * Index — Gong-inspired landing page for Xcrow Lead Hunter
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import logoCrow from "@/assets/logo-crow.png";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import Footer from "@/components/Footer";
 import {
-  Globe, Sparkles, ArrowRight, Zap, Target, BarChart3,
-  Search, Brain, ListChecks, Send, CheckCircle2, XCircle,
+  Globe, Sparkles, ArrowRight,
+  Search, Brain, ListChecks, Send,
+  CheckCircle2, XCircle, Zap, Shield, BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import { useAuth } from "@/contexts/AuthContext";
 
+/* ── data ── */
 const MARQUEE_ROWS = [
   ["Apple", "Stripe", "OpenAI", "Netflix", "Figma", "Anthropic", "Canva", "Salesforce"],
   ["Datadog", "Notion", "Shopify", "HubSpot", "Snowflake", "Cloudflare", "Twilio", "Zoom"],
 ];
 
 const STEPS = [
-  {
-    number: "01",
-    icon: Globe,
-    title: "Paste your website",
-    desc: "AI scrapes your site, maps your products, and understands what you sell — automatically.",
-  },
-  {
-    number: "02",
-    icon: Brain,
-    title: "AI builds your prospect map",
-    desc: "Verticals, company segments, and decision-maker personas — a full targeting tree in seconds.",
-  },
-  {
-    number: "03",
-    icon: ListChecks,
-    title: "Get scored, verified leads",
-    desc: "Real people from Apollo with LinkedIn profiles, fit scores, and recommendation reasons.",
-  },
-  {
-    number: "04",
-    icon: Send,
-    title: "Draft & send outreach",
-    desc: "AI writes personalized emails per lead. Track opens, replies, and manage your pipeline.",
-  },
+  { icon: Globe, title: "Paste a website", desc: "Drop any company URL. Our AI scrapes and analyzes the business in seconds." },
+  { icon: Brain, title: "AI maps your prospects", desc: "Verticals, personas, and decision-makers — an entire targeting tree, automatically." },
+  { icon: ListChecks, title: "Get scored leads", desc: "Real people with verified LinkedIn profiles, fit scores, and recommendation reasons." },
+  { icon: Send, title: "Send outreach", desc: "Personalized emails drafted per lead. Track opens, replies, and manage your pipeline." },
+];
+
+const STATS = [
+  { value: "60s", label: "From URL to leads" },
+  { value: "0", label: "GTM expertise needed" },
+  { value: "100%", label: "Verified profiles" },
 ];
 
 const COMPARISONS = [
@@ -60,10 +49,33 @@ const COMPARISONS = [
   { feature: "Complex workflow builder", xcrow: false, others: true },
 ];
 
+const VALUE_PROPS = [
+  { icon: Zap, title: "Instant pipeline", desc: "No manual research. AI builds your entire prospect list from a single URL." },
+  { icon: Shield, title: "Verified data only", desc: "Every lead comes from Apollo with real LinkedIn profiles — zero hallucinated contacts." },
+  { icon: BarChart3, title: "Smart scoring", desc: "AI scores each lead on fit, seniority, and buying signals so you focus on the best." },
+];
+
+/* ── animation helpers ── */
+const EASE: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, delay, ease: EASE },
+});
+
+const fadeInView = (delay = 0) => ({
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-60px" as const },
+  transition: { duration: 0.6, delay, ease: EASE },
+});
+
 export default function Index() {
   const { openAuthModal } = useAuth();
   const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleDiscover = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,10 +84,15 @@ export default function Index() {
     const domain = url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
     const domainPattern = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
     if (!domainPattern.test(domain)) {
-      toast.error("Please enter a valid website URL (e.g. company.com)");
+      toast.error("Enter a valid website URL (e.g. company.com)");
       return;
     }
     navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
+  };
+
+  const scrollToInput = () => {
+    inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => inputRef.current?.focus(), 500);
   };
 
   return (
@@ -85,198 +102,256 @@ export default function Index() {
         description="Enter one website. Get a full prospect map, qualified decision-makers, and outreach-ready leads — in seconds. No GTM expertise required."
         path="/"
       />
+
+      
+
       <div className="min-h-screen bg-background flex flex-col">
-        {/* ── Hero ── */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-20 relative">
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] rounded-full bg-primary/[0.04] blur-[100px]" />
+
+        {/* ═══════════════════════════════════════════
+            HERO — big, bold, Gong-style
+        ═══════════════════════════════════════════ */}
+        <section className="relative overflow-hidden">
+          {/* Subtle gradient background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] rounded-full bg-primary/[0.03] blur-[120px]" />
+            <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-primary/[0.02] blur-[100px]" />
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center relative z-10 max-w-3xl mx-auto"
-          >
-            <img src={logoCrow} alt="Xcrow" className="h-16 w-16 object-contain mx-auto mb-5" />
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-16 sm:pb-24">
+            <div className="text-center max-w-4xl mx-auto">
 
-            <p className="text-primary text-sm font-semibold tracking-widest uppercase mb-4">
-              Outbound for everyone
-            </p>
+              {/* Eyebrow */}
+              <motion.p
+                {...fadeUp(0)}
+                className="text-primary text-sm font-semibold tracking-[0.2em] uppercase mb-6"
+              >
+                The #1 Outbound Lead Hunter
+              </motion.p>
 
-            <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-6 tracking-tight leading-[1.08] uppercase">
-              One Website.
-              <br />
-              <span className="text-primary">Perfect Leads.</span>
-            </h1>
+              {/* Headline — Gong style: big uppercase with accent color */}
+              <motion.h1
+                {...fadeUp(0.1)}
+                className="text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] font-extrabold text-foreground leading-[1.05] tracking-[-0.02em] uppercase mb-6"
+              >
+                One Website.
+                <br />
+                <span className="text-primary">Perfect Leads.</span>
+              </motion.h1>
 
-            <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-              Paste any URL — AI analyzes the company, maps decision-makers, and delivers a scored pipeline with outreach drafts. No sales experience needed.
-            </p>
+              {/* Subheadline */}
+              <motion.p
+                {...fadeUp(0.2)}
+                className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+              >
+                Paste any company URL — AI analyzes the business, maps decision-makers,
+                and delivers a scored pipeline with outreach drafts. No sales experience needed.
+              </motion.p>
 
-            <form onSubmit={handleDiscover} className="flex gap-3 max-w-lg mx-auto w-full">
-              <div className="relative flex-1">
-                <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                  placeholder="yourcompany.com"
-                  className="pl-10 h-[52px] text-base bg-background border-border shadow-sm"
-                />
-              </div>
-              <Button type="submit" size="lg" className="h-[52px] px-7 gap-2 text-base font-semibold shadow-md" disabled={!websiteUrl.trim()}>
-                <Sparkles className="w-4 h-4" />
-                Hunt Leads
-              </Button>
-            </form>
+              {/* CTA Input */}
+              <motion.form
+                {...fadeUp(0.3)}
+                onSubmit={handleDiscover}
+                className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto w-full"
+              >
+                <div className="relative flex-1">
+                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60" />
+                  <Input
+                    ref={inputRef}
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder="company.com"
+                    className="pl-12 h-14 text-base bg-background border-border shadow-sm rounded-xl"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-14 px-8 gap-2.5 text-base font-bold shadow-lg rounded-xl"
+                  disabled={!websiteUrl.trim()}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Hunt Leads
+                </Button>
+              </motion.form>
 
-            <p className="text-xs text-muted-foreground/50 mt-4">
-              Free to try · No credit card · Results in 60 seconds
-            </p>
-          </motion.div>
+              <motion.p {...fadeUp(0.4)} className="text-sm text-muted-foreground/50 mt-5">
+                Free to start · No credit card · Results in 60 seconds
+              </motion.p>
+            </div>
 
-          {/* Social proof */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="w-full max-w-3xl mx-auto mt-16 relative z-10"
-          >
-            <p className="text-center text-xs text-muted-foreground/60 mb-4 tracking-widest uppercase font-medium">
+            {/* Stats row */}
+            <motion.div
+              {...fadeUp(0.5)}
+              className="flex justify-center gap-12 sm:gap-20 mt-16"
+            >
+              {STATS.map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <p className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══ Social proof marquee ═══ */}
+        <section className="border-y border-border/40 bg-muted/20 py-8">
+          <motion.div {...fadeInView()} className="max-w-5xl mx-auto px-4">
+            <p className="text-center text-xs text-muted-foreground/60 tracking-[0.2em] uppercase font-medium mb-5">
               Works with any B2B company
             </p>
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
-        </div>
+        </section>
 
-        {/* ── How it works ── */}
-        <div className="relative z-10 bg-muted/30">
-          <div className="max-w-5xl mx-auto px-4 py-20">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3 tracking-tight">
-                From URL to pipeline in 4 steps
+        {/* ═══ Value props — 3 columns ═══ */}
+        <section className="py-20 sm:py-28">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <motion.div {...fadeInView()} className="text-center mb-16">
+              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
+                Why Xcrow
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
+                Outbound Without the Overhead
               </h2>
-              <p className="text-muted-foreground text-center mb-14 max-w-md mx-auto">
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {VALUE_PROPS.map((vp, i) => (
+                <motion.div
+                  key={i}
+                  {...fadeInView(i * 0.1)}
+                  className="text-center px-4"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                    <vp.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2 tracking-tight">
+                    {vp.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">{vp.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ How it works — numbered steps ═══ */}
+        <section className="bg-muted/30 py-20 sm:py-28">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <motion.div {...fadeInView()} className="text-center mb-16">
+              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
+                How it works
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
+                From URL to Pipeline in 4 Steps
+              </h2>
+              <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
                 No spreadsheets. No guesswork. No GTM expertise required.
               </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {STEPS.map((step, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1, duration: 0.4 }}
-                    className="bg-card border border-border rounded-xl p-6 group hover:shadow-lg hover:border-primary/20 transition-all duration-300 relative"
-                  >
-                    <span className="absolute top-4 right-4 text-3xl font-black text-muted-foreground/10 select-none">
-                      {step.number}
-                    </span>
-                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
-                      <step.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <h3 className="text-sm font-bold text-foreground mb-2 tracking-tight">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
             </motion.div>
-          </div>
-        </div>
 
-        {/* ── Differentiator: Xcrow vs Others ── */}
-        <div className="relative z-10">
-          <div className="max-w-3xl mx-auto px-4 py-20">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3 tracking-tight">
-                Built different
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {STEPS.map((step, i) => (
+                <motion.div
+                  key={i}
+                  {...fadeInView(i * 0.1)}
+                  className="relative bg-card border border-border rounded-2xl p-6 hover:shadow-lg hover:border-primary/20 transition-all duration-300 group"
+                >
+                  {/* Step number */}
+                  <span className="absolute top-5 right-5 text-4xl font-black text-primary/[0.07] select-none leading-none">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 transition-colors">
+                    <step.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-bold text-foreground mb-2 tracking-tight">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ Comparison table ═══ */}
+        <section className="py-20 sm:py-28">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <motion.div {...fadeInView()} className="text-center mb-14">
+              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
+                Xcrow vs. the rest
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
+                Built Different
               </h2>
-              <p className="text-muted-foreground text-center mb-12 max-w-md mx-auto">
+              <p className="text-muted-foreground mt-4 max-w-md mx-auto">
                 Other tools give you a database. Xcrow gives you a strategy.
               </p>
+            </motion.div>
 
-              <div className="bg-card border border-border rounded-xl overflow-hidden">
-                {/* Header */}
-                <div className="grid grid-cols-[1fr_100px_100px] md:grid-cols-[1fr_120px_120px] items-center px-5 py-3 border-b border-border bg-muted/50">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Feature</span>
-                  <span className="text-xs font-bold text-primary text-center uppercase tracking-wider">Xcrow</span>
-                  <span className="text-xs font-semibold text-muted-foreground text-center uppercase tracking-wider">Others</span>
-                </div>
-                {/* Rows */}
-                {COMPARISONS.map((row, i) => (
-                  <div
-                    key={i}
-                    className={`grid grid-cols-[1fr_100px_100px] md:grid-cols-[1fr_120px_120px] items-center px-5 py-3.5 ${
-                      i < COMPARISONS.length - 1 ? "border-b border-border/50" : ""
-                    } ${!row.xcrow ? "opacity-60" : ""}`}
-                  >
-                    <span className="text-sm text-foreground">{row.feature}</span>
-                    <div className="flex justify-center">
-                      {row.xcrow ? (
-                        <CheckCircle2 className="w-5 h-5 text-primary" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-muted-foreground/40" />
-                      )}
-                    </div>
-                    <div className="flex justify-center">
-                      {row.others ? (
-                        <CheckCircle2 className="w-5 h-5 text-muted-foreground/60" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-muted-foreground/40" />
-                      )}
-                    </div>
-                  </div>
-                ))}
+            <motion.div {...fadeInView(0.1)} className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+              {/* Header */}
+              <div className="grid grid-cols-[1fr_100px_100px] sm:grid-cols-[1fr_120px_120px] items-center px-6 py-4 border-b border-border bg-muted/40">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Feature</span>
+                <span className="text-xs font-bold text-primary text-center uppercase tracking-[0.1em]">Xcrow</span>
+                <span className="text-xs font-bold text-muted-foreground text-center uppercase tracking-[0.1em]">Others</span>
               </div>
+              {COMPARISONS.map((row, i) => (
+                <div
+                  key={i}
+                  className={`grid grid-cols-[1fr_100px_100px] sm:grid-cols-[1fr_120px_120px] items-center px-6 py-4 ${
+                    i < COMPARISONS.length - 1 ? "border-b border-border/40" : ""
+                  } ${!row.xcrow ? "opacity-50" : ""}`}
+                >
+                  <span className="text-sm text-foreground font-medium">{row.feature}</span>
+                  <div className="flex justify-center">
+                    {row.xcrow ? (
+                      <CheckCircle2 className="w-5 h-5 text-primary" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-muted-foreground/30" />
+                    )}
+                  </div>
+                  <div className="flex justify-center">
+                    {row.others ? (
+                      <CheckCircle2 className="w-5 h-5 text-muted-foreground/50" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-muted-foreground/30" />
+                    )}
+                  </div>
+                </div>
+              ))}
             </motion.div>
           </div>
-        </div>
+        </section>
 
-        {/* ── Bottom CTA ── */}
-        <div className="relative z-10 bg-muted/30">
-          <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 tracking-tight">
-                Your first leads are one URL away
+        {/* ═══ Bottom CTA ═══ */}
+        <section className="bg-primary/[0.04] border-t border-primary/10">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 sm:py-24 text-center">
+            <motion.div {...fadeInView()}>
+              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
+                Ready?
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase mb-5">
+                Your First Leads Are
+                <br />
+                <span className="text-primary">One URL Away</span>
               </h2>
-              <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              <p className="text-muted-foreground mb-10 max-w-md mx-auto text-lg">
                 Stop guessing who to sell to. Let AI do the research.
               </p>
               <Button
                 size="lg"
-                className="h-[52px] px-8 gap-2 text-base font-semibold shadow-md"
-                onClick={() => {
-                  const input = document.querySelector<HTMLInputElement>('input[placeholder="yourcompany.com"]');
-                  if (input) {
-                    input.scrollIntoView({ behavior: "smooth", block: "center" });
-                    setTimeout(() => input.focus(), 500);
-                  }
-                }}
+                className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl"
+                onClick={scrollToInput}
               >
-                <ArrowRight className="w-4 h-4" />
-                Start Hunting
+                <ArrowRight className="w-5 h-5" />
+                Start Hunting — It's Free
               </Button>
             </motion.div>
           </div>
-        </div>
+        </section>
 
         <Footer />
       </div>
