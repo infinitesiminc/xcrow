@@ -37,7 +37,7 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
   const navItems = [
-    { label: "Lead Hunter", path: "/leadgen", icon: Compass },
+    { label: "Lead Hunter", path: "/leadhunter", icon: Compass },
   ];
 
   const handleNav = (path: string) => {
