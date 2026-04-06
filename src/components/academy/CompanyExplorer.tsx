@@ -424,37 +424,37 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             <div className="rounded-xl border border-border bg-card p-4 mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted" />
+                  <div className="w-10 h-10 rounded-lg bg-muted animate-pulse" />
                   <div>
-                    <div className="h-5 w-40 bg-muted rounded mb-1.5" />
+                    <div className="h-5 w-40 bg-muted rounded mb-1.5 animate-pulse" />
                     <div className="flex gap-2">
-                      <div className="h-4 w-20 bg-muted rounded-full" />
-                      <div className="h-4 w-24 bg-muted rounded-full" />
-                      <div className="h-4 w-16 bg-muted rounded-full" />
+                      <div className="h-4 w-20 bg-muted rounded-full animate-pulse" />
+                      <div className="h-4 w-24 bg-muted rounded-full animate-pulse" />
+                      <div className="h-4 w-16 bg-muted rounded-full animate-pulse" />
                     </div>
                   </div>
                 </div>
-                <div className="h-4 w-48 bg-muted rounded" />
+                <div className="h-4 w-48 bg-muted rounded animate-pulse" />
               </div>
             </div>
             {/* Two-column layout matching GTMTreeView */}
-            <div className="grid grid-cols-[40%_1fr] gap-4">
+            <div className="grid grid-cols-[40%_1fr] gap-4 min-h-[400px]">
               {/* Left: Products */}
               <div className="rounded-xl border border-border bg-card p-4 space-y-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Package className="w-4 h-4 text-muted-foreground/40" />
-                  <div className="h-4 w-28 bg-muted rounded" />
+                  <div className="h-4 w-28 bg-muted rounded animate-pulse" />
                 </div>
                 {[1, 2, 3].map(i => (
                   <div key={i} className="rounded-lg border border-border p-3 space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-md bg-muted" />
-                      <div className="h-4 w-32 bg-muted rounded" />
+                      <div className="w-7 h-7 rounded-md bg-muted animate-pulse" />
+                      <div className="h-4 w-32 bg-muted rounded animate-pulse" />
                     </div>
-                    <div className="h-3 w-full bg-muted rounded" />
+                    <div className="h-3 w-full bg-muted rounded animate-pulse" />
                     <div className="flex gap-2">
-                      <div className="h-5 w-16 bg-muted rounded-full" />
-                      <div className="h-5 w-20 bg-muted rounded-full" />
+                      <div className="h-5 w-16 bg-muted rounded-full animate-pulse" />
+                      <div className="h-5 w-20 bg-muted rounded-full animate-pulse" />
                     </div>
                   </div>
                 ))}
@@ -463,21 +463,20 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
               <div className="rounded-xl border border-border bg-card p-4 space-y-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-4 h-4 text-muted-foreground/40" />
-                  <div className="h-4 w-32 bg-muted rounded" />
+                  <div className="h-4 w-32 bg-muted rounded animate-pulse" />
                 </div>
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="flex items-center gap-3 p-2 rounded-lg border border-border">
-                    <div className="w-8 h-8 rounded-full bg-muted" />
+                    <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 w-3/4 bg-muted rounded" />
-                      <div className="h-3 w-1/2 bg-muted rounded" />
+                      <div className="h-3.5 w-3/4 bg-muted rounded animate-pulse" />
+                      <div className="h-3 w-1/2 bg-muted rounded animate-pulse" />
                     </div>
-                    <div className="h-5 w-12 bg-muted rounded-full" />
+                    <div className="h-5 w-12 bg-muted rounded-full animate-pulse" />
                   </div>
                 ))}
               </div>
             </div>
-          </div>
 
           {/* Centered loading overlay */}
           <div className="absolute inset-0 flex items-center justify-center">
