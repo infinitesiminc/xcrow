@@ -231,7 +231,7 @@ async function searchApollopeople(
     const body: Record<string, unknown> = {
       person_titles: args.target_titles,
       page: 1,
-      per_page: 25,
+      per_page: 5,
     };
     if (args.target_location) {
       body.person_locations = [args.target_location];
@@ -313,7 +313,7 @@ async function searchApolloOrgs(
       const orgBody: Record<string, unknown> = {
         q_organization_name: query,
         page: 1,
-        per_page: 10,
+        per_page: 5,
       };
       if (args.target_location) {
         orgBody.organization_locations = [args.target_location];
