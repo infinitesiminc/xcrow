@@ -387,33 +387,7 @@ export default function GTMTreeView({
           )}
         </div>
 
-        {/* ── Named Customers (expandable FYI) ── */}
-        {namedCustomers.length > 0 && (
-          <Collapsible open={customersOpen} onOpenChange={setCustomersOpen}>
-            <CollapsibleTrigger className="flex items-center gap-1.5 px-1 py-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors w-full text-left">
-              <ChevronDown className={`w-3 h-3 transition-transform ${customersOpen ? "" : "-rotate-90"}`} />
-              <Building2 className="w-3 h-3 text-primary" />
-              <span>{namedCustomers.length} Named Customers found on website</span>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="flex flex-wrap gap-1.5 px-1 pb-1.5">
-                {namedCustomers.map((c) => (
-                  <Tooltip key={c.name}>
-                    <TooltipTrigger asChild>
-                      <Badge variant="outline" className="text-[9px] cursor-default">
-                        <Building2 className="w-2.5 h-2.5 mr-0.5 text-primary" />
-                        {c.name}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-[200px]">
-                      <p className="text-xs">{c.evidence || c.industry || c.domain}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        )}
+        {/* Named customers now shown as tooltip badge in header */}
 
         {/* ══════════════════════════════════════════════════════ */}
         {/* ── Framework-only mode: Products + Verticals only ── */}
