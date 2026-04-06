@@ -181,18 +181,18 @@ export default function Leadgen() {
         leads: [],
       });
 
-      // Step 2: Customers
-      const r2 = await supabase.functions.invoke("gtm-analyze", {
+      // Steps 2 & 3 in parallel (both only need step 1)
+      const [r2, r3] = await Promise.all([
+        supabase.functions.invoke("gtm-analyze", {
         body: { stepId: "customers", company, previousResults },
-      });
+        }),
+        supabase.functions.invoke("gtm-analyze", {
+        body: { stepId: "icp-buyers", company, previousResults },
+        }),
+      ]);
+
       let d2 = r2.data;
       if (d2 instanceof Blob) d2 = JSON.parse(await d2.text());
-      if (d2?.structured) previousResults["customers"] = d2;
-
-      // Step 3: ICP Buyers (mappings / verticals)
-      const r3 = await supabase.functions.invoke("gtm-analyze", {
-        body: { stepId: "icp-buyers", company, previousResults },
-      });
       let d3 = r3.data;
       if (d3 instanceof Blob) d3 = JSON.parse(await d3.text());
 
