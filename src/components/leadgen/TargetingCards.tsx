@@ -130,7 +130,9 @@ export default function TargetingCards({ treeData, droppedIds, vertical }: Targe
                   key={item.id}
                   draggable
                   onDragStart={e => handleDragStart(e, item)}
-                  className={`p-3 rounded-lg border min-w-[200px] max-w-[240px] shrink-0 cursor-grab active:cursor-grabbing transition-all select-none ${
+                  className={`p-3 rounded-lg border cursor-grab active:cursor-grabbing transition-all select-none ${
+                    vertical ? "w-full" : "min-w-[200px] max-w-[240px] shrink-0"
+                  } ${
                     isDropped
                       ? "border-primary/40 bg-primary/5 opacity-60"
                       : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
