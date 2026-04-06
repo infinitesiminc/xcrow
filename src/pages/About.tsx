@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
+import founderImg from "@/assets/founder-jackson.png";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import logoCrow from "@/assets/logo-crow.png";
