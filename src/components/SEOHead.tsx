@@ -19,7 +19,7 @@ export default function SEOHead({
   path = "/",
   ogImage,
 }: SEOHeadProps) {
-  const t = title ? `${title} | Xcrow.ai` : defaults.title;
+  const t = title ? `${title} | Xcrow` : defaults.title;
   const d = description || defaults.description;
   const url = `https://xcrow.ai${path}`;
   const img = ogImage || defaults.ogImage;

@@ -20,9 +20,9 @@ const MARQUEE_ROWS = [
 ];
 
 const VALUE_PROPS = [
-  { icon: Globe, title: "One URL Input", desc: "Enter any company website. AI scrapes, analyzes, and maps your ideal customers automatically." },
-  { icon: Target, title: "3-Layer ICP Map", desc: "Industry verticals → company segments → buyer personas. Full ICP tree in seconds." },
-  { icon: Zap, title: "Instant Lead Pipeline", desc: "Find, enrich, and score prospects directly from your ICP map. No manual research." },
+  { icon: Globe, title: "One URL Input", desc: "Enter any company website. AI analyzes and maps your ideal buyers automatically." },
+  { icon: Target, title: "Smart Prospect Map", desc: "Industry verticals → company segments → buyer personas. Full targeting tree in seconds." },
+  { icon: Zap, title: "Instant Lead Pipeline", desc: "Find, enrich, and score decision-makers directly from your prospect map. No manual research." },
   { icon: BarChart3, title: "Outreach Ready", desc: "AI-drafted emails personalized to each lead. Send directly from the platform." },
 ];
 
