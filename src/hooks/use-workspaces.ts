@@ -49,10 +49,42 @@ export function useWorkspaces(userId: string | undefined) {
 
   const deleteWorkspace = useCallback(async (websiteKey: string) => {
     if (!userId || !websiteKey) return;
+
+    // 1. Delete outreach logs for leads in this workspace
+    const { data: leads } = await (supabase.from("saved_leads") as any)
+      .select("id")
+      .eq("user_id", userId)
+      .eq("workspace_key", websiteKey);
+    if (leads && leads.length > 0) {
+      const leadIds = leads.map((l: any) => l.id);
+      await (supabase.from("outreach_log") as any)
+        .delete()
+        .eq("user_id", userId)
+        .in("lead_id", leadIds);
+      await (supabase.from("lead_notes") as any)
+        .delete()
+        .eq("user_id", userId)
+        .in("lead_id", leadIds);
+    }
+
+    // 2. Delete leads
+    await (supabase.from("saved_leads") as any)
+      .delete()
+      .eq("user_id", userId)
+      .eq("workspace_key", websiteKey);
+
+    // 3. Delete niches
+    await (supabase.from("leadgen_niches") as any)
+      .delete()
+      .eq("user_id", userId)
+      .eq("workspace_key", websiteKey);
+
+    // 4. Delete workspace record
     await (supabase.from("user_workspaces") as any)
       .delete()
       .eq("user_id", userId)
       .eq("website_key", websiteKey);
+
     await fetchWorkspaces();
   }, [userId, fetchWorkspaces]);
 
