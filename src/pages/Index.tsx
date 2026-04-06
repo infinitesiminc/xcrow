@@ -146,8 +146,7 @@ export default function Index() {
                 {...fadeUp(0.2)}
                 className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
               >
-                Paste any company URL — AI analyzes the business, maps decision-makers,
-                and delivers a scored pipeline with outreach drafts. No sales experience needed.
+                Get accurate B2B leads that fit your Ideal Customer Profile in 10 seconds.
               </motion.p>
 
               {/* CTA Input */}
