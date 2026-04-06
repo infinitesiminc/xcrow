@@ -61,11 +61,11 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "").toLowerCase();
   }
 
-  function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  function withTimeout<T>(promiseLike: PromiseLike<T>, ms: number, label: string): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = window.setTimeout(() => reject(new Error(`${label}_TIMEOUT`)), ms);
 
-      promise
+      Promise.resolve(promiseLike)
         .then((value) => {
           window.clearTimeout(timer);
           resolve(value);
