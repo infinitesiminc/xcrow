@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2 } from "lucide-react";
+import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2, Plus } from "lucide-react";
 import type { UserWorkspace } from "@/hooks/use-workspaces";
 
 interface NavbarProps {
