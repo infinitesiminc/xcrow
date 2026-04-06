@@ -33,8 +33,7 @@ interface GTMTreeViewProps {
   isGeneratingMore?: boolean;
   frameworkOnly?: boolean;
   onContinueToStrategy?: () => void;
-  /** Slot for the top strategy strip */
-  strategyStrip?: React.ReactNode;
+  /** Slot for the left chat panel */
   /** Slot for the left chat panel */
   chatPanel?: React.ReactNode;
   /** Controlled product selection */
