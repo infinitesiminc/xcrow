@@ -484,18 +484,6 @@ export default function GTMTreeView({
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-foreground">Prospects</span>
                     <div className="flex items-center gap-1.5">
-                      {onGenerateMore && selectedProductId && (
-                        <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5 gap-0.5"
-                          disabled={isGeneratingMore}
-                          onClick={() => onGenerateMore(selectedProductId,
-                            selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx]
-                              ? activeVerticals[selectedVerticalIdx].vertical : null
-                          )}
-                        >
-                          {isGeneratingMore ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
-                          +5
-                        </Button>
-                      )}
                       <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
                         {activeLeads.length}/{totalLeadsForProduct}
                       </Badge>
