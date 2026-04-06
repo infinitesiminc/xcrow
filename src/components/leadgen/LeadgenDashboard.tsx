@@ -130,7 +130,7 @@ export function LeadgenDashboard({
               <p className="text-muted-foreground line-clamp-3 leading-relaxed">{companySummary}</p>
             </div>
           )}
-          <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} />
+          <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} loadingProducts={loadingProducts} loadingPersonas={loadingPersonas} />
           <div className="mt-auto border-t border-border/30">
             <TargetZone
               cards={droppedCards}
