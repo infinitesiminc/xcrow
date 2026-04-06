@@ -348,11 +348,16 @@ export default function GTMTreeView({
         <div className="flex items-center gap-2 px-1">
           <Building2 className="w-4 h-4 text-primary shrink-0" />
           <span className="text-sm font-semibold text-foreground">{companyName}</span>
-          {companyMeta?.website && (
-            <a href={`https://${companyMeta.website}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5 shrink-0">
-              <Globe className="w-3 h-3" /> {companyMeta.website}
-            </a>
-          )}
+          {companyMeta?.website && (() => {
+            const raw = companyMeta.website;
+            const href = raw.startsWith("http") ? raw : `https://${raw}`;
+            const display = raw.replace(/^https?:\/\//, "").replace(/\/$/, "");
+            return (
+              <a href={href} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5 shrink-0">
+                <Globe className="w-3 h-3" /> {display}
+              </a>
+            );
+          })()}
           <div className="flex items-center gap-1 ml-auto shrink-0">
             {companyMeta?.industry && <Badge variant="secondary" className="text-[9px] h-4">{companyMeta.industry}</Badge>}
             {companyMeta?.employee_range && <Badge variant="outline" className="text-[9px] h-4">{companyMeta.employee_range}</Badge>}
