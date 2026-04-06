@@ -80,10 +80,10 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             className="text-xl font-bold"
             
           >
-            {isSignUp ? "Join the Realm" : "Welcome back"}
+            {isSignUp ? "Create your account" : "Welcome back"}
           </DialogTitle>
           <DialogDescription className="text-sm">
-            {isSignUp ? "Begin your quest — track your skill journey" : "Sign in to continue your conquest"}
+            {isSignUp ? "Sign up to start finding leads" : "Sign in to continue"}
           </DialogDescription>
         </DialogHeader>
 
