@@ -205,9 +205,9 @@ Keep responses brief (2-3 sentences + confirmation). Do NOT call any tools.`;
               <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
                 msg.role === "user"
                   ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-foreground"
+                  : "bg-muted/80 border border-border"
               }`}>
-                <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:mb-1 [&_p:last-child]:mb-0 [&_strong]:text-inherit">
+                <div className="text-foreground [&_p]:mb-1 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:mt-1 [&_li]:mb-0.5">
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
               </div>
