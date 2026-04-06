@@ -509,13 +509,6 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
                         <span className="text-[11px] font-medium text-foreground flex-1">{product.name}</span>
                         <Badge variant="secondary" className="text-[9px] h-3.5 px-1 shrink-0">{getProductLeadCount(product.id)}</Badge>
                       </div>
-                      {product.competitors.length > 0 && (
-                        <div className="flex flex-wrap gap-0.5 mt-1">
-                          {product.competitors.map(c => (
-                            <Badge key={c} variant="secondary" className="text-[8px] h-3 px-1 bg-orange-500/10 text-orange-600 border-0">{c}</Badge>
-                          ))}
-                        </div>
-                      )}
                     </SelectableCard>
                   ))}
                 </div>
