@@ -231,6 +231,43 @@ export default function Leadgen() {
           // Re-hydrate GTM tree from cache
           fetchGtmAnalysis(pending);
         }
+
+        // Send welcome email with workspace data
+        const userEmail = user?.email;
+        const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+        if (userEmail) {
+          const nichesCount = (() => { try { return pendingNichesRaw ? JSON.parse(pendingNichesRaw).length : 0; } catch { return 0; } })();
+          const leadsCount = (() => { try { return pendingLeadsRaw ? JSON.parse(pendingLeadsRaw).length : 0; } catch { return 0; } })();
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "welcome-signup",
+              recipientEmail: userEmail,
+              idempotencyKey: `welcome-signup-${curId}`,
+              templateData: {
+                displayName: userName,
+                websiteUrl: pending,
+                nichesFound: nichesCount,
+                leadsFound: leadsCount,
+                companySummary: pendingSummary || undefined,
+                icpSummary: pendingIcp || undefined,
+              },
+            },
+          }).catch(() => {});
+        }
+      } else {
+        // User signed in without pending workspace — still send welcome
+        const userEmail = user?.email;
+        const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+        if (userEmail) {
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "welcome-signup",
+              recipientEmail: userEmail,
+              idempotencyKey: `welcome-signup-${curId}`,
+              templateData: { displayName: userName },
+            },
+          }).catch(() => {});
+        }
       }
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
