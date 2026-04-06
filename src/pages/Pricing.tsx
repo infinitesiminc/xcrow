@@ -41,7 +41,7 @@ const PLANS = [
     cta: "Get Starter",
     featured: false,
     features: [
-      { text: "15 lead hunts per month", included: true },
+      { text: "30 lead hunts per month", included: true },
       { text: "AI company DNA analysis", included: true },
       { text: "Prospect map generation", included: true },
       { text: "Up to 15 leads per hunt", included: true },
