@@ -75,7 +75,7 @@ export default function Index() {
             </h1>
 
             <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-              Enter one website. Get a full ICP map, qualified decision-makers, and outreach-ready leads — in seconds.
+              Enter one website. Get qualified decision-makers and outreach-ready leads — in seconds.
             </p>
 
             <form onSubmit={handleDiscover} className="flex gap-3 max-w-lg mx-auto w-full">
