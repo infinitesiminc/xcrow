@@ -697,8 +697,8 @@ Deno.serve(async (req) => {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "leads", leads })}\n\n`));
 
           const summaryContent = leads.length > 0
-            ? `Found **${leads.length} decision-makers** with LinkedIn profiles matching your ICP! 🎉\n\nWhat would you like to do next?\n\n1. **Find more leads** — Scale up with different sub-niches\n2. **Refine search** — Adjust criteria for better matches\n3. **Search another region** — Expand to a new geography`
-            : "I couldn't find matching decision-makers this time. Let's try:\n\n1. **Broaden criteria** — Widen job titles or company size\n2. **Try different industries** — Target adjacent verticals\n3. **Search another region** — Try a different area";
+            ? `Found **${leads.length} decision-makers** with LinkedIn profiles matching your ICP! 🎉\n\nWhat would you like to do next?\n\n[[Find more leads|Refine search|Search another region]]`
+            : "I couldn't find matching decision-makers this time. Let's try:\n\n[[Broaden criteria|Try different industries|Search another region]]";
 
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: summaryContent } }] })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
