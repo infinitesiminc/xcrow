@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight, Target, MapPin } from "lucide-react";
+import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight, Target, MapPin, Copy } from "lucide-react";
 import CrowHuntingLoader from "@/components/CrowHuntingLoader";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -560,46 +560,76 @@ export default function Leadgen() {
     } finally { setDraftLoading(false); }
   };
 
+  const recordDraftOpen = useCallback(async () => {
+    if (!user || !draftLead?.email) return;
+
+    const matchedLead = savedLeads.find((l) => l.email === draftLead.email && l.company === draftLead.company);
+    if (!matchedLead) return;
+
+    await Promise.all([
+      logOutreach(matchedLead.id, "email", draftSubject, draftBody),
+      matchedLead.status === "new"
+        ? updateLeadStatus(matchedLead.id, "contacted")
+        : Promise.resolve(),
+    ]);
+  }, [draftBody, draftLead, draftSubject, logOutreach, savedLeads, updateLeadStatus, user]);
+
   const handleSendEmail = async () => {
     if (!draftLead?.email || !draftSubject || !draftBody) return;
     const mailto = `mailto:${draftLead.email}?subject=${encodeURIComponent(draftSubject)}&body=${encodeURIComponent(draftBody)}`;
-    
-    // Try multiple approaches to open mailto
-    let opened = false;
-    
-    // 1. Try window.top (escapes iframe in preview)
+
+    setSending(true);
+
     try {
-      if (window.top && window.top !== window) {
-        window.top.location.href = mailto;
-        opened = true;
+      window.location.assign(mailto);
+      await recordDraftOpen();
+      toast.success(`Tried your email app for ${draftLead.email}`);
+    } catch {
+      toast.error("Could not open your email app. Use Gmail instead.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleOpenGmailDraft = async () => {
+    if (!draftLead?.email || !draftSubject || !draftBody) return;
+
+    setSending(true);
+
+    try {
+      const params = new URLSearchParams({
+        view: "cm",
+        fs: "1",
+        to: draftLead.email,
+        su: draftSubject,
+        body: draftBody,
+      });
+      const gmailUrl = `https://mail.google.com/mail/?${params.toString()}`;
+      const popup = window.open(gmailUrl, "_blank", "noopener,noreferrer");
+
+      if (!popup) {
+        window.location.assign(gmailUrl);
       }
-    } catch { /* cross-origin restriction */ }
-    
-    // 2. Try window.open
-    if (!opened) {
-      const w = window.open(mailto, "_self");
-      if (w) opened = true;
+
+      await recordDraftOpen();
+      toast.success(`Opened Gmail draft for ${draftLead.email}`);
+      setDraftModalOpen(false);
+    } catch {
+      toast.error("Could not open Gmail draft.");
+    } finally {
+      setSending(false);
     }
-    
-    // 3. Fallback: anchor click
-    if (!opened) {
-      const a = document.createElement("a");
-      a.href = mailto;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => document.body.removeChild(a), 100);
+  };
+
+  const handleCopyDraft = async () => {
+    if (!draftLead?.email || !draftSubject || !draftBody) return;
+
+    try {
+      await navigator.clipboard.writeText(`To: ${draftLead.email}\nSubject: ${draftSubject}\n\n${draftBody}`);
+      toast.success("Draft copied to clipboard.");
+    } catch {
+      toast.error("Could not copy the draft.");
     }
-    
-    toast.success(`Opening email client for ${draftLead.email}`);
-    if (user) {
-      const matchedLead = savedLeads.find((l) => l.email === draftLead.email && l.company === draftLead.company);
-      if (matchedLead) {
-        await logOutreach(matchedLead.id, "email", draftSubject, draftBody);
-        if (matchedLead.status === "new") await updateLeadStatus(matchedLead.id, "contacted");
-      }
-    }
-    setDraftModalOpen(false);
   };
 
   const sendMessage = async (overrideText?: string) => {
@@ -1481,13 +1511,22 @@ export default function Leadgen() {
               </div>
             </div>
           )}
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-0 sm:flex-wrap sm:justify-between">
+            <p className="w-full text-xs text-muted-foreground sm:order-1">
+              If your desktop email app does nothing, use Gmail or copy the draft.
+            </p>
             <Button variant="ghost" size="sm" onClick={() => setDraftModalOpen(false)} disabled={sending}>
               <X className="w-3.5 h-3.5 mr-1" /> Cancel
             </Button>
-            <Button size="sm" onClick={handleSendEmail} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
+            <Button variant="outline" size="sm" onClick={handleCopyDraft} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
+              <Copy className="w-3.5 h-3.5" /> Copy Draft
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleSendEmail} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
+              <Mail className="w-3.5 h-3.5" /> Email App
+            </Button>
+            <Button size="sm" onClick={handleOpenGmailDraft} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
               {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-              {sending ? "Opening..." : "Open in Email Client"}
+              {sending ? "Opening..." : "Open in Gmail"}
             </Button>
           </DialogFooter>
         </DialogContent>
