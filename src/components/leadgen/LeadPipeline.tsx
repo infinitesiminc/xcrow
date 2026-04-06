@@ -195,6 +195,7 @@ export function LeadPipeline({
                 <TableHead className="w-[200px]">Name</TableHead>
                 <TableHead className="hidden md:table-cell">Title</TableHead>
                 <TableHead className="hidden sm:table-cell">Company</TableHead>
+                <TableHead className="w-[60px]">Score</TableHead>
                 <TableHead className="hidden lg:table-cell w-[140px]">Niche</TableHead>
                 <TableHead className="hidden lg:table-cell w-[140px]">Location</TableHead>
                 <TableHead className="hidden lg:table-cell">Email</TableHead>
