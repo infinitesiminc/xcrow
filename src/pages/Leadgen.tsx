@@ -412,7 +412,6 @@ export default function Leadgen() {
             // Track workspace
             const wk = normalizeWorkspaceKey(website);
             upsertWorkspace(wk, wk);
-            upsertWorkspace(wk, companyName);
             // Trigger GTM analysis for product/vertical cards
             fetchGtmAnalysis(website.trim());
           })
