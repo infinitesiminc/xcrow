@@ -366,7 +366,7 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
         </div>
 
         {data.company_summary && (
-          <p className="text-[10px] text-muted-foreground px-1 line-clamp-1">{data.company_summary}</p>
+          <p className="text-[10px] text-muted-foreground px-1">{data.company_summary}</p>
         )}
 
         {/* ── Named Customers (expandable FYI) ── */}
