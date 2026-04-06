@@ -335,7 +335,7 @@ export default function GTMTreeView({
   }
 
   const hasLeads = data.leads.length > 0;
-  const showFullMode = !frameworkOnly && hasLeads;
+  const showFullMode = !frameworkOnly;
 
   return (
     <TooltipProvider delayDuration={200}>
