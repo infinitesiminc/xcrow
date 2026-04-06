@@ -1399,6 +1399,7 @@ export default function Leadgen() {
         outreach={outreach}
         onUpdateStatus={updateLeadStatus}
         onDraftEmail={handleDraftEmail}
+        onDelete={deleteLead}
         userId={user?.id}
       />
 
