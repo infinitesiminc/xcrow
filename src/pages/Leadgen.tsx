@@ -563,18 +563,34 @@ export default function Leadgen() {
   const handleSendEmail = async () => {
     if (!draftLead?.email || !draftSubject || !draftBody) return;
     const mailto = `mailto:${draftLead.email}?subject=${encodeURIComponent(draftSubject)}&body=${encodeURIComponent(draftBody)}`;
-    // Use window.open for mailto to work in iframe/preview environments
-    const w = window.open(mailto, "_blank");
-    // Fallback: create a temporary anchor if window.open was blocked
-    if (!w) {
+    
+    // Try multiple approaches to open mailto
+    let opened = false;
+    
+    // 1. Try window.top (escapes iframe in preview)
+    try {
+      if (window.top && window.top !== window) {
+        window.top.location.href = mailto;
+        opened = true;
+      }
+    } catch { /* cross-origin restriction */ }
+    
+    // 2. Try window.open
+    if (!opened) {
+      const w = window.open(mailto, "_self");
+      if (w) opened = true;
+    }
+    
+    // 3. Fallback: anchor click
+    if (!opened) {
       const a = document.createElement("a");
       a.href = mailto;
-      a.target = "_blank";
-      a.rel = "noopener";
+      a.style.display = "none";
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      setTimeout(() => document.body.removeChild(a), 100);
     }
+    
     toast.success(`Opening email client for ${draftLead.email}`);
     if (user) {
       const matchedLead = savedLeads.find((l) => l.email === draftLead.email && l.company === draftLead.company);
