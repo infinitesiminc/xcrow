@@ -258,6 +258,13 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
   const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
   const [customersOpen, setCustomersOpen] = useState(false);
 
+  // Auto-select first product
+  useEffect(() => {
+    if (!selectedProductId && data.products.length > 0) {
+      setSelectedProductId(data.products[0].id);
+    }
+  }, [data.products, selectedProductId]);
+
   // Filters
   const [productFilter, setProductFilter] = useState("");
   const [leadFilter, setLeadFilter] = useState("");
