@@ -567,6 +567,7 @@ export default function GTMTreeView({
                     </div>
                   )}
                 </div>
+                )}
 
                 <ScrollArea className="flex-1">
                   <div className="p-1.5 space-y-1">
