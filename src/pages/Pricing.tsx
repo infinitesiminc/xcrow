@@ -158,14 +158,24 @@ export default function Pricing() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-8">{plan.desc}</p>
 
-                  <Button
-                    className={`w-full h-12 font-bold rounded-xl gap-2 ${plan.featured ? "shadow-md" : ""}`}
-                    variant={plan.featured ? "default" : "outline"}
-                    onClick={() => navigate(plan.featured ? "/leadhunter" : "/leadhunter")}
-                  >
-                    {plan.featured && <Sparkles className="w-4 h-4" />}
-                    {plan.cta}
-                  </Button>
+                  {'enterprise' in plan && (plan as any).enterprise ? (
+                    <Button
+                      className="w-full h-12 font-bold rounded-xl gap-2"
+                      variant="outline"
+                      asChild
+                    >
+                      <a href="mailto:jackson@xcrow.ai?subject=Xcrow Enterprise Inquiry">{plan.cta}</a>
+                    </Button>
+                  ) : (
+                    <Button
+                      className={`w-full h-12 font-bold rounded-xl gap-2 ${plan.featured ? "shadow-md" : ""}`}
+                      variant={plan.featured ? "default" : "outline"}
+                      onClick={() => navigate("/leadhunter")}
+                    >
+                      {plan.featured && <Sparkles className="w-4 h-4" />}
+                      {plan.cta}
+                    </Button>
+                  )}
 
                   <ul className="mt-8 space-y-3">
                     {plan.features.map((f) => (
