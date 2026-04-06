@@ -386,60 +386,64 @@ export default function GTMTreeView({
         {/* ══════════════════════════════════════════════════════ */}
         {frameworkOnly && (
           <div className="space-y-3">
-            <div className="flex gap-2">
-              {/* Products column */}
-              <div className="flex flex-col w-[240px] shrink-0 border border-border rounded-lg overflow-hidden bg-card">
-                <div className="flex items-center justify-between p-3 border-b border-border/50">
-                  <span className="text-sm font-semibold text-foreground">Products</span>
-                  <Badge variant="secondary" className="text-xs h-5 px-2">{data.products.length}</Badge>
-                </div>
-                <ScrollArea className="flex-1">
-                  <div className="p-2 space-y-1.5">
-                    {data.products.map(product => (
-                      <SelectableCard key={product.id} active={selectedProductId === product.id}
-                        onClick={() => selectProduct(product.id)}
-                        onInfoClick={() => setDetailItem({ type: "product", data: product, leadCount: 0 })}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Package className="w-4 h-4 text-primary shrink-0" />
-                          <span className="text-sm font-medium text-foreground flex-1">{product.name}</span>
-                        </div>
-                      </SelectableCard>
-                    ))}
-                  </div>
-                </ScrollArea>
+            {/* Products */}
+            <div className="border border-border rounded-lg overflow-hidden bg-card">
+              <div className="flex items-center justify-between p-3 border-b border-border/50">
+                <span className="text-sm font-semibold text-foreground">Products</span>
+                <Badge variant="secondary" className="text-xs h-5 px-2">{data.products.length}</Badge>
               </div>
-
-              {/* Verticals column */}
-              <div className="flex flex-col flex-1 border border-border rounded-lg overflow-hidden bg-card">
-                <div className="flex items-center justify-between p-3 border-b border-border/50">
-                  <span className="text-sm font-semibold text-foreground">Verticals & Buyer Roles</span>
-                </div>
-                <div className="p-2">
-                  {!selectedProductId ? (
-                    <p className="text-sm text-muted-foreground p-3 text-center">Select a product to view target verticals</p>
-                  ) : activeVerticals.length === 0 ? (
-                    <p className="text-sm text-muted-foreground p-3 text-center">No verticals mapped</p>
-                  ) : (
-                    <div className="flex gap-2 overflow-x-auto pb-1">
-                      {activeVerticals.map((v, i) => {
-                        const Icon = getVerticalIcon(v.vertical);
-                        return (
-                          <div key={`${v.vertical}-${i}`} className="p-3 rounded-lg border border-border bg-card min-w-[200px] max-w-[240px] shrink-0">
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <Icon className="w-4 h-4 text-primary shrink-0" />
-                              <span className="text-sm font-medium text-foreground">{v.vertical}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{v.segment}</p>
-                            <Badge variant="secondary" className="text-xs h-5 px-2 gap-1 bg-blue-500/15 text-blue-700 border-0">
-                              <UserCheck className="w-3 h-3" /> DM: {v.dm}
-                            </Badge>
-                          </div>
-                        );
-                      })}
+              <div className="p-2">
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {data.products.map(product => (
+                    <div
+                      key={product.id}
+                      onClick={() => selectProduct(product.id)}
+                      className={`p-3 rounded-lg border min-w-[200px] max-w-[240px] shrink-0 cursor-pointer transition-colors ${
+                        selectedProductId === product.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Package className="w-4 h-4 text-primary shrink-0" />
+                        <span className="text-sm font-medium text-foreground">{product.name}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{product.description}</p>
                     </div>
-                  )}
+                  ))}
                 </div>
+              </div>
+            </div>
+
+            {/* Verticals & Buyer Roles */}
+            <div className="border border-border rounded-lg overflow-hidden bg-card">
+              <div className="flex items-center justify-between p-3 border-b border-border/50">
+                <span className="text-sm font-semibold text-foreground">Verticals & Buyer Roles</span>
+              </div>
+              <div className="p-2">
+                {!selectedProductId ? (
+                  <p className="text-sm text-muted-foreground p-3 text-center">Select a product to view target verticals</p>
+                ) : activeVerticals.length === 0 ? (
+                  <p className="text-sm text-muted-foreground p-3 text-center">No verticals mapped</p>
+                ) : (
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {activeVerticals.map((v, i) => {
+                      const Icon = getVerticalIcon(v.vertical);
+                      return (
+                        <div key={`${v.vertical}-${i}`} className="p-3 rounded-lg border border-border bg-card min-w-[200px] max-w-[240px] shrink-0">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Icon className="w-4 h-4 text-primary shrink-0" />
+                            <span className="text-sm font-medium text-foreground">{v.vertical}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{v.segment}</p>
+                          <Badge variant="secondary" className="text-xs h-5 px-2 gap-1 bg-blue-500/15 text-blue-700 border-0">
+                            <UserCheck className="w-3 h-3" /> DM: {v.dm}
+                          </Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
