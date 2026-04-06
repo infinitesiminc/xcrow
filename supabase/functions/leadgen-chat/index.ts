@@ -221,7 +221,7 @@ async function scrapePage(url: string): Promise<string> {
   }
 }
 
-/** Search Apollo People API for LinkedIn profiles */
+/** Search Apollo People API for LinkedIn profiles — uses api_search endpoint + people/match enrichment */
 async function searchApollopeople(
   apolloKey: string,
   args: {
@@ -235,19 +235,19 @@ async function searchApollopeople(
   const allPeople: any[] = [];
   const seenNames = new Set<string>();
 
-  // Strategy 1: Apollo People Search with structured filters
+  // Strategy 1: Apollo People Search with structured filters (correct endpoint)
   if (args.target_titles?.length) {
     const body: Record<string, unknown> = {
       person_titles: args.target_titles,
       page: 1,
-      per_page: 5,
+      per_page: 10,
+      person_seniorities: ["director", "vp", "c_suite", "owner"],
     };
     if (args.target_location) {
       body.person_locations = [args.target_location];
     }
     if (args.employee_ranges?.length) {
       body.organization_num_employees_ranges = args.employee_ranges.map((r) => {
-        // Convert our format to Apollo format
         const [min, max] = r.split("-").map(Number);
         return max ? `${min},${max}` : `${min},`;
       });
@@ -257,167 +257,74 @@ async function searchApollopeople(
     }
 
     try {
-      console.log("Apollo People Search:", JSON.stringify(body).slice(0, 300));
-      const res = await fetch("https://api.apollo.io/api/v1/mixed_people/search", {
+      console.log("Apollo api_search:", JSON.stringify(body).slice(0, 300));
+      const res = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache",
-          "X-Api-Key": apolloKey,
-        },
+        headers: { "Content-Type": "application/json", "X-Api-Key": apolloKey },
         body: JSON.stringify(body),
       });
 
       if (res.ok) {
         const data = await res.json();
         const people = data?.people || [];
-        for (const p of people) {
-          const name = `${p.first_name || ""} ${p.last_name || ""}`.trim();
+        console.log(`Apollo api_search returned ${people.length} results`);
+
+        // Enrich top results via people/match for verified LinkedIn/email
+        const toEnrich = people.slice(0, 10).filter((p: any) => p.id);
+        const enrichedPeople: any[] = [];
+
+        for (const person of toEnrich) {
+          try {
+            const enrichRes = await fetch("https://api.apollo.io/api/v1/people/match", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Api-Key": apolloKey },
+              body: JSON.stringify({ id: person.id }),
+            });
+            if (enrichRes.ok) {
+              const enrichData = await enrichRes.json();
+              if (enrichData.person) {
+                enrichedPeople.push(enrichData.person);
+              }
+            } else if (enrichRes.status === 400 || enrichRes.status === 403) {
+              console.warn("Apollo enrichment not available — API key may lack scope");
+              break;
+            }
+          } catch (e) {
+            console.warn("Apollo match error:", e);
+          }
+        }
+
+        console.log(`Apollo enriched: ${enrichedPeople.length} of ${toEnrich.length}`);
+        const finalPeople = enrichedPeople.length > 0 ? enrichedPeople : people;
+
+        for (const p of finalPeople) {
+          const name = p.name || `${p.first_name || ""} ${p.last_name || ""}`.trim();
           if (!name || seenNames.has(name.toLowerCase())) continue;
+          const linkedinUrl = validLinkedIn(p.linkedin_url);
+          if (!linkedinUrl) continue; // Only keep leads with verified LinkedIn
           seenNames.add(name.toLowerCase());
           allPeople.push({
             name,
             title: p.title || null,
-            company: p.organization?.name || null,
-            linkedin: validLinkedIn(p.linkedin_url),
+            company: p.organization?.name || p.organization_name || null,
+            linkedin: linkedinUrl,
             email: p.email || null,
             website: p.organization?.website_url || null,
             photo_url: p.photo_url || null,
             source: "Apollo People Search",
           });
         }
-        console.log(`Apollo People Search returned ${people.length} results, kept ${allPeople.length}`);
+        console.log(`Final leads with verified LinkedIn: ${allPeople.length}`);
       } else {
         const errText = await res.text();
-        console.warn("Apollo People Search failed:", res.status, errText);
-
-        // Fallback to organization search + people match
-        if (res.status === 403) {
-          console.log("Falling back to organization search...");
-          await searchApolloOrgs(apolloKey, args, allPeople, seenNames);
-        }
+        console.error("Apollo api_search failed:", res.status, errText);
       }
     } catch (e) {
       console.error("Apollo People Search error:", e);
     }
   }
 
-  // Strategy 2: Use search queries with Apollo org search if we don't have enough results
-  if (allPeople.length < 5) {
-    await searchApolloOrgs(apolloKey, args, allPeople, seenNames);
-  }
-
   return allPeople;
-}
-
-/** Fallback: search orgs then get people via people match */
-async function searchApolloOrgs(
-  apolloKey: string,
-  args: { target_titles?: string[]; target_location?: string; search_queries: string[] },
-  allPeople: any[],
-  seenNames: Set<string>,
-): Promise<void> {
-  for (const query of args.search_queries.slice(0, 3)) {
-    try {
-      const orgBody: Record<string, unknown> = {
-        q_organization_name: query,
-        page: 1,
-        per_page: 5,
-      };
-      if (args.target_location) {
-        orgBody.organization_locations = [args.target_location];
-      }
-
-      const orgRes = await fetch("https://api.apollo.io/api/v1/mixed_companies/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache",
-          "X-Api-Key": apolloKey,
-        },
-        body: JSON.stringify(orgBody),
-      });
-
-      if (!orgRes.ok) {
-        // Try alternate endpoint
-        const altRes = await fetch("https://api.apollo.io/api/v1/organizations/search", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache",
-            "X-Api-Key": apolloKey,
-          },
-          body: JSON.stringify(orgBody),
-        });
-        if (!altRes.ok) continue;
-        const altData = await altRes.json();
-        const orgs = altData?.organizations || [];
-        for (const org of orgs.slice(0, 5)) {
-          await matchPeopleAtOrg(apolloKey, org, args.target_titles || [], allPeople, seenNames);
-        }
-        continue;
-      }
-
-      const orgData = await orgRes.json();
-      const orgs = orgData?.organizations || orgData?.accounts || [];
-      for (const org of orgs.slice(0, 5)) {
-        await matchPeopleAtOrg(apolloKey, org, args.target_titles || [], allPeople, seenNames);
-      }
-    } catch (e) {
-      console.error("Apollo org search error:", e);
-    }
-  }
-}
-
-/** Match people at a specific org using people match */
-async function matchPeopleAtOrg(
-  apolloKey: string,
-  org: any,
-  targetTitles: string[],
-  allPeople: any[],
-  seenNames: Set<string>,
-): Promise<void> {
-  if (!org.name) return;
-  // Use people search scoped to this org
-  try {
-    const body: Record<string, unknown> = {
-      q_organization_name: org.name,
-      page: 1,
-      per_page: 5,
-    };
-    if (targetTitles.length > 0) {
-      body.person_titles = targetTitles;
-    }
-
-    const res = await fetch("https://api.apollo.io/api/v1/mixed_people/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-        "X-Api-Key": apolloKey,
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      for (const p of (data?.people || []).slice(0, 2)) {
-        const name = `${p.first_name || ""} ${p.last_name || ""}`.trim();
-        if (!name || seenNames.has(name.toLowerCase())) continue;
-        seenNames.add(name.toLowerCase());
-        allPeople.push({
-          name,
-          title: p.title || null,
-          company: p.organization?.name || org.name || null,
-          linkedin: validLinkedIn(p.linkedin_url),
-          email: p.email || null,
-          website: p.organization?.website_url || org.website_url || null,
-          photo_url: p.photo_url || null,
-          source: "Apollo People Search",
-        });
-      }
-    }
-  } catch {}
 }
 
 /** Execute the full lead search pipeline: AI + Apollo */
