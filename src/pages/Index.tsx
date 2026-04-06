@@ -69,9 +69,9 @@ export default function Index() {
             <img src={logoCrow} alt="Xcrow" className="h-16 w-16 object-contain mx-auto mb-4" />
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.1] uppercase">
-              The <span className="text-primary">#1</span> AI Lead Hunter
+              The <span className="text-primary">#1</span> Outbound
               <br />
-              <span className="text-foreground/80">for Revenue Teams</span>
+              <span className="text-foreground/80">Lead Hunter</span>
             </h1>
 
             <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
