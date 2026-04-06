@@ -139,15 +139,29 @@ export default function Leadgen() {
    const [gtmPersonasLoading, setGtmPersonasLoading] = useState(false);
    const [isGtmLoading, setIsGtmLoading] = useState(false);
 
-  // Wrap openAuthModal to persist current workspace before auth flow
+  // Wrap openAuthModal to persist current workspace + discovery state before auth flow
   const openAuthModal = useCallback(() => {
     if (websiteUrl.trim()) {
       sessionStorage.setItem("pendingWebsite", websiteUrl.trim());
     }
+    // Save guest discovery state so it survives sign-in
+    if (localNiches.length > 0) {
+      sessionStorage.setItem("pendingNiches", JSON.stringify(localNiches));
+    }
+    if (companySummary) {
+      sessionStorage.setItem("pendingCompanySummary", companySummary);
+    }
+    if (icpSummary) {
+      sessionStorage.setItem("pendingIcpSummary", icpSummary);
+    }
+    // Save in-memory guest leads
+    if (allLeads.length > 0) {
+      sessionStorage.setItem("pendingLeads", JSON.stringify(allLeads));
+    }
     rawOpenAuthModal();
-  }, [websiteUrl, rawOpenAuthModal]);
+  }, [websiteUrl, rawOpenAuthModal, localNiches, companySummary, icpSummary, allLeads]);
 
-  // Restore workspace after sign-in: re-hydrate from cache
+  // Restore workspace after sign-in: re-hydrate from cache + session state
   useEffect(() => {
     const prevId = prevUserRef.current;
     const curId = user?.id ?? null;
@@ -160,6 +174,48 @@ export default function Leadgen() {
         sessionStorage.removeItem("pendingWebsite");
         setWebsiteUrl(pending);
         const wk = normalizeWorkspaceKey(pending);
+
+        // Restore niches from session
+        const pendingNichesRaw = sessionStorage.getItem("pendingNiches");
+        sessionStorage.removeItem("pendingNiches");
+        if (pendingNichesRaw) {
+          try {
+            const niches = JSON.parse(pendingNichesRaw);
+            setLocalWorkspaceKey(wk);
+            setLocalNiches(niches);
+            setHasDiscovered(true);
+            // Persist niches to DB now that user is authed
+            upsertNiches(niches.map((n: any) => ({
+              label: n.label,
+              description: n.description || "",
+              parent_label: n.parent_label,
+              niche_type: n.niche_type,
+            })));
+          } catch {}
+        }
+
+        // Restore company/icp summary
+        const pendingSummary = sessionStorage.getItem("pendingCompanySummary");
+        sessionStorage.removeItem("pendingCompanySummary");
+        if (pendingSummary) setCompanySummary(pendingSummary);
+
+        const pendingIcp = sessionStorage.getItem("pendingIcpSummary");
+        sessionStorage.removeItem("pendingIcpSummary");
+        if (pendingIcp) setIcpSummary(pendingIcp);
+
+        // Restore guest leads and persist to DB
+        const pendingLeadsRaw = sessionStorage.getItem("pendingLeads");
+        sessionStorage.removeItem("pendingLeads");
+        if (pendingLeadsRaw) {
+          try {
+            const guestLeads = JSON.parse(pendingLeadsRaw);
+            if (guestLeads.length > 0) {
+              // Re-inject into chat items so they appear in the pipeline
+              setItems(prev => [...prev, { type: "leads", leads: guestLeads }]);
+            }
+          } catch {}
+        }
+
         if (wk) {
           upsertWorkspace(wk, wk);
           // Re-hydrate GTM tree from cache
