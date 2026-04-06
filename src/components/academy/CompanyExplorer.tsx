@@ -414,7 +414,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const domain = selectedCompany?.website?.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "") || "";
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 py-6">
+    <div className="max-w-[1200px] mx-auto px-4 py-2">
       {/* Loading: blurred dashboard preview + centered overlay */}
       {isRunning && !treeData && (
         <div className="relative">
