@@ -12,6 +12,12 @@ import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const SmartHome = lazy(() => import("./pages/SmartHome"));
+const SmartHomeRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/leadhunter" replace />;
+  return <><Navbar /><SmartHome /></>;
+};
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
