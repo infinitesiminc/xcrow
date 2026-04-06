@@ -1383,6 +1383,7 @@ export default function Leadgen() {
         activeWorkspaceKey={activeWorkspaceKey}
         onSwitchWorkspace={handleSwitchWorkspace}
         onDeleteWorkspace={handleDeleteWorkspace}
+        onNewWorkspace={handleNewWorkspace}
       />
       <div className="flex flex-col h-screen pt-14">
         {mainContent}
