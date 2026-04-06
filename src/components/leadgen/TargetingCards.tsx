@@ -121,7 +121,7 @@ export default function TargetingCards({ treeData, droppedIds, vertical }: Targe
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-semibold text-foreground">Verticals & Buyer Roles</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className={vertical ? "flex flex-col gap-2" : "flex gap-2 overflow-x-auto pb-1"}>
             {verticalItems.map(item => {
               const Icon = item.icon;
               const isDropped = droppedIds.has(item.id);
