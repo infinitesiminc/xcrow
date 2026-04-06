@@ -710,32 +710,10 @@ export default function Leadgen() {
       }
 
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const foundLeads: Lead[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let newlineIdx: number;
-        while ((newlineIdx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, newlineIdx);
-          buf = buf.slice(newlineIdx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) {
-              for (const l of parsed.leads) {
-              foundLeads.push({ ...l, niche_tag: niche, source: websiteUrl || "chat" });
-              }
-            }
-          } catch {}
-        }
-      }
+      await parseSSEStream(reader, {
+        onLeads: (leads) => foundLeads.push(...leads.map((l: Lead) => ({ ...l, niche_tag: niche, source: websiteUrl || "chat" }))),
+      });
 
       if (foundLeads.length > 0) {
         await upsertLeads(foundLeads);
