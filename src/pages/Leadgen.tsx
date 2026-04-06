@@ -334,29 +334,11 @@ export default function Leadgen() {
       });
       if (!resp.ok) throw new Error("Search failed");
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const foundLeads: Lead[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) {
-              const nicheTag = verticalNames[0] || productNames[0] || "targeted";
-              foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: nicheTag, source: websiteUrl || "targeting" })));
-            }
-          } catch {}
-        }
-      }
+      const nicheTag = verticalNames[0] || productNames[0] || "targeted";
+      await parseSSEStream(reader, {
+        onLeads: (leads) => foundLeads.push(...leads.map((l: Lead) => ({ ...l, niche_tag: nicheTag, source: websiteUrl || "targeting" }))),
+      }, controller.signal);
       if (foundLeads.length > 0) {
         if (user) {
           await upsertLeads(foundLeads);
