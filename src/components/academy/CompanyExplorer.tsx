@@ -53,9 +53,84 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const [cardInputs, setCardInputs] = useState<Record<string, string>>({});
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
+  const STEP_TIMEOUT_MS = 45000;
+  const CACHE_TIMEOUT_MS = 8000;
+
   /* ── normalize domain for cache key ── */
   function normalizeWebsiteKey(url: string): string {
     return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "").toLowerCase();
+  }
+
+  function withTimeout<T>(promiseLike: PromiseLike<T>, ms: number, label: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const timer = window.setTimeout(() => reject(new Error(`${label}_TIMEOUT`)), ms);
+
+      Promise.resolve(promiseLike)
+        .then((value) => {
+          window.clearTimeout(timer);
+          resolve(value);
+        })
+        .catch((error) => {
+          window.clearTimeout(timer);
+          reject(error);
+        });
+    });
+  }
+
+  function isTimeoutError(error: unknown, label?: string) {
+    return error instanceof Error
+      && error.message.endsWith("_TIMEOUT")
+      && (!label || error.message.startsWith(label));
+  }
+
+  function buildTreeFromResults(results: Record<string, any>): GTMTreeData | null {
+    const products = results["products"]?.structured;
+    if (!products) return null;
+
+    const customers = results["customers"]?.structured;
+    const icpBuyers = results["icp-buyers"]?.structured;
+    const profiles = results["linkedin-profiles"]?.structured;
+
+    return {
+      company_summary: products.company_summary || "",
+      products: products.products || [],
+      customers: customers?.customers || [],
+      conquest_targets: customers?.conquest_targets || [],
+      mappings: icpBuyers?.mappings || [],
+      leads: profiles?.leads || [],
+    };
+  }
+
+  function getRefinedCompany(company: CompanyData, results: Record<string, any>, tree: GTMTreeData | null) {
+    const products = results["products"]?.structured;
+    const summary = tree?.company_summary || products?.company_summary || "";
+    const aiName = summary.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
+
+    return {
+      ...company,
+      name: aiName && aiName.length <= 40 ? aiName : company.name,
+      headquarters: products?.headquarters || company.headquarters,
+    };
+  }
+
+  function hydrateTreeState(company: CompanyData, results: Record<string, any>) {
+    const builtTree = buildTreeFromResults(results);
+    if (!builtTree) return false;
+
+    const refinedCompany = getRefinedCompany(company, results, builtTree);
+    setSelectedCompany((prev) => (prev ? { ...prev, ...refinedCompany } : refinedCompany));
+    setTreeData(builtTree);
+    updateCache(refinedCompany, results, builtTree);
+    setPhase(builtTree.leads.length > 0 ? "explore" : "icp-mapping");
+    return true;
+  }
+
+  async function invokeAnalyzeStep(body: Record<string, any>) {
+    return withTimeout(
+      supabase.functions.invoke("gtm-analyze", { body }),
+      STEP_TIMEOUT_MS,
+      body.stepId || "gtm-analyze",
+    );
   }
 
   /* ── write-through cache helper ── */
@@ -104,22 +179,28 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const runICPPipeline = useCallback(async (company: CompanyData) => {
     cancelRef.cancelled = false;
     setIsRunning(true);
+    setCurrentStepIdx(-1);
+    setStepResults({});
+    setTreeData(null);
 
     const websiteKey = normalizeWebsiteKey(company.website || company.id);
 
     // Check cache first
     try {
-      const { data: cached } = await supabase
-        .from("leadhunter_cache")
-        .select("*")
-        .eq("website_key", websiteKey)
-        .gt("expires_at", new Date().toISOString())
-        .maybeSingle();
+      const { data: cached } = await withTimeout(
+        supabase
+          .from("leadhunter_cache")
+          .select("*")
+          .eq("website_key", websiteKey)
+          .gt("expires_at", new Date().toISOString())
+          .maybeSingle(),
+        CACHE_TIMEOUT_MS,
+        "cache",
+      );
 
       if (cached?.tree_data && cached?.step_results) {
         const cachedCompany = cached.company_data as any;
         const cachedTree = cached.tree_data as any;
-        // Extract proper company name from AI summary
         const aiName = cachedTree?.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
         if (cachedCompany?.name || aiName) {
           setSelectedCompany(prev => ({
@@ -140,11 +221,12 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         return;
       }
     } catch (e) {
-      console.warn("Cache lookup failed, running fresh:", e);
+      console.warn("Cache lookup failed or timed out, running fresh:", e);
     }
 
     // No cache — run pipeline
     const accumulated: Record<string, any> = {};
+    accumulatedRef.current = accumulated;
 
     for (let i = 0; i < 3; i++) {
       if (cancelRef.cancelled) break;
@@ -152,73 +234,53 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       setCurrentStepIdx(i);
 
       try {
-        const { data, error } = await supabase.functions.invoke("gtm-analyze", {
-          body: { stepId: step.id, company, previousResults: accumulated },
+        const { data, error } = await invokeAnalyzeStep({
+          stepId: step.id,
+          company,
+          previousResults: accumulated,
         });
+
         if (error) throw error;
-        if (data?.error) {
-          toast.error(data.error);
-          setIsRunning(false);
-          setCurrentStepIdx(-1);
-          return;
-        }
+        if (data?.error) throw new Error(data.error);
+
         accumulated[step.id] = data;
+        accumulatedRef.current = accumulated;
         setStepResults((prev) => ({ ...prev, [step.id]: data }));
       } catch (e) {
         console.error(`Step ${step.id} failed:`, e);
-        toast.error(`${step.label} failed — try again.`);
+        const recovered = hydrateTreeState(company, accumulated);
+
         setIsRunning(false);
         setCurrentStepIdx(-1);
+
+        if (!recovered) {
+          setSelectedCompany(null);
+          setPhase("input");
+        }
+
+        toast.error(
+          isTimeoutError(e, step.id)
+            ? recovered
+              ? `${step.label} timed out — loaded partial results.`
+              : `${step.label} timed out — try again.`
+            : recovered
+              ? `${step.label} failed — loaded partial results.`
+              : `${step.label} failed — try again.`,
+        );
         return;
       }
     }
 
+    if (cancelRef.cancelled) {
+      setIsRunning(false);
+      setCurrentStepIdx(-1);
+      return;
+    }
+
     accumulatedRef.current = accumulated;
-
-    const products = accumulated["products"]?.structured;
-    const customers = accumulated["customers"]?.structured;
-    const icpBuyers = accumulated["icp-buyers"]?.structured;
-
-    // Update company with extracted name and headquarters
-    if (products?.headquarters || products?.company_summary) {
-      setSelectedCompany(prev => {
-        if (!prev) return prev;
-        const aiName = products.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
-        return {
-          ...prev,
-          headquarters: products.headquarters || prev.headquarters,
-          name: aiName && aiName.length <= 40 ? aiName : prev.name,
-        };
-      });
-    }
-
-    let builtTree: GTMTreeData | null = null;
-    if (products) {
-      builtTree = {
-        company_summary: products.company_summary || "",
-        products: products.products || [],
-        customers: customers?.customers || [],
-        conquest_targets: customers?.conquest_targets || [],
-        mappings: icpBuyers?.mappings || [],
-        leads: [],
-      };
-      setTreeData(builtTree);
-    }
-
-    // Write to cache (with AI-corrected company name)
-    if (builtTree) {
-      const aiName = builtTree.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
-      const cachedCompany = {
-        ...company,
-        name: (aiName && aiName.length <= 40) ? aiName : company.name,
-        headquarters: products?.headquarters || company.headquarters,
-      };
-      updateCache(cachedCompany as CompanyData, accumulated, builtTree);
-    }
-
+    hydrateTreeState(company, accumulated);
     setIsRunning(false);
     setCurrentStepIdx(-1);
-    setPhase("icp-mapping");
   }, [cancelRef]);
 
   /* ── build context from active cards ── */
@@ -245,45 +307,39 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     const accumulated = accumulatedRef.current;
 
     try {
-      const { data, error } = await supabase.functions.invoke("gtm-analyze", {
-        body: {
-          stepId: "linkedin-profiles",
-          company: selectedCompany,
-          previousResults: accumulated,
-          location: context.location || undefined,
-          chatContext: context,
-          batchSize: 5,
-        },
+      const { data, error } = await invokeAnalyzeStep({
+        stepId: "linkedin-profiles",
+        company: selectedCompany,
+        previousResults: accumulated,
+        location: context.location || undefined,
+        chatContext: context,
+        batchSize: 5,
       });
+
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
       accumulated["linkedin-profiles"] = data;
+      accumulatedRef.current = accumulated;
       setStepResults((prev) => ({ ...prev, "linkedin-profiles": data }));
     } catch (e) {
       console.error("LinkedIn profiles step failed:", e);
-      toast.error("Lead generation failed — try again.");
+      toast.error(
+        isTimeoutError(e, "linkedin-profiles")
+          ? "Lead generation timed out — try again."
+          : "Lead generation failed — try again.",
+      );
+      setIsRunning(false);
+      setCurrentStepIdx(-1);
+      return;
     }
 
-    const products = accumulated["products"]?.structured;
-    const customers = accumulated["customers"]?.structured;
-    const icpBuyers = accumulated["icp-buyers"]?.structured;
-    const profiles = accumulated["linkedin-profiles"]?.structured;
-
-    if (products) {
-      setTreeData({
-        company_summary: products.company_summary || "",
-        products: products.products || [],
-        customers: customers?.customers || [],
-        conquest_targets: customers?.conquest_targets || [],
-        mappings: icpBuyers?.mappings || [],
-        leads: profiles?.leads || [],
-      });
-    }
-
-    // Update cache with leads
-    const updatedTree = treeData ? { ...treeData } : null;
-    if (updatedTree && profiles) {
-      updatedTree.leads = profiles.leads || [];
-      updateCache(selectedCompany, accumulated, updatedTree);
+    const updatedTree = buildTreeFromResults(accumulated);
+    if (updatedTree) {
+      const refinedCompany = getRefinedCompany(selectedCompany, accumulated, updatedTree);
+      setSelectedCompany(prev => (prev ? { ...prev, ...refinedCompany } : refinedCompany));
+      setTreeData(updatedTree);
+      updateCache(refinedCompany, accumulated, updatedTree);
     }
 
     setIsRunning(false);
@@ -298,35 +354,34 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     const context = buildContext();
     try {
       const product = treeData.products.find(p => p.id === productId);
-      const { data, error } = await supabase.functions.invoke("gtm-analyze", {
-        body: {
-          stepId: "linkedin-profiles",
-          company: selectedCompany,
-          previousResults: {
-            products: { structured: { products: treeData.products, company_summary: treeData.company_summary } },
-            customers: { structured: { customers: treeData.customers, conquest_targets: treeData.conquest_targets } },
-            "icp-buyers": { structured: { mappings: treeData.mappings } },
-          },
-          location: context.location || undefined,
-          chatContext: context,
-          generateMore: {
-            count: 5,
-            productId,
-            productName: product?.name || productId,
-            vertical,
-            existingLeads: treeData.leads
-              .filter(l => l.product_id === productId && (!vertical || l.vertical === vertical))
-              .map(l => l.name),
-          },
+      const { data, error } = await invokeAnalyzeStep({
+        stepId: "linkedin-profiles",
+        company: selectedCompany,
+        previousResults: {
+          products: { structured: { products: treeData.products, company_summary: treeData.company_summary } },
+          customers: { structured: { customers: treeData.customers, conquest_targets: treeData.conquest_targets } },
+          "icp-buyers": { structured: { mappings: treeData.mappings } },
+        },
+        location: context.location || undefined,
+        chatContext: context,
+        generateMore: {
+          count: 5,
+          productId,
+          productName: product?.name || productId,
+          vertical,
+          existingLeads: treeData.leads
+            .filter(l => l.product_id === productId && (!vertical || l.vertical === vertical))
+            .map(l => l.name),
         },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       const newLeads = data?.structured?.leads || [];
       if (newLeads.length > 0) {
         setTreeData(prev => {
           if (!prev) return prev;
           const updated = { ...prev, leads: [...prev.leads, ...newLeads] };
-          updateCache(selectedCompany!, accumulatedRef.current, updated);
+          updateCache(selectedCompany, accumulatedRef.current, updated);
           return updated;
         });
         toast.success(`Added ${newLeads.length} new leads`);
@@ -335,7 +390,11 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       }
     } catch (e) {
       console.error("Generate more failed:", e);
-      toast.error("Failed to generate more leads");
+      toast.error(
+        isTimeoutError(e, "linkedin-profiles")
+          ? "Lead generation timed out — no new leads added."
+          : "Failed to generate more leads",
+      );
     } finally {
       setIsGeneratingMore(false);
     }
