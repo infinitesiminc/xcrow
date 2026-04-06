@@ -34,6 +34,10 @@ interface GTMTreeViewProps {
   companyMeta?: CompanyMeta;
   onGenerateMore?: (productId: string, vertical: string | null) => void;
   isGeneratingMore?: boolean;
+  /** Phase 2: show products + verticals + customers only, no leads column */
+  frameworkOnly?: boolean;
+  /** Phase 2: CTA to proceed to strategy chat */
+  onContinueToStrategy?: () => void;
 }
 
 const LEADS_PER_PAGE = 25;
@@ -60,7 +64,6 @@ function getVerticalIcon(vertical: string): React.ElementType {
 }
 
 function getVerticalShortLabel(vertical: string): string {
-  // Take first meaningful word(s), max ~12 chars
   const parts = vertical.split(/[\/\(\),]+/).map(s => s.trim()).filter(Boolean);
   if (parts[0] && parts[0].length <= 14) return parts[0];
   return parts[0]?.slice(0, 12) + "…" || vertical.slice(0, 12);
@@ -137,7 +140,6 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
 
   return (
     <div className="space-y-4">
-      {/* Score badge */}
       {score != null && (
         <div className="flex items-center justify-center gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5">
           <Star className="w-5 h-5 text-primary fill-primary" />
@@ -149,7 +151,6 @@ function LeadDetail({ lead }: { lead: GTMLead }) {
         </div>
       )}
 
-      {/* Why recommended */}
       {reason && (
         <div className="p-3 rounded-lg border border-accent bg-accent/30">
           <p className="text-xs font-semibold text-muted-foreground mb-1">Why this prospect?</p>
@@ -251,7 +252,7 @@ function ProductDetail({ product, leadCount }: { product: GTMProduct; leadCount:
 }
 
 /* ── Main component ── */
-export default function GTMTreeView({ companyName, data, companyMeta, onGenerateMore, isGeneratingMore }: GTMTreeViewProps) {
+export default function GTMTreeView({ companyName, data, companyMeta, onGenerateMore, isGeneratingMore, frameworkOnly, onContinueToStrategy }: GTMTreeViewProps) {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVerticalIdx, setSelectedVerticalIdx] = useState<number | null>(null);
   const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
@@ -279,7 +280,6 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
 
   const leadsByProduct = useMemo(() => {
     const map: Record<string, GTMLead[]> = {};
-    // Only DMs (issue #4)
     for (const l of data.leads) {
       if (l.role !== "dm") continue;
       if (!map[l.product_id]) map[l.product_id] = [];
@@ -288,17 +288,14 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
     return map;
   }, [data.leads]);
 
-  // Products
   const filteredProducts = useMemo(() =>
     data.products.filter(p => p.name.toLowerCase().includes(productFilter.toLowerCase())),
     [data.products, productFilter]);
 
-  // Verticals for selected product
   const activeVerticals = useMemo(() =>
     selectedProductId ? (verticalsByProduct[selectedProductId] || []) : [],
     [selectedProductId, verticalsByProduct]);
 
-  // Leads filtered by product + vertical + search
   const activeLeads = useMemo(() => {
     if (!selectedProductId) return [];
     let leads = leadsByProduct[selectedProductId] || [];
@@ -321,17 +318,14 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
     selectedProductId ? (leadsByProduct[selectedProductId] || []).length : 0,
     [selectedProductId, leadsByProduct]);
 
-  // Named customers (for expandable FYI section)
   const namedCustomers = useMemo(() =>
     data.customers.filter(c => c.evidence || c.domain),
     [data.customers]);
 
-  // Pagination
   const totalLeadPages = Math.max(1, Math.ceil(activeLeads.length / LEADS_PER_PAGE));
   const safePage = Math.min(leadPage, totalLeadPages);
   const paginatedLeads = activeLeads.slice((safePage - 1) * LEADS_PER_PAGE, safePage * LEADS_PER_PAGE);
 
-  // Handlers
   function selectProduct(id: string) {
     setSelectedProductId(prev => prev === id ? null : id);
     setSelectedVerticalIdx(null);
@@ -403,188 +397,271 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
           </Collapsible>
         )}
 
-        {/* ── 2-column browser ── */}
-        <div className="flex gap-1 h-[520px]">
-          {/* Col 1: Products */}
-          <div className="flex flex-col w-[220px] shrink-0 border border-border rounded-lg overflow-hidden bg-card">
-            <div className="flex items-center justify-between p-2 border-b border-border/50">
-              <span className="text-xs font-semibold text-foreground">Products</span>
-              <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{filteredProducts.length}</Badge>
-            </div>
-            <div className="px-1.5 pt-1.5">
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                <Input placeholder="Filter..." value={productFilter} onChange={e => setProductFilter(e.target.value)}
-                  className="h-7 text-xs pl-7 bg-background" />
-              </div>
-            </div>
-            <ScrollArea className="flex-1">
-              <div className="p-1.5 space-y-1">
-                {filteredProducts.map(product => (
-                  <SelectableCard key={product.id} active={selectedProductId === product.id}
-                    onClick={() => selectProduct(product.id)}
-                    onInfoClick={() => setDetailItem({ type: "product", data: product, leadCount: getProductLeadCount(product.id) })}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Package className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span className="text-[11px] font-medium text-foreground truncate flex-1">{product.name}</span>
-                      <Badge variant="secondary" className="text-[9px] h-3.5 px-1 shrink-0">{getProductLeadCount(product.id)}</Badge>
-                    </div>
-                    {product.competitors.length > 0 && (
-                      <div className="flex flex-wrap gap-0.5 mt-1">
-                        {product.competitors.slice(0, 2).map(c => (
-                          <Badge key={c} variant="secondary" className="text-[8px] h-3 px-1 bg-orange-500/10 text-orange-600 border-0">{c}</Badge>
-                        ))}
-                      </div>
-                    )}
-                  </SelectableCard>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Col 2: Leads */}
-          <div className="flex flex-col flex-1 border border-border rounded-lg overflow-hidden bg-card">
-            <div className="flex flex-col gap-1 p-2 border-b border-border/50 shrink-0">
-              {/* Header row */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">Prospects</span>
-                <div className="flex items-center gap-1.5">
-                  {onGenerateMore && selectedProductId && (
-                    <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5 gap-0.5"
-                      disabled={isGeneratingMore}
-                      onClick={() => onGenerateMore(selectedProductId,
-                        selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx]
-                          ? activeVerticals[selectedVerticalIdx].vertical : null
-                      )}
-                    >
-                      {isGeneratingMore ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
-                      +5
-                    </Button>
-                  )}
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                    {activeLeads.length}/{totalLeadsForProduct}
-                  </Badge>
+        {/* ── Framework-only mode: Products + Verticals only ── */}
+        {frameworkOnly ? (
+          <div className="space-y-3">
+            <div className="flex gap-1 h-[400px]">
+              {/* Products column */}
+              <div className="flex flex-col w-[220px] shrink-0 border border-border rounded-lg overflow-hidden bg-card">
+                <div className="flex items-center justify-between p-2 border-b border-border/50">
+                  <span className="text-xs font-semibold text-foreground">Products</span>
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{filteredProducts.length}</Badge>
                 </div>
-              </div>
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                <Input placeholder="Search name, title, company..."
-                  value={leadFilter} onChange={e => { setLeadFilter(e.target.value); setLeadPage(1); }}
-                  className="h-7 text-xs pl-7 bg-background" disabled={!selectedProductId} />
-              </div>
-              {/* Vertical icon cards */}
-              {selectedProductId && activeVerticals.length > 0 && (
-                <div className="flex gap-1 flex-wrap">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => { setSelectedVerticalIdx(null); setLeadPage(1); }}
-                        className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
-                          selectedVerticalIdx === null
-                            ? "border-primary bg-primary/10 text-primary font-medium"
-                            : "border-border bg-card text-muted-foreground hover:border-primary/30"
-                        }`}
+                <ScrollArea className="flex-1">
+                  <div className="p-1.5 space-y-1">
+                    {filteredProducts.map(product => (
+                      <SelectableCard key={product.id} active={selectedProductId === product.id}
+                        onClick={() => selectProduct(product.id)}
+                        onInfoClick={() => setDetailItem({ type: "product", data: product, leadCount: 0 })}
                       >
-                        <Zap className="w-3 h-3" />
-                        All
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><p className="text-xs">All verticals</p></TooltipContent>
-                  </Tooltip>
-                  {activeVerticals.map((v, i) => {
-                    const Icon = getVerticalIcon(v.vertical);
-                    return (
-                      <Tooltip key={`${v.vertical}-${i}`}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => { setSelectedVerticalIdx(prev => prev === i ? null : i); setLeadPage(1); }}
-                            className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
-                              selectedVerticalIdx === i
-                                ? "border-primary bg-primary/10 text-primary font-medium"
-                                : "border-border bg-card text-muted-foreground hover:border-primary/30"
-                            }`}
-                          >
-                            <Icon className="w-3 h-3" />
-                            {getVerticalShortLabel(v.vertical)}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="max-w-[220px]">
-                          <p className="text-xs font-medium">{v.vertical}</p>
-                          <p className="text-[10px] text-muted-foreground">{v.segment}</p>
-                          <p className="text-[10px] text-muted-foreground">DM: {v.dm}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <ScrollArea className="flex-1">
-              <div className="p-1.5 space-y-1">
-                {!selectedProductId ? (
-                  <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view prospects</p>
-                ) : paginatedLeads.length === 0 ? (
-                  <p className="text-[10px] text-muted-foreground p-2 text-center">No prospects found</p>
-                ) : paginatedLeads.map((lead, i) => {
-                  const score = (lead as any).lead_score as number | undefined;
-                  return (
-                    <SelectableCard
-                      key={lead.linkedin_url + i}
-                      onClick={() => setDetailItem({ type: "lead", data: lead })}
-                      onInfoClick={() => setDetailItem({ type: "lead", data: lead })}
-                    >
-                      <div className="flex items-start gap-2">
-                        {lead.photo_url ? (
-                          <img src={lead.photo_url} alt="" className="w-6 h-6 rounded-full shrink-0 mt-0.5" />
-                        ) : (
-                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                            <Users className="w-3 h-3 text-muted-foreground" />
+                        <div className="flex items-center gap-1.5">
+                          <Package className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span className="text-[11px] font-medium text-foreground truncate flex-1">{product.name}</span>
+                        </div>
+                        {product.competitors.length > 0 && (
+                          <div className="flex flex-wrap gap-0.5 mt-1">
+                            {product.competitors.slice(0, 2).map(c => (
+                              <Badge key={c} variant="secondary" className="text-[8px] h-3 px-1 bg-orange-500/10 text-orange-600 border-0">{c}</Badge>
+                            ))}
                           </div>
                         )}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-medium text-foreground truncate">{lead.name}</span>
-                            {score != null && (
-                              <Badge variant="secondary" className="text-[8px] h-3.5 px-1 shrink-0 gap-0.5">
-                                <Star className="w-2 h-2 fill-current" />{score}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground truncate">{lead.title} · {lead.company}</div>
-                          <div className="flex flex-wrap gap-0.5 mt-0.5">
-                            <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-blue-500/15 text-blue-700">DM</Badge>
-                            {lead.type === "conquest" && lead.competitor_using && lead.competitor_using !== "null" && (
-                              <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-orange-500/10 text-orange-600">
-                                <Swords className="w-2 h-2 mr-0.5" />{lead.competitor_using}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </SelectableCard>
-                  );
-                })}
+                      </SelectableCard>
+                    ))}
+                  </div>
+                </ScrollArea>
               </div>
-            </ScrollArea>
 
-            {totalLeadPages > 1 && (
-              <div className="flex items-center justify-between px-2 py-1.5 border-t border-border/50 shrink-0">
-                <button onClick={() => setLeadPage(p => Math.max(1, p - 1))} disabled={safePage <= 1}
-                  className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
-                  <ChevronLeft className="w-3 h-3" /> Prev
-                </button>
-                <span className="text-[10px] text-muted-foreground">{safePage}/{totalLeadPages}</span>
-                <button onClick={() => setLeadPage(p => Math.min(totalLeadPages, p + 1))} disabled={safePage >= totalLeadPages}
-                  className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
-                  Next <ChevronRight className="w-3 h-3" />
-                </button>
+              {/* Verticals column */}
+              <div className="flex flex-col flex-1 border border-border rounded-lg overflow-hidden bg-card">
+                <div className="flex items-center justify-between p-2 border-b border-border/50">
+                  <span className="text-xs font-semibold text-foreground">Verticals & Buyer Roles</span>
+                </div>
+                <ScrollArea className="flex-1">
+                  <div className="p-1.5 space-y-1">
+                    {!selectedProductId ? (
+                      <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view target verticals</p>
+                    ) : activeVerticals.length === 0 ? (
+                      <p className="text-[10px] text-muted-foreground p-2 text-center">No verticals mapped</p>
+                    ) : activeVerticals.map((v, i) => {
+                      const Icon = getVerticalIcon(v.vertical);
+                      return (
+                        <div key={`${v.vertical}-${i}`} className="p-2.5 rounded-lg border border-border bg-card">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Icon className="w-4 h-4 text-primary shrink-0" />
+                            <span className="text-[11px] font-medium text-foreground">{v.vertical}</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mb-1.5">{v.segment}</p>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="secondary" className="text-[8px] h-3.5 px-1 gap-0.5 bg-blue-500/15 text-blue-700 border-0">
+                              <UserCheck className="w-2.5 h-2.5" /> DM: {v.dm}
+                            </Badge>
+                          </div>
+                          {v.customers.length > 0 && (
+                            <div className="flex flex-wrap gap-0.5 mt-1.5">
+                              {v.customers.slice(0, 3).map(c => (
+                                <Badge key={c} variant="outline" className="text-[8px] h-3 px-1">{c}</Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+
+            {/* CTA to proceed */}
+            {onContinueToStrategy && (
+              <div className="flex justify-center">
+                <Button onClick={onContinueToStrategy} size="lg" className="gap-2">
+                  <Target className="w-4 h-4" />
+                  Define your lead strategy →
+                </Button>
               </div>
             )}
           </div>
-        </div>
+        ) : (
+          /* ── Full mode: Products + Leads ── */
+          <div className="flex gap-1 h-[520px]">
+            {/* Col 1: Products */}
+            <div className="flex flex-col w-[220px] shrink-0 border border-border rounded-lg overflow-hidden bg-card">
+              <div className="flex items-center justify-between p-2 border-b border-border/50">
+                <span className="text-xs font-semibold text-foreground">Products</span>
+                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{filteredProducts.length}</Badge>
+              </div>
+              <div className="px-1.5 pt-1.5">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                  <Input placeholder="Filter..." value={productFilter} onChange={e => setProductFilter(e.target.value)}
+                    className="h-7 text-xs pl-7 bg-background" />
+                </div>
+              </div>
+              <ScrollArea className="flex-1">
+                <div className="p-1.5 space-y-1">
+                  {filteredProducts.map(product => (
+                    <SelectableCard key={product.id} active={selectedProductId === product.id}
+                      onClick={() => selectProduct(product.id)}
+                      onInfoClick={() => setDetailItem({ type: "product", data: product, leadCount: getProductLeadCount(product.id) })}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Package className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="text-[11px] font-medium text-foreground truncate flex-1">{product.name}</span>
+                        <Badge variant="secondary" className="text-[9px] h-3.5 px-1 shrink-0">{getProductLeadCount(product.id)}</Badge>
+                      </div>
+                      {product.competitors.length > 0 && (
+                        <div className="flex flex-wrap gap-0.5 mt-1">
+                          {product.competitors.slice(0, 2).map(c => (
+                            <Badge key={c} variant="secondary" className="text-[8px] h-3 px-1 bg-orange-500/10 text-orange-600 border-0">{c}</Badge>
+                          ))}
+                        </div>
+                      )}
+                    </SelectableCard>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Col 2: Leads */}
+            <div className="flex flex-col flex-1 border border-border rounded-lg overflow-hidden bg-card">
+              <div className="flex flex-col gap-1 p-2 border-b border-border/50 shrink-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-foreground">Prospects</span>
+                  <div className="flex items-center gap-1.5">
+                    {onGenerateMore && selectedProductId && (
+                      <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5 gap-0.5"
+                        disabled={isGeneratingMore}
+                        onClick={() => onGenerateMore(selectedProductId,
+                          selectedVerticalIdx !== null && activeVerticals[selectedVerticalIdx]
+                            ? activeVerticals[selectedVerticalIdx].vertical : null
+                        )}
+                      >
+                        {isGeneratingMore ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
+                        +5
+                      </Button>
+                    )}
+                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                      {activeLeads.length}/{totalLeadsForProduct}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                  <Input placeholder="Search name, title, company..."
+                    value={leadFilter} onChange={e => { setLeadFilter(e.target.value); setLeadPage(1); }}
+                    className="h-7 text-xs pl-7 bg-background" disabled={!selectedProductId} />
+                </div>
+                {selectedProductId && activeVerticals.length > 0 && (
+                  <div className="flex gap-1 flex-wrap">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => { setSelectedVerticalIdx(null); setLeadPage(1); }}
+                          className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
+                            selectedVerticalIdx === null
+                              ? "border-primary bg-primary/10 text-primary font-medium"
+                              : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                          }`}
+                        >
+                          <Zap className="w-3 h-3" />
+                          All
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom"><p className="text-xs">All verticals</p></TooltipContent>
+                    </Tooltip>
+                    {activeVerticals.map((v, i) => {
+                      const Icon = getVerticalIcon(v.vertical);
+                      return (
+                        <Tooltip key={`${v.vertical}-${i}`}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => { setSelectedVerticalIdx(prev => prev === i ? null : i); setLeadPage(1); }}
+                              className={`flex items-center gap-1 text-[9px] px-2 py-1 rounded-md border transition-colors ${
+                                selectedVerticalIdx === i
+                                  ? "border-primary bg-primary/10 text-primary font-medium"
+                                  : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                              }`}
+                            >
+                              <Icon className="w-3 h-3" />
+                              {getVerticalShortLabel(v.vertical)}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="max-w-[220px]">
+                            <p className="text-xs font-medium">{v.vertical}</p>
+                            <p className="text-[10px] text-muted-foreground">{v.segment}</p>
+                            <p className="text-[10px] text-muted-foreground">DM: {v.dm}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <ScrollArea className="flex-1">
+                <div className="p-1.5 space-y-1">
+                  {!selectedProductId ? (
+                    <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view prospects</p>
+                  ) : paginatedLeads.length === 0 ? (
+                    <p className="text-[10px] text-muted-foreground p-2 text-center">No prospects found</p>
+                  ) : paginatedLeads.map((lead, i) => {
+                    const score = (lead as any).lead_score as number | undefined;
+                    return (
+                      <SelectableCard
+                        key={lead.linkedin_url + i}
+                        onClick={() => setDetailItem({ type: "lead", data: lead })}
+                        onInfoClick={() => setDetailItem({ type: "lead", data: lead })}
+                      >
+                        <div className="flex items-start gap-2">
+                          {lead.photo_url ? (
+                            <img src={lead.photo_url} alt="" className="w-6 h-6 rounded-full shrink-0 mt-0.5" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                              <Users className="w-3 h-3 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-medium text-foreground truncate">{lead.name}</span>
+                              {score != null && (
+                                <Badge variant="secondary" className="text-[8px] h-3.5 px-1 shrink-0 gap-0.5">
+                                  <Star className="w-2 h-2 fill-current" />{score}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground truncate">{lead.title} · {lead.company}</div>
+                            <div className="flex flex-wrap gap-0.5 mt-0.5">
+                              <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-blue-500/15 text-blue-700">DM</Badge>
+                              {lead.type === "conquest" && lead.competitor_using && lead.competitor_using !== "null" && (
+                                <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-orange-500/10 text-orange-600">
+                                  <Swords className="w-2 h-2 mr-0.5" />{lead.competitor_using}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </SelectableCard>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+
+              {totalLeadPages > 1 && (
+                <div className="flex items-center justify-between px-2 py-1.5 border-t border-border/50 shrink-0">
+                  <button onClick={() => setLeadPage(p => Math.max(1, p - 1))} disabled={safePage <= 1}
+                    className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
+                    <ChevronLeft className="w-3 h-3" /> Prev
+                  </button>
+                  <span className="text-[10px] text-muted-foreground">{safePage}/{totalLeadPages}</span>
+                  <button onClick={() => setLeadPage(p => Math.min(totalLeadPages, p + 1))} disabled={safePage >= totalLeadPages}
+                    className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 flex items-center gap-0.5">
+                    Next <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Detail Sheet */}
         <Sheet open={!!detailItem} onOpenChange={(open) => { if (!open) setDetailItem(null); }}>
