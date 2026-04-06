@@ -53,6 +53,11 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const [cardInputs, setCardInputs] = useState<Record<string, string>>({});
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
+  /* ── normalize domain for cache key ── */
+  function normalizeWebsiteKey(url: string): string {
+    return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "").toLowerCase();
+  }
+
   // Auto-start analysis from URL param
   useEffect(() => {
     if (initialWebsite && !autoStarted.current) {
@@ -83,10 +88,41 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     }
   }, [initialWebsite]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── run ICP pipeline (steps 1-3 only, then pause for strategy) ── */
+  /* ── run ICP pipeline with cache ── */
   const runICPPipeline = useCallback(async (company: CompanyData) => {
     cancelRef.cancelled = false;
     setIsRunning(true);
+
+    const websiteKey = normalizeWebsiteKey(company.website || company.id);
+
+    // Check cache first
+    try {
+      const { data: cached } = await supabase
+        .from("leadhunter_cache")
+        .select("*")
+        .eq("website_key", websiteKey)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
+
+      if (cached?.tree_data && cached?.step_results) {
+        const cachedCompany = cached.company_data as any;
+        if (cachedCompany?.name) {
+          setSelectedCompany(prev => ({ ...prev!, ...cachedCompany }));
+        }
+        setStepResults(cached.step_results as Record<string, any>);
+        accumulatedRef.current = cached.step_results as Record<string, any>;
+        setTreeData(cached.tree_data as any);
+        setIsRunning(false);
+        setCurrentStepIdx(-1);
+        setPhase("icp-mapping");
+        toast.success("Loaded from cache — instant results!");
+        return;
+      }
+    } catch (e) {
+      console.warn("Cache lookup failed, running fresh:", e);
+    }
+
+    // No cache — run pipeline
     const accumulated: Record<string, any> = {};
 
     for (let i = 0; i < 3; i++) {
@@ -122,15 +158,28 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     const customers = accumulated["customers"]?.structured;
     const icpBuyers = accumulated["icp-buyers"]?.structured;
 
+    let builtTree: GTMTreeData | null = null;
     if (products) {
-      setTreeData({
+      builtTree = {
         company_summary: products.company_summary || "",
         products: products.products || [],
         customers: customers?.customers || [],
         conquest_targets: customers?.conquest_targets || [],
         mappings: icpBuyers?.mappings || [],
         leads: [],
-      });
+      };
+      setTreeData(builtTree);
+    }
+
+    // Write to cache
+    if (builtTree) {
+      supabase.from("leadhunter_cache").upsert({
+        website_key: websiteKey,
+        company_data: company as any,
+        step_results: accumulated as any,
+        tree_data: builtTree as any,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      }, { onConflict: "website_key" }).then(() => {});
     }
 
     setIsRunning(false);

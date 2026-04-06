@@ -446,6 +446,36 @@ export type Database = {
         }
         Relationships: []
       }
+      leadhunter_cache: {
+        Row: {
+          company_data: Json
+          created_at: string
+          expires_at: string
+          id: string
+          step_results: Json
+          tree_data: Json
+          website_key: string
+        }
+        Insert: {
+          company_data?: Json
+          created_at?: string
+          expires_at?: string
+          id?: string
+          step_results?: Json
+          tree_data?: Json
+          website_key: string
+        }
+        Update: {
+          company_data?: Json
+          created_at?: string
+          expires_at?: string
+          id?: string
+          step_results?: Json
+          tree_data?: Json
+          website_key?: string
+        }
+        Relationships: []
+      }
       outreach_log: {
         Row: {
           body: string | null
