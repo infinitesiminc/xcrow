@@ -194,6 +194,21 @@ export default function StrategyChat({ companyName, activeCards, treeData }: Str
         )}
       </div>
 
+      {/* Active selections summary when collapsed */}
+      {messages.length > 0 && chipsCollapsed && hasSelections && (
+        <div className="px-3 py-1.5 border-b border-border/30 bg-muted/30">
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(selected).flatMap(([, chips]) =>
+              chips.map(chip => (
+                <span key={chip} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  {chip}
+                </span>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       <ScrollArea className="flex-1">
         <div className="p-2.5 space-y-2">
           {/* Quick-action chips */}
