@@ -57,7 +57,7 @@ const App = () => (
           <ErrorBoundary fallbackTitle="Something went wrong">
           <Suspense fallback={null}>
             <Routes>
-              <Route path="/" element={<><Navbar /><SmartHome /></>} />
+              <Route path="/" element={<SmartHomeRoute />} />
               <Route path="/leadgen" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
