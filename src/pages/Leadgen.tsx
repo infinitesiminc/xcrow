@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight, Target, MapPin } from "lucide-react";
+import CrowHuntingLoader from "@/components/CrowHuntingLoader";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1072,9 +1073,7 @@ export default function Leadgen() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center px-6 py-8 rounded-2xl bg-card/90 border border-border/60 shadow-lg max-w-sm"
         >
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Loader2 className="w-7 h-7 text-primary animate-spin" />
-          </div>
+          <CrowHuntingLoader size="md" label="" className="mb-2" />
           <h2 className="text-lg font-semibold text-foreground mb-1">
             {isDiscovering
               ? `Analyzing ${websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}`
