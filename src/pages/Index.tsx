@@ -216,6 +216,7 @@ export default function Index() {
 
         {/* ═══ Value props — 3 columns ═══ */}
         <section className="py-20 sm:py-28">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <motion.div {...fadeInView()} className="text-center mb-16">
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
                 Why Xcrow
