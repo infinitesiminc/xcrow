@@ -60,7 +60,7 @@ const PLANS = [
     cta: "Upgrade to Pro",
     featured: true,
     features: [
-      { text: "Unlimited lead hunts", included: true },
+      { text: "100 lead hunts per month", included: true },
       { text: "AI company DNA analysis", included: true },
       { text: "Prospect map generation", included: true },
       { text: "Up to 25 leads per hunt", included: true },
@@ -71,12 +71,34 @@ const PLANS = [
       { text: "CRM pipeline management", included: true },
     ],
   },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    desc: "For agencies and teams with high-volume outbound needs.",
+    cta: "Talk to Sales",
+    featured: false,
+    enterprise: true,
+    features: [
+      { text: "Unlimited lead hunts", included: true },
+      { text: "AI company DNA analysis", included: true },
+      { text: "Prospect map generation", included: true },
+      { text: "Up to 50 leads per hunt", included: true },
+      { text: "Advanced outreach drafts", included: true },
+      { text: "Unlimited workspaces", included: true },
+      { text: "Priority lead scoring", included: true },
+      { text: "Email send & tracking", included: true },
+      { text: "CRM pipeline management", included: true },
+      { text: "Dedicated support & onboarding", included: true },
+      { text: "Custom integrations", included: true },
+    ],
+  },
 ];
 const FAQ = [
   { q: "Can I try Xcrow before paying?", a: "Yes — the Free plan gives you 3 lead hunts per month with no credit card required. You can upgrade anytime." },
-  { q: "What counts as a lead hunt?", a: "One lead hunt = pasting a URL and generating a scored prospect list. Each hunt returns up to 5 leads on Free or 25 on Pro." },
-  { q: "Can I cancel anytime?", a: "Yes. Pro is month-to-month with no contracts. Cancel from your Settings page and you'll keep access until the end of your billing period." },
-  { q: "Do you offer team or enterprise plans?", a: "Not yet, but we're working on it. Contact us at jackson@xcrow.ai for custom pricing for teams of 5+." },
+  { q: "What counts as a lead hunt?", a: "One lead hunt = pasting a URL and generating a scored prospect list. Each hunt returns up to 5 leads on Free, 15 on Starter, or 25 on Pro." },
+  { q: "Can I cancel anytime?", a: "Yes. Starter and Pro are month-to-month with no contracts. Cancel from your Settings page and you'll keep access until the end of your billing period." },
+  { q: "What's the Enterprise plan?", a: "Enterprise is for teams with high-volume needs. Contact jackson@xcrow.ai for custom pricing, onboarding, and integrations." },
 ];
 
 export default function Pricing() {
@@ -113,7 +135,7 @@ export default function Pricing() {
         {/* Plans */}
         <section className="py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
               {PLANS.map((plan, i) => (
                 <motion.div
                   key={plan.name}
@@ -136,14 +158,24 @@ export default function Pricing() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-8">{plan.desc}</p>
 
-                  <Button
-                    className={`w-full h-12 font-bold rounded-xl gap-2 ${plan.featured ? "shadow-md" : ""}`}
-                    variant={plan.featured ? "default" : "outline"}
-                    onClick={() => navigate(plan.featured ? "/leadhunter" : "/leadhunter")}
-                  >
-                    {plan.featured && <Sparkles className="w-4 h-4" />}
-                    {plan.cta}
-                  </Button>
+                  {'enterprise' in plan && (plan as any).enterprise ? (
+                    <Button
+                      className="w-full h-12 font-bold rounded-xl gap-2"
+                      variant="outline"
+                      asChild
+                    >
+                      <a href="mailto:jackson@xcrow.ai?subject=Xcrow Enterprise Inquiry">{plan.cta}</a>
+                    </Button>
+                  ) : (
+                    <Button
+                      className={`w-full h-12 font-bold rounded-xl gap-2 ${plan.featured ? "shadow-md" : ""}`}
+                      variant={plan.featured ? "default" : "outline"}
+                      onClick={() => navigate("/leadhunter")}
+                    >
+                      {plan.featured && <Sparkles className="w-4 h-4" />}
+                      {plan.cta}
+                    </Button>
+                  )}
 
                   <ul className="mt-8 space-y-3">
                     {plan.features.map((f) => (
