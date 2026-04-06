@@ -365,6 +365,7 @@ export default function Leadgen() {
       setHasDiscovered(true);
       setChatOpen(false);
       toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+      fetchGtmAnalysis(url);
 
       // Auto-seed 1 lead per persona
       handleAutoSeed(niches);
