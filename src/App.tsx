@@ -29,6 +29,10 @@ const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
+const Pricing = lazy(() => import("./pages/Pricing.tsx"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
+const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
+const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
 
 
 const queryClient = new QueryClient();
