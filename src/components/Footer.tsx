@@ -8,7 +8,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
   >
     <div className="max-w-7xl mx-auto px-6 py-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Xcrow.ai</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Xcrow</p>
         <div className="flex items-center gap-4">
           <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
           <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
