@@ -622,7 +622,7 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
                           )}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-medium text-foreground truncate">{lead.name}</span>
+                              <span className="text-[11px] font-medium text-foreground">{lead.name}</span>
                               {score != null && (
                                 <Badge variant="secondary" className="text-[8px] h-3.5 px-1 shrink-0 gap-0.5">
                                   <Star className="w-2 h-2 fill-current" />{score}
