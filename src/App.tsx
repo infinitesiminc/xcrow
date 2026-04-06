@@ -25,7 +25,7 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
-const Contact = lazy(() => import("./pages/Contact.tsx"));
+
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
