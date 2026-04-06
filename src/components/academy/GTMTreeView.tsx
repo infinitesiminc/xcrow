@@ -10,9 +10,6 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Collapsible, CollapsibleContent, CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Building2, Package, Users, Linkedin, Target, Swords,
   UserCheck, Globe, Mail, Search, ChevronLeft, ChevronRight,
   Info, Plus, Loader2, ChevronDown, Star, Briefcase, Landmark,
