@@ -74,6 +74,14 @@ export function LeadgenDashboard({
 
   const droppedIds = new Set(droppedCards.map(c => c.id));
 
+  // Auto-select single product
+  useEffect(() => {
+    if (gtmTreeData && gtmTreeData.products.length === 1 && droppedCards.length === 0) {
+      const p = gtmTreeData.products[0];
+      setDroppedCards([{ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model }]);
+    }
+  }, [gtmTreeData]);
+
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
