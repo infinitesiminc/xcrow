@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Target, Mail, Download, Loader2, Zap } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
@@ -73,6 +73,14 @@ export function LeadgenDashboard({
   const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
 
   const droppedIds = new Set(droppedCards.map(c => c.id));
+
+  // Auto-select single product
+  useEffect(() => {
+    if (gtmTreeData && gtmTreeData.products.length === 1 && droppedCards.length === 0) {
+      const p = gtmTreeData.products[0];
+      setDroppedCards([{ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model }]);
+    }
+  }, [gtmTreeData]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
