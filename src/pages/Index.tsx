@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import { Globe, Sparkles, ArrowRight, Zap, Target, BarChart3, Users } from "lucide-react";
+import { toast } from "sonner";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import { useAuth } from "@/contexts/AuthContext";
 
