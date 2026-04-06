@@ -28,6 +28,7 @@ const LEGAL = [
   { label: "Terms", to: "/terms" },
   { label: "Cookies", to: "/cookies" },
   { label: "Contact", to: "/contact" },
+  { label: "About", to: "/about" },
 ];
 
 const ColHeader = ({ children }: { children: string }) => (
