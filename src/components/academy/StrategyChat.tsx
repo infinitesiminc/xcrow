@@ -123,8 +123,8 @@ Named customers: ${customers.join(", ") || "None identified"}
 
       let { cleanText, pills } = parsePills(assistantContent);
 
-      // If AI returned no pills, build from stream niches or ICP data
-      if (pills.length === 0 && treeData) {
+      // Only apply vertical fallback on the opening message (no prior messages)
+      if (pills.length === 0 && treeData && updatedMessages.length === 0) {
         const verticals = [...new Set(treeData.mappings.map(m => m.vertical))].filter(Boolean);
         if (nichesFromStream.length > 0) {
           pills = nichesFromStream.slice(0, 4);
@@ -133,11 +133,13 @@ Named customers: ${customers.join(", ") || "None identified"}
         }
       }
 
-      if (!cleanText) {
+      if (!cleanText && updatedMessages.length === 0) {
         const verticalCount = treeData ? [...new Set(treeData.mappings.map(m => m.vertical))].length : 0;
         cleanText = verticalCount > 0
           ? `I've analyzed **${companyName}** and found ${verticalCount} key verticals. Which market do you want to target first?`
           : "I'm ready to help you find the best leads. What vertical would you like to target?";
+      } else if (!cleanText) {
+        cleanText = "Let me think about that...";
       }
       
       setMessages(prev => [...prev, { role: "assistant", content: cleanText, pills }]);
