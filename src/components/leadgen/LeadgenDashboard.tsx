@@ -45,6 +45,7 @@ interface LeadgenDashboardProps {
   // GTM tree data for targeting cards
   gtmTreeData?: GTMTreeData | null;
   onGenerateFromTargeting?: (cards: DroppedCard[]) => void;
+  onStopGenerating?: () => void;
 }
 
 export function LeadgenDashboard({
