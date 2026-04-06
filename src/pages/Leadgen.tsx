@@ -1278,7 +1278,7 @@ export default function Leadgen() {
               className="flex items-center gap-1.5 shrink-0"
               onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
             >
-              <div className="relative w-[160px]">
+              <div className="relative w-[140px] sm:w-[160px]">
                 <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                 <Input
                   value={websiteUrl}
