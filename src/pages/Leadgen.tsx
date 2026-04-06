@@ -159,15 +159,14 @@ export default function Leadgen() {
         body: { website },
       });
       if (resp.data && typeof resp.data === "object") {
-        // Handle potential streaming response
         let raw = resp.data;
         if (raw instanceof Blob) {
           raw = JSON.parse(await raw.text());
         }
-        if (raw.tree) {
-          setGtmTreeData(raw.tree as GTMTreeData);
-        } else if (raw.products) {
-          setGtmTreeData(raw as GTMTreeData);
+        // gtm-analyze wraps data in { structured: { ... } }
+        const data = raw.structured || raw.tree || raw;
+        if (data.products || data.mappings) {
+          setGtmTreeData(data as GTMTreeData);
         }
       }
     } catch (e) {
