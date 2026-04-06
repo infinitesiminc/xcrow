@@ -1,8 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Package, Target, UserCheck, Building2, Landmark, Heart, Cpu, ShoppingCart, GraduationCap, Home, Shield, Briefcase, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { GTMTreeData, GTMProduct, GTMBuyerMapping } from "@/components/academy/gtm-types";
 
 const VERTICAL_ICONS: Record<string, React.ElementType> = {
@@ -44,6 +46,8 @@ interface TargetingCardsProps {
 }
 
 export default function TargetingCards({ treeData, selectedIds, onToggle, loadingProducts, loadingPersonas }: TargetingCardsProps) {
+  const isMobile = useIsMobile();
+
   const productItems: TargetItem[] = useMemo(() =>
     treeData.products.map(p => ({
       type: "product" as const,
@@ -70,6 +74,75 @@ export default function TargetingCards({ treeData, selectedIds, onToggle, loadin
     [treeData.mappings]
   );
 
+  // Mobile: use dropdown selects
+  if (isMobile) {
+    return (
+      <div className="px-3 py-2 space-y-2">
+        {/* Products dropdown */}
+        <div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Package className="w-3.5 h-3.5 text-primary" />
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Products</span>
+            {loadingProducts && <Loader2 className="w-3 h-3 text-primary animate-spin ml-auto" />}
+            {!loadingProducts && <Badge variant="secondary" className="text-[10px] h-4 px-1.5 ml-auto">{productItems.length}</Badge>}
+          </div>
+          {loadingProducts && <Progress value={30} className="h-1 mb-1" />}
+          <div className="flex flex-wrap gap-1.5">
+            {productItems.map(item => {
+              const selected = selectedIds.has(item.id);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onToggle({ id: item.id, type: item.type, label: item.label, description: item.description, meta: item.meta })}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-all ${
+                    selected
+                      ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                      : "border-border bg-card hover:border-primary/30"
+                  }`}
+                >
+                  <Package className={`w-3 h-3 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="text-foreground">{item.label}</span>
+                  {selected && <Check className="w-3 h-3 text-primary shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Personas dropdown */}
+        <div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <UserCheck className="w-3.5 h-3.5 text-primary" />
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Personas</span>
+            {loadingPersonas && <Loader2 className="w-3 h-3 text-primary animate-spin ml-auto" />}
+            {!loadingPersonas && <Badge variant="secondary" className="text-[10px] h-4 px-1.5 ml-auto">{verticalItems.length}</Badge>}
+          </div>
+          {loadingPersonas && <Progress value={50} className="h-1 mb-1" />}
+          <div className="flex flex-wrap gap-1.5">
+            {verticalItems.map(item => {
+              const selected = selectedIds.has(item.id);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onToggle({ id: item.id, type: item.type, label: item.label, description: item.description, meta: item.meta })}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs transition-all ${
+                    selected
+                      ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                      : "border-border bg-card hover:border-primary/30"
+                  }`}
+                >
+                  <span className="font-medium text-foreground">{item.label}</span>
+                  {selected && <Check className="w-3 h-3 text-primary shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: original two-column layout
   return (
     <div className="flex flex-1 min-h-0 overflow-hidden">
       {/* Products column */}

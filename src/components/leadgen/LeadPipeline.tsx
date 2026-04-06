@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink, MapPin, Globe } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { SavedLead, LeadStatus } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
@@ -51,13 +52,13 @@ export function LeadPipeline({
   leads, onUpdateStatus, onDraftEmail, onExportCSV, outreachCount,
   onSelectLead, onFindLookalikes, selectedIds, onToggleSelect, onSelectAll,
 }: LeadPipelineProps) {
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [nicheFilter, setNicheFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
 
-  // Unique niches for filter dropdown
   const nicheOptions = useMemo(() => {
     const set = new Set<string>();
     for (const l of leads) set.add(l.niche_tag || "Uncategorized");
@@ -101,23 +102,36 @@ export function LeadPipeline({
 
   return (
     <div className="flex flex-col h-full">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-        <KPI icon={<Users className="w-4 h-4" />} label="Total Leads" value={leads.length} />
-        <KPI icon={<Mail className="w-4 h-4" />} label="Emails Sent" value={outreachCount} />
-        <KPI icon={<MessageSquare className="w-4 h-4" />} label="Contacted" value={contacted} />
-        <KPI icon={<TrendingUp className="w-4 h-4" />} label="Reply Rate" value={`${replyRate}%`} />
+      {/* Search first on mobile */}
+      <div className={`px-3 md:px-4 ${isMobile ? "pt-2 pb-1" : "pb-3"}`}>
+        <div className="relative w-full">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search leads..." className="pl-8 h-9 md:h-8 text-sm" />
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search leads..." className="pl-8 h-8 text-sm" />
+      {/* KPI Cards — compact horizontal strip on mobile, grid on desktop */}
+      {isMobile ? (
+        <div className="flex gap-2 px-3 pb-2 overflow-x-auto">
+          <MiniKPI label="Leads" value={leads.length} />
+          <MiniKPI label="Sent" value={outreachCount} />
+          <MiniKPI label="Contacted" value={contacted} />
+          <MiniKPI label="Reply" value={`${replyRate}%`} />
         </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-3 px-4 pb-3">
+          <KPI icon={<Users className="w-4 h-4" />} label="Total Leads" value={leads.length} />
+          <KPI icon={<Mail className="w-4 h-4" />} label="Emails Sent" value={outreachCount} />
+          <KPI icon={<MessageSquare className="w-4 h-4" />} label="Contacted" value={contacted} />
+          <KPI icon={<TrendingUp className="w-4 h-4" />} label="Reply Rate" value={`${replyRate}%`} />
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className={`px-3 md:px-4 pb-2 flex items-center gap-2 flex-wrap`}>
         {nicheOptions.length > 1 && (
           <Select value={nicheFilter} onValueChange={setNicheFilter}>
-            <SelectTrigger className="w-[160px] h-8 text-xs">
+            <SelectTrigger className="w-[130px] md:w-[160px] h-8 text-xs">
               <SelectValue placeholder="All Niches" />
             </SelectTrigger>
             <SelectContent>
@@ -128,7 +142,7 @@ export function LeadPipeline({
             </SelectContent>
           </Select>
         )}
-        {locationOptions.length > 0 && (
+        {!isMobile && locationOptions.length > 0 && (
           <Select value={locationFilter} onValueChange={setLocationFilter}>
             <SelectTrigger className="w-[160px] h-8 text-xs">
               <MapPin className="w-3 h-3 mr-1 shrink-0" />
@@ -142,7 +156,7 @@ export function LeadPipeline({
             </SelectContent>
           </Select>
         )}
-        {sourceOptions.length > 1 && (
+        {!isMobile && sourceOptions.length > 1 && (
           <Select value={sourceFilter} onValueChange={setSourceFilter}>
             <SelectTrigger className="w-[160px] h-8 text-xs">
               <Globe className="w-3 h-3 mr-1 shrink-0" />
@@ -157,7 +171,7 @@ export function LeadPipeline({
           </Select>
         )}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[120px] h-8 text-xs">
+          <SelectTrigger className="w-[100px] md:w-[120px] h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -169,16 +183,16 @@ export function LeadPipeline({
             <SelectItem value="lost">Lost</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={onExportCSV}>
+        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs ml-auto" onClick={onExportCSV}>
           <Download className="w-3.5 h-3.5" /> CSV
         </Button>
       </div>
 
       {/* Lead Table */}
-      <ScrollArea className="flex-1 px-4 pb-4">
+      <ScrollArea className="flex-1 px-3 md:px-4 pb-4">
         {filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            {leads.length === 0 ? "No leads yet — click Generate All to discover prospects!" : "No leads match your filters."}
+            {leads.length === 0 ? "No leads yet — select targeting criteria and generate!" : "No leads match your filters."}
           </div>
         ) : (
           <Table>
@@ -319,5 +333,14 @@ function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; val
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function MiniKPI({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-card/40 border border-border/30 shrink-0">
+      <span className="text-sm font-bold text-foreground">{value}</span>
+      <span className="text-[10px] text-muted-foreground">{label}</span>
+    </div>
   );
 }

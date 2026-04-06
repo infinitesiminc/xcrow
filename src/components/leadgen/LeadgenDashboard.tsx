@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Sparkles, Target, Mail, Download, Loader2, Zap } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { LeadPipeline } from "./LeadPipeline";
 import { ICPInsightsPanel } from "./ICPInsightsPanel";
 import TargetingCards from "./TargetingCards";
@@ -30,19 +29,16 @@ interface LeadgenDashboardProps {
   onExportCSV: () => void;
   onGenerateAll?: () => void;
   onEnrichAll?: () => void;
-  
   onDraftAll?: () => void;
   isGenerating?: boolean;
   isEnriching?: boolean;
   onSelectLead?: (lead: SavedLead) => void;
   onFindLookalikes?: (lead: SavedLead) => void;
-  // ICP Insights
   websiteUrl?: string;
   pagesAnalyzed?: PageAnalyzed[];
   companySummary?: string;
   icpSummary?: string;
   niches?: NicheItem[];
-  // GTM tree data for targeting cards
   gtmTreeData?: GTMTreeData | null;
   onGenerateFromTargeting?: (cards: DroppedCard[]) => void;
   onStopGenerating?: () => void;
@@ -58,7 +54,6 @@ export function LeadgenDashboard({
   onExportCSV,
   onGenerateAll,
   onEnrichAll,
-  
   onDraftAll,
   isGenerating,
   isEnriching,
@@ -75,6 +70,7 @@ export function LeadgenDashboard({
   loadingProducts,
   loadingPersonas,
 }: LeadgenDashboardProps) {
+  const isMobile = useIsMobile();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
 
@@ -119,11 +115,65 @@ export function LeadgenDashboard({
     }
   }
 
+  // Mobile layout: everything stacks vertically, no fixed-height constraints
+  if (isMobile) {
+    return (
+      <div className="flex flex-col flex-1 min-w-0 overflow-auto pb-20">
+        {/* Targeting section: Generate CTA first, then selectors */}
+        {gtmTreeData && (
+          <div className="border-b border-border/40">
+            <TargetZone
+              cards={droppedCards}
+              onGenerate={handleGenerate}
+              isGenerating={isGenerating}
+              onStop={onStopGenerating}
+            />
+            <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} loadingProducts={loadingProducts} loadingPersonas={loadingPersonas} />
+          </div>
+        )}
+
+        {/* Company summary when no GTM data */}
+        {companySummary && !gtmTreeData && (
+          <ICPInsightsPanel
+            websiteUrl={websiteUrl || ""}
+            pagesAnalyzed={pagesAnalyzed || []}
+            companySummary={companySummary}
+            icpSummary={icpSummary || ""}
+            niches={niches}
+          />
+        )}
+
+        {/* Lead count bar */}
+        <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex items-center gap-2 shrink-0">
+          <span className="text-xs font-medium text-muted-foreground">
+            {leads.length} leads
+            {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
+          </span>
+        </div>
+
+        {/* Lead Pipeline */}
+        <LeadPipeline
+          leads={leads}
+          onUpdateStatus={onUpdateStatus}
+          onDraftEmail={onDraftEmail}
+          onExportCSV={onExportCSV}
+          outreachCount={outreach.length}
+          onSelectLead={onSelectLead}
+          onFindLookalikes={onFindLookalikes}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onSelectAll={selectAll}
+        />
+      </div>
+    );
+  }
+
+  // Desktop layout: 40/60 split
   return (
-    <div className="flex flex-col md:flex-row flex-1 min-w-0 h-full overflow-auto md:overflow-hidden">
+    <div className="flex flex-row flex-1 min-w-0 h-full overflow-hidden">
       {/* LEFT COLUMN: Targeting inputs */}
       {gtmTreeData && (
-        <div className="w-full md:w-2/5 md:min-w-[320px] md:max-w-[480px] border-b md:border-b-0 md:border-r border-border/40 flex flex-col shrink-0 max-h-[50vh] md:max-h-none md:h-full overflow-auto">
+        <div className="w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex flex-col shrink-0 h-full overflow-auto">
           <div className="border-b border-border/30">
             <TargetZone
               cards={droppedCards}

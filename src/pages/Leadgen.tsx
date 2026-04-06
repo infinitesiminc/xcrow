@@ -1273,25 +1273,32 @@ export default function Leadgen() {
       {!hasWebsiteContext && !hasDiscovered ? <EmptyState /> : showSkeleton ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Consolidated header strip: URL + location + summary */}
-          <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex flex-wrap items-center gap-2 shrink-0">
+          <div className="border-b border-border/40 bg-card/30 px-3 py-2 shrink-0">
+            {/* Row 1: URL + Analyze */}
             <form
-              className="flex items-center gap-1.5 shrink-0"
+              className="flex items-center gap-1.5"
               onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
             >
-              <div className="relative w-[140px] sm:w-[160px]">
+              <div className="relative flex-1 min-w-0">
                 <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                 <Input
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   placeholder="yourcompany.com"
-                  className="pl-7 h-7 text-xs"
+                  className="pl-7 h-8 sm:h-7 text-xs"
                   disabled={isDiscovering}
                 />
               </div>
-              {/* Location chip */}
+              <Button type="submit" variant="outline" size="sm" className="h-8 sm:h-7 text-xs gap-1 px-2 shrink-0" disabled={!websiteUrl.trim() || isDiscovering}>
+                {isDiscovering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                Analyze
+              </Button>
+            </form>
+            {/* Row 2: Location + Reset */}
+            <div className="flex items-center gap-1.5 mt-1.5">
               {editingLocation ? (
                 <form
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 flex-1"
                   onSubmit={(e) => { e.preventDefault(); setEditingLocation(false); }}
                 >
                   <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
@@ -1301,14 +1308,14 @@ export default function Leadgen() {
                     onChange={(e) => setTargetLocation(e.target.value)}
                     onBlur={() => setEditingLocation(false)}
                     placeholder="e.g. New York, USA"
-                    className="h-6 w-[120px] text-xs px-1.5"
+                    className="h-7 text-xs px-1.5 flex-1"
                   />
                 </form>
               ) : (
                 <button
                   type="button"
                   onClick={() => setEditingLocation(true)}
-                  className="inline-flex items-center gap-1 h-6 px-2 rounded-md text-xs border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors shrink-0"
+                  className="inline-flex items-center gap-1 h-7 px-2 rounded-md text-xs border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors shrink-0"
                 >
                   <MapPin className="w-3 h-3 shrink-0" />
                   {targetLocation || "Location"}
@@ -1323,26 +1330,22 @@ export default function Leadgen() {
                   <X className="w-3 h-3" />
                 </button>
               )}
-              <Button type="submit" variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" disabled={!websiteUrl.trim() || isDiscovering}>
-                {isDiscovering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                Analyze
+              {/* Company summary inline — desktop only */}
+              {companySummary && (
+                <p className="hidden sm:block text-xs text-muted-foreground truncate flex-1 min-w-0 px-2 border-l border-border/40">
+                  {companySummary}
+                </p>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs gap-1 text-muted-foreground hover:text-foreground h-7 px-2 shrink-0 ml-auto"
+                onClick={handleNewWorkspace}
+              >
+                <ArrowRight className="w-3 h-3" />
+                Reset
               </Button>
-            </form>
-            {/* Company summary inline */}
-            {companySummary && (
-              <p className="hidden sm:block text-xs text-muted-foreground truncate flex-1 min-w-0 px-2 border-l border-border/40">
-                {companySummary}
-              </p>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs gap-1 text-muted-foreground hover:text-foreground h-7 px-2 shrink-0"
-              onClick={handleNewWorkspace}
-            >
-              <ArrowRight className="w-3 h-3" />
-              Reset
-            </Button>
+            </div>
           </div>
           <LeadgenDashboard
             leads={dashboardLeads}
@@ -1389,7 +1392,7 @@ export default function Leadgen() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-8rem)] bg-card border border-border/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-0 right-0 md:bottom-20 md:right-4 z-50 w-full md:w-[380px] md:max-w-[calc(100vw-2rem)] h-[100dvh] md:h-[520px] md:max-h-[calc(100vh-8rem)] bg-card border md:border-border/60 md:rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             <div className="border-b border-border/40 bg-card/80 backdrop-blur px-4 py-2.5 flex items-center gap-3 shrink-0">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
@@ -1467,7 +1470,7 @@ export default function Leadgen() {
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+          className="fixed bottom-4 right-4 z-50 w-11 h-11 md:w-12 md:h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
           onClick={() => setChatOpen(true)}
         >
           <MessageSquare className="w-5 h-5" />
@@ -1490,7 +1493,7 @@ export default function Leadgen() {
         onDeleteWorkspace={handleDeleteWorkspace}
         onNewWorkspace={handleNewWorkspace}
       />
-      <div className="flex flex-col h-screen pt-14">
+      <div className="flex flex-col min-h-[100dvh] md:h-screen pt-14">
         {mainContent}
       </div>
 
