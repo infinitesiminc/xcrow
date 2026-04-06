@@ -539,26 +539,19 @@ export default function Leadgen() {
 
   const handleSendEmail = async () => {
     if (!draftLead?.email || !draftSubject || !draftBody) return;
-    setSending(true);
-    try {
-      const id = crypto.randomUUID();
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "lead-outreach", recipientEmail: draftLead.email, idempotencyKey: `outreach-${id}`,
-          templateData: { recipientName: draftLead.name, senderName: profile?.displayName || user?.email?.split("@")[0], senderCompany: profile?.company || "", emailBody: draftBody, ctaText: draftCtaText || undefined, ctaUrl: "", subject: draftSubject },
-        },
-      });
-      if (error) throw error;
-      toast.success(`Email sent to ${draftLead.email}`);
-      if (user) {
-        const matchedLead = savedLeads.find((l) => l.email === draftLead.email && l.company === draftLead.company);
-        if (matchedLead) {
-          await logOutreach(matchedLead.id, "email", draftSubject, draftBody);
-          if (matchedLead.status === "new") await updateLeadStatus(matchedLead.id, "contacted");
-        }
+    // Build mailto link with pre-filled subject & body
+    const mailto = `mailto:${encodeURIComponent(draftLead.email)}?subject=${encodeURIComponent(draftSubject)}&body=${encodeURIComponent(draftBody)}`;
+    window.open(mailto, "_blank");
+    toast.success(`Opening email client for ${draftLead.email}`);
+    // Log outreach if user is authenticated
+    if (user) {
+      const matchedLead = savedLeads.find((l) => l.email === draftLead.email && l.company === draftLead.company);
+      if (matchedLead) {
+        await logOutreach(matchedLead.id, "email", draftSubject, draftBody);
+        if (matchedLead.status === "new") await updateLeadStatus(matchedLead.id, "contacted");
       }
-      setDraftModalOpen(false);
-    } catch (e: any) { toast.error(e.message || "Failed to send email"); } finally { setSending(false); }
+    }
+    setDraftModalOpen(false);
   };
 
   const sendMessage = async (overrideText?: string) => {
