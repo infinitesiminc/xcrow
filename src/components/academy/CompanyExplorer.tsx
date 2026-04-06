@@ -419,7 +419,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       {isRunning && !treeData && (
         <div className="relative">
           {/* Blurred dashboard skeleton background */}
-          <div className="filter blur-[2px] opacity-50 pointer-events-none select-none animate-pulse">
+          <div className="blur-[2px] opacity-70 pointer-events-none select-none">
             {/* Executive overview bar */}
             <div className="rounded-xl border border-border bg-card p-4 mb-4">
               <div className="flex items-center justify-between">
