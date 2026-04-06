@@ -984,20 +984,22 @@ export default function Leadgen() {
             <Loader2 className="w-7 h-7 text-primary animate-spin" />
           </div>
           <h2 className="text-lg font-semibold text-foreground mb-1">
-            Analyzing {websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}
+            {isDiscovering
+              ? `Analyzing ${websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}`
+              : "Loading product map..."}
           </h2>
           <p className="text-xs text-muted-foreground mb-4">
-            This usually takes 15–30 seconds
+            {isDiscovering ? "This usually takes 15–30 seconds" : "Extracting products and personas..."}
           </p>
-          {discoveryPhase && (
+          {(discoveryPhase || !isDiscovering) && (
             <motion.div
-              key={discoveryPhase}
+              key={discoveryPhase || "products"}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex items-center justify-center gap-2 text-xs text-primary"
             >
               <Sparkles className="w-3 h-3" />
-              {discoveryPhase}
+              {discoveryPhase || "Mapping product lines..."}
             </motion.div>
           )}
         </motion.div>
@@ -1049,9 +1051,11 @@ export default function Leadgen() {
     toast.info("Scoring leads — this feature is coming soon!");
   };
 
+  const showSkeleton = !hasDiscovered || (isDiscovering) || (hasDiscovered && !gtmTreeData);
+
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
-      {!hasDiscovered ? discoveryLoading : (
+      {showSkeleton ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Website + Location bar */}
           <div className="border-b border-border/40 bg-card/30 px-3 py-1 flex items-center gap-1.5 shrink-0 flex-wrap">
