@@ -1049,20 +1049,7 @@ export default function Leadgen() {
     }
     toast.success("Workspace removed");
   }, [deleteWorkspace, activeWorkspaceKey]);
-const FETCH_TIMEOUT_MS = 120_000; // 2 min timeout for edge functions
 
-/** Fetch with automatic timeout via AbortSignal */
-function fetchWithTimeout(url: string, opts: RequestInit & { timeout?: number } = {}): Promise<Response> {
-  const { timeout = FETCH_TIMEOUT_MS, ...fetchOpts } = opts;
-  const controller = new AbortController();
-  const existingSignal = fetchOpts.signal;
-  // If caller already has a signal (e.g. abort button), listen on both
-  if (existingSignal) {
-    existingSignal.addEventListener("abort", () => controller.abort());
-  }
-  const timer = setTimeout(() => controller.abort(), timeout);
-  return fetch(url, { ...fetchOpts, signal: controller.signal }).finally(() => clearTimeout(timer));
-}
 
   // Auto-load most recent workspace for logged-in users with no context
   const autoLoadedRef = useRef(false);
