@@ -134,7 +134,8 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         setTreeData(cached.tree_data as any);
         setIsRunning(false);
         setCurrentStepIdx(-1);
-        setPhase("icp-mapping");
+        const hasLeads = cachedTree?.leads?.length > 0;
+        setPhase(hasLeads ? "explore" : "icp-mapping");
         toast.success("Loaded from cache — instant results!");
         return;
       }
