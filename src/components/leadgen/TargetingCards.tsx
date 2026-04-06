@@ -37,9 +37,10 @@ export interface TargetItem {
 interface TargetingCardsProps {
   treeData: GTMTreeData;
   droppedIds: Set<string>;
+  vertical?: boolean;
 }
 
-export default function TargetingCards({ treeData, droppedIds }: TargetingCardsProps) {
+export default function TargetingCards({ treeData, droppedIds, vertical }: TargetingCardsProps) {
   const productItems: TargetItem[] = useMemo(() =>
     treeData.products.map(p => ({
       type: "product" as const,
@@ -78,7 +79,7 @@ export default function TargetingCards({ treeData, droppedIds }: TargetingCardsP
   }
 
   return (
-    <div className="space-y-3 px-4 py-3">
+    <div className={`space-y-3 px-3 py-3 ${vertical ? '' : 'px-4'}`}>
       {/* Products row */}
       {productItems.length > 0 && (
         <div>
@@ -86,7 +87,7 @@ export default function TargetingCards({ treeData, droppedIds }: TargetingCardsP
             <span className="text-sm font-semibold text-foreground">Products</span>
             <Badge variant="secondary" className="text-xs h-5 px-2">{productItems.length}</Badge>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className={vertical ? "flex flex-col gap-2" : "flex gap-2 overflow-x-auto pb-1"}>
             {productItems.map(item => {
               const isDropped = droppedIds.has(item.id);
               return (
@@ -94,7 +95,9 @@ export default function TargetingCards({ treeData, droppedIds }: TargetingCardsP
                   key={item.id}
                   draggable
                   onDragStart={e => handleDragStart(e, item)}
-                  className={`p-3 rounded-lg border min-w-[200px] max-w-[240px] shrink-0 cursor-grab active:cursor-grabbing transition-all select-none ${
+                  className={`p-3 rounded-lg border cursor-grab active:cursor-grabbing transition-all select-none ${
+                    vertical ? "w-full" : "min-w-[200px] max-w-[240px] shrink-0"
+                  } ${
                     isDropped
                       ? "border-primary/40 bg-primary/5 opacity-60"
                       : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
@@ -118,7 +121,7 @@ export default function TargetingCards({ treeData, droppedIds }: TargetingCardsP
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-semibold text-foreground">Verticals & Buyer Roles</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className={vertical ? "flex flex-col gap-2" : "flex gap-2 overflow-x-auto pb-1"}>
             {verticalItems.map(item => {
               const Icon = item.icon;
               const isDropped = droppedIds.has(item.id);
@@ -127,7 +130,9 @@ export default function TargetingCards({ treeData, droppedIds }: TargetingCardsP
                   key={item.id}
                   draggable
                   onDragStart={e => handleDragStart(e, item)}
-                  className={`p-3 rounded-lg border min-w-[200px] max-w-[240px] shrink-0 cursor-grab active:cursor-grabbing transition-all select-none ${
+                  className={`p-3 rounded-lg border cursor-grab active:cursor-grabbing transition-all select-none ${
+                    vertical ? "w-full" : "min-w-[200px] max-w-[240px] shrink-0"
+                  } ${
                     isDropped
                       ? "border-primary/40 bg-primary/5 opacity-60"
                       : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
