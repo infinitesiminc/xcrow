@@ -990,6 +990,37 @@ export default function Leadgen() {
     }));
   }, [user, savedLeads, filteredPanelLeads]);
 
+  // Workspace switch handler — load cached data for selected workspace
+  const handleSwitchWorkspace = useCallback((websiteKey: string) => {
+    touchWorkspace(websiteKey);
+    autoDiscoverRef.current = false;
+    setWebsiteUrl(websiteKey);
+    setSearchParams({}, { replace: true });
+    // Reset state, let cache kick in
+    setLocalNiches([]);
+    setLocalWorkspaceKey("");
+    setCompanySummary("");
+    setIcpSummary("");
+    setPagesScraped(0);
+    setPagesAnalyzed([]);
+    setGtmTreeData(null);
+    setHasDiscovered(false);
+    // Trigger fresh analysis which will hit cache
+    navigate(`/leadhunter?website=${encodeURIComponent(websiteKey)}`, { replace: true });
+    // Need to reset autoDiscoverRef so the useEffect picks it up
+    setTimeout(() => { autoDiscoverRef.current = false; }, 0);
+  }, [touchWorkspace, navigate, setSearchParams]);
+
+  const handleDeleteWorkspace = useCallback(async (websiteKey: string) => {
+    await deleteWorkspace(websiteKey);
+    if (activeWorkspaceKey === websiteKey) {
+      setWebsiteUrl("");
+      setHasDiscovered(false);
+      setGtmTreeData(null);
+      setCompanySummary("");
+    }
+    toast.success("Workspace removed");
+  }, [deleteWorkspace, activeWorkspaceKey]);
 
 
   // Redirect to homepage if no website param and no existing data
