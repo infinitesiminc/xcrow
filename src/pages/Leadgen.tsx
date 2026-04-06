@@ -22,6 +22,8 @@ import { useLeadsCRUD } from "@/components/leadgen/useLeadsCRUD";
 import { LeadDetailDrawer } from "@/components/leadgen/LeadDetailDrawer";
 import type { Lead } from "@/components/leadgen/LeadCard";
 import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
+import type { GTMTreeData } from "@/components/academy/gtm-types";
+import type { DroppedCard } from "@/components/leadgen/TargetZone";
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
