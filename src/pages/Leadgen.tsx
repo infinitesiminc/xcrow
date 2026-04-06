@@ -1120,6 +1120,8 @@ export default function Leadgen() {
             companySummary={companySummary}
             icpSummary={icpSummary}
             niches={currentLocalNiches.length > 0 ? currentLocalNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label, niche_type: n.niche_type }))}
+            gtmTreeData={gtmTreeData}
+            onGenerateFromTargeting={handleGenerateFromTargeting}
           />
         </div>
       )}
