@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, ImageIcon } from "lucide-react";
+import { Send, Loader2, ImageIcon, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import type { GTMTreeData } from "./gtm-types";
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -14,12 +15,22 @@ interface ChatMessage {
 interface StrategyChatProps {
   companyName: string;
   activeCards: Record<string, string | boolean>;
+  treeData?: GTMTreeData | null;
 }
 
-export default function StrategyChat({ companyName, activeCards }: StrategyChatProps) {
+interface ChipGroup {
+  id: string;
+  label: string;
+  icon: string;
+  chips: string[];
+}
+
+export default function StrategyChat({ companyName, activeCards, treeData }: StrategyChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [selected, setSelected] = useState<Record<string, string[]>>({});
+  const [chipsCollapsed, setChipsCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -27,18 +38,97 @@ export default function StrategyChat({ companyName, activeCards }: StrategyChatP
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  /* ── derive chip groups from treeData ── */
+  const chipGroups = useMemo<ChipGroup[]>(() => {
+    const groups: ChipGroup[] = [];
+
+    // Locations — common defaults
+    groups.push({
+      id: "location",
+      label: "Locations",
+      icon: "📍",
+      chips: ["New York", "San Francisco", "London", "Chicago", "Austin", "Toronto"],
+    });
+
+    // Verticals from mappings
+    if (treeData?.mappings?.length) {
+      const verticals = [...new Set(treeData.mappings.map(m => m.vertical))].filter(Boolean);
+      if (verticals.length > 0) {
+        groups.push({ id: "vertical", label: "Verticals", icon: "🎯", chips: verticals });
+      }
+    }
+
+    // Personas from mappings (DM titles only)
+    if (treeData?.mappings?.length) {
+      const personas = [...new Set(treeData.mappings.map(m => m.dm.title))].filter(Boolean);
+      if (personas.length > 0) {
+        groups.push({ id: "persona", label: "Personas", icon: "👤", chips: personas });
+      }
+    }
+
+    // Strategies — static
+    groups.push({
+      id: "strategy",
+      label: "Strategies",
+      icon: "⚡",
+      chips: ["Competitor's customers", "Lookalike discovery", "Upload brochure"],
+    });
+
+    return groups;
+  }, [treeData]);
+
+  /* ── toggle chip ── */
+  function toggleChip(groupId: string, chip: string) {
+    if (chip === "Upload brochure") {
+      fileInputRef.current?.click();
+      return;
+    }
+    setSelected(prev => {
+      const current = prev[groupId] || [];
+      const has = current.includes(chip);
+      return {
+        ...prev,
+        [groupId]: has ? current.filter(c => c !== chip) : [...current, chip],
+      };
+    });
+  }
+
+  /* ── build prompt from selections ── */
+  function buildPromptFromSelections(): string {
+    const parts: string[] = ["Find 5 decision makers"];
+    const verticals = selected.vertical || [];
+    const locations = selected.location || [];
+    const personas = selected.persona || [];
+    const strategies = selected.strategy || [];
+
+    if (verticals.length > 0) parts.push(`in the ${verticals.join(", ")} vertical${verticals.length > 1 ? "s" : ""}`);
+    if (personas.length > 0) parts.push(`at the ${personas.join(", ")} level`);
+    if (locations.length > 0) parts.push(`in ${locations.join(", ")}`);
+    if (strategies.includes("Competitor's customers")) parts.push("targeting competitor customers");
+    if (strategies.includes("Lookalike discovery")) parts.push("using lookalike company discovery");
+
+    return parts.join(" ");
+  }
+
+  const hasSelections = Object.values(selected).some(arr => arr.length > 0);
+
+  /* ── generate from chips ── */
+  function handleGenerate() {
+    const prompt = buildPromptFromSelections();
+    setInput("");
+    setChipsCollapsed(true);
+    handleSendMessage(prompt);
+  }
+
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setMessages(prev => [...prev, { role: "user", content: `📎 Uploaded: ${file.name}` }]);
   }
 
-  async function handleSend() {
-    const text = input.trim();
-    if (!text || isThinking) return;
-    setInput("");
-
-    const userMsg: ChatMessage = { role: "user", content: text };
+  async function handleSendMessage(text: string) {
+    if (!text.trim() || isThinking) return;
+    const userMsg: ChatMessage = { role: "user", content: text.trim() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setIsThinking(true);
@@ -79,19 +169,79 @@ export default function StrategyChat({ companyName, activeCards }: StrategyChatP
     }
   }
 
+  async function handleSend() {
+    const text = input.trim();
+    if (!text) return;
+    setInput("");
+    await handleSendMessage(text);
+  }
+
+  const showChips = messages.length === 0 || !chipsCollapsed;
+
   return (
     <div className="flex flex-col h-full border-r border-border bg-card">
-      <div className="px-3 py-2 border-b border-border/50">
+      <div className="px-3 py-2 border-b border-border/50 flex items-center justify-between">
         <span className="text-xs font-semibold text-foreground">AI Strategy Chat</span>
+        {messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5"
+            onClick={() => setChipsCollapsed(!chipsCollapsed)}
+          >
+            {chipsCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+          </Button>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
         <div className="p-2.5 space-y-2">
-          {messages.length === 0 && (
-            <p className="text-[11px] text-muted-foreground text-center py-4">
-              Describe your strategy, upload docs, or ask for suggestions…
-            </p>
+          {/* Quick-action chips */}
+          {showChips && (
+            <div className="space-y-2.5 pb-2">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1">
+                Select to generate leads
+              </p>
+              {chipGroups.map(group => (
+                <div key={group.id} className="space-y-1">
+                  <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1 px-1">
+                    <span>{group.icon}</span> {group.label}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {group.chips.map(chip => {
+                      const isSelected = (selected[group.id] || []).includes(chip);
+                      return (
+                        <button
+                          key={chip}
+                          onClick={() => toggleChip(group.id, chip)}
+                          className={`text-[10px] px-2 py-1 rounded-full border transition-all ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-muted/50 text-foreground border-border hover:border-primary/40 hover:bg-muted"
+                          }`}
+                        >
+                          {chip}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {hasSelections && (
+                <Button
+                  size="sm"
+                  className="w-full h-7 text-xs gap-1.5 mt-1"
+                  onClick={handleGenerate}
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Generate 5 leads
+                </Button>
+              )}
+            </div>
           )}
+
+          {/* Messages */}
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[90%] rounded-lg px-2.5 py-1.5 text-xs ${
