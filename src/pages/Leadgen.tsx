@@ -152,11 +152,79 @@ export default function Leadgen() {
   const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Fetch GTM tree data (products, verticals, buyer roles) via multi-step pipeline
+  // Normalize domain for cache key
+  const normalizeWebsiteKey = (url: string): string =>
+    url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "").toLowerCase();
+
+  // Write-through cache helper
+  const updateGtmCache = useCallback((websiteKey: string, stepResults: Record<string, any>, tree: GTMTreeData, companyData: Record<string, any>) => {
+    supabase.from("leadhunter_cache").upsert({
+      website_key: websiteKey,
+      company_data: companyData as any,
+      step_results: stepResults as any,
+      tree_data: tree as any,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }, { onConflict: "website_key" }).then(() => {});
+  }, []);
+
+  // Fetch GTM tree data (products, verticals, buyer roles) via multi-step pipeline — with cache
   const fetchGtmAnalysis = useCallback(async (website: string) => {
     try {
       const domain = website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const websiteKey = normalizeWebsiteKey(domain);
       const company = { id: domain, name: domain.split(".")[0], website: `https://${domain}` };
+
+      // Check cache first
+      try {
+        const { data: cached } = await supabase
+          .from("leadhunter_cache")
+          .select("*")
+          .eq("website_key", websiteKey)
+          .gt("expires_at", new Date().toISOString())
+          .maybeSingle();
+
+        if (cached?.tree_data && cached?.step_results) {
+          const cachedTree = cached.tree_data as any;
+          const hasProducts = cachedTree?.products?.length > 0;
+          const hasMappings = cachedTree?.mappings?.length > 0;
+
+          if (hasProducts) {
+            if (cachedTree.company_summary) setCompanySummary(cachedTree.company_summary);
+            setGtmTreeData({
+              company_summary: cachedTree.company_summary || "",
+              products: cachedTree.products || [],
+              customers: cachedTree.customers || [],
+              conquest_targets: cachedTree.conquest_targets || [],
+              mappings: cachedTree.mappings || [],
+              leads: cachedTree.leads || [],
+            });
+            setGtmPersonasLoading(false);
+            console.log(`[GTM] Loaded from cache: ${cachedTree.products.length} products, ${cachedTree.mappings?.length || 0} personas`);
+
+            // If mappings are missing, only fetch icp-buyers step
+            if (!hasMappings) {
+              setGtmPersonasLoading(true);
+              const stepResults = cached.step_results as Record<string, any>;
+              const r3 = await supabase.functions.invoke("gtm-analyze", {
+                body: { stepId: "icp-buyers", company, previousResults: stepResults },
+              });
+              let d3 = r3.data;
+              if (d3 instanceof Blob) d3 = JSON.parse(await d3.text());
+              const mappings = d3?.structured?.mappings || [];
+              const updatedTree: GTMTreeData = { ...cachedTree, mappings };
+              setGtmTreeData(updatedTree);
+              stepResults["icp-buyers"] = d3;
+              updateGtmCache(websiteKey, stepResults, updatedTree, cached.company_data as any);
+              setGtmPersonasLoading(false);
+            }
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("[GTM] Cache lookup failed, running fresh:", e);
+      }
+
+      // No cache — run full pipeline
       const previousResults: Record<string, any> = {};
 
       // Step 1: Products
@@ -199,20 +267,27 @@ export default function Leadgen() {
       let d3 = r3.data;
       if (d3 instanceof Blob) d3 = JSON.parse(await d3.text());
 
-      setGtmTreeData({
+      previousResults["customers"] = d2;
+      previousResults["icp-buyers"] = d3;
+
+      const fullTree: GTMTreeData = {
         company_summary: summary,
         products,
         customers: d2?.structured?.customers || [],
         conquest_targets: d2?.structured?.competitors_customers || [],
         mappings: d3?.structured?.mappings || [],
         leads: [],
-      });
+      };
+      setGtmTreeData(fullTree);
       setGtmPersonasLoading(false);
+
+      // Write through to cache
+      updateGtmCache(websiteKey, previousResults, fullTree, company);
     } catch (e) {
       console.warn("GTM analysis unavailable:", e);
       setGtmPersonasLoading(false);
     }
-  }, []);
+  }, [updateGtmCache]);
 
   // Generate leads from targeting cards
   const handleGenerateFromTargeting = useCallback(async (cards: DroppedCard[]) => {
