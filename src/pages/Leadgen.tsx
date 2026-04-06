@@ -1351,7 +1351,7 @@ export default function Leadgen() {
           onClick={() => setChatOpen(true)}
         >
           <MessageSquare className="w-5 h-5" />
-          {isStreaming && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background animate-pulse" />}
+          {isStreaming && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-primary border-2 border-background animate-pulse" />}
         </motion.button>
       )}
     </div>
