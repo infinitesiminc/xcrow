@@ -368,19 +368,14 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
       {/* Header */}
-      {selectedCompany && (
+      {selectedCompany && isRunning && (
         <div className="flex items-center gap-2 mb-3">
-          <Button variant="ghost" size="sm" className="h-7 px-2" onClick={handleReset}>
-            <ArrowLeft className="w-3.5 h-3.5" />
-          </Button>
-          {isRunning && (
-            <div className="flex items-center gap-2 ml-auto">
-              <span className="text-[10px] text-muted-foreground">
-                {STEPS[currentStepIdx]?.label}
-              </span>
-              <Progress value={progressPct} className="h-1 w-24" />
-            </div>
-          )}
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-[10px] text-muted-foreground">
+              {STEPS[currentStepIdx]?.label}
+            </span>
+            <Progress value={progressPct} className="h-1 w-24" />
+          </div>
         </div>
       )}
 
