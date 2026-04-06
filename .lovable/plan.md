@@ -1,69 +1,40 @@
+## Drag-to-Target Lead Generation Cards
 
-# AI Lead Strategist: Guided Conversation with Pill Suggestions
+### Concept
+After discovery, display Product and Vertical/Buyer Role cards in two full-width scrollable rows above the lead table. Users drag cards into a "Target Zone" to compose their lead search criteria. AI provides real-time feedback on estimated success rate and recommended actions.
 
-## Problem
-The chat AI currently responds with generic text ("Adjust your strategy cards and hit Generate") — it doesn't guide users toward actionable lead gen criteria. Users have to know what to ask.
+### Architecture Changes
 
-## Solution
-Redesign the AI's role as a **Lead Strategist** that proactively guides users through a decision tree using clickable pill suggestions. The AI drives the conversation, not the user.
+**1. Unify data sources**
+- Currently /leadgen uses `leadgen-scout` (produces flat niches), while /leadhunter uses `gtm-analyze` (produces products + mappings + buyer roles)
+- **Change**: After `leadgen-scout` discovery, also call `gtm-analyze` to get structured product/mapping data for the card UI
+- Store GTM tree data in state alongside existing niche data
 
-## AI Persona & System Prompt
+**2. New component: `TargetingCards.tsx`**
+- Two horizontal scrollable rows: **Products** and **Verticals & Buyer Roles**
+- Cards match the existing GTMTreeView framework-only card design (same styling)
+- Each card is draggable (HTML5 drag & drop)
 
-**Role**: You are a B2B lead generation strategist. Your job is to help the user define exactly who to target.
+**3. New component: `TargetZone.tsx`**
+- Drop zone below the card rows, above the lead table
+- Shows dropped cards as chips: e.g. "Stripe Payments" + "E-commerce & Retail" + "Head of Payments"
+- Real-time AI feedback panel:
+  - Estimated discovery success rate (e.g. "~85% match likelihood")
+  - Recommended next card to add
+  - "Generate Leads" CTA button
+- Calls a lightweight AI endpoint to score the current targeting combo
 
-**Behavior**:
-1. **Open with a strategic question** — not "how can I help?" but a specific first question based on the ICP data already analyzed
-2. **One decision per message** — each AI response asks ONE question with 2-4 clickable options
-3. **Build criteria incrementally** — each answer narrows the search, AI confirms and asks the next dimension
-4. **End with a generate action** — once enough criteria are set, AI suggests generating leads
+**4. Replace ICPInsightsPanel**
+- The collapsible ICP tree panel gets replaced by the card rows + target zone
+- Company summary stays as a compact banner above everything
 
-## Conversation Flow Example
+**5. Lead generation flow**
+- User drags cards → AI shows feedback → User clicks "Generate" → Leads appear in table below
+- Each generated batch is tagged with the targeting combo for filtering
 
-```
-AI: "I found 4 verticals for Mobile Notary Services. 
-     Which market do you want to target first?"
-     [Real Estate] [Legal Services] [Healthcare] [Insurance]
-
-User clicks: [Real Estate]
-
-AI: "Great — Real Estate it is. What seniority level?"
-     [C-Suite] [VP/Director] [Manager] [All levels]
-
-User clicks: [VP/Director]
-
-AI: "Any geographic focus?"
-     [New York] [San Francisco] [Chicago] [No preference]
-
-User clicks: [No preference]
-
-AI: "Perfect. Ready to find Real Estate VPs/Directors 
-     who need notary services?"
-     [🔍 Generate 5 leads] [Refine more]
-```
-
-## Technical Changes
-
-### 1. `src/components/academy/StrategyChat.tsx`
-- **New system prompt** with lead strategist persona + ICP context injected
-- **Parse AI responses for pill suggestions** — AI returns structured format: text + options in `[[option1|option2|option3]]` syntax
-- **Render pills as clickable buttons** below each AI message
-- **Clicking a pill** sends it as user message (no typing needed)
-- **"Generate" pill** triggers `onGenerate` callback passed from parent
-- **Auto-send opening message** on mount — AI initiates the conversation
-- Keep free-text input available for power users
-
-### 2. `src/components/academy/CompanyExplorer.tsx`
-- Pass `onGenerateLeads` callback to StrategyChat
-- When AI conversation concludes with generate action, trigger lead gen with accumulated criteria
-
-### 3. Edge function `leadgen-chat`
-- Update system prompt to enforce the guided format
-- AI must end each response with `[[Option A|Option B|Option C]]` for clickable options
-- AI must use ICP data (verticals, personas, products) to generate relevant options
-
-## Pill Rendering Logic
-```
-AI response: "Which vertical?\n[[Real Estate|Legal|Healthcare]]"
-→ Parse: { text: "Which vertical?", pills: ["Real Estate", "Legal", "Healthcare"] }
-→ Render: text bubble + row of clickable pill buttons below
-```
+### Files to create/modify
+- `src/components/leadgen/TargetingCards.tsx` (new)
+- `src/components/leadgen/TargetZone.tsx` (new)
+- `src/components/leadgen/LeadgenDashboard.tsx` (replace ICPInsightsPanel with new cards)
+- `src/pages/Leadgen.tsx` (add GTM analysis call, pass data down)
+- `supabase/functions/leadgen-chat/index.ts` (add targeting score endpoint or inline it)
