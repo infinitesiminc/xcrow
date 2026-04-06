@@ -239,6 +239,7 @@ export default function GTMTreeView({
   frameworkOnly, onContinueToStrategy, chatPanel,
   selectedProductId: controlledProductId, onSelectProduct,
 }: GTMTreeViewProps) {
+  const [contextExpanded, setContextExpanded] = useState(false);
   const [internalProductId, setInternalProductId] = useState<string | null>(null);
   const selectedProductId = controlledProductId !== undefined ? controlledProductId : internalProductId;
   const setSelectedProductId = onSelectProduct || setInternalProductId;
