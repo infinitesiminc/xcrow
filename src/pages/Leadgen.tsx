@@ -1108,7 +1108,7 @@ export default function Leadgen() {
   const discoveryLoading = (
     <div className="flex-1 flex min-h-0 relative">
       {/* Skeleton background matching LeadgenDashboard layout */}
-      <div className="flex flex-1 min-w-0 h-full opacity-40 animate-pulse">
+      <div className="flex flex-col md:flex-row flex-1 min-w-0 h-full opacity-40 animate-pulse">
         {/* Left column skeleton (targeting cards) */}
         <div className="w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex flex-col h-full shrink-0">
           <div className="px-3 py-2 bg-card/40 border-b border-border/40">
