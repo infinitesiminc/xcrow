@@ -6,6 +6,15 @@ const corsHeaders = {
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
+/** Validate LinkedIn profile URL — must be a real /in/ profile link */
+function validLinkedIn(url: string | null | undefined): string | null {
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim();
+  // Must be a linkedin.com URL with /in/ path
+  if (!/^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9\-_%]+/i.test(trimmed)) return null;
+  return trimmed;
+}
+
 const SYSTEM_PROMPT = `You are a friendly B2B lead generation strategist helping a beginner find their first prospects. Assume the user has ZERO go-to-market experience. Your job is to educate them on what you found and guide them step-by-step to generate leads.
 
 ## CRITICAL FORMAT RULE:
