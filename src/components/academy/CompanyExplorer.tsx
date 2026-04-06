@@ -158,9 +158,17 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     const customers = accumulated["customers"]?.structured;
     const icpBuyers = accumulated["icp-buyers"]?.structured;
 
-    // Update company with extracted headquarters
-    if (products?.headquarters) {
-      setSelectedCompany(prev => prev ? { ...prev, headquarters: products.headquarters } : prev);
+    // Update company with extracted name and headquarters
+    if (products?.headquarters || products?.company_summary) {
+      setSelectedCompany(prev => {
+        if (!prev) return prev;
+        const aiName = products.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
+        return {
+          ...prev,
+          headquarters: products.headquarters || prev.headquarters,
+          name: aiName && aiName.length <= 40 ? aiName : prev.name,
+        };
+      });
     }
 
     let builtTree: GTMTreeData | null = null;
