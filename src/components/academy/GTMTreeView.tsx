@@ -612,7 +612,7 @@ export default function GTMTreeView({
         )}
 
         {/* ── Full mode without strip/chat (backward compat) ── */}
-        {!frameworkOnly && !hasLeads && !strategyStrip && (
+        {!frameworkOnly && !hasLeads && !chatPanel && (
           <p className="text-[10px] text-muted-foreground p-4 text-center">No leads generated yet</p>
         )}
 
