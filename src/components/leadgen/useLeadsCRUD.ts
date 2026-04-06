@@ -183,6 +183,14 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
     [userId, workspaceKey, fetchNiches]
   );
 
+  const deleteLead = useCallback(
+    async (leadId: string) => {
+      await supabase.from("saved_leads").delete().eq("id", leadId);
+      setLeads((prev) => prev.filter((l) => l.id !== leadId));
+    },
+    []
+  );
+
   const updateLeadStatus = useCallback(
     async (leadId: string, status: LeadStatus) => {
       await supabase.from("saved_leads").update({ status }).eq("id", leadId);
