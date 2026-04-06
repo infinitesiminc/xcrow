@@ -58,15 +58,12 @@ const App = () => (
               <Route path="/leadgen" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
-              <Route path="/blog" element={<Blog />} />
               
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/use-cases" element={<><UseCasesIndex /></>} />
-              <Route path="/use-cases/:slug" element={<><UseCasePage /></>} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
