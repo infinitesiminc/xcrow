@@ -614,6 +614,7 @@ Deno.serve(async (req) => {
               ...enrichedMessages,
               { role: "assistant", content: null, tool_calls: toolCalls.map((tc, i) => ({ id: `call_${i}`, type: "function", function: { name: tc.name, arguments: tc.args } })) },
               ...toolCalls.map((tc, i) => ({ role: "tool", tool_call_id: `call_${i}`, content: JSON.stringify({ success: true }) })),
+              { role: "system", content: "REMINDER: You MUST end your response with clickable options in [[Option A|Option B|Option C]] format. Do NOT use numbered lists." },
             ];
             const followUp = await fetch(AI_URL, {
               method: "POST",

@@ -123,14 +123,14 @@ Named customers: ${customers.join(", ") || "None identified"}
 
       let { cleanText, pills } = parsePills(assistantContent);
 
-      // Only apply vertical fallback on the opening message (no prior messages)
+      // Use stream niches as pills if AI didn't include [[pills]]
+      if (pills.length === 0 && nichesFromStream.length > 0) {
+        pills = nichesFromStream.slice(0, 4);
+      }
+      // Fallback to verticals only on opening message
       if (pills.length === 0 && treeData && updatedMessages.length === 0) {
         const verticals = [...new Set(treeData.mappings.map(m => m.vertical))].filter(Boolean);
-        if (nichesFromStream.length > 0) {
-          pills = nichesFromStream.slice(0, 4);
-        } else if (verticals.length > 0) {
-          pills = verticals.slice(0, 4);
-        }
+        if (verticals.length > 0) pills = verticals.slice(0, 4);
       }
 
       if (!cleanText && updatedMessages.length === 0) {
