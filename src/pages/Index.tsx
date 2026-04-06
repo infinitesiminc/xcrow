@@ -103,7 +103,7 @@ export default function Index() {
         path="/"
       />
 
-      <Navbar />
+      
 
       <div className="min-h-screen bg-background flex flex-col">
 
