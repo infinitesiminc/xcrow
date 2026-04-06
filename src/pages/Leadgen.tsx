@@ -188,6 +188,8 @@ export default function Leadgen() {
             setHasDiscovered(true);
             setChatOpen(false);
             toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+            // Trigger GTM analysis for product/vertical cards
+            fetchGtmAnalysis(website.trim());
           })
           .catch((e: any) => toast.error(e.message || "Failed to analyze website"))
           .finally(() => { setIsDiscovering(false); setDiscoveryPhase(""); });
