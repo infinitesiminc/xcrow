@@ -27,8 +27,27 @@ const PLANS = [
       { text: "Prospect map generation", included: true },
       { text: "Up to 5 leads per hunt", included: true },
       { text: "Basic outreach drafts", included: true },
-      { text: "Unlimited workspaces", included: false },
+      { text: "1 workspace", included: true },
       { text: "Priority lead scoring", included: false },
+      { text: "Email send & tracking", included: false },
+      { text: "CRM pipeline management", included: false },
+    ],
+  },
+  {
+    name: "Starter",
+    price: "$19",
+    period: "/month",
+    desc: "For solo founders ready to build consistent pipeline.",
+    cta: "Get Starter",
+    featured: false,
+    features: [
+      { text: "15 lead hunts per month", included: true },
+      { text: "AI company DNA analysis", included: true },
+      { text: "Prospect map generation", included: true },
+      { text: "Up to 15 leads per hunt", included: true },
+      { text: "Advanced outreach drafts", included: true },
+      { text: "3 workspaces", included: true },
+      { text: "Priority lead scoring", included: true },
       { text: "Email send & tracking", included: false },
       { text: "CRM pipeline management", included: false },
     ],
@@ -37,7 +56,7 @@ const PLANS = [
     name: "Pro",
     price: "$49",
     period: "/month",
-    desc: "For founders and teams who need a steady pipeline.",
+    desc: "For teams who need a full outbound engine.",
     cta: "Upgrade to Pro",
     featured: true,
     features: [
@@ -53,7 +72,6 @@ const PLANS = [
     ],
   },
 ];
-
 const FAQ = [
   { q: "Can I try Xcrow before paying?", a: "Yes — the Free plan gives you 3 lead hunts per month with no credit card required. You can upgrade anytime." },
   { q: "What counts as a lead hunt?", a: "One lead hunt = pasting a URL and generating a scored prospect list. Each hunt returns up to 5 leads on Free or 25 on Pro." },
