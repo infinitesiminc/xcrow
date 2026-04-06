@@ -21,15 +21,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Loader2, Save, Trash2, KeyRound, GraduationCap, Briefcase, School,
-  User, Lock, AlertOctagon, ArrowLeft, LogOut, Check, CreditCard, Crown,
-  ExternalLink, Compass, Users, Copy, Gift,
+  Loader2, Save, Trash2, KeyRound,
+  User, Lock, AlertOctagon, ArrowLeft, LogOut,
+  CreditCard, Crown, ExternalLink,
 } from "lucide-react";
-
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
-  { key: "referral", label: "Referrals", icon: Users },
   { key: "subscription", label: "Subscription", icon: CreditCard },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
@@ -47,17 +45,10 @@ export default function Settings() {
   const setSection = (s: SectionKey) => setSearchParams({ section: s }, { replace: true });
 
   const [displayName, setDisplayName] = useState("");
-  const [username, setUsername] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
-  const [schoolNameField, setSchoolNameField] = useState("");
-  const [careerStage, setCareerStage] = useState<"student" | "professional">("professional");
-  const [saving, setSaving] = useState(false);
-  const [avatarId, setAvatarId] = useState<string | null>(null);
-  const [city, setCity] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
-  const [graduationYear, setGraduationYear] = useState("");
-  const [degreeType, setDegreeType] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -74,46 +65,32 @@ export default function Settings() {
     setDisplayName(profile.displayName || "");
     setJobTitle(profile.jobTitle || "");
     setCompany(profile.company || "");
-    setSchoolNameField(profile.schoolName || "");
     setLinkedinUrl(profile.linkedinUrl || "");
-    setCareerStage((profile.careerStage as "student" | "professional") || "professional");
-    if (user) {
-      supabase.from("profiles").select("username, avatar_id, city, graduation_year, degree_type").eq("id", user.id).single().then(({ data }) => {
-        if (data) {
-          const d = data as any;
-          if (d.username) setUsername(d.username);
-          if (d.avatar_id) setAvatarId(d.avatar_id);
-          if (d.city) setCity(d.city);
-          if (d.graduation_year) setGraduationYear(String(d.graduation_year));
-          if (d.degree_type) setDegreeType(d.degree_type);
-        }
-      });
-    }
-  }, [profile, user]);
+  }, [profile]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
+
+    // Validate LinkedIn URL if provided
+    if (linkedinUrl.trim() && !/^https?:\/\/(www\.)?linkedin\.com\/in\/.+/i.test(linkedinUrl.trim())) {
+      toast({ title: "Invalid LinkedIn URL", description: "Please enter a valid LinkedIn profile URL.", variant: "destructive" });
+      return;
+    }
+
     setSaving(true);
-    const updateData: any = {
-      display_name: displayName,
+    const { error } = await supabase.from("profiles").update({
+      display_name: displayName.trim() || null,
       job_title: jobTitle.trim() || null,
       company: company.trim() || null,
-      school_name: schoolNameField.trim() || null,
-      career_stage: careerStage,
-      avatar_id: avatarId || null,
-      city: city.trim() || null,
       linkedin_url: linkedinUrl.trim() || null,
-      graduation_year: graduationYear ? parseInt(graduationYear) : null,
-      degree_type: degreeType || null,
-    };
-    if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
-    const { error } = await supabase.from("profiles").update(updateData).eq("id", user.id);
+    }).eq("id", user.id);
+
     if (error) {
       toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
     } else {
       await supabase.auth.updateUser({ data: { display_name: displayName } });
       await refreshProfile();
-      toast({ title: "Profile updated", description: "Your profile has been saved." });
+      toast({ title: "Profile updated" });
     }
     setSaving(false);
   };
@@ -123,8 +100,8 @@ export default function Settings() {
       toast({ title: "Passwords don't match", variant: "destructive" });
       return;
     }
-    if (newPassword.length < 6) {
-      toast({ title: "Password too short", description: "Minimum 6 characters.", variant: "destructive" });
+    if (newPassword.length < 8) {
+      toast({ title: "Password too short", description: "Minimum 8 characters.", variant: "destructive" });
       return;
     }
     setChangingPassword(true);
@@ -153,6 +130,16 @@ export default function Settings() {
         (supabase.from("user_workspaces") as any).delete().eq("user_id", user.id),
       ]);
       await supabase.from("profiles").delete().eq("id", user.id);
+
+      // Delete auth user via edge function
+      try {
+        await supabase.functions.invoke("admin-delete-user", {
+          body: { user_id: user.id },
+        });
+      } catch {
+        // If edge function fails, still sign out — profile data is already gone
+      }
+
       await signOut();
       toast({ title: "Account deleted", description: "Your data has been removed." });
       navigate("/");
@@ -179,25 +166,20 @@ export default function Settings() {
   const initials = profile?.displayName
     ? profile.displayName.slice(0, 2).toUpperCase()
     : (user?.email ?? "").slice(0, 2).toUpperCase();
-  const sidebarAvatar = null;
 
   return (
     <div className="settings-page min-h-[100dvh] bg-background flex">
-      {/* ── Sidebar ── */}
+      {/* Sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 border-r border-border/50 flex-col bg-muted/5">
         <div className="p-5 border-b border-border/30">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-5">
+          <button onClick={() => navigate("/leadhunter")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-5">
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
           <div className="flex items-center gap-3">
-            {sidebarAvatar ? (
-              <img src={sidebarAvatar.src} alt={sidebarAvatar.label} className="w-10 h-10 rounded-full object-contain bg-muted/30 shrink-0" />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
-                {initials}
-              </div>
-            )}
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
+              {initials}
+            </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{profile?.displayName || user?.email}</p>
               <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
@@ -213,7 +195,7 @@ export default function Settings() {
                 activeSection === item.key
                   ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-              } ${item.key === "danger" ? "mt-auto" : ""}`}
+              }`}
             >
               <item.icon className="h-4 w-4 shrink-0" />
               {item.label}
@@ -231,10 +213,10 @@ export default function Settings() {
         </div>
       </aside>
 
-      {/* ── Mobile top nav ── */}
+      {/* Mobile top nav */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="flex items-center gap-2 px-4 py-2">
-          <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <button onClick={() => navigate("/leadhunter")} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           </button>
           <h1 className="text-sm font-semibold text-foreground">Settings</h1>
@@ -257,9 +239,9 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* ── Content ── */}
+      {/* Content */}
       <main className="flex-1 min-w-0 md:overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 sm:px-8 py-8 md:py-12 mt-[88px] md:mt-0">
+        <div className="max-w-2xl mx-auto px-4 sm:px-8 py-8 md:py-12 mt-[88px] md:mt-0">
           <motion.div
             key={activeSection}
             initial={{ opacity: 0, y: 12 }}
@@ -267,462 +249,142 @@ export default function Settings() {
             transition={{ duration: 0.2 }}
           >
             {activeSection === "profile" && (
-              <ProfileSection
-                displayName={displayName} setDisplayName={setDisplayName}
-                username={username} setUsername={setUsername}
-                jobTitle={jobTitle} setJobTitle={setJobTitle}
-                company={company} setCompany={setCompany}
-                schoolName={schoolNameField} setSchoolName={setSchoolNameField}
-                careerStage={careerStage} setCareerStage={setCareerStage}
-                saving={saving} email={user?.email ?? ""}
-                avatarId={avatarId} setAvatarId={setAvatarId}
-                city={city} setCity={setCity}
-                linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
-                graduationYear={graduationYear} setGraduationYear={setGraduationYear}
-                degreeType={degreeType} setDegreeType={setDegreeType}
-                handleSaveProfile={handleSaveProfile}
-              />
-            )}
+              <div>
+                <h2 className="text-xl font-bold text-foreground mb-1">Profile</h2>
+                <p className="text-sm text-muted-foreground mb-6">Your account details.</p>
 
-            {activeSection === "referral" && (
-              <ReferralSection userId={user?.id} />
+                <div className="space-y-6 max-w-md">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" value={user?.email ?? ""} disabled className="bg-muted" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="displayName">Display name</Label>
+                    <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="jobTitle">Job title</Label>
+                    <Input id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="e.g. Sales Manager" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="company">Company</Label>
+                    <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Acme Corp" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedinUrl">LinkedIn URL <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                    <Input id="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourprofile" />
+                  </div>
+
+                  <Button onClick={handleSaveProfile} disabled={saving} size="sm">
+                    {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    Save profile
+                  </Button>
+                </div>
+              </div>
             )}
 
             {activeSection === "subscription" && (
-              <SubscriptionSection
-                plan={plan}
-                isPro={isPro}
-                subscriptionEnd={subscriptionEnd}
-                schoolName={schoolName}
-                portalLoading={portalLoading}
-                onManage={handleManageSubscription}
-                onUpgrade={() => window.open("https://xcrow.ai/#pricing", "_blank")}
-              />
+              <div>
+                <h2 className="text-xl font-bold text-foreground mb-1">Subscription</h2>
+                <p className="text-sm text-muted-foreground mb-6">Manage your plan and billing.</p>
+
+                <div className="rounded-xl border border-border/50 bg-card p-6 space-y-4 max-w-md">
+                  <div className="flex items-center gap-3">
+                    <div className={`rounded-full p-2.5 ${isPro ? "bg-primary/10" : "bg-muted/30"}`}>
+                      <Crown className={`h-5 w-5 ${isPro ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-foreground">
+                          {plan === "school" ? `School · ${schoolName || "Institution"}` : plan === "pro" ? "Champion" : "Free"}
+                        </p>
+                        <Badge variant="outline" className={`text-[10px] ${isPro ? "bg-primary/15 text-primary border-primary/30" : "bg-muted/30 text-muted-foreground border-border/50"}`}>
+                          {isPro ? "Active" : "Current"}
+                        </Badge>
+                      </div>
+                      {subscriptionEnd && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Renews {new Date(subscriptionEnd).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {isPro ? (
+                    <Button variant="outline" size="sm" onClick={handleManageSubscription} disabled={portalLoading}>
+                      {portalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
+                      Manage subscription
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={() => window.open("https://xcrow.ai/#pricing", "_blank")}>
+                      <Crown className="mr-2 h-4 w-4" />
+                      Upgrade to Champion
+                    </Button>
+                  )}
+                </div>
+              </div>
             )}
 
             {activeSection === "security" && (
-              <SecuritySection
-                newPassword={newPassword} setNewPassword={setNewPassword}
-                confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
-                changingPassword={changingPassword}
-                handleChangePassword={handleChangePassword}
-              />
+              <div>
+                <h2 className="text-xl font-bold text-foreground mb-1">Security</h2>
+                <p className="text-sm text-muted-foreground mb-6">Update your account password.</p>
+                <div className="space-y-4 max-w-md">
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">New password</Label>
+                    <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm new password</Label>
+                    <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Minimum 8 characters.</p>
+                  <Button onClick={handleChangePassword} disabled={changingPassword} size="sm" variant="outline">
+                    {changingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
+                    Update password
+                  </Button>
+                </div>
+              </div>
             )}
 
             {activeSection === "danger" && (
-              <DangerSection deleting={deleting} handleDeleteAccount={handleDeleteAccount} />
+              <div>
+                <h2 className="text-xl font-bold text-destructive mb-1">Danger Zone</h2>
+                <p className="text-sm text-muted-foreground mb-6">Permanently delete your account and all associated data.</p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete your leads, workspaces, outreach history, and profile data. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAccount} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Yes, delete my account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
           </motion.div>
         </div>
       </main>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════
-   Section Components
-   ══════════════════════════════════════════════════════ */
-
-function ReferralSection({ userId }: { userId?: string }) {
-  const [referralCode, setReferralCode] = useState<string | null>(null);
-  const [referralCount, setReferralCount] = useState(0);
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      const { data: profile } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
-      if (profile?.referral_code) setReferralCode(profile.referral_code);
-      setReferralCount(0);
-    })();
-  }, [userId]);
-
-  const inviteLink = referralCode ? `https://xcrow.ai/auth?ref=${referralCode}` : "";
-
-  const handleCopy = async () => {
-    if (!inviteLink) return;
-    await navigator.clipboard.writeText(inviteLink);
-    setCopied(true);
-    toast({ title: "Invite link copied!", description: "Share it with friends to earn free months." });
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Recruit Your Squad</h2>
-      <p className="text-sm text-muted-foreground mb-6">Invite friends and earn free Champion months. Each successful referral = 1 free month.</p>
-
-      <div className="space-y-6 max-w-md">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-xl border border-border/50 p-5 text-center">
-            <p className="text-3xl font-bold text-foreground">{referralCount}</p>
-            <p className="text-xs text-muted-foreground mt-1">Friends recruited</p>
-          </div>
-          <div className="rounded-xl border border-border/50 p-5 text-center">
-            <p className="text-3xl font-bold text-primary">{referralCount}</p>
-            <p className="text-xs text-muted-foreground mt-1">Free months earned</p>
-          </div>
-        </div>
-
-        {/* Share link */}
-        <div className="rounded-xl border border-border/50 p-5 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <Gift className="h-4 w-4 text-primary" />
-            Your invite link
-          </div>
-          {referralCode ? (
-            <>
-              <div className="flex gap-2">
-                <Input value={inviteLink} readOnly className="text-xs bg-muted/30 flex-1" />
-                <Button size="sm" variant="outline" onClick={handleCopy} className="shrink-0 gap-1.5">
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? "Copied!" : "Copy"}
-                </Button>
-              </div>
-            
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">Referral code not yet generated. Complete onboarding to get yours.</p>
-          )}
-        </div>
-
-        {/* How it works */}
-        <div className="rounded-xl border border-border/50 p-5">
-          <p className="text-sm font-medium text-foreground mb-3">How it works</p>
-          <div className="space-y-2.5">
-            {[
-              { step: "1", text: "Share your unique invite link with friends" },
-              { step: "2", text: "They sign up and subscribe to Champion ($12/mo)" },
-              { step: "3", text: "You both get a free month of Champion — no limit!" },
-            ].map(item => (
-              <div key={item.step} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-                  style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
-                  {item.step}
-                </div>
-                <p className="text-sm text-muted-foreground">{item.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProfileSection({
-  displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle,
-  company, setCompany, schoolName, setSchoolName,
-  careerStage, setCareerStage, saving, email,
-  avatarId, setAvatarId, city, setCity, linkedinUrl, setLinkedinUrl,
-  graduationYear, setGraduationYear, degreeType, setDegreeType,
-  handleSaveProfile,
-}: {
-  displayName: string; setDisplayName: (v: string) => void;
-  username: string; setUsername: (v: string) => void;
-  jobTitle: string; setJobTitle: (v: string) => void;
-  company: string; setCompany: (v: string) => void;
-  schoolName: string; setSchoolName: (v: string) => void;
-  careerStage: "student" | "professional"; setCareerStage: (v: "student" | "professional") => void;
-  saving: boolean; email: string;
-  avatarId: string | null; setAvatarId: (v: string | null) => void;
-  city: string; setCity: (v: string) => void;
-  linkedinUrl: string; setLinkedinUrl: (v: string) => void;
-  graduationYear: string; setGraduationYear: (v: string) => void;
-  degreeType: string; setDegreeType: (v: string) => void;
-  handleSaveProfile: () => void;
-}) {
-  return (
-    <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Profile</h2>
-      <p className="text-sm text-muted-foreground mb-1">Your identity on the platform.</p>
-      <p className="text-xs text-muted-foreground/70 mb-6">Your info helps us personalize quests, skill recommendations, and career insights to your goals.</p>
-
-      <div className="space-y-8">
-        {/* Avatar - simplified */}
-        <div className="space-y-3">
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Your Profile</Label>
-          <div className="flex items-center gap-4">
-            <div className="shrink-0 w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
-              <span className="text-xl font-bold text-primary">
-                {displayName ? displayName.slice(0, 2).toUpperCase() : email.slice(0, 2).toUpperCase()}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Basic info */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" value={email} disabled className="bg-muted" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="displayName">Display name</Label>
-            <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" />
-          </div>
-        </div>
-
-        {/* Username */}
-        <div className="space-y-2">
-          <Label htmlFor="username" className="flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-muted-foreground" />
-            Public profile username
-          </Label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Xcrow.ai/u/</span>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-              placeholder="your-username"
-              className="flex-1"
-            />
-          </div>
-          {username && (
-            <p className="text-[10px] text-muted-foreground">
-              Your public profile will be at <span className="text-primary font-medium">Xcrow.ai/u/{username}</span>
-            </p>
-          )}
-        </div>
-
-        <Separator />
-
-        {/* Career stage toggle */}
-        <div className="space-y-3">
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground">I am a</Label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setCareerStage("student")}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
-                careerStage === "student"
-                  ? "border-primary bg-primary/10 text-foreground shadow-sm"
-                  : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
-              }`}
-            >
-              <GraduationCap className="h-5 w-5" />
-              <div className="text-left">
-                <p className="text-sm font-semibold">Student</p>
-                <p className="text-[10px] opacity-70">Exploring career paths</p>
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCareerStage("professional")}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
-                careerStage === "professional"
-                  ? "border-primary bg-primary/10 text-foreground shadow-sm"
-                  : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
-              }`}
-            >
-              <Briefcase className="h-5 w-5" />
-              <div className="text-left">
-                <p className="text-sm font-semibold">Professional</p>
-                <p className="text-[10px] opacity-70">Upskilling in my role</p>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Role & company */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="jobTitle">{careerStage === "student" ? "Target role" : "Job title"}</Label>
-            <Input id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder={careerStage === "student" ? "e.g. Data Scientist" : "e.g. Product Manager"} />
-          </div>
-          {careerStage === "professional" && (
-            <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
-              <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Acme Corp" />
-            </div>
-          )}
-        </div>
-
-        {/* School — autocomplete from DB */}
-        {careerStage === "student" && (
-          <>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5">
-                <School className="h-3.5 w-3.5 text-muted-foreground" />
-                School / University
-              </Label>
-              <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford..." className="bg-muted/30" />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="graduationYear">Graduation year</Label>
-                <select
-                  id="graduationYear"
-                  value={graduationYear}
-                  onChange={(e) => setGraduationYear(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="">Select year</option>
-                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 5 - i).map(y => (
-                    <option key={y} value={String(y)}>{y}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="degreeType">Degree type</Label>
-                <select
-                  id="degreeType"
-                  value={degreeType}
-                  onChange={(e) => setDegreeType(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="">Select degree</option>
-                  <option value="associate">Associate's</option>
-                  <option value="bachelor">Bachelor's</option>
-                  <option value="master">Master's</option>
-                  <option value="doctorate">Doctorate / PhD</option>
-                  <option value="certificate">Certificate / Diploma</option>
-                  <option value="bootcamp">Bootcamp</option>
-                </select>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* City — optional */}
-        <div className="space-y-2">
-          <Label htmlFor="city">City / Location <span className="text-muted-foreground font-normal">(optional)</span></Label>
-          <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. San Francisco, London" />
-        </div>
-
-        {/* LinkedIn — optional for professionals */}
-        {careerStage === "professional" && (
-          <div className="space-y-2">
-            <Label htmlFor="linkedinUrl">LinkedIn URL <span className="text-muted-foreground font-normal">(optional)</span></Label>
-            <Input id="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourprofile" />
-          </div>
-        )}
-
-        <Button onClick={handleSaveProfile} disabled={saving} size="sm">
-          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save profile
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function SubscriptionSection({
-  plan, isPro, subscriptionEnd, schoolName, portalLoading, onManage, onUpgrade,
-}: {
-  plan: string; isPro: boolean; subscriptionEnd: string | null; schoolName: string | null;
-  portalLoading: boolean; onManage: () => void; onUpgrade: () => void;
-}) {
-  const planLabel = plan === "school" ? `School · ${schoolName || "Institution"}` : plan === "pro" ? "Pro" : "Free";
-  const planColor = isPro ? "bg-primary/15 text-primary border-primary/30" : "bg-muted/30 text-muted-foreground border-border/50";
-
-  return (
-    <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Subscription</h2>
-      <p className="text-sm text-muted-foreground mb-6">Manage your plan and billing.</p>
-
-      <div className="rounded-xl border border-border/50 bg-card p-6 space-y-4 max-w-md">
-        <div className="flex items-center gap-3">
-          <div className={`rounded-full p-2.5 ${isPro ? "bg-primary/10" : "bg-muted/30"}`}>
-            <Crown className={`h-5 w-5 ${isPro ? "text-primary" : "text-muted-foreground"}`} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-foreground">{planLabel}</p>
-              <Badge variant="outline" className={`text-[10px] ${planColor}`}>
-                {isPro ? "Active" : "Current"}
-              </Badge>
-            </div>
-            {subscriptionEnd && (
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Renews {new Date(subscriptionEnd).toLocaleDateString()}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {isPro ? (
-          <Button variant="outline" size="sm" onClick={onManage} disabled={portalLoading}>
-            {portalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
-            Manage subscription
-          </Button>
-        ) : (
-          <Button size="sm" onClick={onUpgrade}>
-            <Crown className="mr-2 h-4 w-4" />
-            Upgrade to Pro
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SecuritySection({
-  newPassword, setNewPassword, confirmPassword, setConfirmPassword,
-  changingPassword, handleChangePassword,
-}: {
-  newPassword: string; setNewPassword: (v: string) => void;
-  confirmPassword: string; setConfirmPassword: (v: string) => void;
-  changingPassword: boolean; handleChangePassword: () => void;
-}) {
-  return (
-    <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Security</h2>
-      <p className="text-sm text-muted-foreground mb-6">Update your account password.</p>
-      <div className="space-y-4 max-w-md">
-        <div className="space-y-2">
-          <Label htmlFor="newPassword">New password</Label>
-          <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm new password</Label>
-          <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" />
-        </div>
-        <Button onClick={handleChangePassword} disabled={changingPassword} size="sm" variant="outline">
-          {changingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
-          Update password
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function DangerSection({ deleting, handleDeleteAccount }: { deleting: boolean; handleDeleteAccount: () => void }) {
-  return (
-    <div>
-      <h2 className="text-xl font-bold text-destructive mb-1">Danger Zone</h2>
-      <p className="text-sm text-muted-foreground mb-6">Permanently delete your account and all associated data.</p>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive" size="sm">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete account
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete your analysis history, upskill sessions, and profile data. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAccount} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Yes, delete my account
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
