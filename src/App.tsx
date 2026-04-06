@@ -33,6 +33,10 @@ const Pricing = lazy(() => import("./pages/Pricing.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
+const BlogIndex = lazy(() => import("./pages/BlogIndex.tsx"));
+const BlogPostPage = lazy(() => import("./pages/BlogPostPage.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
+const Demo = lazy(() => import("./pages/Demo.tsx"));
 
 
 const queryClient = new QueryClient();
