@@ -494,13 +494,14 @@ CRITICAL:
         {
           role: "system",
           content: `Find up to ${extractLimit} real decision-makers matching this ICP. Return JSON only (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin profile url or null","email":"null","website":"company website or null","source":"AI Discovery","summary":"1-2 sentence summary","reason":"1-2 sentence ICP match explanation","is_decision_maker":true}]}
+{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin profile url or null","email":"null","website":"company website or null","source":"AI Discovery","summary":"1-2 sentence summary","reason":"1-2 sentence ICP match explanation","score":85,"is_decision_maker":true}]}
 
 CRITICAL:
 - Use your knowledge of real companies and executives
 - Every lead must be from a DIFFERENT company
 - Focus on decision-makers: Owner, CEO, VP, Director, Head of
 - Include LinkedIn profile URLs when you know them
+- Every lead MUST have a "score" (0-100 ICP fit): 90+ perfect, 70-89 strong, 50-69 moderate
 - Be honest — only include people you're confident exist`,
         },
         {
