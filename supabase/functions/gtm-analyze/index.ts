@@ -446,8 +446,10 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
       // Collect buyer titles from ICP mappings
       const mappings = icpJSON?.mappings || [];
       let filteredMappings = mappings;
-      if (generateMore?.vertical) {
-        const vFilter = generateMore.vertical.toLowerCase();
+      // Apply vertical focus from chat context or generateMore
+      const verticalFilter = generateMore?.vertical || chatContext?.verticalFocus;
+      if (verticalFilter) {
+        const vFilter = verticalFilter.toLowerCase();
         const vertMatches = mappings.filter((m: any) => m.vertical?.toLowerCase().includes(vFilter));
         if (vertMatches.length > 0) filteredMappings = vertMatches;
       }
@@ -463,10 +465,10 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
       const apolloPage = generateMore ? 2 : 1;
 
       // Search customer AND conquest domains separately to ensure both pools have leads
-      console.log("Apollo search — customer domains:", customerDomains.length, "conquest domains:", conquestDomains.length, "titles:", titles.length, "page:", apolloPage);
+      console.log("Apollo search — customer domains:", customerDomains.length, "conquest domains:", conquestDomains.length, "titles:", titles.length, "page:", apolloPage, "location:", effectiveLocation);
       const [customerPeople, conquestPeople] = await Promise.all([
-        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains, apolloPage, locationFilter) : Promise.resolve([]),
-        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains, apolloPage, locationFilter) : Promise.resolve([]),
+        customerDomains.length > 0 ? searchApolloAtCompanies(titles, customerDomains, apolloPage, effectiveLocation) : Promise.resolve([]),
+        conquestDomains.length > 0 ? searchApolloAtCompanies(titles, conquestDomains, apolloPage, effectiveLocation) : Promise.resolve([]),
       ]);
       console.log("Apollo results — customer leads:", customerPeople.length, "conquest leads:", conquestPeople.length);
       let people = [...customerPeople, ...conquestPeople];
