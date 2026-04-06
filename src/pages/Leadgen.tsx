@@ -1404,7 +1404,12 @@ export default function Leadgen() {
         <title>Xcrow — B2B Lead Hunter | Find Perfect Leads From One Website</title>
         <meta name="description" content="The only lead hunter that finds hyper-accurate B2B prospects from a single website entry. Drop your URL — AI finds, qualifies, and delivers your perfect leads." />
       </Helmet>
-      <Navbar />
+      <Navbar
+        workspaces={workspaces}
+        activeWorkspaceKey={activeWorkspaceKey}
+        onSwitchWorkspace={handleSwitchWorkspace}
+        onDeleteWorkspace={handleDeleteWorkspace}
+      />
       <div className="flex flex-col h-screen pt-14">
         {mainContent}
       </div>
