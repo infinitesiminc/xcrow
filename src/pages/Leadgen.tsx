@@ -521,21 +521,40 @@ export default function Leadgen() {
     }
   };
 
-  // --- Draft email cache (keyed by lead email) ---
-  const draftCacheRef = useRef<Record<string, { subject: string; body: string }>>({}); 
+  // --- Draft email helpers ---
+  const saveDraftToDb = useCallback(async (leadId: string, email: string, subject: string, body: string) => {
+    if (!user) return;
+    await supabase.from("draft_emails").upsert({
+      user_id: user.id,
+      lead_id: leadId,
+      recipient_email: email,
+      subject,
+      body,
+      workspace_key: activeWorkspaceKey || "default",
+    }, { onConflict: "user_id,lead_id" });
+  }, [user, activeWorkspaceKey]);
 
-  // --- Chat handlers (kept for follow-up) ---
   const handleDraftEmail = async (lead: Lead) => {
     if (!user) { openAuthModal(); return; }
     if (!lead.email) { toast.error("This lead has no email address."); return; }
     setDraftLead(lead); setDraftModalOpen(true);
 
-    // Check cache first
-    const cached = draftCacheRef.current[lead.email];
-    if (cached) {
-      setDraftSubject(cached.subject); setDraftBody(cached.body); setDraftCtaText("");
-      setDraftLoading(false);
-      return;
+    // Find the saved lead id for DB lookup
+    const matchedLead = savedLeads.find((l) => l.email === lead.email && l.company === lead.company);
+
+    // Check DB for existing draft
+    if (matchedLead) {
+      const { data: existing } = await supabase
+        .from("draft_emails")
+        .select("subject, body")
+        .eq("lead_id", matchedLead.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (existing?.subject || existing?.body) {
+        setDraftSubject(existing.subject); setDraftBody(existing.body); setDraftCtaText("");
+        setDraftLoading(false);
+        return;
+      }
     }
 
     setDraftLoading(true);
@@ -554,8 +573,11 @@ export default function Leadgen() {
       const subject = data.draft.subject || "";
       const body = (data.draft.body || "").replace(/\\n/g, "\n");
       const cleanSubject = (subject || "").replace(/\\n/g, " ");
-      draftCacheRef.current[lead.email] = { subject: cleanSubject, body };
       setDraftSubject(cleanSubject); setDraftBody(body); setDraftCtaText(data.draft.ctaText || "");
+      // Persist to DB
+      if (matchedLead) {
+        saveDraftToDb(matchedLead.id, lead.email, cleanSubject, body);
+      }
     } catch (e: any) {
       toast.error(e.message || "Failed to generate draft"); setDraftModalOpen(false);
     } finally { setDraftLoading(false); }
@@ -572,8 +594,9 @@ export default function Leadgen() {
       matchedLead.status === "new"
         ? updateLeadStatus(matchedLead.id, "contacted")
         : Promise.resolve(),
+      saveDraftToDb(matchedLead.id, draftLead.email, draftSubject, draftBody),
     ]);
-  }, [draftBody, draftLead, draftSubject, logOutreach, savedLeads, updateLeadStatus, user]);
+  }, [draftBody, draftLead, draftSubject, logOutreach, savedLeads, updateLeadStatus, user, saveDraftToDb]);
 
   const handleSendEmail = async () => {
     if (!draftLead?.email || !draftSubject || !draftBody) return;

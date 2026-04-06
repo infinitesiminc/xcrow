@@ -258,6 +258,50 @@ export type Database = {
         }
         Relationships: []
       }
+      draft_emails: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          lead_id: string | null
+          recipient_email: string
+          subject: string
+          updated_at: string
+          user_id: string
+          workspace_key: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          recipient_email: string
+          subject?: string
+          updated_at?: string
+          user_id: string
+          workspace_key?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          recipient_email?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+          workspace_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draft_emails_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "saved_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
