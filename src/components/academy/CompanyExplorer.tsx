@@ -192,11 +192,17 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       setTreeData(builtTree);
     }
 
-    // Write to cache
+    // Write to cache (with AI-corrected company name)
     if (builtTree) {
+      const aiName = builtTree.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
+      const cachedCompany = {
+        ...company,
+        name: (aiName && aiName.length <= 40) ? aiName : company.name,
+        headquarters: products?.headquarters || company.headquarters,
+      };
       supabase.from("leadhunter_cache").upsert({
         website_key: websiteKey,
-        company_data: company as any,
+        company_data: cachedCompany as any,
         step_results: accumulated as any,
         tree_data: builtTree as any,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
