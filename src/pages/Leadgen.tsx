@@ -1057,13 +1057,13 @@ export default function Leadgen() {
     <div className="flex flex-col h-full min-h-0">
       {showSkeleton ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
-          {/* Website + Location bar */}
-          <div className="border-b border-border/40 bg-card/30 px-3 py-1 flex items-center gap-1.5 shrink-0 flex-wrap">
+          {/* Consolidated header strip: URL + location + summary */}
+          <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex items-center gap-2 shrink-0">
             <form
-              className="flex items-center gap-2 flex-1 min-w-0"
+              className="flex items-center gap-1.5 shrink-0"
               onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
             >
-              <div className="relative flex-1 min-w-[140px] max-w-xs">
+              <div className="relative w-[160px]">
                 <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                 <Input
                   value={websiteUrl}
@@ -1073,52 +1073,56 @@ export default function Leadgen() {
                   disabled={isDiscovering}
                 />
               </div>
-              {/* Location chip — workspace-level targeting */}
-              <div className="flex items-center gap-1">
-                {editingLocation ? (
-                  <form
-                    className="flex items-center gap-1"
-                    onSubmit={(e) => { e.preventDefault(); setEditingLocation(false); }}
-                  >
-                    <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <Input
-                      autoFocus
-                      value={targetLocation}
-                      onChange={(e) => setTargetLocation(e.target.value)}
-                      onBlur={() => setEditingLocation(false)}
-                      placeholder="e.g. New York, USA"
-                      className="h-6 w-[140px] text-xs px-1.5"
-                    />
-                  </form>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setEditingLocation(true)}
-                    className="inline-flex items-center gap-1 h-6 px-2 rounded-md text-xs border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-                  >
-                    <MapPin className="w-3 h-3 shrink-0" />
-                    {targetLocation || "Add location"}
-                  </button>
-                )}
-                {targetLocation && !editingLocation && (
-                  <button
-                    type="button"
-                    onClick={() => setTargetLocation("")}
-                    className="text-muted-foreground hover:text-foreground w-4 h-4 flex items-center justify-center"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-              <Button type="submit" variant="outline" size="sm" className="h-7 text-xs gap-1 px-2.5" disabled={!websiteUrl.trim() || isDiscovering}>
+              {/* Location chip */}
+              {editingLocation ? (
+                <form
+                  className="flex items-center gap-1"
+                  onSubmit={(e) => { e.preventDefault(); setEditingLocation(false); }}
+                >
+                  <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <Input
+                    autoFocus
+                    value={targetLocation}
+                    onChange={(e) => setTargetLocation(e.target.value)}
+                    onBlur={() => setEditingLocation(false)}
+                    placeholder="e.g. New York, USA"
+                    className="h-6 w-[120px] text-xs px-1.5"
+                  />
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setEditingLocation(true)}
+                  className="inline-flex items-center gap-1 h-6 px-2 rounded-md text-xs border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors shrink-0"
+                >
+                  <MapPin className="w-3 h-3 shrink-0" />
+                  {targetLocation || "Location"}
+                </button>
+              )}
+              {targetLocation && !editingLocation && (
+                <button
+                  type="button"
+                  onClick={() => setTargetLocation("")}
+                  className="text-muted-foreground hover:text-foreground w-4 h-4 flex items-center justify-center"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              <Button type="submit" variant="outline" size="sm" className="h-7 text-xs gap-1 px-2" disabled={!websiteUrl.trim() || isDiscovering}>
                 {isDiscovering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                {isDiscovering ? "Analyzing..." : "Analyze"}
+                Analyze
               </Button>
             </form>
+            {/* Company summary inline */}
+            {companySummary && (
+              <p className="text-xs text-muted-foreground truncate flex-1 min-w-0 px-2 border-l border-border/40">
+                {companySummary}
+              </p>
+            )}
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs gap-1 text-muted-foreground hover:text-foreground h-7 px-2"
+              className="text-xs gap-1 text-muted-foreground hover:text-foreground h-7 px-2 shrink-0"
               onClick={() => { setHasDiscovered(false); setLocalWorkspaceKey(""); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); setGtmTreeData(null); }}
             >
               <ArrowRight className="w-3 h-3" />
