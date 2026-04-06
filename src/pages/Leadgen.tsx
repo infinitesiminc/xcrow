@@ -119,6 +119,7 @@ export default function Leadgen() {
    const [isAutoSeeding, setIsAutoSeeding] = useState(false);
    const [editingLocation, setEditingLocation] = useState(false);
    const [gtmTreeData, setGtmTreeData] = useState<GTMTreeData | null>(null);
+   const [gtmPersonasLoading, setGtmPersonasLoading] = useState(false);
 
   const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
 
@@ -181,6 +182,7 @@ export default function Leadgen() {
         mappings: [],
         leads: [],
       });
+      setGtmPersonasLoading(true);
 
       // Steps 2 & 3 in parallel (both only need step 1)
       const [r2, r3] = await Promise.all([
@@ -205,8 +207,10 @@ export default function Leadgen() {
         mappings: d3?.structured?.mappings || [],
         leads: [],
       });
+      setGtmPersonasLoading(false);
     } catch (e) {
       console.warn("GTM analysis unavailable:", e);
+      setGtmPersonasLoading(false);
     }
   }, []);
 
@@ -1139,6 +1143,7 @@ export default function Leadgen() {
             gtmTreeData={gtmTreeData}
             onGenerateFromTargeting={handleGenerateFromTargeting}
             onStopGenerating={handleStopGenerating}
+            loadingPersonas={gtmPersonasLoading}
           />
         </div>
       )}
