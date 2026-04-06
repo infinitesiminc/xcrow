@@ -79,81 +79,66 @@ export default function TargetingCards({ treeData, droppedIds, vertical }: Targe
   }
 
   return (
-    <div className={`space-y-3 px-3 py-3 ${vertical ? '' : 'px-4'}`}>
-      {/* Products row */}
-      {productItems.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-semibold text-foreground">Products</span>
-            <Badge variant="secondary" className="text-xs h-5 px-2">{productItems.length}</Badge>
-          </div>
-          <div className={vertical ? "flex flex-col gap-2" : "flex gap-2 overflow-x-auto pb-1"}>
-            {productItems.map(item => {
-              const isDropped = droppedIds.has(item.id);
-              return (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={e => handleDragStart(e, item)}
-                  className={`p-3 rounded-lg border cursor-grab active:cursor-grabbing transition-all select-none ${
-                    vertical ? "w-full" : "min-w-[200px] max-w-[240px] shrink-0"
-                  } ${
-                    isDropped
-                      ? "border-primary/40 bg-primary/5 opacity-60"
-                      : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Package className="w-4 h-4 text-primary shrink-0" />
-                    <span className="text-sm font-medium text-foreground">{item.label}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
-                </div>
-              );
-            })}
-          </div>
+    <div className="flex flex-1 min-h-0 overflow-hidden">
+      {/* Products column */}
+      <div className="flex-1 border-r border-border/30 overflow-y-auto px-2 py-2">
+        <div className="flex items-center gap-1.5 mb-2 px-1">
+          <Package className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Products</span>
+          <Badge variant="secondary" className="text-[10px] h-4 px-1.5 ml-auto">{productItems.length}</Badge>
         </div>
-      )}
+        <div className="flex flex-col gap-1.5">
+          {productItems.map(item => {
+            const isDropped = droppedIds.has(item.id);
+            return (
+              <div
+                key={item.id}
+                draggable
+                onDragStart={e => handleDragStart(e, item)}
+                className={`px-2.5 py-2 rounded-md border text-xs font-medium cursor-grab active:cursor-grabbing transition-all select-none ${
+                  isDropped
+                    ? "border-primary/40 bg-primary/5 opacity-50"
+                    : "border-border bg-card hover:border-primary/30 hover:bg-accent/30"
+                }`}
+              >
+                <span className="text-foreground">{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      {/* Verticals & Buyer Roles row */}
-      {verticalItems.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-semibold text-foreground">Verticals & Buyer Roles</span>
-          </div>
-          <div className={vertical ? "flex flex-col gap-2" : "flex gap-2 overflow-x-auto pb-1"}>
-            {verticalItems.map(item => {
-              const Icon = item.icon;
-              const isDropped = droppedIds.has(item.id);
-              return (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={e => handleDragStart(e, item)}
-                  className={`p-3 rounded-lg border cursor-grab active:cursor-grabbing transition-all select-none ${
-                    vertical ? "w-full" : "min-w-[200px] max-w-[240px] shrink-0"
-                  } ${
-                    isDropped
-                      ? "border-primary/40 bg-primary/5 opacity-60"
-                      : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Icon className="w-4 h-4 text-primary shrink-0" />
-                    <span className="text-sm font-medium text-foreground">{item.label}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{item.description}</p>
-                  {item.meta && (
-                    <Badge variant="secondary" className="text-xs h-5 px-2 gap-1 bg-blue-500/15 text-blue-700 border-0">
-                      <UserCheck className="w-3 h-3" /> DM: {item.meta}
-                    </Badge>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+      {/* Personas column */}
+      <div className="flex-1 overflow-y-auto px-2 py-2">
+        <div className="flex items-center gap-1.5 mb-2 px-1">
+          <UserCheck className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Personas</span>
+          <Badge variant="secondary" className="text-[10px] h-4 px-1.5 ml-auto">{verticalItems.length}</Badge>
         </div>
-      )}
+        <div className="flex flex-col gap-1.5">
+          {verticalItems.map(item => {
+            const Icon = item.icon;
+            const isDropped = droppedIds.has(item.id);
+            return (
+              <div
+                key={item.id}
+                draggable
+                onDragStart={e => handleDragStart(e, item)}
+                className={`px-2.5 py-2 rounded-md border text-xs cursor-grab active:cursor-grabbing transition-all select-none ${
+                  isDropped
+                    ? "border-primary/40 bg-primary/5 opacity-50"
+                    : "border-border bg-card hover:border-primary/30 hover:bg-accent/30"
+                }`}
+              >
+                <span className="font-medium text-foreground">{item.label}</span>
+                {item.meta && (
+                  <span className="text-muted-foreground ml-1">· {item.meta}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
