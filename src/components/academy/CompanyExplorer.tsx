@@ -58,6 +58,14 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     if (initialWebsite && !autoStarted.current) {
       autoStarted.current = true;
       const domain = initialWebsite.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+
+      // Basic domain format validation
+      const domainPattern = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
+      if (!domainPattern.test(domain)) {
+        toast.error("Invalid URL format. Please enter a valid website like company.com");
+        return;
+      }
+
       const name = domain.split(".")[0].charAt(0).toUpperCase() + domain.split(".")[0].slice(1);
       const company: CompanyData = {
         id: initialWebsite,
@@ -91,6 +99,12 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
           body: { stepId: step.id, company, previousResults: accumulated },
         });
         if (error) throw error;
+        if (data?.error) {
+          toast.error(data.error);
+          setIsRunning(false);
+          setCurrentStepIdx(-1);
+          return;
+        }
         accumulated[step.id] = data;
         setStepResults((prev) => ({ ...prev, [step.id]: data }));
       } catch (e) {
