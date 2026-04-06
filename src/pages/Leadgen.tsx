@@ -1230,7 +1230,7 @@ export default function Leadgen() {
               variant="ghost"
               size="sm"
               className="text-xs gap-1 text-muted-foreground hover:text-foreground h-7 px-2 shrink-0"
-              onClick={() => { setHasDiscovered(false); setLocalWorkspaceKey(""); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); setGtmTreeData(null); }}
+              onClick={() => { autoDiscoverRef.current = false; setWebsiteUrl(""); setHasDiscovered(false); setLocalWorkspaceKey(""); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); setPagesAnalyzed([]); setGtmTreeData(null); setIsGtmLoading(false); setGtmPersonasLoading(false); setSearchParams({}, { replace: true }); }}
             >
               <ArrowRight className="w-3 h-3" />
               Reset
