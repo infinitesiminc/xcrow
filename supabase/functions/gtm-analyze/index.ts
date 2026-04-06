@@ -81,7 +81,7 @@ async function searchApolloAtCompanies(
   try {
     const searchBody: Record<string, unknown> = {
       person_titles: titles,
-      per_page: 25,
+      per_page: 5,
       page,
       person_seniorities: ["director", "vp", "c_suite", "owner"],
     };
