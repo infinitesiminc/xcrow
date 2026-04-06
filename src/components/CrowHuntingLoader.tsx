@@ -2,7 +2,6 @@
  * CrowHuntingLoader — Branded crow logo with hunting radar animation.
  */
 import { motion } from "framer-motion";
-import logoCrow from "@/assets/logo-crow.png";
 
 interface CrowHuntingLoaderProps {
   label?: string;
@@ -52,26 +51,10 @@ export default function CrowHuntingLoader({
           <div className="w-full h-full bg-gradient-to-t from-primary/40 to-transparent rounded-full" />
         </motion.div>
 
-        {/* Actual crow logo */}
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          animate={{
-            y: [0, -6, 2, -4, 0],
-            rotate: [0, -5, 3, -2, 0],
-          }}
-          transition={{
-            duration: 2.5,
-            repeat: Infinity,
-            ease: [0.25, 0.46, 0.45, 0.94],
-          }}
-        >
-          <img
-            src={logoCrow}
-            alt="Xcrow"
-            style={{ width: s.crow, height: s.crow }}
-            className="object-contain drop-shadow-md"
-          />
-        </motion.div>
+        {/* Center dot */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-primary/60" />
+        </div>
 
         {/* Target dots — leads being found */}
         {[
