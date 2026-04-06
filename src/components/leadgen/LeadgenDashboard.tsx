@@ -149,63 +149,12 @@ export function LeadgenDashboard({
           />
         )}
 
-        {/* Action Toolbar */}
-        <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
-          <span className="text-xs font-medium text-muted-foreground mr-1">
+        {/* Lead count bar */}
+        <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0">
+          <span className="text-xs font-medium text-muted-foreground">
             {leads.length} leads
             {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
           </span>
-          <div className="flex-1" />
-          <Button
-            variant="default"
-            size="sm"
-            className="h-7 gap-1.5 text-xs"
-            disabled={isGenerating}
-            onClick={() => onGenerateAll?.()}
-          >
-            {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-            Generate All
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1.5 text-xs"
-            disabled={isEnriching || leads.length === 0}
-            onClick={() => onEnrichAll?.()}
-          >
-            {isEnriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-            Enrich
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1.5 text-xs"
-            disabled={leads.length === 0}
-            onClick={() => onScoreAll?.()}
-          >
-            <Target className="w-3.5 h-3.5" />
-            Score
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1.5 text-xs"
-            disabled={leads.length === 0}
-            onClick={() => onDraftAll?.()}
-          >
-            <Mail className="w-3.5 h-3.5" />
-            Draft
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1.5 text-xs"
-            disabled={leads.length === 0}
-            onClick={onExportCSV}
-          >
-            <Download className="w-3.5 h-3.5" />
-            Export
-          </Button>
         </div>
 
         {/* Lead Pipeline */}
