@@ -1262,7 +1262,17 @@ export default function Leadgen() {
             onDraftAll={handleDraftAllSimple}
             isGenerating={isFindingLeads}
             isEnriching={isEnrichingLeads}
-            onSelectLead={(lead) => { setSelectedLead(lead); setDrawerOpen(true); }}
+            onSelectLead={(lead) => {
+              const nextCount = leadViewCount + 1;
+              setLeadViewCount(nextCount);
+              if (!user && nextCount >= 2) {
+                toast("Sign up to save leads & unlock full details", { icon: "🔒" });
+                openAuthModal();
+                return;
+              }
+              setSelectedLead(lead);
+              setDrawerOpen(true);
+            }}
             onFindLookalikes={handleFindLookalikes}
             websiteUrl={websiteUrl}
             pagesAnalyzed={pagesAnalyzed}
