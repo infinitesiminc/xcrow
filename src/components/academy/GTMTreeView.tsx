@@ -629,7 +629,7 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-[10px] text-muted-foreground truncate">{lead.title} · {lead.company}</div>
+                            <div className="text-[10px] text-muted-foreground">{lead.title} · {lead.company}</div>
                             <div className="flex flex-wrap gap-0.5 mt-0.5">
                               <Badge variant="secondary" className="text-[8px] h-3 px-1 border-0 bg-blue-500/15 text-blue-700">DM</Badge>
                               {lead.type === "conquest" && lead.competitor_using && lead.competitor_using !== "null" && (
