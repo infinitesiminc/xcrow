@@ -912,35 +912,92 @@ export default function Leadgen() {
     }
   }, [hasDiscovered, isDiscovering, searchParams, websiteUrl, navigate]);
 
-  // Discovery loading screen (shown during analysis)
+  // Discovery loading screen — skeleton overlay matching dashboard layout
   const discoveryLoading = (
-    <div className="flex-1 flex flex-col items-center justify-center bg-background">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center max-w-md mx-auto px-4"
-      >
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+    <div className="flex-1 flex min-h-0 relative">
+      {/* Skeleton background matching LeadgenDashboard layout */}
+      <div className="flex flex-1 min-w-0 h-full opacity-40">
+        {/* Left column skeleton (targeting cards) */}
+        <div className="w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex flex-col h-full shrink-0">
+          <div className="px-3 py-2 bg-card/40 border-b border-border/40">
+            <div className="h-3 w-20 bg-muted rounded mb-1.5" />
+            <div className="h-2.5 w-full bg-muted/60 rounded" />
+            <div className="h-2.5 w-3/4 bg-muted/60 rounded mt-1" />
+          </div>
+          {/* Product cards skeleton */}
+          <div className="p-3 space-y-1.5">
+            <div className="h-3 w-16 bg-muted rounded mb-2" />
+            {[1, 2, 3].map(i => (
+              <div key={`p${i}`} className="h-9 rounded-lg bg-muted/50 border border-border/30" />
+            ))}
+          </div>
+          {/* Persona cards skeleton */}
+          <div className="p-3 space-y-1.5 border-t border-border/30">
+            <div className="h-3 w-16 bg-muted rounded mb-2" />
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={`v${i}`} className="h-9 rounded-lg bg-muted/50 border border-border/30" />
+            ))}
+          </div>
+          {/* Target zone skeleton */}
+          <div className="mt-auto border-t border-border/30 p-3">
+            <div className="h-16 rounded-lg border-2 border-dashed border-border/40 bg-muted/20" />
+          </div>
         </div>
-        <h2 className="text-xl font-semibold text-foreground mb-2">
-          Analyzing {websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}
-        </h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          This usually takes 15–30 seconds
-        </p>
-        {discoveryPhase && (
-          <motion.div
-            key={discoveryPhase}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center justify-center gap-2 text-sm text-primary"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            {discoveryPhase}
-          </motion.div>
-        )}
-      </motion.div>
+        {/* Right column skeleton (leads area) */}
+        <div className="flex flex-col flex-1 min-w-0 h-full">
+          {/* Toolbar skeleton */}
+          <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2">
+            <div className="h-3 w-16 bg-muted rounded" />
+            <div className="flex-1" />
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={`btn${i}`} className="h-7 w-16 bg-muted/60 rounded" />
+            ))}
+          </div>
+          {/* Lead rows skeleton */}
+          <div className="p-4 space-y-2.5">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={`lead${i}`} className="flex items-center gap-3 h-12 px-3 rounded-lg bg-muted/30 border border-border/20">
+                <div className="w-8 h-8 rounded-full bg-muted/60" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3 w-32 bg-muted/60 rounded" />
+                  <div className="h-2.5 w-48 bg-muted/40 rounded" />
+                </div>
+                <div className="h-5 w-14 bg-muted/40 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Centered overlay */}
+      <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center px-6 py-8 rounded-2xl bg-card/90 border border-border/60 shadow-lg max-w-sm"
+        >
+          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-7 h-7 text-primary animate-spin" />
+          </div>
+          <h2 className="text-lg font-semibold text-foreground mb-1">
+            Analyzing {websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}
+          </h2>
+          <p className="text-xs text-muted-foreground mb-4">
+            This usually takes 15–30 seconds
+          </p>
+          {discoveryPhase && (
+            <motion.div
+              key={discoveryPhase}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center gap-2 text-xs text-primary"
+            >
+              <Sparkles className="w-3 h-3" />
+              {discoveryPhase}
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 
