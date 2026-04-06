@@ -306,14 +306,31 @@ export function LeadDetailDrawer({
               )}
             </div>
 
-            {/* Meta */}
-            <div className="text-[10px] text-muted-foreground/50 flex items-center gap-3">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                Added {new Date(lead.created_at).toLocaleDateString()}
-              </span>
-              {lead.updated_at !== lead.created_at && (
-                <span>Updated {new Date(lead.updated_at).toLocaleDateString()}</span>
+            {/* Meta & Delete */}
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] text-muted-foreground/50 flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Added {new Date(lead.created_at).toLocaleDateString()}
+                </span>
+                {lead.updated_at !== lead.created_at && (
+                  <span>Updated {new Date(lead.updated_at).toLocaleDateString()}</span>
+                )}
+              </div>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
+                  onClick={() => {
+                    onDelete(lead.id);
+                    onOpenChange(false);
+                    toast.success(`${lead.name} deleted`);
+                  }}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete
+                </Button>
               )}
             </div>
           </div>
