@@ -40,11 +40,12 @@ interface LeadDetailDrawerProps {
   outreach: OutreachEntry[];
   onUpdateStatus: (id: string, status: LeadStatus) => void;
   onDraftEmail: (lead: SavedLead) => void;
+  onDelete?: (id: string) => void;
   userId?: string;
 }
 
 export function LeadDetailDrawer({
-  lead, open, onOpenChange, outreach, onUpdateStatus, onDraftEmail, userId,
+  lead, open, onOpenChange, outreach, onUpdateStatus, onDraftEmail, onDelete, userId,
 }: LeadDetailDrawerProps) {
   const [notes, setNotes] = useState<LeadNote[]>([]);
   const [newNote, setNewNote] = useState("");
