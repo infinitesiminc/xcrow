@@ -504,8 +504,7 @@ export default function Leadgen() {
       setChatOpen(false);
       toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
       // Track workspace
-      const companyName = data.company_summary?.split(/[.!,—]/)?.[0]?.trim() || activeWorkspaceKey;
-      upsertWorkspace(activeWorkspaceKey, companyName);
+      upsertWorkspace(activeWorkspaceKey, activeWorkspaceKey);
       fetchGtmAnalysis(url);
 
       // Auto-seed 1 lead per persona
