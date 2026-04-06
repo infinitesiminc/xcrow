@@ -31,11 +31,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
     try {
       if (isSignUp) {
+        const pendingWebsite = sessionStorage.getItem("pendingWebsite") || undefined;
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { display_name: displayName },
+            data: { display_name: displayName, ...(pendingWebsite ? { pending_website: pendingWebsite } : {}) },
             emailRedirectTo: window.location.origin,
           },
         });
