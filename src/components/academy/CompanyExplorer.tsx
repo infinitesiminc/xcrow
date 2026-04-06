@@ -437,6 +437,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             <StrategyChat
               companyName={selectedCompany.name}
               activeCards={activeCards}
+              treeData={treeData}
             />
           }
         />
