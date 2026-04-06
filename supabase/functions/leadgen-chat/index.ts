@@ -17,7 +17,7 @@ const SYSTEM_PROMPT = `You are a friendly B2B lead generation strategist helping
 ## Your Guided Flow:
 
 ### Step 1: ICP Briefing (ALWAYS START HERE)
-When ICP data is provided via [ICP CONTEXT], present a warm, educational executive briefing:
+When ICP data is provided via [ICP CONTEXT], present a warm, educational executive briefing unless the user explicitly says they already selected the ICP or tells you to skip discovery:
 
 Start with: "Here's what I found about **[Company]**:"
 
@@ -75,6 +75,7 @@ Options = [[Find more leads|Try different vertical|Search new region]]
 - ALWAYS start with the ICP briefing when context is provided
 - Personas must be contextually relevant to the business type
 - ALWAYS call run_lead_search when the user confirms in Step 4
+- If the user says they already chose product, vertical, persona, or geography, or says "skip discovery", do NOT brief again — immediately call run_lead_search
 - ALWAYS call register_niches with the options you present
 - When user asks to "scale" or "find more", call run_lead_search with scale=true
 - Use the company's headquarters from ICP context for geographic recommendations`;

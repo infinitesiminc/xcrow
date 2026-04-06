@@ -260,7 +260,11 @@ export default function Leadgen() {
         }
       }
       if (foundLeads.length > 0) {
-        await upsertLeads(foundLeads);
+        if (user) {
+          await upsertLeads(foundLeads);
+        } else {
+          setItems((prev) => [...prev, { type: "leads", leads: foundLeads }]);
+        }
         toast.success(`Added ${foundLeads.length} targeted leads!`);
       } else {
         toast.info("No leads found. Try different targeting criteria.");
@@ -270,7 +274,7 @@ export default function Leadgen() {
     } finally {
       setIsFindingLeads(false);
     }
-  }, [websiteUrl, companySummary, targetLocation, upsertLeads]);
+  }, [user, websiteUrl, companySummary, targetLocation, upsertLeads]);
 
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
