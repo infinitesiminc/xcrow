@@ -212,6 +212,9 @@ export default function Leadgen() {
 
   // Generate leads from targeting cards
   const handleGenerateFromTargeting = useCallback(async (cards: DroppedCard[]) => {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setIsFindingLeads(true);
 
     const productNames = cards.filter(c => c.type === "product").map(c => c.label);
@@ -234,6 +237,7 @@ export default function Leadgen() {
         body: JSON.stringify({
           messages: [{ role: "user", content: `${contextParts}\n\nI have already chosen the product, vertical, buyer role, and geography. Do not ask follow-up questions or restate the briefing. Immediately call run_lead_search and return 5 real decision-makers as leads for this exact ICP. Use the selected vertical and buyer role as the core ICP, prefer different companies, and include verified emails when available.` }],
         }),
+        signal: controller.signal,
       });
       if (!resp.ok) throw new Error("Search failed");
       const reader = resp.body!.getReader();
