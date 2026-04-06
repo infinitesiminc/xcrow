@@ -11,13 +11,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Settings, LogOut } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2 } from "lucide-react";
+import type { UserWorkspace } from "@/hooks/use-workspaces";
 
-export default function Navbar() {
+interface NavbarProps {
+  workspaces?: UserWorkspace[];
+  activeWorkspaceKey?: string;
+  onSwitchWorkspace?: (websiteKey: string) => void;
+  onDeleteWorkspace?: (websiteKey: string) => void;
+}
+
+export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspace, onDeleteWorkspace }: NavbarProps) {
   const { user, signOut, openAuthModal, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [wsOpen, setWsOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -34,18 +44,75 @@ export default function Navbar() {
     setMobileOpen(false);
   };
 
+  const activeWs = workspaces?.find(w => w.website_key === activeWorkspaceKey);
+  const showSwitcher = user && workspaces && workspaces.length > 0 && location.pathname.startsWith("/leadhunter");
+
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/60">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
-        <button
-          onClick={() => handleNav("/")}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <span className="text-lg font-bold text-foreground tracking-tight">
-            Xcrow
-          </span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleNav("/")}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <span className="text-lg font-bold text-foreground tracking-tight">
+              Xcrow
+            </span>
+          </button>
+
+          {/* Workspace Switcher */}
+          {showSwitcher && (
+            <>
+              <span className="text-border/80 text-lg font-light select-none">/</span>
+              <Popover open={wsOpen} onOpenChange={setWsOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 px-2 py-1 rounded-md text-sm font-medium text-foreground hover:bg-muted/50 transition-colors max-w-[200px]">
+                    <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="truncate">{activeWs?.display_name || activeWorkspaceKey || "Select workspace"}</span>
+                    <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-64 p-1.5" sideOffset={8}>
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">Workspaces</p>
+                  <div className="max-h-[280px] overflow-y-auto space-y-0.5">
+                    {workspaces.map((ws) => (
+                      <div
+                        key={ws.website_key}
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm cursor-pointer transition-colors group ${
+                          ws.website_key === activeWorkspaceKey
+                            ? "bg-primary/8 text-primary font-medium"
+                            : "text-foreground hover:bg-muted/50"
+                        }`}
+                        onClick={() => {
+                          onSwitchWorkspace?.(ws.website_key);
+                          setWsOpen(false);
+                        }}
+                      >
+                        <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm">{ws.display_name || ws.website_key}</p>
+                          <p className="text-xs text-muted-foreground truncate">{ws.website_key}</p>
+                        </div>
+                        {onDeleteWorkspace && (
+                          <button
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteWorkspace(ws.website_key);
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3 text-destructive" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">

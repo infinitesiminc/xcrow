@@ -22,7 +22,7 @@ import type { Lead } from "@/components/leadgen/LeadCard";
 import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import type { GTMTreeData } from "@/components/academy/gtm-types";
 import type { DroppedCard } from "@/components/leadgen/TargetZone";
-
+import { useWorkspaces } from "@/hooks/use-workspaces";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 const SCOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-scout`;
@@ -91,6 +91,7 @@ const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | n
 
 export default function Leadgen() {
   const { user, profile, openAuthModal } = useAuth();
+  const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<ChatItem[]>([]);
@@ -408,6 +409,10 @@ export default function Leadgen() {
             setHasDiscovered(true);
             setChatOpen(false);
             toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+            // Track workspace
+            const wk = normalizeWorkspaceKey(website);
+            const companyName = data.company_summary?.split(/[.!,—]/)?.[0]?.trim() || wk;
+            upsertWorkspace(wk, companyName);
             // Trigger GTM analysis for product/vertical cards
             fetchGtmAnalysis(website.trim());
           })
@@ -498,6 +503,9 @@ export default function Leadgen() {
       setHasDiscovered(true);
       setChatOpen(false);
       toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+      // Track workspace
+      const companyName = data.company_summary?.split(/[.!,—]/)?.[0]?.trim() || activeWorkspaceKey;
+      upsertWorkspace(activeWorkspaceKey, companyName);
       fetchGtmAnalysis(url);
 
       // Auto-seed 1 lead per persona
@@ -982,7 +990,50 @@ export default function Leadgen() {
     }));
   }, [user, savedLeads, filteredPanelLeads]);
 
+  // Workspace switch handler — load cached data for selected workspace
+  const handleSwitchWorkspace = useCallback((websiteKey: string) => {
+    touchWorkspace(websiteKey);
+    autoDiscoverRef.current = false;
+    setWebsiteUrl(websiteKey);
+    setSearchParams({}, { replace: true });
+    // Reset state, let cache kick in
+    setLocalNiches([]);
+    setLocalWorkspaceKey("");
+    setCompanySummary("");
+    setIcpSummary("");
+    setPagesScraped(0);
+    setPagesAnalyzed([]);
+    setGtmTreeData(null);
+    setHasDiscovered(false);
+    // Trigger fresh analysis which will hit cache
+    navigate(`/leadhunter?website=${encodeURIComponent(websiteKey)}`, { replace: true });
+    // Need to reset autoDiscoverRef so the useEffect picks it up
+    setTimeout(() => { autoDiscoverRef.current = false; }, 0);
+  }, [touchWorkspace, navigate, setSearchParams]);
 
+  const handleDeleteWorkspace = useCallback(async (websiteKey: string) => {
+    await deleteWorkspace(websiteKey);
+    if (activeWorkspaceKey === websiteKey) {
+      setWebsiteUrl("");
+      setHasDiscovered(false);
+      setGtmTreeData(null);
+      setCompanySummary("");
+    }
+    toast.success("Workspace removed");
+  }, [deleteWorkspace, activeWorkspaceKey]);
+
+
+  // Auto-load most recent workspace for logged-in users with no context
+  const autoLoadedRef = useRef(false);
+  useEffect(() => {
+    if (autoLoadedRef.current) return;
+    if (!user || hasDiscovered || isDiscovering || searchParams.get("website") || sessionStorage.getItem("pendingWebsite") || websiteUrl) return;
+    if (workspaces.length > 0) {
+      autoLoadedRef.current = true;
+      const most = workspaces[0]; // already sorted by last_accessed_at DESC
+      handleSwitchWorkspace(most.website_key);
+    }
+  }, [user, workspaces, hasDiscovered, isDiscovering, searchParams, websiteUrl, handleSwitchWorkspace]);
 
   // Redirect to homepage if no website param and no existing data
   // Only redirect unauthenticated users with no context back to homepage
@@ -1365,7 +1416,12 @@ export default function Leadgen() {
         <title>Xcrow — B2B Lead Hunter | Find Perfect Leads From One Website</title>
         <meta name="description" content="The only lead hunter that finds hyper-accurate B2B prospects from a single website entry. Drop your URL — AI finds, qualifies, and delivers your perfect leads." />
       </Helmet>
-      <Navbar />
+      <Navbar
+        workspaces={workspaces}
+        activeWorkspaceKey={activeWorkspaceKey}
+        onSwitchWorkspace={handleSwitchWorkspace}
+        onDeleteWorkspace={handleDeleteWorkspace}
+      />
       <div className="flex flex-col h-screen pt-14">
         {mainContent}
       </div>

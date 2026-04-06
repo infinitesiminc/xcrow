@@ -1551,6 +1551,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_workspaces: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          last_accessed_at: string
+          logo_url: string | null
+          user_id: string
+          website_key: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          last_accessed_at?: string
+          logo_url?: string | null
+          user_id: string
+          website_key: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          last_accessed_at?: string
+          logo_url?: string | null
+          user_id?: string
+          website_key?: string
+        }
+        Relationships: []
+      }
       vertical_agent_scores: {
         Row: {
           agent_score: number
