@@ -182,6 +182,7 @@ export default function Leadgen() {
         mappings: [],
         leads: [],
       });
+      setGtmPersonasLoading(true);
 
       // Steps 2 & 3 in parallel (both only need step 1)
       const [r2, r3] = await Promise.all([
