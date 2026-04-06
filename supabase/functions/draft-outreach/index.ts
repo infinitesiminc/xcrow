@@ -1,5 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2'
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
@@ -39,28 +37,33 @@ Deno.serve(async (req) => {
     })
   }
 
-  const prompt = `You are an expert cold outreach copywriter. Write a SHORT, personalized cold email (3-5 sentences max) for:
+  const prompt = `You are an elite B2B cold outreach copywriter. Draft a concise, high-converting cold email.
 
 SENDER:
 - Name: ${senderInfo.name || 'the sender'}
 - Company: ${senderInfo.company || 'our company'}
-- Service: ${senderInfo.service || 'our services'}
+- What they sell: ${senderInfo.service || 'our services'}
 - Website: ${senderInfo.website || ''}
 
 RECIPIENT:
 - Name: ${lead.name || 'the recipient'}
-- Title: ${lead.title || 'unknown'}
+- Title: ${lead.title || 'decision-maker'}
 - Company: ${lead.company || 'their company'}
-- Industry context: ${lead.reason || lead.summary || ''}
+- Context: ${lead.reason || lead.summary || 'potential customer'}
 
-RULES:
-1. Open with something specific about THEIR business (not generic)
-2. Connect their need to the sender's service in 1 sentence
-3. End with a soft CTA (quick call, coffee, etc.)
-4. Tone: professional but warm, NOT salesy
-5. Do NOT use placeholder brackets like [Name]
-6. Return ONLY a JSON object with: { "subject": "...", "body": "...", "ctaText": "...", "ctaUrl": "" }
-7. Subject line must be under 60 chars, intriguing but not clickbait`
+FORMAT RULES (this will be pasted into an email client):
+1. Use plain text with line breaks — NO HTML, NO markdown
+2. Structure: Greeting → Hook → Value prop → Soft CTA → Sign-off
+3. Keep it 4-6 sentences total
+4. First line must reference something specific about THEIR company or role
+5. Mention a concrete outcome or metric if possible
+6. End with a low-friction ask (quick call, 15 min chat, reply)
+7. Sign off with sender's first name only
+8. Do NOT use brackets, placeholders, or generic filler
+9. Subject: under 50 chars, curiosity-driven, lowercase style (no Title Case)
+10. Tone: confident peer-to-peer, not salesy or sycophantic
+
+Return JSON only: { "subject": "...", "body": "..." }`
 
   try {
     const aiResp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -72,7 +75,7 @@ RULES:
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
         messages: [
-          { role: 'system', content: 'You are an expert cold outreach email copywriter. Always respond with valid JSON only.' },
+          { role: 'system', content: 'You are an expert cold outreach copywriter. Return valid JSON only, no markdown fences.' },
           { role: 'user', content: prompt },
         ],
         tools: [{
@@ -84,9 +87,7 @@ RULES:
               type: 'object',
               properties: {
                 subject: { type: 'string', description: 'Email subject line' },
-                body: { type: 'string', description: 'Email body text' },
-                ctaText: { type: 'string', description: 'Call-to-action button text' },
-                ctaUrl: { type: 'string', description: 'Call-to-action URL (can be empty)' },
+                body: { type: 'string', description: 'Plain text email body with \\n line breaks' },
               },
               required: ['subject', 'body'],
               additionalProperties: false,
@@ -100,21 +101,18 @@ RULES:
     if (!aiResp.ok) {
       if (aiResp.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limited, please try again shortly.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
       if (aiResp.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add funds.' }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({ error: 'AI credits exhausted.' }), {
+          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
       const errText = await aiResp.text()
       console.error('AI gateway error:', aiResp.status, errText)
       return new Response(JSON.stringify({ error: 'Failed to generate email draft' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
@@ -125,13 +123,12 @@ RULES:
     if (toolCall?.function?.arguments) {
       draft = JSON.parse(toolCall.function.arguments)
     } else {
-      // Fallback: try parsing message content as JSON
       const content = aiData.choices?.[0]?.message?.content || ''
       const jsonMatch = content.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         draft = JSON.parse(jsonMatch[0])
       } else {
-        draft = { subject: 'Quick introduction', body: content, ctaText: '', ctaUrl: '' }
+        draft = { subject: 'Quick introduction', body: content }
       }
     }
 
@@ -142,8 +139,7 @@ RULES:
   } catch (e) {
     console.error('Draft outreach error:', e)
     return new Response(JSON.stringify({ error: 'Failed to generate draft' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 })
