@@ -3,6 +3,8 @@
  */
 import { useState, useRef } from "react";
 import logoCrow from "@/assets/logo-crow.png";
+import WebsiteToLeadsVisual from "@/components/home/WebsiteToLeadsVisual";
+import TargetingControlsVisual from "@/components/home/TargetingControlsVisual";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
@@ -205,6 +207,12 @@ export default function Index() {
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
         </section>
+
+        {/* ═══ Visual 1: Website → Leads pipeline ═══ */}
+        <WebsiteToLeadsVisual />
+
+        {/* ═══ Visual 2: Targeting controls ═══ */}
+        <TargetingControlsVisual />
 
         {/* ═══ Value props — 3 columns ═══ */}
         <section className="py-20 sm:py-28">
