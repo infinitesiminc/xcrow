@@ -343,31 +343,49 @@ export default function GTMTreeView({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="space-y-1.5">
-        {/* ── Compact Header Row ── */}
-        <div className="flex items-center gap-2 px-1">
-          <Building2 className="w-4 h-4 text-primary shrink-0" />
-          <span className="text-sm font-semibold text-foreground">{companyName}</span>
+      <div className="space-y-1">
+        {/* ── Executive Overview (single row) ── */}
+        <div className="flex items-center gap-2 px-1 py-0.5 flex-wrap">
+          <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="text-xs font-semibold text-foreground">{companyName}</span>
           {companyMeta?.website && (() => {
             const raw = companyMeta.website;
             const href = raw.startsWith("http") ? raw : `https://${raw}`;
             const display = raw.replace(/^https?:\/\//, "").replace(/\/$/, "");
             return (
               <a href={href} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5 shrink-0">
-                <Globe className="w-3 h-3" /> {display}
+                <Globe className="w-2.5 h-2.5" /> {display}
               </a>
             );
           })()}
-          <div className="flex items-center gap-1 ml-auto shrink-0">
-            {companyMeta?.industry && <Badge variant="secondary" className="text-[9px] h-4">{companyMeta.industry}</Badge>}
-            {companyMeta?.employee_range && <Badge variant="outline" className="text-[9px] h-4">{companyMeta.employee_range}</Badge>}
-            {companyMeta?.headquarters && <Badge variant="outline" className="text-[9px] h-4">{companyMeta.headquarters}</Badge>}
-          </div>
+          {companyMeta?.industry && <Badge variant="secondary" className="text-[9px] h-3.5 px-1">{companyMeta.industry}</Badge>}
+          {companyMeta?.employee_range && <Badge variant="outline" className="text-[9px] h-3.5 px-1">{companyMeta.employee_range}</Badge>}
+          {companyMeta?.headquarters && <Badge variant="outline" className="text-[9px] h-3.5 px-1">{companyMeta.headquarters}</Badge>}
+          {data.company_summary && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-[9px] text-muted-foreground truncate max-w-[300px] cursor-default">{data.company_summary}</span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[400px]">
+                <p className="text-xs">{data.company_summary}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {namedCustomers.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="text-[9px] h-3.5 px-1 cursor-default gap-0.5">
+                  <Building2 className="w-2.5 h-2.5 text-primary" />
+                  {namedCustomers.length} customers
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[300px]">
+                <p className="text-xs font-medium mb-1">Named Customers</p>
+                <p className="text-[10px] text-muted-foreground">{namedCustomers.map(c => c.name).join(", ")}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
-
-        {data.company_summary && (
-          <p className="text-[10px] text-muted-foreground px-1">{data.company_summary}</p>
-        )}
 
         {/* ── Named Customers (expandable FYI) ── */}
         {namedCustomers.length > 0 && (
