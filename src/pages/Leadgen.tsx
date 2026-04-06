@@ -1033,7 +1033,7 @@ export default function Leadgen() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs gap-1 text-muted-foreground hover:text-foreground h-8"
+              className="text-xs gap-1 text-muted-foreground hover:text-foreground h-7 px-2"
               onClick={() => { setHasDiscovered(false); setLocalWorkspaceKey(""); setLocalNiches([]); setCompanySummary(""); setIcpSummary(""); setPagesScraped(0); setGtmTreeData(null); }}
             >
               <ArrowRight className="w-3 h-3" />
