@@ -1273,7 +1273,7 @@ export default function Leadgen() {
       {!hasWebsiteContext && !hasDiscovered ? <EmptyState /> : showSkeleton ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Consolidated header strip: URL + location + summary */}
-          <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex items-center gap-2 shrink-0">
+          <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex flex-wrap items-center gap-2 shrink-0">
             <form
               className="flex items-center gap-1.5 shrink-0"
               onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
