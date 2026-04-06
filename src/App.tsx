@@ -12,6 +12,12 @@ import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const SmartHome = lazy(() => import("./pages/SmartHome"));
+const SmartHomeRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/leadhunter" replace />;
+  return <><Navbar /><SmartHome /></>;
+};
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
@@ -51,7 +57,7 @@ const App = () => (
           <ErrorBoundary fallbackTitle="Something went wrong">
           <Suspense fallback={null}>
             <Routes>
-              <Route path="/" element={<><Navbar /><SmartHome /></>} />
+              <Route path="/" element={<SmartHomeRoute />} />
               <Route path="/leadgen" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
