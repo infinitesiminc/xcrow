@@ -154,9 +154,19 @@ export default function Leadgen() {
     if (icpSummary) {
       sessionStorage.setItem("pendingIcpSummary", icpSummary);
     }
-    // Save in-memory guest leads
-    if (allLeads.length > 0) {
-      sessionStorage.setItem("pendingLeads", JSON.stringify(allLeads));
+    // Save in-memory guest leads from chat items
+    const guestLeads: Lead[] = [];
+    const seen = new Set<string>();
+    for (const item of items) {
+      if (item.type === "leads") {
+        for (const l of item.leads) {
+          const key = `${l.name}|${l.email || ""}|${l.company || ""}`;
+          if (!seen.has(key)) { seen.add(key); guestLeads.push(l); }
+        }
+      }
+    }
+    if (guestLeads.length > 0) {
+      sessionStorage.setItem("pendingLeads", JSON.stringify(guestLeads));
     }
     rawOpenAuthModal();
   }, [websiteUrl, rawOpenAuthModal, localNiches, companySummary, icpSummary, allLeads]);
