@@ -7,7 +7,7 @@ import {
   Building2, ArrowLeft, Loader2, RefreshCw,
 } from "lucide-react";
 import GTMTreeView from "./GTMTreeView";
-import StrategyStrip from "./StrategyStrip";
+
 import StrategyChat from "./StrategyChat";
 import type { GTMTreeData } from "./gtm-types";
 

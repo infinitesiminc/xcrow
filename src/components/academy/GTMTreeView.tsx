@@ -236,7 +236,7 @@ function ProductDetail({ product, leadCount }: { product: GTMProduct; leadCount:
 /* ── Main component ── */
 export default function GTMTreeView({
   companyName, data, companyMeta, onGenerateMore, isGeneratingMore,
-  frameworkOnly, onContinueToStrategy, strategyStrip, chatPanel,
+  frameworkOnly, onContinueToStrategy, chatPanel,
   selectedProductId: controlledProductId, onSelectProduct,
 }: GTMTreeViewProps) {
   const [internalProductId, setInternalProductId] = useState<string | null>(null);
