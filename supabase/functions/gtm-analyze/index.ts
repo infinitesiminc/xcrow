@@ -319,9 +319,9 @@ serve(async (req) => {
       }
 
       const raw = await callAI(LOVABLE_API_KEY,
-        `You are a GTM product analyst. Analyze the company and map ALL distinct product lines and platform capabilities.
+        `You are a GTM product analyst. Analyze the company and map its product lines at the RIGHT level of abstraction for B2B sales targeting.
 
-CRITICAL: You MUST always return valid JSON. Never refuse. Be THOROUGH — large companies like Snowflake, Salesforce, or AWS may have 10-20+ distinct products. List every separately marketed product, platform module, or standalone capability.
+CRITICAL: You MUST always return valid JSON. Never refuse.
 
 Return ONLY valid JSON (no markdown, no wrapping):
 {
@@ -339,12 +339,29 @@ Return ONLY valid JSON (no markdown, no wrapping):
   ]
 }
 
-CONSOLIDATION RULES:
-- Tier/plan variants of the SAME product are ONE product (e.g. "Claude" not "Claude Opus + Claude Sonnet")
-- Pricing tiers (Free, Pro, Enterprise) are NOT separate products
-- BUT separately branded platform modules ARE separate products (e.g. Snowflake Cortex AI, Snowflake Notebooks, Snowpark are all separate)
-- If a capability has its own product page, marketing name, or distinct buyer — it IS a separate product
-- Ask: "Does this have its own product page or distinct buyer?" — if yes, list it separately
+SMART CONSOLIDATION — choose the right archetype:
+
+1. PLATFORM BUNDLE (e.g. Datadog, HubSpot, Salesforce):
+   - Company sells 10-40+ features/modules but buyers purchase the PLATFORM, not individual features
+   - Cluster into 2-5 SOLUTION PILLARS that represent how buyers actually evaluate and purchase
+   - Example: Datadog → "Observability", "Security", "Digital Experience", "Software Delivery" (NOT 38 individual features)
+   - Example: HubSpot → "Marketing Hub", "Sales Hub", "Service Hub", "CMS Hub"
+   - The test: "Does a VP sign a separate contract for this?" — if not, it belongs in a pillar
+
+2. MULTI-PRODUCT (e.g. Adobe, Snowflake, Microsoft):
+   - Company has 3-8 genuinely distinct products with DIFFERENT buyers and separate purchase decisions
+   - Keep each product separate
+   - Example: Snowflake → "Data Cloud", "Cortex AI", "Snowpark" (distinct buyers)
+
+3. SINGLE PRODUCT (e.g. Linear, Notion, Figma):
+   - One core product, possibly with add-ons
+   - Return 1-2 products max
+
+RULES:
+- NEVER return more than 8 products. If you identify more, you are too granular — consolidate into pillars
+- Tier/plan variants (Free, Pro, Enterprise) are NOT separate products
+- Ask: "Would a buyer evaluate this separately from the main platform?" — if no, merge into a pillar
+- Competitors should be listed at the pillar/product level, not the feature level
 
 Assign sequential IDs: P1, P2, P3...`,
         `Company: ${company.name}
