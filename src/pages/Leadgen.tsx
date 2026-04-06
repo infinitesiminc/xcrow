@@ -1110,7 +1110,7 @@ export default function Leadgen() {
       {/* Skeleton background matching LeadgenDashboard layout */}
       <div className="flex flex-col md:flex-row flex-1 min-w-0 h-full opacity-40 animate-pulse">
         {/* Left column skeleton (targeting cards) */}
-        <div className="w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex flex-col h-full shrink-0">
+        <div className="hidden md:flex w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex-col h-full shrink-0">
           <div className="px-3 py-2 bg-card/40 border-b border-border/40">
             <div className="h-3 w-20 bg-muted rounded mb-1.5" />
             <div className="h-2.5 w-full bg-muted/60 rounded" />
