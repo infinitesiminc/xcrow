@@ -152,6 +152,93 @@ export default function Leadgen() {
   const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Fetch GTM tree data (products, verticals, buyer roles)
+  const fetchGtmAnalysis = useCallback(async (website: string) => {
+    try {
+      const resp = await supabase.functions.invoke("gtm-analyze", {
+        body: { website },
+      });
+      if (resp.data && typeof resp.data === "object") {
+        // Handle potential streaming response
+        let raw = resp.data;
+        if (raw instanceof Blob) {
+          raw = JSON.parse(await raw.text());
+        }
+        if (raw.tree) {
+          setGtmTreeData(raw.tree as GTMTreeData);
+        } else if (raw.products) {
+          setGtmTreeData(raw as GTMTreeData);
+        }
+      }
+    } catch (e) {
+      console.warn("GTM analysis unavailable:", e);
+    }
+  }, []);
+
+  // Generate leads from targeting cards
+  const handleGenerateFromTargeting = useCallback(async (cards: DroppedCard[]) => {
+    if (!user) { openAuthModal(); return; }
+    setIsFindingLeads(true);
+
+    const productNames = cards.filter(c => c.type === "product").map(c => c.label);
+    const verticalNames = cards.filter(c => c.type === "vertical").map(c => `${c.label} (DM: ${c.meta || "Decision Maker"})`);
+
+    const contextParts = [
+      websiteUrl ? `My company website is ${websiteUrl}.` : "",
+      companySummary ? `Company: ${companySummary}.` : "",
+      targetLocation ? `Target location: ${targetLocation}. Only find leads in this area.` : "",
+      productNames.length > 0 ? `Products to sell: ${productNames.join(", ")}.` : "",
+      verticalNames.length > 0 ? `Target verticals & buyer roles: ${verticalNames.join("; ")}.` : "",
+    ].filter(Boolean).join(" ");
+
+    toast.info("Finding targeted leads based on your criteria...");
+
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: `${contextParts}\n\nSkip discovery. Find 5 real people with verified emails matching these targeting criteria. Return them as leads.` }],
+        }),
+      });
+      if (!resp.ok) throw new Error("Search failed");
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      const foundLeads: Lead[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "leads" && parsed.leads) {
+              const nicheTag = verticalNames[0] || productNames[0] || "targeted";
+              foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: nicheTag, source: websiteUrl || "targeting" })));
+            }
+          } catch {}
+        }
+      }
+      if (foundLeads.length > 0) {
+        await upsertLeads(foundLeads);
+        toast.success(`Added ${foundLeads.length} targeted leads!`);
+      } else {
+        toast.info("No leads found. Try different targeting criteria.");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Lead search failed");
+    } finally {
+      setIsFindingLeads(false);
+    }
+  }, [user, openAuthModal, websiteUrl, companySummary, targetLocation, upsertLeads]);
+
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
   useEffect(() => {
