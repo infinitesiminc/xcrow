@@ -4,16 +4,19 @@ import { Input } from "@/components/ui/input";
 import { useLiens, type Lien } from "@/hooks/useLiens";
 import { LienForm } from "@/components/texas/LienForm";
 import { LienTable } from "@/components/texas/LienTable";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Download, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Texas = () => {
-  const { data: liens, isLoading, error } = useLiens();
+  const { data: liens, isLoading, error, refetch } = useLiens();
   const [showForm, setShowForm] = useState(false);
   const [editingLien, setEditingLien] = useState<Lien | null>(null);
   const [search, setSearch] = useState("");
+  const [isScraping, setIsScraping] = useState(false);
 
   const filteredLiens = (liens ?? []).filter((l) => {
     if (!search) return true;
@@ -36,6 +39,29 @@ const Texas = () => {
     setEditingLien(null);
   };
 
+  const handleScrape = async () => {
+    setIsScraping(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("scrape-tax-liens", {
+        body: { county: "Travis" },
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        toast.success(`Found ${data.liens_parsed} liens, inserted ${data.liens_inserted} new records`);
+        refetch();
+      } else {
+        toast.error(data?.error || "Scraping failed");
+      }
+    } catch (err: any) {
+      console.error("Scrape error:", err);
+      toast.error(err.message || "Failed to scrape liens");
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
   return (
     <>
       <SEOHead title="Texas Lien Tracker" description="Track and manage federal tax liens filed in Texas counties." path="/texas" />
@@ -56,10 +82,16 @@ const Texas = () => {
                 </p>
               </div>
             </div>
-            <Button onClick={() => { setEditingLien(null); setShowForm(true); }} className="gap-2">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New Lien</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={handleScrape} disabled={isScraping} className="gap-2">
+                {isScraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                <span className="hidden sm:inline">{isScraping ? "Scraping..." : "Scrape Recent"}</span>
+              </Button>
+              <Button onClick={() => { setEditingLien(null); setShowForm(true); }} className="gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">New Lien</span>
+              </Button>
+            </div>
           </div>
         </header>
 
