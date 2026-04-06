@@ -21,7 +21,6 @@ const SmartHomeRoute = () => {
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const Blog = lazy(() => import("./pages/Blog.tsx"));
 
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
@@ -29,8 +28,6 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
-const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
-const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -61,15 +58,12 @@ const App = () => (
               <Route path="/leadgen" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
-              <Route path="/blog" element={<Blog />} />
               
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/use-cases" element={<><UseCasesIndex /></>} />
-              <Route path="/use-cases/:slug" element={<><UseCasePage /></>} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
