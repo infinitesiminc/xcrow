@@ -135,7 +135,7 @@ export default function Pricing() {
         {/* Plans */}
         <section className="py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
               {PLANS.map((plan, i) => (
                 <motion.div
                   key={plan.name}
