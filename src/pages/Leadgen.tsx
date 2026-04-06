@@ -119,6 +119,7 @@ export default function Leadgen() {
   const [hasDiscovered, setHasDiscovered] = useState(false);
    const [isAutoSeeding, setIsAutoSeeding] = useState(false);
    const [editingLocation, setEditingLocation] = useState(false);
+   const [gtmTreeData, setGtmTreeData] = useState<GTMTreeData | null>(null);
 
   const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
 
