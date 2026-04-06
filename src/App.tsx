@@ -65,6 +65,7 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/vs/:slug" element={<><Navbar /><CompetitorComparison /></>} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
