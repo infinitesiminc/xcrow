@@ -228,5 +228,5 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
     URL.revokeObjectURL(url);
   }, [leads, workspaceKey]);
 
-  return { leads, outreach, niches, loading, upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV, refetch: fetchLeads };
+  return { leads, outreach, niches, loading, upsertLeads, upsertNiches, updateLeadStatus, deleteLead, logOutreach, exportCSV, refetch: fetchLeads };
 }
