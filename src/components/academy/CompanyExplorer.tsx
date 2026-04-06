@@ -272,6 +272,13 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       });
     }
 
+    // Update cache with leads
+    const updatedTree = treeData ? { ...treeData } : null;
+    if (updatedTree && profiles) {
+      updatedTree.leads = profiles.leads || [];
+      updateCache(selectedCompany, accumulated, updatedTree);
+    }
+
     setIsRunning(false);
     setCurrentStepIdx(-1);
     setPhase("explore");
