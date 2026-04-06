@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { Package, Target, UserCheck, Building2, Landmark, Heart, Cpu, ShoppingCart, GraduationCap, Home, Shield, Briefcase, Zap } from "lucide-react";
+import { Package, Target, UserCheck, Building2, Landmark, Heart, Cpu, ShoppingCart, GraduationCap, Home, Shield, Briefcase } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
 import type { GTMTreeData, GTMProduct, GTMBuyerMapping } from "@/components/academy/gtm-types";
 
-/* ── Vertical icon picker ── */
 const VERTICAL_ICONS: Record<string, React.ElementType> = {
   financial: Landmark, banking: Landmark, mortgage: Landmark, insurance: Shield,
   real: Home, estate: Home, title: Home,
@@ -29,18 +29,18 @@ export interface TargetItem {
   id: string;
   label: string;
   description: string;
-  meta?: string; // DM title for verticals, pricing for products
+  meta?: string;
   icon: React.ElementType;
   raw: GTMProduct | GTMBuyerMapping;
 }
 
 interface TargetingCardsProps {
   treeData: GTMTreeData;
-  droppedIds: Set<string>;
-  vertical?: boolean;
+  selectedIds: Set<string>;
+  onToggle: (item: { id: string; type: "product" | "vertical"; label: string; description: string; meta?: string }) => void;
 }
 
-export default function TargetingCards({ treeData, droppedIds, vertical }: TargetingCardsProps) {
+export default function TargetingCards({ treeData, selectedIds, onToggle }: TargetingCardsProps) {
   const productItems: TargetItem[] = useMemo(() =>
     treeData.products.map(p => ({
       type: "product" as const,
@@ -67,17 +67,6 @@ export default function TargetingCards({ treeData, droppedIds, vertical }: Targe
     [treeData.mappings]
   );
 
-  function handleDragStart(e: React.DragEvent, item: TargetItem) {
-    e.dataTransfer.setData("application/json", JSON.stringify({
-      id: item.id,
-      type: item.type,
-      label: item.label,
-      description: item.description,
-      meta: item.meta,
-    }));
-    e.dataTransfer.effectAllowed = "copy";
-  }
-
   return (
     <div className="flex flex-1 min-h-0 overflow-hidden">
       {/* Products column */}
@@ -89,20 +78,20 @@ export default function TargetingCards({ treeData, droppedIds, vertical }: Targe
         </div>
         <div className="flex flex-col gap-1.5">
           {productItems.map(item => {
-            const isDropped = droppedIds.has(item.id);
+            const selected = selectedIds.has(item.id);
             return (
-              <div
+              <button
                 key={item.id}
-                draggable
-                onDragStart={e => handleDragStart(e, item)}
-                className={`px-2.5 py-2 rounded-md border text-xs font-medium cursor-grab active:cursor-grabbing transition-all select-none ${
-                  isDropped
-                    ? "border-primary/40 bg-primary/5 opacity-50"
+                onClick={() => onToggle({ id: item.id, type: item.type, label: item.label, description: item.description, meta: item.meta })}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-md border text-xs font-medium transition-all text-left w-full ${
+                  selected
+                    ? "border-primary bg-primary/10 ring-1 ring-primary/30"
                     : "border-border bg-card hover:border-primary/30 hover:bg-accent/30"
                 }`}
               >
-                <span className="text-foreground">{item.label}</span>
-              </div>
+                {selected && <Check className="w-3 h-3 text-primary shrink-0" />}
+                <span className="text-foreground truncate">{item.label}</span>
+              </button>
             );
           })}
         </div>
@@ -117,24 +106,21 @@ export default function TargetingCards({ treeData, droppedIds, vertical }: Targe
         </div>
         <div className="flex flex-col gap-1.5">
           {verticalItems.map(item => {
-            const Icon = item.icon;
-            const isDropped = droppedIds.has(item.id);
+            const selected = selectedIds.has(item.id);
             return (
-              <div
+              <button
                 key={item.id}
-                draggable
-                onDragStart={e => handleDragStart(e, item)}
-                className={`px-2.5 py-2 rounded-md border text-xs cursor-grab active:cursor-grabbing transition-all select-none ${
-                  isDropped
-                    ? "border-primary/40 bg-primary/5 opacity-50"
+                onClick={() => onToggle({ id: item.id, type: item.type, label: item.label, description: item.description, meta: item.meta })}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-md border text-xs transition-all text-left w-full ${
+                  selected
+                    ? "border-primary bg-primary/10 ring-1 ring-primary/30"
                     : "border-border bg-card hover:border-primary/30 hover:bg-accent/30"
                 }`}
               >
-                <span className="font-medium text-foreground">{item.label}</span>
-                {item.meta && (
-                  <span className="text-muted-foreground ml-1">· {item.meta}</span>
-                )}
-              </div>
+                {selected && <Check className="w-3 h-3 text-primary shrink-0" />}
+                <span className="font-medium text-foreground truncate">{item.label}</span>
+                {item.meta && <span className="text-muted-foreground truncate ml-auto text-[10px]">{item.meta}</span>}
+              </button>
             );
           })}
         </div>

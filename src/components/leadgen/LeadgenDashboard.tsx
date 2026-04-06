@@ -91,18 +91,12 @@ export function LeadgenDashboard({
     }
   }, [leads, selectedIds.size]);
 
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    try {
-      const data = JSON.parse(e.dataTransfer.getData("application/json")) as DroppedCard;
-      if (!droppedIds.has(data.id)) {
-        setDroppedCards(prev => [...prev, data]);
-      }
-    } catch {}
-  }
-
-  function handleRemoveCard(id: string) {
-    setDroppedCards(prev => prev.filter(c => c.id !== id));
+  function handleToggleCard(item: { id: string; type: "product" | "vertical"; label: string; description: string; meta?: string }) {
+    setDroppedCards(prev => {
+      const exists = prev.some(c => c.id === item.id);
+      if (exists) return prev.filter(c => c.id !== item.id);
+      return [...prev, item];
+    });
   }
 
   function handleGenerate() {
@@ -115,25 +109,19 @@ export function LeadgenDashboard({
     <div className="flex flex-1 min-w-0 h-full">
       {/* LEFT COLUMN: Targeting inputs (33%) */}
       {gtmTreeData && (
-        <div className="w-1/3 min-w-[280px] max-w-[400px] border-r border-border/40 flex flex-col h-full overflow-y-auto shrink-0">
+        <div className="w-1/3 min-w-[280px] max-w-[400px] border-r border-border/40 flex flex-col h-full shrink-0">
           {companySummary && (
             <div className="px-3 py-2 bg-card/40 flex items-start gap-2 text-xs border-b border-border/40">
               <span className="font-medium text-foreground shrink-0">Summary</span>
               <p className="text-muted-foreground line-clamp-3 leading-relaxed">{companySummary}</p>
             </div>
           )}
-          <TargetingCards treeData={gtmTreeData} droppedIds={droppedIds} vertical />
-          <div
-            className="mt-auto"
-            onDrop={handleDrop}
-            onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
-          >
+          <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} />
+          <div className="mt-auto border-t border-border/30">
             <TargetZone
               cards={droppedCards}
-              onRemoveCard={handleRemoveCard}
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
-              companySummary={companySummary}
             />
           </div>
         </div>
