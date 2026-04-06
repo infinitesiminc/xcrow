@@ -2,6 +2,7 @@
  * Index — Landing page with Gong-inspired bold design
  */
 import { useState } from "react";
+import logoCrow from "@/assets/logo-crow.png";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
