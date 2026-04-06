@@ -78,7 +78,8 @@ Named customers: ${customers.join(", ") || "None identified"}
     if (!text.trim() || isThinking) return;
 
     // Build the new messages array for display
-    const updatedMessages = isAutoStart ? [...messages] : [...messages, { role: "user" as const, content: text.trim() }];
+    const currentMessages = messagesRef.current;
+    const updatedMessages = isAutoStart ? [...currentMessages] : [...currentMessages, { role: "user" as const, content: text.trim() }];
     setMessages(updatedMessages);
     setIsThinking(true);
 
