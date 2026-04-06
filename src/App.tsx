@@ -83,6 +83,7 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/about" element={<About />} />
               <Route path="/demo" element={<Demo />} />
+              <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
 
