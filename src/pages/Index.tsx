@@ -166,15 +166,19 @@ export default function Index() {
                     className="pl-12 h-14 text-base bg-background border-border shadow-sm rounded-xl"
                   />
                 </div>
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="h-14 px-8 gap-2.5 text-base font-bold shadow-lg rounded-xl"
-                  disabled={!websiteUrl.trim()}
-                >
-                  <Sparkles className="w-5 h-5" />
-                  Hunt Leads
-                </Button>
+                <div className="relative group">
+                  {/* Animated glow border */}
+                  <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-primary/60 via-primary/30 to-primary/60 opacity-70 blur-[3px] group-hover:opacity-100 group-hover:blur-[5px] transition-all duration-500 animate-[glow-shift_3s_ease-in-out_infinite]" />
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="relative h-14 px-8 gap-2.5 text-base font-bold rounded-xl shadow-lg"
+                    disabled={!websiteUrl.trim()}
+                  >
+                    <img src={logoCrow} alt="" className="w-6 h-6 object-contain brightness-0 invert" />
+                    Hunt Leads
+                  </Button>
+                </div>
               </motion.form>
 
               <motion.p {...fadeUp(0.4)} className="text-sm text-muted-foreground/50 mt-5">
