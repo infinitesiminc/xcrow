@@ -166,13 +166,13 @@ export default function Index() {
                     className="pl-12 h-14 text-base bg-background border-border shadow-sm rounded-xl"
                   />
                 </div>
-                <div className="relative group">
+                <div className="relative group w-full sm:w-auto">
                   {/* Animated glow border */}
                   <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-primary/60 via-primary/30 to-primary/60 opacity-70 blur-[3px] group-hover:opacity-100 group-hover:blur-[5px] transition-all duration-500 animate-[glow-shift_3s_ease-in-out_infinite]" />
                   <Button
                     type="submit"
                     size="lg"
-                    className="relative h-14 px-8 gap-2.5 text-base font-bold rounded-xl shadow-lg"
+                    className="relative w-full sm:w-auto h-14 px-8 gap-2.5 text-base font-bold rounded-xl shadow-lg"
                     disabled={!websiteUrl.trim()}
                   >
                     <img src={logoCrow} alt="" className="w-6 h-6 object-contain brightness-0 invert" />
