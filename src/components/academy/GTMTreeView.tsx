@@ -456,7 +456,51 @@ export default function GTMTreeView({
         {/* ══════════════════════════════════════════════════════ */}
         {showFullMode && (
           <div className="rounded-lg border border-border overflow-hidden bg-card">
-            {/* Chat/Leads Split */}
+            {/* Context Summary Banner */}
+            <button
+              onClick={() => setContextExpanded(!contextExpanded)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 border-b border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Building2 className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-sm font-semibold text-foreground truncate">{companyName}</span>
+                <span className="text-[10px] text-muted-foreground">•</span>
+                <span className="text-[10px] text-muted-foreground">{data.products.length} products</span>
+                <span className="text-[10px] text-muted-foreground">•</span>
+                <span className="text-[10px] text-muted-foreground">{[...new Set(data.mappings.map(m => m.vertical))].length} verticals</span>
+                {namedCustomers.length > 0 && (
+                  <>
+                    <span className="text-[10px] text-muted-foreground">•</span>
+                    <span className="text-[10px] text-muted-foreground">{namedCustomers.length} customers</span>
+                  </>
+                )}
+              </div>
+              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${contextExpanded ? "rotate-180" : ""}`} />
+            </button>
+
+            {contextExpanded && (
+              <div className="px-4 py-3 border-b border-border/50 bg-muted/20 space-y-3">
+                {data.company_summary && (
+                  <p className="text-xs text-muted-foreground leading-relaxed">{data.company_summary}</p>
+                )}
+                <div>
+                  <p className="text-[10px] font-medium text-foreground mb-1.5">Products</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {data.products.map(p => (
+                      <Badge key={p.id} variant="secondary" className="text-[10px] h-5 px-2">{p.name}</Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-medium text-foreground mb-1.5">Target Verticals</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {[...new Set(data.mappings.map(m => m.vertical))].map(v => (
+                      <Badge key={v} variant="outline" className="text-[10px] h-5 px-2">{v}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Bottom split: Chat | Leads */}
             <div className="flex h-[520px]">
