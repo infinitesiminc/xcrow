@@ -973,18 +973,18 @@ export default function Leadgen() {
       {!hasDiscovered ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Website + Location bar */}
-          <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
+          <div className="border-b border-border/40 bg-card/30 px-3 py-1 flex items-center gap-1.5 shrink-0 flex-wrap">
             <form
               className="flex items-center gap-2 flex-1 min-w-0"
               onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
             >
-              <div className="relative flex-1 min-w-[160px] max-w-xs">
-                <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <div className="relative flex-1 min-w-[140px] max-w-xs">
+                <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                 <Input
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   placeholder="yourcompany.com"
-                  className="pl-8 h-8 text-xs"
+                  className="pl-7 h-7 text-xs"
                   disabled={isDiscovering}
                 />
               </div>
@@ -1025,7 +1025,7 @@ export default function Leadgen() {
                   </button>
                 )}
               </div>
-              <Button type="submit" variant="outline" size="sm" className="h-8 text-xs gap-1.5" disabled={!websiteUrl.trim() || isDiscovering}>
+              <Button type="submit" variant="outline" size="sm" className="h-7 text-xs gap-1 px-2.5" disabled={!websiteUrl.trim() || isDiscovering}>
                 {isDiscovering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                 {isDiscovering ? "Analyzing..." : "Analyze"}
               </Button>
