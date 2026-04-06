@@ -103,8 +103,25 @@ Named customers: ${customers.join(", ") || "None identified"}
 
       let assistantContent = "";
       let nichesFromStream: string[] = [];
+      
+      // Normalize data to string for SSE parsing
+      let raw = "";
       if (typeof data === "string") {
-        for (const line of data.split("\n")) {
+        raw = data;
+      } else if (data instanceof Blob) {
+        raw = await data.text();
+      } else if (data && typeof data === "object") {
+        // Already parsed JSON — check for direct content
+        const directContent = data?.choices?.[0]?.delta?.content;
+        if (directContent) {
+          assistantContent = directContent;
+        } else {
+          raw = JSON.stringify(data);
+        }
+      }
+
+      if (raw && !assistantContent) {
+        for (const line of raw.split("\n")) {
           if (!line.startsWith("data: ")) continue;
           const jsonStr = line.slice(6).trim();
           if (jsonStr === "[DONE]") continue;
@@ -117,8 +134,6 @@ Named customers: ${customers.join(", ") || "None identified"}
             if (delta) assistantContent += delta;
           } catch {}
         }
-      } else if (data?.choices?.[0]?.delta?.content) {
-        assistantContent = data.choices[0].delta.content;
       }
 
       let { cleanText, pills } = parsePills(assistantContent);
