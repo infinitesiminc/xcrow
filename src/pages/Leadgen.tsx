@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { parseSSEStream } from "@/lib/sse-parser";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
@@ -334,29 +335,11 @@ export default function Leadgen() {
       });
       if (!resp.ok) throw new Error("Search failed");
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const foundLeads: Lead[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) {
-              const nicheTag = verticalNames[0] || productNames[0] || "targeted";
-              foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: nicheTag, source: websiteUrl || "targeting" })));
-            }
-          } catch {}
-        }
-      }
+      const nicheTag = verticalNames[0] || productNames[0] || "targeted";
+      await parseSSEStream(reader, {
+        onLeads: (leads) => foundLeads.push(...leads.map((l: Lead) => ({ ...l, niche_tag: nicheTag, source: websiteUrl || "targeting" }))),
+      }, controller.signal);
       if (foundLeads.length > 0) {
         if (user) {
           await upsertLeads(foundLeads);
@@ -727,32 +710,10 @@ export default function Leadgen() {
       }
 
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const foundLeads: Lead[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let newlineIdx: number;
-        while ((newlineIdx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, newlineIdx);
-          buf = buf.slice(newlineIdx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) {
-              for (const l of parsed.leads) {
-              foundLeads.push({ ...l, niche_tag: niche, source: websiteUrl || "chat" });
-              }
-            }
-          } catch {}
-        }
-      }
+      await parseSSEStream(reader, {
+        onLeads: (leads) => foundLeads.push(...leads.map((l: Lead) => ({ ...l, niche_tag: niche, source: websiteUrl || "chat" }))),
+      });
 
       if (foundLeads.length > 0) {
         await upsertLeads(foundLeads);
@@ -787,28 +748,10 @@ export default function Leadgen() {
       });
       if (!resp.ok) throw new Error("Enrichment failed");
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const enrichedLeads: Lead[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) {
-              enrichedLeads.push(...parsed.leads.map((lead: Lead) => ({ ...lead, niche_tag: niche, source: websiteUrl || "chat" })));
-            }
-          } catch {}
-        }
-      }
+      await parseSSEStream(reader, {
+        onLeads: (leads) => enrichedLeads.push(...leads.map((lead: Lead) => ({ ...lead, niche_tag: niche, source: websiteUrl || "chat" }))),
+      });
       if (enrichedLeads.length > 0) {
         await upsertLeads(enrichedLeads);
         toast.success(`Enriched ${enrichedLeads.length} leads!`);
@@ -822,9 +765,8 @@ export default function Leadgen() {
     }
   };
 
-  const handleScoreLeads = (niche: string) => {
-    if (!user) { openAuthModal(); return; }
-    toast.info("Scoring leads — this feature is coming soon!");
+  const handleScoreLeads = (_niche: string) => {
+    // Score is embedded at lead generation time
   };
 
   const handleDraftAllOutreach = (niche: string) => {
@@ -873,26 +815,10 @@ export default function Leadgen() {
       });
       if (!resp.ok) throw new Error("Batch search failed");
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const foundLeads: Lead[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: niche, source: websiteUrl || "chat" })));
-          } catch {}
-        }
-      }
+      await parseSSEStream(reader, {
+        onLeads: (leads) => foundLeads.push(...leads.map((l: Lead) => ({ ...l, niche_tag: niche, source: websiteUrl || "chat" }))),
+      });
       if (foundLeads.length > 0) {
         await upsertLeads(foundLeads);
         setActiveNiche(niche);
@@ -922,26 +848,10 @@ export default function Leadgen() {
       });
       if (!resp.ok) throw new Error("Lookalike search failed");
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const foundLeads: Lead[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: lead.niche_tag, source: websiteUrl || "chat" })));
-          } catch {}
-        }
-      }
+      await parseSSEStream(reader, {
+        onLeads: (leads) => foundLeads.push(...leads.map((l: Lead) => ({ ...l, niche_tag: lead.niche_tag, source: websiteUrl || "chat" }))),
+      });
       if (foundLeads.length > 0) {
         await upsertLeads(foundLeads);
         toast.success(`Found ${foundLeads.length} lookalikes!`);
@@ -963,10 +873,8 @@ export default function Leadgen() {
     if (targets.length === 0) targets = niches.filter(n => n.niche_type === "segment");
     if (targets.length === 0) return;
     setIsAutoSeeding(true);
-    for (let i = 0; i < targets.length; i++) {
-      toast.info(`Seeding lead ${i + 1}/${targets.length}: ${targets[i].label}`, { id: "auto-seed" });
-      await handleFindLeads(targets[i].label);
-    }
+    toast.info(`Seeding ${targets.length} personas in parallel...`, { id: "auto-seed" });
+    await Promise.allSettled(targets.map(t => handleFindLeads(t.label)));
     setIsAutoSeeding(false);
     toast.success(`Seeded ${targets.length} sample leads!`, { id: "auto-seed" });
   };
@@ -1443,7 +1351,7 @@ export default function Leadgen() {
           onClick={() => setChatOpen(true)}
         >
           <MessageSquare className="w-5 h-5" />
-          {isStreaming && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background animate-pulse" />}
+          {isStreaming && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-primary border-2 border-background animate-pulse" />}
         </motion.button>
       )}
     </div>

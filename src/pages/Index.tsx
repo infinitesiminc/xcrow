@@ -85,10 +85,10 @@ export default function Index() {
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   placeholder="yourcompany.com"
-                  className="pl-10 h-13 text-base bg-background border-border shadow-sm"
+                  className="pl-10 h-[52px] text-base bg-background border-border shadow-sm"
                 />
               </div>
-              <Button type="submit" size="lg" className="h-13 px-7 gap-2 text-base font-semibold shadow-md" disabled={!websiteUrl.trim()}>
+              <Button type="submit" size="lg" className="h-[52px] px-7 gap-2 text-base font-semibold shadow-md" disabled={!websiteUrl.trim()}>
                 <Sparkles className="w-4 h-4" />
                 Hunt Leads
               </Button>
