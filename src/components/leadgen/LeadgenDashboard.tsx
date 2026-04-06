@@ -124,8 +124,7 @@ export function LeadgenDashboard({
       {/* LEFT COLUMN: Targeting inputs (33%) */}
       {gtmTreeData && (
         <div className="w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex flex-col h-full shrink-0">
-          <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} loadingProducts={loadingProducts} loadingPersonas={loadingPersonas} />
-          <div className="mt-auto border-t border-border/30">
+          <div className="border-b border-border/30">
             <TargetZone
               cards={droppedCards}
               onGenerate={handleGenerate}
@@ -133,6 +132,7 @@ export function LeadgenDashboard({
               onStop={onStopGenerating}
             />
           </div>
+          <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} loadingProducts={loadingProducts} loadingPersonas={loadingPersonas} />
         </div>
       )}
 
