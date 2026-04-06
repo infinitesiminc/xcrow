@@ -101,7 +101,7 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — The #1 Outbound Lead Hunter"
+        title="Xcrow — FASTEST LEAD GEN MACHINE"
         description="Enter one website. Get a full prospect map, qualified decision-makers, and outreach-ready leads — in seconds. No GTM expertise required."
         path="/"
       />
@@ -128,7 +128,7 @@ export default function Index() {
                 {...fadeUp(0)}
                 className="text-primary text-sm font-semibold tracking-[0.2em] uppercase mb-6"
               >
-                The #1 Outbound Lead Hunter
+                FASTEST LEAD GEN MACHINE
               </motion.p>
 
               {/* Headline — Gong style: big uppercase with accent color */}
