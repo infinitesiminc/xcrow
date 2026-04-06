@@ -552,9 +552,10 @@ export default function Leadgen() {
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Failed to draft");
       const subject = data.draft.subject || "";
-      const body = data.draft.body || "";
-      draftCacheRef.current[lead.email] = { subject, body };
-      setDraftSubject(subject); setDraftBody(body); setDraftCtaText(data.draft.ctaText || "");
+      const body = (data.draft.body || "").replace(/\\n/g, "\n");
+      const cleanSubject = (subject || "").replace(/\\n/g, " ");
+      draftCacheRef.current[lead.email] = { subject: cleanSubject, body };
+      setDraftSubject(cleanSubject); setDraftBody(body); setDraftCtaText(data.draft.ctaText || "");
     } catch (e: any) {
       toast.error(e.message || "Failed to generate draft"); setDraftModalOpen(false);
     } finally { setDraftLoading(false); }
