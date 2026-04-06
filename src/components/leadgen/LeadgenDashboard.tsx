@@ -120,10 +120,10 @@ export function LeadgenDashboard({
   }
 
   return (
-    <div className="flex flex-1 min-w-0 h-full">
-      {/* LEFT COLUMN: Targeting inputs (33%) */}
+    <div className="flex flex-col md:flex-row flex-1 min-w-0 h-full overflow-auto md:overflow-hidden">
+      {/* LEFT COLUMN: Targeting inputs */}
       {gtmTreeData && (
-        <div className="w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex flex-col h-full shrink-0">
+        <div className="w-full md:w-2/5 md:min-w-[320px] md:max-w-[480px] border-b md:border-b-0 md:border-r border-border/40 flex flex-col shrink-0 max-h-[50vh] md:max-h-none md:h-full overflow-auto">
           <div className="border-b border-border/30">
             <TargetZone
               cards={droppedCards}
@@ -136,8 +136,8 @@ export function LeadgenDashboard({
         </div>
       )}
 
-      {/* RIGHT COLUMN: Leads (67%) */}
-      <div className="flex flex-col flex-1 min-w-0 h-full">
+      {/* RIGHT COLUMN: Leads */}
+      <div className="flex flex-col flex-1 min-w-0 min-h-0">
         {/* Company summary when no GTM data */}
         {companySummary && !gtmTreeData && (
           <ICPInsightsPanel
