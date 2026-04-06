@@ -1,5 +1,5 @@
 /**
- * Index — Landing page with URL input that navigates to Academy results.
+ * Index — Landing page with Gong-inspired bold design
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,8 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
-import heroImage from "@/assets/og-hero.png";
-import { Target, Zap, BarChart3, Globe, Sparkles, Building2 } from "lucide-react";
+import { Globe, Sparkles, ArrowRight, Zap, Target, BarChart3, Users } from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -37,10 +36,6 @@ export default function Index() {
     navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
   };
 
-  const handleResearch = () => {
-    navigate("/leadhunter");
-  };
-
   return (
     <>
       <SEOHead
@@ -48,133 +43,97 @@ export default function Index() {
         description="The only lead hunter that turns one website into a full pipeline. Enter your URL — AI finds, qualifies, and delivers your perfect prospects in seconds."
         path="/"
       />
-      <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-        {/* Hero background image */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={heroImage}
-            alt=""
-            className="w-full h-[75%] object-cover object-top"
-            draggable={false}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(180deg, 
-                transparent 0%, 
-                transparent 40%,
-                hsl(var(--background) / 0.4) 55%, 
-                hsl(var(--background) / 0.85) 68%, 
-                hsl(var(--background)) 78%)`,
-            }}
-          />
-        </div>
-
-        {/* Ambient background glow */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1]">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
-        </div>
-
+      <div className="min-h-screen bg-background flex flex-col">
         {/* Hero */}
-        <div className="flex-1 flex flex-col items-center justify-start px-4 pt-[48vh] pb-10 relative z-10">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-16 relative">
+          {/* Subtle gradient background */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] rounded-full bg-primary/[0.04] blur-[100px]" />
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            transition={{ duration: 0.5 }}
+            className="text-center relative z-10 max-w-3xl mx-auto"
           >
-            <h1 className="text-4xl md:text-5xl font-semibold text-foreground mb-3 tracking-tight">
-              One Website. Perfect Leads.
-            </h1>
-
-            <div className="flex items-center justify-center gap-3 my-4">
-              <div className="w-16 h-px bg-gradient-to-r from-transparent to-border" />
-              <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
-              <div className="w-16 h-px bg-gradient-to-l from-transparent to-border" />
-            </div>
-
-            <p className="text-muted-foreground text-sm md:text-base max-w-lg mx-auto mb-8">
-              The only lead hunter that finds hyper-accurate prospects from a single website entry. Drop your URL — AI does the rest.
+            <p className="text-primary font-semibold text-sm tracking-wide uppercase mb-4">
+              B2B Lead Intelligence
             </p>
 
-            <form onSubmit={handleDiscover} className="flex gap-2 max-w-md mx-auto w-full">
+            <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.1] uppercase">
+              The <span className="text-primary">#1</span> AI Lead Hunter
+              <br />
+              <span className="text-foreground/80">for Revenue Teams</span>
+            </h1>
+
+            <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+              Enter one website. Get a full ICP map, qualified decision-makers, and outreach-ready leads — in seconds.
+            </p>
+
+            <form onSubmit={handleDiscover} className="flex gap-3 max-w-lg mx-auto w-full">
               <div className="relative flex-1">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   placeholder="yourcompany.com"
-                  className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
+                  className="pl-10 h-13 text-base bg-background border-border shadow-sm"
                 />
               </div>
-              <Button type="submit" size="lg" className="h-12 px-6 gap-2" disabled={!websiteUrl.trim()}>
+              <Button type="submit" size="lg" className="h-13 px-7 gap-2 text-base font-semibold shadow-md" disabled={!websiteUrl.trim()}>
                 <Sparkles className="w-4 h-4" />
                 Hunt Leads
               </Button>
             </form>
-
-            <div className="flex items-center gap-3 mt-4">
-              <div className="w-12 h-px bg-border" />
-              <span className="text-xs text-muted-foreground">or</span>
-              <div className="w-12 h-px bg-border" />
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3 gap-2 text-muted-foreground hover:text-foreground"
-              onClick={handleResearch}
-            >
-              <Building2 className="w-4 h-4" />
-              Research a Specific Company
-            </Button>
           </motion.div>
 
-          {/* Logo Marquee Social Proof */}
+          {/* Social proof */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="w-full max-w-4xl mx-auto"
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="w-full max-w-3xl mx-auto mt-16 relative z-10"
           >
-            <p className="text-center text-xs text-muted-foreground/70 mb-3 tracking-wide uppercase">
-              Trusted across 3,700+ companies worldwide
+            <p className="text-center text-xs text-muted-foreground/60 mb-4 tracking-widest uppercase font-medium">
+              Trusted across 3,700+ companies
             </p>
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
-
-          {/* Value Props */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl w-full mt-16"
-          >
-            {VALUE_PROPS.map((vp, i) => (
-              <div
-                key={i}
-                className="bg-card border border-border rounded-lg p-5 text-center group hover:shadow-md transition-all duration-300"
-              >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/15 transition-colors">
-                  <vp.icon className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="text-sm font-semibold text-foreground mb-1.5">
-                  {vp.title}
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{vp.desc}</p>
-              </div>
-            ))}
-          </motion.div>
         </div>
 
-        {/* Bottom divider */}
-        <div className="w-full flex justify-center py-6 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-24 h-px bg-gradient-to-r from-transparent to-border" />
-            <span className="text-xs text-muted-foreground/50 tracking-widest uppercase">
-              Forge your pipeline
-            </span>
-            <div className="w-24 h-px bg-gradient-to-l from-transparent to-border" />
+        {/* Value Props */}
+        <div className="relative z-10 bg-muted/30">
+          <div className="max-w-5xl mx-auto px-4 py-20">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3 tracking-tight">
+                How it works
+              </h2>
+              <p className="text-muted-foreground text-center mb-12 max-w-md mx-auto">
+                From URL to qualified pipeline in under 60 seconds.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {VALUE_PROPS.map((vp, i) => (
+                  <div
+                    key={i}
+                    className="bg-card border border-border rounded-xl p-6 group hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+                      <vp.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground mb-2 tracking-tight">
+                      {vp.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{vp.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
 
