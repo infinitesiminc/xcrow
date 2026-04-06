@@ -25,7 +25,7 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
-const Contact = lazy(() => import("./pages/Contact.tsx"));
+
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
@@ -71,7 +71,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
-              <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
+              <Route path="/contact" element={<Navigate to="/about" replace />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/vs/:slug" element={<CompetitorComparison />} />
               <Route path="/pricing" element={<Pricing />} />
