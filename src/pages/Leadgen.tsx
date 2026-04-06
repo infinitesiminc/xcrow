@@ -236,8 +236,8 @@ export default function Leadgen() {
         const userEmail = user?.email;
         const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
         if (userEmail) {
-          const nichesCount = pendingNichesRaw ? JSON.parse(pendingNichesRaw || "[]").length : 0;
-          const leadsCount = (() => { try { return JSON.parse(sessionStorage.getItem("_welcomeLeadsCount") || "0"); } catch { return 0; } })();
+          const nichesCount = (() => { try { return pendingNichesRaw ? JSON.parse(pendingNichesRaw).length : 0; } catch { return 0; } })();
+          const leadsCount = (() => { try { return pendingLeadsRaw ? JSON.parse(pendingLeadsRaw).length : 0; } catch { return 0; } })();
           supabase.functions.invoke("send-transactional-email", {
             body: {
               templateName: "welcome-signup",
