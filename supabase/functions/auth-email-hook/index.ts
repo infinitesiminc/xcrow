@@ -218,7 +218,7 @@ async function handleWebhook(req: Request): Promise<Response> {
   }
 
   // Build template props from payload.data (HookData structure)
-  const templateProps = {
+  const templateProps: Record<string, any> = {
     siteName: SITE_NAME,
     siteUrl: `https://${ROOT_DOMAIN}`,
     recipient: payload.data.email,
@@ -226,6 +226,73 @@ async function handleWebhook(req: Request): Promise<Response> {
     token: payload.data.token,
     email: payload.data.email,
     newEmail: payload.data.new_email,
+  }
+
+  // For signup emails, try to include workspace analysis data
+  if (emailType === 'signup') {
+    try {
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      )
+      // Look up user metadata for pending_website
+      const { data: usersData } = await supabaseAdmin.auth.admin.listUsers({
+        perPage: 1,
+        page: 1,
+      })
+      // Find the user by email to get their metadata
+      let pendingWebsite: string | null = null
+      // Try user_metadata from the webhook payload directly
+      const rawMeta = payload.data.raw_user_meta_data || payload.data.user_metadata
+      if (rawMeta?.pending_website) {
+        pendingWebsite = rawMeta.pending_website
+      }
+      
+      if (!pendingWebsite) {
+        // Fallback: look up the user by email
+        const { data: userList } = await supabaseAdmin.auth.admin.listUsers()
+        const matchedUser = userList?.users?.find((u: any) => u.email === payload.data.email)
+        if (matchedUser?.user_metadata?.pending_website) {
+          pendingWebsite = matchedUser.user_metadata.pending_website
+        }
+      }
+
+      if (pendingWebsite) {
+        // Normalize to website_key (hostname)
+        let websiteKey = pendingWebsite
+        try {
+          const url = new URL(pendingWebsite.includes('://') ? pendingWebsite : `https://${pendingWebsite}`)
+          websiteKey = url.hostname.replace(/^www\./, '')
+        } catch { /* use as-is */ }
+
+        const { data: cacheRow } = await supabaseAdmin
+          .from('leadhunter_cache')
+          .select('tree_data, company_data')
+          .eq('website_key', websiteKey)
+          .maybeSingle()
+
+        if (cacheRow?.tree_data) {
+          const tree = cacheRow.tree_data as any
+          templateProps.workspace = {
+            company_name: tree.company_summary ? websiteKey : websiteKey,
+            company_summary: tree.company_summary || null,
+            products: tree.products?.slice(0, 3)?.map((p: any) => ({
+              name: p.name,
+              description: p.description,
+            })) || [],
+            top_niches: tree.mappings?.slice(0, 4)?.map((m: any) => m.vertical) || [],
+          }
+          // Use company name from company_data if available
+          if (cacheRow.company_data && (cacheRow.company_data as any).name) {
+            templateProps.workspace.company_name = (cacheRow.company_data as any).name
+          }
+          console.log('Included workspace data in signup email', { websiteKey })
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch workspace data for signup email', { error: err })
+      // Non-fatal: continue sending email without workspace data
+    }
   }
 
   // Render React Email to HTML and plain text
