@@ -28,6 +28,7 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
+const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/vs/:slug" element={<CompetitorComparison />} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
