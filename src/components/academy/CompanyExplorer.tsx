@@ -411,79 +411,98 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     website: selectedCompany.website,
   } : undefined;
 
+  const domain = selectedCompany?.website?.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "") || "";
+
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
-      {/* Header */}
-      {selectedCompany && isRunning && (
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-[10px] text-muted-foreground">
-              {STEPS[currentStepIdx]?.label}
-            </span>
-            <Progress value={progressPct} className="h-1 w-24" />
-          </div>
-        </div>
-      )}
-
-      {/* Pipeline status */}
-      {isRunning && (
-        <div className="flex items-center gap-3 mb-4 p-3 rounded-lg border border-border bg-card">
-          <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">{STEPS[currentStepIdx]?.label}</p>
-            <p className="text-xs text-muted-foreground">{STEPS[currentStepIdx]?.description}</p>
-            <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-              Usually takes 30–60 seconds
-            </p>
-          </div>
-          <div className="flex gap-1">
-            {STEPS.slice(0, totalSteps).map((_, i) => (
-              <div
-                key={i}
-                className={`w-2 h-2 rounded-full ${
-                  i < completedCount ? "bg-primary" : i === currentStepIdx ? "bg-primary animate-pulse" : "bg-muted"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Loading skeleton */}
+      {/* Loading: blurred dashboard preview + centered overlay */}
       {isRunning && !treeData && (
-        <div className="space-y-4 animate-pulse">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="h-4 w-2/3 bg-muted rounded mb-2" />
-            <div className="flex gap-3 mt-3">
-              <div className="h-5 w-20 bg-muted rounded-full" />
-              <div className="h-5 w-24 bg-muted rounded-full" />
-              <div className="h-5 w-16 bg-muted rounded-full" />
+        <div className="relative">
+          {/* Blurred dashboard skeleton background */}
+          <div className="filter blur-[2px] opacity-50 pointer-events-none select-none animate-pulse">
+            {/* Executive overview bar */}
+            <div className="rounded-xl border border-border bg-card p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-muted" />
+                  <div>
+                    <div className="h-5 w-40 bg-muted rounded mb-1.5" />
+                    <div className="flex gap-2">
+                      <div className="h-4 w-20 bg-muted rounded-full" />
+                      <div className="h-4 w-24 bg-muted rounded-full" />
+                      <div className="h-4 w-16 bg-muted rounded-full" />
+                    </div>
+                  </div>
+                </div>
+                <div className="h-4 w-48 bg-muted rounded" />
+              </div>
+            </div>
+            {/* Two-column layout matching GTMTreeView */}
+            <div className="grid grid-cols-[40%_1fr] gap-4">
+              {/* Left: Products */}
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="w-4 h-4 text-muted-foreground/40" />
+                  <div className="h-4 w-28 bg-muted rounded" />
+                </div>
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-md bg-muted" />
+                      <div className="h-4 w-32 bg-muted rounded" />
+                    </div>
+                    <div className="h-3 w-full bg-muted rounded" />
+                    <div className="flex gap-2">
+                      <div className="h-5 w-16 bg-muted rounded-full" />
+                      <div className="h-5 w-20 bg-muted rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Right: Personas */}
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-muted-foreground/40" />
+                  <div className="h-4 w-32 bg-muted rounded" />
+                </div>
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex items-center gap-3 p-2 rounded-lg border border-border">
+                    <div className="w-8 h-8 rounded-full bg-muted" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3.5 w-3/4 bg-muted rounded" />
+                      <div className="h-3 w-1/2 bg-muted rounded" />
+                    </div>
+                    <div className="h-5 w-12 bg-muted rounded-full" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-              <div className="h-4 w-32 bg-muted rounded" />
-              {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-muted" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3 w-3/4 bg-muted rounded" />
-                    <div className="h-2.5 w-1/2 bg-muted rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-              <div className="h-4 w-24 bg-muted rounded" />
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-muted" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3 w-2/3 bg-muted rounded" />
-                    <div className="h-2.5 w-1/3 bg-muted rounded" />
-                  </div>
-                </div>
-              ))}
+
+          {/* Centered loading overlay */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-card/95 backdrop-blur-sm border border-border rounded-2xl shadow-lg p-8 text-center max-w-sm mx-auto">
+              <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-lg font-semibold text-foreground mb-1">
+                Analyzing {domain || "company"}
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                This usually takes 15–30 seconds
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs text-primary">
+                <span className="animate-pulse">⚙️</span>
+                <span>{STEPS[currentStepIdx]?.description || "Initializing..."}</span>
+              </div>
+              <div className="flex justify-center gap-1.5 mt-3">
+                {STEPS.slice(0, 3).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      i < completedCount ? "bg-primary" : i === currentStepIdx ? "bg-primary animate-pulse" : "bg-muted"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
