@@ -106,8 +106,16 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
 
       if (cached?.tree_data && cached?.step_results) {
         const cachedCompany = cached.company_data as any;
-        if (cachedCompany?.name) {
-          setSelectedCompany(prev => ({ ...prev!, ...cachedCompany }));
+        const cachedTree = cached.tree_data as any;
+        // Extract proper company name from AI summary
+        const aiName = cachedTree?.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
+        if (cachedCompany?.name || aiName) {
+          setSelectedCompany(prev => ({
+            ...prev!,
+            ...cachedCompany,
+            name: (aiName && aiName.length <= 40) ? aiName : cachedCompany?.name || prev?.name || "",
+            headquarters: cachedTree?.products?.[0]?.headquarters || cachedCompany?.headquarters || prev?.headquarters,
+          }));
         }
         setStepResults(cached.step_results as Record<string, any>);
         accumulatedRef.current = cached.step_results as Record<string, any>;
@@ -158,9 +166,17 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     const customers = accumulated["customers"]?.structured;
     const icpBuyers = accumulated["icp-buyers"]?.structured;
 
-    // Update company with extracted headquarters
-    if (products?.headquarters) {
-      setSelectedCompany(prev => prev ? { ...prev, headquarters: products.headquarters } : prev);
+    // Update company with extracted name and headquarters
+    if (products?.headquarters || products?.company_summary) {
+      setSelectedCompany(prev => {
+        if (!prev) return prev;
+        const aiName = products.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
+        return {
+          ...prev,
+          headquarters: products.headquarters || prev.headquarters,
+          name: aiName && aiName.length <= 40 ? aiName : prev.name,
+        };
+      });
     }
 
     let builtTree: GTMTreeData | null = null;
@@ -176,11 +192,17 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       setTreeData(builtTree);
     }
 
-    // Write to cache
+    // Write to cache (with AI-corrected company name)
     if (builtTree) {
+      const aiName = builtTree.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
+      const cachedCompany = {
+        ...company,
+        name: (aiName && aiName.length <= 40) ? aiName : company.name,
+        headquarters: products?.headquarters || company.headquarters,
+      };
       supabase.from("leadhunter_cache").upsert({
         website_key: websiteKey,
-        company_data: company as any,
+        company_data: cachedCompany as any,
         step_results: accumulated as any,
         tree_data: builtTree as any,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
