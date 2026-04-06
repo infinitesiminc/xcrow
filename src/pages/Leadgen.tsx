@@ -873,10 +873,8 @@ export default function Leadgen() {
     if (targets.length === 0) targets = niches.filter(n => n.niche_type === "segment");
     if (targets.length === 0) return;
     setIsAutoSeeding(true);
-    for (let i = 0; i < targets.length; i++) {
-      toast.info(`Seeding lead ${i + 1}/${targets.length}: ${targets[i].label}`, { id: "auto-seed" });
-      await handleFindLeads(targets[i].label);
-    }
+    toast.info(`Seeding ${targets.length} personas in parallel...`, { id: "auto-seed" });
+    await Promise.allSettled(targets.map(t => handleFindLeads(t.label)));
     setIsAutoSeeding(false);
     toast.success(`Seeded ${targets.length} sample leads!`, { id: "auto-seed" });
   };
