@@ -142,6 +142,7 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
         photo_url: l.photo_url || null,
         status: "new" as const,
         niche_tag: l.niche_tag || null,
+        rating: l.score != null ? l.score : null,
       }));
 
       for (const row of rows) {
