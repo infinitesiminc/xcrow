@@ -72,28 +72,25 @@ Named customers: ${customers.join(", ") || "None identified"}
 
   const handleSendMessage = useCallback(async (text: string, isAutoStart = false) => {
     if (!text.trim() || isThinking) return;
-    const userMsg: ChatMessage = { role: "user", content: text.trim() };
-    
-    setMessages(prev => {
-      const newMsgs = isAutoStart ? prev : [...prev, userMsg];
-      return newMsgs;
-    });
+
+    // Build the new messages array for display
+    const updatedMessages = isAutoStart ? [...messages] : [...messages, { role: "user" as const, content: text.trim() }];
+    setMessages(updatedMessages);
     setIsThinking(true);
 
     try {
       const chatMessages: { role: string; content: string }[] = [];
       
-      // Inject ICP context as first system message if available
       if (icpContext) {
         chatMessages.push({ role: "system", content: icpContext });
       }
 
-      // Add previous messages (without pills)
-      const prevMsgs = isAutoStart ? [] : messages;
-      for (const m of prevMsgs) {
+      for (const m of updatedMessages) {
         chatMessages.push({ role: m.role, content: m.content });
       }
-      chatMessages.push({ role: "user", content: text.trim() });
+      if (isAutoStart) {
+        chatMessages.push({ role: "user", content: text.trim() });
+      }
 
       const { data } = await supabase.functions.invoke("leadgen-chat", {
         body: { messages: chatMessages },
@@ -126,7 +123,6 @@ Named customers: ${customers.join(", ") || "None identified"}
   }, [messages, icpContext, isThinking]);
 
   function handlePillClick(pill: string) {
-    setMessages(prev => [...prev, { role: "user", content: pill }]);
     handleSendMessage(pill);
   }
 
@@ -134,8 +130,6 @@ Named customers: ${customers.join(", ") || "None identified"}
     const text = input.trim();
     if (!text) return;
     setInput("");
-    // Add user message immediately then send
-    setMessages(prev => [...prev, { role: "user", content: text }]);
     await handleSendMessage(text);
   }
 
