@@ -748,28 +748,10 @@ export default function Leadgen() {
       });
       if (!resp.ok) throw new Error("Enrichment failed");
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const enrichedLeads: Lead[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) {
-              enrichedLeads.push(...parsed.leads.map((lead: Lead) => ({ ...lead, niche_tag: niche, source: websiteUrl || "chat" })));
-            }
-          } catch {}
-        }
-      }
+      await parseSSEStream(reader, {
+        onLeads: (leads) => enrichedLeads.push(...leads.map((lead: Lead) => ({ ...lead, niche_tag: niche, source: websiteUrl || "chat" }))),
+      });
       if (enrichedLeads.length > 0) {
         await upsertLeads(enrichedLeads);
         toast.success(`Enriched ${enrichedLeads.length} leads!`);
