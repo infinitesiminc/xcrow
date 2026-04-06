@@ -507,6 +507,7 @@ export default function GTMTreeView({
 
               {/* Right: Lead list */}
               <div className="flex flex-col flex-1 overflow-hidden">
+                {totalLeadsForProduct > 0 && (
                 <div className="flex flex-col gap-1 p-2 border-b border-border/50 shrink-0">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-foreground">Prospects</span>
