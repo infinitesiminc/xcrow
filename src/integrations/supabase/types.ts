@@ -413,6 +413,99 @@ export type Database = {
         }
         Relationships: []
       }
+      federal_tax_liens: {
+        Row: {
+          county: string | null
+          created_at: string
+          date_of_assessment: string | null
+          filing_date: string | null
+          id: string
+          identifying_number: string | null
+          kind_of_tax: string | null
+          last_day_for_refiling: string | null
+          lien_unit: string | null
+          notes: string | null
+          place_of_filing: string | null
+          release_date: string | null
+          revenue_officer_name: string | null
+          revenue_officer_title: string | null
+          serial_number: string | null
+          state_filed: string | null
+          status: string
+          tax_period_ending: string | null
+          taxpayer_address: string | null
+          taxpayer_city: string | null
+          taxpayer_name: string
+          taxpayer_ssn_or_ein: string | null
+          taxpayer_state: string | null
+          taxpayer_zip: string | null
+          total_amount_due: number | null
+          unpaid_balance: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          county?: string | null
+          created_at?: string
+          date_of_assessment?: string | null
+          filing_date?: string | null
+          id?: string
+          identifying_number?: string | null
+          kind_of_tax?: string | null
+          last_day_for_refiling?: string | null
+          lien_unit?: string | null
+          notes?: string | null
+          place_of_filing?: string | null
+          release_date?: string | null
+          revenue_officer_name?: string | null
+          revenue_officer_title?: string | null
+          serial_number?: string | null
+          state_filed?: string | null
+          status?: string
+          tax_period_ending?: string | null
+          taxpayer_address?: string | null
+          taxpayer_city?: string | null
+          taxpayer_name: string
+          taxpayer_ssn_or_ein?: string | null
+          taxpayer_state?: string | null
+          taxpayer_zip?: string | null
+          total_amount_due?: number | null
+          unpaid_balance?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          county?: string | null
+          created_at?: string
+          date_of_assessment?: string | null
+          filing_date?: string | null
+          id?: string
+          identifying_number?: string | null
+          kind_of_tax?: string | null
+          last_day_for_refiling?: string | null
+          lien_unit?: string | null
+          notes?: string | null
+          place_of_filing?: string | null
+          release_date?: string | null
+          revenue_officer_name?: string | null
+          revenue_officer_title?: string | null
+          serial_number?: string | null
+          state_filed?: string | null
+          status?: string
+          tax_period_ending?: string | null
+          taxpayer_address?: string | null
+          taxpayer_city?: string | null
+          taxpayer_name?: string
+          taxpayer_ssn_or_ein?: string | null
+          taxpayer_state?: string | null
+          taxpayer_zip?: string | null
+          total_amount_due?: number | null
+          unpaid_balance?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lead_notes: {
         Row: {
           content: string
