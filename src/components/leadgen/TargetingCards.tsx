@@ -37,9 +37,10 @@ export interface TargetItem {
 interface TargetingCardsProps {
   treeData: GTMTreeData;
   droppedIds: Set<string>;
+  vertical?: boolean;
 }
 
-export default function TargetingCards({ treeData, droppedIds }: TargetingCardsProps) {
+export default function TargetingCards({ treeData, droppedIds, vertical }: TargetingCardsProps) {
   const productItems: TargetItem[] = useMemo(() =>
     treeData.products.map(p => ({
       type: "product" as const,
