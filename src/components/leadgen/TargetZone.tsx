@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Zap, Loader2, Sparkles, TrendingUp } from "lucide-react";
+import { Zap, Loader2, Sparkles, TrendingUp, Square } from "lucide-react";
 
 export interface DroppedCard {
   id: string;
@@ -14,9 +14,10 @@ interface TargetZoneProps {
   cards: DroppedCard[];
   onGenerate: () => void;
   isGenerating?: boolean;
+  onStop?: () => void;
 }
 
-export default function TargetZone({ cards, onGenerate, isGenerating }: TargetZoneProps) {
+export default function TargetZone({ cards, onGenerate, isGenerating, onStop }: TargetZoneProps) {
   const [feedback, setFeedback] = useState({ successRate: 0, recommendation: "", loading: false });
   const feedbackTimeout = useRef<ReturnType<typeof setTimeout>>();
 
@@ -65,15 +66,27 @@ export default function TargetZone({ cards, onGenerate, isGenerating }: TargetZo
           </p>
         </div>
       )}
-      <Button
-        size="sm"
-        className="w-full h-7 gap-1.5 text-xs"
-        onClick={onGenerate}
-        disabled={isGenerating || cards.length === 0}
-      >
-        {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-        Generate Leads
-      </Button>
+      {isGenerating ? (
+        <Button
+          size="sm"
+          variant="destructive"
+          className="w-full h-7 gap-1.5 text-xs"
+          onClick={onStop}
+        >
+          <Square className="w-3 h-3" />
+          Stop
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          className="w-full h-7 gap-1.5 text-xs"
+          onClick={onGenerate}
+          disabled={cards.length === 0}
+        >
+          <Zap className="w-3 h-3" />
+          Generate Leads
+        </Button>
+      )}
     </div>
   );
 }
