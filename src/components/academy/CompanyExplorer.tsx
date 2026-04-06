@@ -4,12 +4,12 @@ import { CURATED_COMPANIES, getAllCuratedCompanies, type CuratedCompany } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
-  Building2, ArrowLeft, Loader2, ChevronRight, RefreshCw, MapPin, Rocket,
+  Building2, ArrowLeft, Loader2, ChevronRight, RefreshCw, Rocket,
 } from "lucide-react";
 import GTMTreeView from "./GTMTreeView";
+import StrategyChatPanel from "./StrategyChatPanel";
 import type { GTMTreeData } from "./gtm-types";
 
 /* ── types ── */
@@ -24,7 +24,7 @@ interface CompanyData {
   headquarters: string | null;
 }
 
-type ExplorerPhase = "pick-industry" | "pick-company" | "analysis" | "confirm-location";
+type ExplorerPhase = "input" | "icp-mapping" | "strategy-chat" | "first-batch" | "explore";
 
 /* ── pipeline steps ── */
 const STEPS = [
@@ -34,24 +34,9 @@ const STEPS = [
   { id: "linkedin-profiles", label: "LinkedIn Profiles", description: "Finding real decision makers at customer companies" },
 ];
 
-const INDUSTRY_GROUPS = [
-  { label: "Fintech", query: "Fintech" },
-  { label: "SaaS / B2B", query: "SaaS" },
-  { label: "AI & ML", query: "AI" },
-  { label: "Developer Tools", query: "Developer Tools" },
-  { label: "Healthcare", query: "Health" },
-  { label: "Security", query: "Security" },
-  { label: "E-commerce", query: "commerce" },
-  { label: "Education", query: "Education" },
-  { label: "Real Estate", query: "Real Estate" },
-  { label: "All Industries", query: "" },
-];
-
 /* ── main component ── */
 export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: string }) {
-  const [phase, setPhase] = useState<ExplorerPhase>("pick-industry");
-  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
-  const [companies, setCompanies] = useState<CompanyData[]>([]);
+  const [phase, setPhase] = useState<ExplorerPhase>("input");
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
 
   // Analysis
@@ -62,9 +47,10 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [cancelRef] = useState({ cancelled: false });
   const autoStarted = useRef(false);
-  const [locationInput, setLocationInput] = useState("");
-  const [icpSummary, setIcpSummary] = useState<{ verticals: string[]; roles: string[] } | null>(null);
   const accumulatedRef = useRef<Record<string, any>>({});
+  const [chatContext, setChatContext] = useState<{
+    location?: string; verticalFocus?: string; competitorTarget?: string; customNotes?: string;
+  }>({});
 
   // Auto-start analysis from URL param
   useEffect(() => {
@@ -83,28 +69,17 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         headquarters: null,
       };
       setSelectedCompany(company);
-      setPhase("analysis");
-      runPipeline(company);
+      setPhase("input");
+      runICPPipeline(company);
     }
   }, [initialWebsite]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── data ── */
-  function curatedToCompanyData(c: CuratedCompany): CompanyData {
-    return { id: c.website, name: c.name, industry: c.industry, website: c.website, description: c.description, employee_range: c.employee_range, funding_stage: c.funding_stage, headquarters: c.headquarters };
-  }
-
-  function loadCompanies(q: string) {
-    const list = q ? (CURATED_COMPANIES[q] || []) : getAllCuratedCompanies().slice(0, 20);
-    setCompanies(list.map(curatedToCompanyData));
-  }
-
-  /* ── run pipeline (steps 1-3, pauses before step 4) ── */
-  const runPipeline = useCallback(async (company: CompanyData) => {
+  /* ── run ICP pipeline (steps 1-3 only, then pause for strategy) ── */
+  const runICPPipeline = useCallback(async (company: CompanyData) => {
     cancelRef.cancelled = false;
     setIsRunning(true);
     const accumulated: Record<string, any> = {};
 
-    // Run steps 1-3 only (products, customers, icp-buyers)
     for (let i = 0; i < 3; i++) {
       if (cancelRef.cancelled) break;
       const step = STEPS[i];
@@ -126,22 +101,36 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       }
     }
 
-    // Extract ICP summary for the confirmation dialog
-    const mappings = accumulated["icp-buyers"]?.structured?.mappings || [];
-    const verticals = [...new Set(mappings.map((m: any) => m.vertical).filter(Boolean))] as string[];
-    const roles = [...new Set(mappings.flatMap((m: any) => [m.dm?.title, m.champion?.title]).filter(Boolean))] as string[];
-    setIcpSummary({ verticals, roles });
     accumulatedRef.current = accumulated;
+
+    // Assemble framework tree data (no leads)
+    const products = accumulated["products"]?.structured;
+    const customers = accumulated["customers"]?.structured;
+    const icpBuyers = accumulated["icp-buyers"]?.structured;
+
+    if (products) {
+      setTreeData({
+        company_summary: products.company_summary || "",
+        products: products.products || [],
+        customers: customers?.customers || [],
+        conquest_targets: customers?.conquest_targets || [],
+        mappings: icpBuyers?.mappings || [],
+        leads: [], // No leads yet — framework only
+      });
+    }
 
     setIsRunning(false);
     setCurrentStepIdx(-1);
-    setPhase("confirm-location");
+    setPhase("icp-mapping");
   }, [cancelRef]);
 
-  /* ── run step 4 after user confirms location ── */
-  const runLeadGeneration = useCallback(async (location: string) => {
+  /* ── run lead generation (step 4) with chat context ── */
+  const runLeadGeneration = useCallback(async (context: {
+    location?: string; verticalFocus?: string; competitorTarget?: string; customNotes?: string;
+  }) => {
     if (!selectedCompany) return;
-    setPhase("analysis");
+    setChatContext(context);
+    setPhase("first-batch");
     setIsRunning(true);
     setCurrentStepIdx(3);
 
@@ -153,7 +142,8 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
           stepId: "linkedin-profiles",
           company: selectedCompany,
           previousResults: accumulated,
-          location: location || undefined,
+          location: context.location || undefined,
+          chatContext: context,
           batchSize: 5,
         },
       });
@@ -165,7 +155,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       toast.error("Lead generation failed — try again.");
     }
 
-    // Assemble tree data
+    // Assemble full tree data with leads
     const products = accumulated["products"]?.structured;
     const customers = accumulated["customers"]?.structured;
     const icpBuyers = accumulated["icp-buyers"]?.structured;
@@ -184,6 +174,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
 
     setIsRunning(false);
     setCurrentStepIdx(-1);
+    setPhase("explore");
   }, [selectedCompany]);
 
   /* ── generate more leads ── */
@@ -201,6 +192,8 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             customers: { structured: { customers: treeData.customers, conquest_targets: treeData.conquest_targets } },
             "icp-buyers": { structured: { mappings: treeData.mappings } },
           },
+          location: chatContext.location || undefined,
+          chatContext,
           generateMore: {
             count: 5,
             productId,
@@ -226,198 +219,50 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     } finally {
       setIsGeneratingMore(false);
     }
-  }, [selectedCompany, treeData]);
+  }, [selectedCompany, treeData, chatContext]);
 
   /* ── handlers ── */
-  function handleIndustryPick(group: typeof INDUSTRY_GROUPS[0]) {
-    setSelectedIndustry(group.label);
-    loadCompanies(group.query);
-    setPhase("pick-company");
-  }
-
-  function handleCompanyPick(company: CompanyData) {
-    setSelectedCompany(company);
-    setStepResults({});
-    setTreeData(null);
-    setPhase("analysis");
-    runPipeline(company);
-  }
-
   function handleReset() {
     cancelRef.cancelled = true;
-    setPhase("pick-industry");
-    setSelectedIndustry(null);
+    setPhase("input");
     setSelectedCompany(null);
-    setCompanies([]);
     setStepResults({});
     setTreeData(null);
     setIsRunning(false);
     setCurrentStepIdx(-1);
-    setLocationInput("");
-    setIcpSummary(null);
+    setChatContext({});
     accumulatedRef.current = {};
   }
 
-  /* ── INDUSTRY PICKER ── */
-  if (phase === "pick-industry") {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-foreground mb-3">GTM Company Explorer</h1>
-          <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-            Pick an industry, choose a company, and watch the full GTM tree build — from products to LinkedIn profiles.
-          </p>
-        </div>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Select an industry</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {INDUSTRY_GROUPS.map((group) => (
-            <button
-              key={group.label}
-              onClick={() => handleIndustryPick(group)}
-              className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all text-left group"
-            >
-              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{group.label}</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  /* ── COMPANY PICKER ── */
-  if (phase === "pick-company") {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <Button variant="ghost" size="sm" onClick={() => setPhase("pick-industry")} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to industries
-        </Button>
-        <h2 className="text-xl font-bold text-foreground mb-1">{selectedIndustry} Companies</h2>
-        <p className="text-sm text-muted-foreground mb-6">Pick a company to build the full GTM tree</p>
-        {companies.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">No companies found.</div>
-        ) : (
-          <div className="space-y-2">
-            {companies.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => handleCompanyPick(c)}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all text-left group"
-              >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-foreground group-hover:text-primary transition-colors">{c.name}</div>
-                  <p className="text-xs text-muted-foreground truncate">{c.description?.slice(0, 80)}...</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {c.funding_stage && <Badge variant="outline" className="text-[10px]">{c.funding_stage}</Badge>}
-                  {c.employee_range && <Badge variant="secondary" className="text-xs">{c.employee_range}</Badge>}
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  /* ── CONFIRM LOCATION ── */
-  if (phase === "confirm-location" && icpSummary) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <Button variant="ghost" size="sm" onClick={handleReset} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Start over
-        </Button>
-
-        <div className="rounded-xl border border-border bg-card p-6 space-y-6">
-          <div>
-            <h2 className="text-xl font-bold text-foreground mb-1">ICP Analysis Complete</h2>
-            <p className="text-sm text-muted-foreground">
-              We mapped {selectedCompany?.name}'s buyer profile. Review below, then generate your first 5 leads.
-            </p>
-          </div>
-
-          {/* ICP Summary */}
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Target Verticals</p>
-              <div className="flex flex-wrap gap-1.5">
-                {icpSummary.verticals.map((v) => (
-                  <Badge key={v} variant="secondary" className="text-xs">{v}</Badge>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Decision-Maker Roles</p>
-              <div className="flex flex-wrap gap-1.5">
-                {icpSummary.roles.slice(0, 8).map((r) => (
-                  <Badge key={r} variant="outline" className="text-xs">{r}</Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Location Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
-              Location preference
-              <span className="text-muted-foreground font-normal">(optional)</span>
-            </label>
-            <Input
-              placeholder="e.g. New York, USA or London, UK"
-              value={locationInput}
-              onChange={(e) => setLocationInput(e.target.value)}
-              className="text-sm"
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave blank to search globally, or enter a city/region to focus leads there.
-            </p>
-          </div>
-
-          {/* CTA */}
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={() => runLeadGeneration(locationInput.trim())}
-          >
-            <Rocket className="w-4 h-4 mr-2" />
-            Generate first 5 leads
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  /* ── ANALYSIS VIEW ── */
+  /* ── LOADING / ANALYSIS VIEW ── */
   const completedCount = Object.keys(stepResults).length;
-  const progressPct = Math.round((completedCount / STEPS.length) * 100);
+  const totalSteps = phase === "first-batch" || phase === "explore" ? STEPS.length : 3;
+  const progressPct = Math.round((Math.min(completedCount, totalSteps) / totalSteps) * 100);
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={handleReset}>
-            <ArrowLeft className="w-4 h-4 mr-1" /> Start over
-          </Button>
-          <div>
-            <h2 className="text-lg font-bold text-foreground">{selectedCompany?.name}</h2>
-            <p className="text-xs text-muted-foreground">{selectedCompany?.industry} · {selectedCompany?.website}</p>
+      {selectedCompany && (
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={handleReset}>
+              <ArrowLeft className="w-4 h-4 mr-1" /> Start over
+            </Button>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">{selectedCompany.name}</h2>
+              <p className="text-xs text-muted-foreground">{selectedCompany.industry} · {selectedCompany.website}</p>
+            </div>
           </div>
+          {isRunning && (
+            <div className="text-right">
+              <div className="text-xs text-muted-foreground mb-1">
+                Step {currentStepIdx + 1}/{totalSteps}: {STEPS[currentStepIdx]?.label}
+              </div>
+              <Progress value={progressPct} className="h-1.5 w-32" />
+            </div>
+          )}
         </div>
-        <div className="text-right">
-          <div className="text-xs text-muted-foreground mb-1">
-            {isRunning
-              ? `Step ${currentStepIdx + 1}/${STEPS.length}: ${STEPS[currentStepIdx]?.label}`
-              : `${completedCount}/${STEPS.length} complete`}
-          </div>
-          <Progress value={progressPct} className="h-1.5 w-32" />
-        </div>
-      </div>
+      )}
 
       {/* Pipeline status */}
       {isRunning && (
@@ -428,7 +273,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             <p className="text-xs text-muted-foreground">{STEPS[currentStepIdx]?.description}</p>
           </div>
           <div className="flex gap-1">
-            {STEPS.map((_, i) => (
+            {STEPS.slice(0, totalSteps).map((_, i) => (
               <div
                 key={i}
                 className={`w-2 h-2 rounded-full ${
@@ -440,14 +285,9 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         </div>
       )}
 
-      {/* Tree view */}
-      {treeData ? (
-        <div>
-          <GTMTreeView companyName={selectedCompany?.name || ""} data={treeData} companyMeta={selectedCompany ? { industry: selectedCompany.industry, employee_range: selectedCompany.employee_range, funding_stage: selectedCompany.funding_stage, headquarters: selectedCompany.headquarters, website: selectedCompany.website } : undefined} onGenerateMore={handleGenerateMore} isGeneratingMore={isGeneratingMore} />
-        </div>
-      ) : isRunning ? (
+      {/* Loading skeleton (during ICP pipeline) */}
+      {isRunning && !treeData && (
         <div className="space-y-4 animate-pulse">
-          {/* Company banner skeleton */}
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="h-4 w-2/3 bg-muted rounded mb-2" />
             <div className="flex gap-3 mt-3">
@@ -456,7 +296,6 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
               <div className="h-5 w-16 bg-muted rounded-full" />
             </div>
           </div>
-          {/* Two-column skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-xl border border-border bg-card p-4 space-y-3">
               <div className="h-4 w-32 bg-muted rounded" />
@@ -484,21 +323,109 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             </div>
           </div>
         </div>
-      ) : !isRunning && completedCount === STEPS.length ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <p>Analysis complete but no structured data could be extracted.</p>
-          <Button onClick={handleReset} variant="outline" className="mt-4">
-            <RefreshCw className="w-4 h-4 mr-1" /> Try another company
-          </Button>
-        </div>
-      ) : null}
+      )}
 
-      {/* Footer */}
-      {!isRunning && treeData && (
-        <div className="flex justify-center mt-6">
-          <Button onClick={handleReset} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-1" /> Explore another company
-          </Button>
+      {/* Phase 2: ICP Framework (no leads) */}
+      {phase === "icp-mapping" && treeData && (
+        <GTMTreeView
+          companyName={selectedCompany?.name || ""}
+          data={treeData}
+          companyMeta={selectedCompany ? {
+            industry: selectedCompany.industry,
+            employee_range: selectedCompany.employee_range,
+            funding_stage: selectedCompany.funding_stage,
+            headquarters: selectedCompany.headquarters,
+            website: selectedCompany.website,
+          } : undefined}
+          frameworkOnly={true}
+          onContinueToStrategy={() => setPhase("strategy-chat")}
+        />
+      )}
+
+      {/* Phase 3: Strategy Chat */}
+      {phase === "strategy-chat" && treeData && selectedCompany && (
+        <div className="space-y-4">
+          <GTMTreeView
+            companyName={selectedCompany.name}
+            data={treeData}
+            companyMeta={{
+              industry: selectedCompany.industry,
+              employee_range: selectedCompany.employee_range,
+              funding_stage: selectedCompany.funding_stage,
+              headquarters: selectedCompany.headquarters,
+              website: selectedCompany.website,
+            }}
+            frameworkOnly={true}
+          />
+          <StrategyChatPanel
+            companyName={selectedCompany.name}
+            treeData={treeData}
+            onStartLeadGen={runLeadGeneration}
+            isGenerating={isRunning}
+          />
+        </div>
+      )}
+
+      {/* Phase 4: First batch generating */}
+      {phase === "first-batch" && isRunning && treeData && (
+        <div className="space-y-4">
+          <GTMTreeView
+            companyName={selectedCompany?.name || ""}
+            data={treeData}
+            companyMeta={selectedCompany ? {
+              industry: selectedCompany.industry,
+              employee_range: selectedCompany.employee_range,
+              funding_stage: selectedCompany.funding_stage,
+              headquarters: selectedCompany.headquarters,
+              website: selectedCompany.website,
+            } : undefined}
+            frameworkOnly={true}
+          />
+          <div className="flex items-center gap-3 p-4 rounded-xl border border-primary/30 bg-primary/5">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Generating your first 5 leads...</p>
+              <p className="text-xs text-muted-foreground">Finding decision-makers matching your strategy</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phase 5: Explore (full tree with leads + strategy actions) */}
+      {phase === "explore" && treeData && (
+        <div className="space-y-4">
+          <GTMTreeView
+            companyName={selectedCompany?.name || ""}
+            data={treeData}
+            companyMeta={selectedCompany ? {
+              industry: selectedCompany.industry,
+              employee_range: selectedCompany.employee_range,
+              funding_stage: selectedCompany.funding_stage,
+              headquarters: selectedCompany.headquarters,
+              website: selectedCompany.website,
+            } : undefined}
+            onGenerateMore={handleGenerateMore}
+            isGeneratingMore={isGeneratingMore}
+          />
+
+          {/* Strategy actions */}
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button variant="outline" size="sm" onClick={() => setPhase("strategy-chat")} className="gap-1.5 text-xs">
+              <Rocket className="w-3.5 h-3.5" /> Refine strategy
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleReset} className="gap-1.5 text-xs">
+              <RefreshCw className="w-3.5 h-3.5" /> New company
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state: no company selected */}
+      {!selectedCompany && !isRunning && (
+        <div className="text-center py-12 text-muted-foreground">
+          <Building2 className="w-12 h-12 mx-auto mb-4 opacity-30" />
+          <p className="text-lg font-medium">Enter a website URL to start</p>
+          <p className="text-sm mt-1">Use the search bar on the homepage to analyze any company</p>
         </div>
       )}
     </div>
