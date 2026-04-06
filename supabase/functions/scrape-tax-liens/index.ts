@@ -95,6 +95,8 @@ Deno.serve(async (req) => {
       console.log("Direct scrape failed (expected for Cloudflare sites):", e);
     }
 
+    const genericResultThreshold = 0;
+
     // Step 3: Parse results into lien records
     const liens: any[] = [];
     const results = searchData.data || [];
@@ -113,6 +115,29 @@ Deno.serve(async (req) => {
       for (const l of additionalLiens) {
         liens.push({ ...l, user_id: user.id });
       }
+    }
+
+    const hasOnlyGenericPages =
+      results.length > 0 &&
+      liens.length <= genericResultThreshold &&
+      results.every((result: any) => isGenericCountyPage(result));
+
+    if (hasOnlyGenericPages) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Travis County did not expose any public lien record pages to search. The current source is returning only generic county pages, not actual filing records.",
+          total_results: results.length,
+          liens_parsed: 0,
+          liens_inserted: 0,
+          raw_results: results.map((r: any) => ({
+            title: r.title,
+            url: r.url,
+            description: r.description?.substring(0, 200),
+          })),
+        }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Step 5: Insert into database (skip duplicates by serial_number)
@@ -213,4 +238,17 @@ function extractLiensFromMarkdown(markdown: string, county: string): any[] {
     if (parsed) liens.push(parsed);
   }
   return liens;
+}
+
+function isGenericCountyPage(result: { title?: string; url?: string; description?: string }) {
+  const combined = `${result.title || ""}\n${result.description || ""}\n${result.url || ""}`.toLowerCase();
+
+  return [
+    "recording search + copies of records",
+    "travis county clerk: home",
+    "recording fee information",
+    "real property",
+    "meetings and official notices",
+    "search case data",
+  ].some((pattern) => combined.includes(pattern));
 }
