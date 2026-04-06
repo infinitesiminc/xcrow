@@ -97,6 +97,7 @@ Named customers: ${customers.join(", ") || "None identified"}
       });
 
       let assistantContent = "";
+      let nichesFromStream: string[] = [];
       if (typeof data === "string") {
         for (const line of data.split("\n")) {
           if (!line.startsWith("data: ")) continue;
@@ -104,6 +105,9 @@ Named customers: ${customers.join(", ") || "None identified"}
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "niches" && parsed.niches) {
+              nichesFromStream = parsed.niches.map((n: any) => n.label || n);
+            }
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) assistantContent += delta;
           } catch {}
@@ -112,7 +116,24 @@ Named customers: ${customers.join(", ") || "None identified"}
         assistantContent = data.choices[0].delta.content;
       }
 
-      const { cleanText, pills } = parsePills(assistantContent || "I'm ready to help. What vertical would you like to target?");
+      let { cleanText, pills } = parsePills(assistantContent);
+
+      // If AI returned no pills, build from stream niches or ICP data
+      if (pills.length === 0 && treeData) {
+        const verticals = [...new Set(treeData.mappings.map(m => m.vertical))].filter(Boolean);
+        if (nichesFromStream.length > 0) {
+          pills = nichesFromStream.slice(0, 4);
+        } else if (verticals.length > 0) {
+          pills = verticals.slice(0, 4);
+        }
+      }
+
+      if (!cleanText) {
+        const verticalCount = treeData ? [...new Set(treeData.mappings.map(m => m.vertical))].length : 0;
+        cleanText = verticalCount > 0
+          ? `I've analyzed **${companyName}** and found ${verticalCount} key verticals. Which market do you want to target first?`
+          : "I'm ready to help you find the best leads. What vertical would you like to target?";
+      }
       
       setMessages(prev => [...prev, { role: "assistant", content: cleanText, pills }]);
     } catch {
