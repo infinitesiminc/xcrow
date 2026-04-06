@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Package, Target, UserCheck, Building2, Landmark, Heart, Cpu, ShoppingCart, GraduationCap, Home, Shield, Briefcase } from "lucide-react";
+import { Package, Target, UserCheck, Building2, Landmark, Heart, Cpu, ShoppingCart, GraduationCap, Home, Shield, Briefcase, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import type { GTMTreeData, GTMProduct, GTMBuyerMapping } from "@/components/academy/gtm-types";
