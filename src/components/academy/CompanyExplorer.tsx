@@ -391,6 +391,9 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">{STEPS[currentStepIdx]?.label}</p>
             <p className="text-xs text-muted-foreground">{STEPS[currentStepIdx]?.description}</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+              Usually takes 30–60 seconds
+            </p>
           </div>
           <div className="flex gap-1">
             {STEPS.slice(0, totalSteps).map((_, i) => (
