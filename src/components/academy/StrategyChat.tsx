@@ -133,13 +133,8 @@ Named customers: ${customers.join(", ") || "None identified"}
         if (verticals.length > 0) pills = verticals.slice(0, 4);
       }
 
-      if (!cleanText && updatedMessages.length === 0) {
-        const verticalCount = treeData ? [...new Set(treeData.mappings.map(m => m.vertical))].length : 0;
-        cleanText = verticalCount > 0
-          ? `I've analyzed **${companyName}** and found ${verticalCount} key verticals. Which market do you want to target first?`
-          : "I'm ready to help you find the best leads. What vertical would you like to target?";
-      } else if (!cleanText) {
-        cleanText = "Let me think about that...";
+      if (!cleanText) {
+        cleanText = "Let me analyze your company and prepare a strategy…";
       }
       
       setMessages(prev => [...prev, { role: "assistant", content: cleanText, pills }]);
