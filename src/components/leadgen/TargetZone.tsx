@@ -53,37 +53,37 @@ export default function TargetZone({ cards, onGenerate, isGenerating, onStop }: 
   const scoreBg = feedback.successRate >= 70 ? "bg-green-500/15" : feedback.successRate >= 40 ? "bg-yellow-500/15" : "bg-muted/30";
 
   return (
-    <div className="px-2 pb-2 space-y-1.5">
+    <div className="px-3 py-3 space-y-3">
       {cards.length > 0 && (
-        <div className="flex items-center gap-2 p-2 rounded-md bg-muted/20 border border-border/30">
-          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded ${scoreBg} shrink-0`}>
-            <TrendingUp className={`w-3 h-3 ${scoreColor}`} />
-            <span className={`text-xs font-bold ${scoreColor}`}>{feedback.successRate}%</span>
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
+          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md ${scoreBg} shrink-0`}>
+            <TrendingUp className={`w-4 h-4 ${scoreColor}`} />
+            <span className={`text-sm font-bold ${scoreColor}`}>{feedback.successRate}%</span>
           </div>
-          <p className="text-[11px] text-muted-foreground flex-1 min-w-0 leading-snug">
-            <Sparkles className="w-2.5 h-2.5 text-primary inline mr-0.5" />
+          <p className="text-sm text-muted-foreground flex-1 min-w-0 leading-snug">
+            <Sparkles className="w-3.5 h-3.5 text-primary inline mr-1" />
             {feedback.recommendation}
           </p>
         </div>
       )}
       {isGenerating ? (
         <Button
-          size="sm"
+          size="lg"
           variant="destructive"
-          className="w-full h-7 gap-1.5 text-xs"
+          className="w-full h-12 gap-2 text-base font-semibold"
           onClick={onStop}
         >
-          <Square className="w-3 h-3" />
+          <Square className="w-4 h-4" />
           Stop
         </Button>
       ) : (
         <Button
-          size="sm"
-          className="w-full h-7 gap-1.5 text-xs"
+          size="lg"
+          className="w-full h-12 gap-2 text-base font-semibold"
           onClick={onGenerate}
           disabled={cards.length === 0}
         >
-          <Zap className="w-3 h-3" />
+          <Zap className="w-4 h-4" />
           Generate Leads
         </Button>
       )}
