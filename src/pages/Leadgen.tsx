@@ -409,6 +409,10 @@ export default function Leadgen() {
             setHasDiscovered(true);
             setChatOpen(false);
             toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
+            // Track workspace
+            const wk = normalizeWorkspaceKey(website);
+            const companyName = data.company_summary?.split(/[.!,—]/)?.[0]?.trim() || wk;
+            upsertWorkspace(wk, companyName);
             // Trigger GTM analysis for product/vertical cards
             fetchGtmAnalysis(website.trim());
           })
