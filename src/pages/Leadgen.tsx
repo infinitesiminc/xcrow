@@ -815,26 +815,10 @@ export default function Leadgen() {
       });
       if (!resp.ok) throw new Error("Batch search failed");
       const reader = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
       const foundLeads: Lead[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "leads" && parsed.leads) foundLeads.push(...parsed.leads.map((l: Lead) => ({ ...l, niche_tag: niche, source: websiteUrl || "chat" })));
-          } catch {}
-        }
-      }
+      await parseSSEStream(reader, {
+        onLeads: (leads) => foundLeads.push(...leads.map((l: Lead) => ({ ...l, niche_tag: niche, source: websiteUrl || "chat" }))),
+      });
       if (foundLeads.length > 0) {
         await upsertLeads(foundLeads);
         setActiveNiche(niche);
