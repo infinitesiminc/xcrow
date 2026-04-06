@@ -100,6 +100,7 @@ export default function Leadgen() {
   const [localWorkspaceKey, setLocalWorkspaceKey] = useState("");
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [isFindingLeads, setIsFindingLeads] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -211,6 +212,9 @@ export default function Leadgen() {
 
   // Generate leads from targeting cards
   const handleGenerateFromTargeting = useCallback(async (cards: DroppedCard[]) => {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setIsFindingLeads(true);
 
     const productNames = cards.filter(c => c.type === "product").map(c => c.label);
@@ -233,6 +237,7 @@ export default function Leadgen() {
         body: JSON.stringify({
           messages: [{ role: "user", content: `${contextParts}\n\nI have already chosen the product, vertical, buyer role, and geography. Do not ask follow-up questions or restate the briefing. Immediately call run_lead_search and return 5 real decision-makers as leads for this exact ICP. Use the selected vertical and buyer role as the core ICP, prefer different companies, and include verified emails when available.` }],
         }),
+        signal: controller.signal,
       });
       if (!resp.ok) throw new Error("Search failed");
       const reader = resp.body!.getReader();
@@ -270,11 +275,23 @@ export default function Leadgen() {
         toast.info("No leads found. Try different targeting criteria.");
       }
     } catch (e: any) {
-      toast.error(e.message || "Lead search failed");
+      if (e.name === "AbortError") {
+        toast.info("Lead generation stopped.");
+      } else {
+        toast.error(e.message || "Lead search failed");
+      }
     } finally {
+      abortRef.current = null;
       setIsFindingLeads(false);
     }
   }, [user, websiteUrl, companySummary, targetLocation, upsertLeads]);
+
+  const handleStopGenerating = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+  }, []);
 
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
@@ -1064,6 +1081,7 @@ export default function Leadgen() {
             niches={currentLocalNiches.length > 0 ? currentLocalNiches : savedNiches.map(n => ({ label: n.label, description: n.description, parent_label: n.parent_label, niche_type: n.niche_type }))}
             gtmTreeData={gtmTreeData}
             onGenerateFromTargeting={handleGenerateFromTargeting}
+            onStopGenerating={handleStopGenerating}
           />
         </div>
       )}

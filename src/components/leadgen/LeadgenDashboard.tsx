@@ -45,6 +45,7 @@ interface LeadgenDashboardProps {
   // GTM tree data for targeting cards
   gtmTreeData?: GTMTreeData | null;
   onGenerateFromTargeting?: (cards: DroppedCard[]) => void;
+  onStopGenerating?: () => void;
 }
 
 export function LeadgenDashboard({
@@ -68,6 +69,7 @@ export function LeadgenDashboard({
   niches,
   gtmTreeData,
   onGenerateFromTargeting,
+  onStopGenerating,
 }: LeadgenDashboardProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
@@ -130,6 +132,7 @@ export function LeadgenDashboard({
               cards={droppedCards}
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
+              onStop={onStopGenerating}
             />
           </div>
         </div>
