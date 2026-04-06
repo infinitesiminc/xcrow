@@ -400,7 +400,7 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
         {/* ── Framework-only mode: Products + Verticals only ── */}
         {frameworkOnly ? (
           <div className="space-y-3">
-            <div className="flex gap-1 h-[400px]">
+            <div className="flex gap-1 h-[320px] lg:h-[480px]">
               {/* Products column */}
               <div className="flex flex-col w-[220px] shrink-0 border border-border rounded-lg overflow-hidden bg-card">
                 <div className="flex items-center justify-between p-2 border-b border-border/50">
