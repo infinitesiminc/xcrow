@@ -20,9 +20,9 @@ const MARQUEE_ROWS = [
 ];
 
 const VALUE_PROPS = [
-  { icon: Globe, title: "One URL Input", desc: "Enter any company website. AI scrapes, analyzes, and maps your ideal customers automatically." },
-  { icon: Target, title: "3-Layer ICP Map", desc: "Industry verticals → company segments → buyer personas. Full ICP tree in seconds." },
-  { icon: Zap, title: "Instant Lead Pipeline", desc: "Find, enrich, and score prospects directly from your ICP map. No manual research." },
+  { icon: Globe, title: "One URL Input", desc: "Enter any company website. AI analyzes and maps your ideal buyers automatically." },
+  { icon: Target, title: "Smart Prospect Map", desc: "Industry verticals → company segments → buyer personas. Full targeting tree in seconds." },
+  { icon: Zap, title: "Instant Lead Pipeline", desc: "Find, enrich, and score decision-makers directly from your prospect map. No manual research." },
   { icon: BarChart3, title: "Outreach Ready", desc: "AI-drafted emails personalized to each lead. Send directly from the platform." },
 ];
 
@@ -48,8 +48,8 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — Find Hyper-Accurate Leads From a Single Website"
-        description="The only lead hunter that turns one website into a full pipeline. Enter your URL — AI finds, qualifies, and delivers your perfect prospects in seconds."
+        title="Xcrow — The #1 Outbound Lead Hunter"
+        description="Enter one website. Get a full prospect map, qualified decision-makers, and outreach-ready leads — in seconds."
         path="/"
       />
       <div className="min-h-screen bg-background flex flex-col">
@@ -69,13 +69,13 @@ export default function Index() {
             <img src={logoCrow} alt="Xcrow" className="h-16 w-16 object-contain mx-auto mb-4" />
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.1] uppercase">
-              The <span className="text-primary">#1</span> AI Lead Hunter
+              The <span className="text-primary">#1</span> Outbound
               <br />
-              <span className="text-foreground/80">for Revenue Teams</span>
+              <span className="text-foreground/80">Lead Hunter</span>
             </h1>
 
             <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-              Enter one website. Get a full ICP map, qualified decision-makers, and outreach-ready leads — in seconds.
+              Enter one website. Get qualified decision-makers and outreach-ready leads — in seconds.
             </p>
 
             <form onSubmit={handleDiscover} className="flex gap-3 max-w-lg mx-auto w-full">

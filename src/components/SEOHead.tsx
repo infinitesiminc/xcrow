@@ -8,8 +8,8 @@ interface SEOHeadProps {
 }
 
 const defaults = {
-  title: "Xcrow.ai — 183 Skills. 1 Game. Upgrade Your Career.",
-  description: "AI-powered ICP research & lead generation. Find hyper-accurate leads from a single website.",
+  title: "Xcrow — The #1 Outbound Lead Hunter",
+  description: "Enter one website. Get qualified decision-makers and outreach-ready leads in seconds.",
   ogImage: "https://xcrow.ai/og-image.jpg",
 };
 
@@ -19,7 +19,7 @@ export default function SEOHead({
   path = "/",
   ogImage,
 }: SEOHeadProps) {
-  const t = title ? `${title} | Xcrow.ai` : defaults.title;
+  const t = title ? `${title} | Xcrow` : defaults.title;
   const d = description || defaults.description;
   const url = `https://xcrow.ai${path}`;
   const img = ogImage || defaults.ogImage;
