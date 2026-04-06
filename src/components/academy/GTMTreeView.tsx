@@ -415,38 +415,31 @@ export default function GTMTreeView({
                 <div className="flex items-center justify-between p-2 border-b border-border/50">
                   <span className="text-xs font-semibold text-foreground">Verticals & Buyer Roles</span>
                 </div>
-                <ScrollArea className="flex-1">
-                  <div className="p-1.5 space-y-1">
-                    {!selectedProductId ? (
-                      <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view target verticals</p>
-                    ) : activeVerticals.length === 0 ? (
-                      <p className="text-[10px] text-muted-foreground p-2 text-center">No verticals mapped</p>
-                    ) : activeVerticals.map((v, i) => {
-                      const Icon = getVerticalIcon(v.vertical);
-                      return (
-                        <div key={`${v.vertical}-${i}`} className="p-2.5 rounded-lg border border-border bg-card">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <Icon className="w-4 h-4 text-primary shrink-0" />
-                            <span className="text-[11px] font-medium text-foreground">{v.vertical}</span>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground mb-1.5">{v.segment}</p>
-                          <div className="flex flex-wrap gap-1">
+                <div className="p-1.5">
+                  {!selectedProductId ? (
+                    <p className="text-[10px] text-muted-foreground p-2 text-center">Select a product to view target verticals</p>
+                  ) : activeVerticals.length === 0 ? (
+                    <p className="text-[10px] text-muted-foreground p-2 text-center">No verticals mapped</p>
+                  ) : (
+                    <div className="flex gap-1.5 overflow-x-auto pb-1">
+                      {activeVerticals.map((v, i) => {
+                        const Icon = getVerticalIcon(v.vertical);
+                        return (
+                          <div key={`${v.vertical}-${i}`} className="p-2 rounded-lg border border-border bg-card min-w-[160px] max-w-[200px] shrink-0">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
+                              <span className="text-[10px] font-medium text-foreground truncate">{v.vertical}</span>
+                            </div>
+                            <p className="text-[9px] text-muted-foreground mb-1 line-clamp-1">{v.segment}</p>
                             <Badge variant="secondary" className="text-[8px] h-3.5 px-1 gap-0.5 bg-blue-500/15 text-blue-700 border-0">
                               <UserCheck className="w-2.5 h-2.5" /> DM: {v.dm}
                             </Badge>
                           </div>
-                          {v.customers.length > 0 && (
-                            <div className="flex flex-wrap gap-0.5 mt-1.5">
-                              {v.customers.slice(0, 3).map(c => (
-                                <Badge key={c} variant="outline" className="text-[8px] h-3 px-1">{c}</Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
