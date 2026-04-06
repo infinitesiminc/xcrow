@@ -58,7 +58,7 @@ export function LeadgenDashboard({
   onExportCSV,
   onGenerateAll,
   onEnrichAll,
-  onScoreAll,
+  
   onDraftAll,
   isGenerating,
   isEnriching,

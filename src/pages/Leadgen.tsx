@@ -1321,7 +1321,7 @@ export default function Leadgen() {
             onExportCSV={exportCSV}
             onGenerateAll={handleGenerateAll}
             onEnrichAll={handleEnrichAll}
-            onScoreAll={handleScoreAll}
+            
             onDraftAll={handleDraftAllSimple}
             isGenerating={isFindingLeads}
             isEnriching={isEnrichingLeads}
