@@ -167,6 +167,7 @@ export default function Leadgen() {
   const [sending, setSending] = useState(false);
   const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [leadViewCount, setLeadViewCount] = useState(0);
 
   // Normalize domain for cache key
   const normalizeWebsiteKey = (url: string): string =>
