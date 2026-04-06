@@ -324,7 +324,7 @@ export default function Leadgen() {
     toast.info("Finding targeted leads based on your criteria...");
 
     try {
-      const resp = await fetch(CHAT_URL, {
+      const resp = await fetchWithTimeout(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
@@ -401,7 +401,7 @@ export default function Leadgen() {
         setTimeout(() => setDiscoveryPhase("Scraping key pages (about, solutions, customers)..."), 3000);
         setTimeout(() => setDiscoveryPhase("Analyzing business model & customers..."), 7000);
         setTimeout(() => setDiscoveryPhase("Building 3-layer ICP tree..."), 11000);
-        fetch(SCOUT_URL, {
+        fetchWithTimeout(SCOUT_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
           body: JSON.stringify({ website: website.trim() }),
@@ -483,7 +483,7 @@ export default function Leadgen() {
       setTimeout(() => setDiscoveryPhase("Analyzing business model & customers..."), 7000);
       setTimeout(() => setDiscoveryPhase("Building 3-layer ICP tree..."), 11000);
 
-      const resp = await fetch(SCOUT_URL, {
+      const resp = await fetchWithTimeout(SCOUT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({ website: url }),
@@ -585,7 +585,7 @@ export default function Leadgen() {
     let assistantSoFar = "";
     try {
       const apiMessages = allItems.filter((it): it is ChatItem & { type: "user" | "assistant" } => it.type !== "leads").map((m) => ({ role: m.type, content: m.content }));
-      const resp = await fetch(CHAT_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` }, body: JSON.stringify({ messages: apiMessages }) });
+      const resp = await fetchWithTimeout(CHAT_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` }, body: JSON.stringify({ messages: apiMessages }) });
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
         setItems((prev) => [...prev, { type: "assistant", content: (err as any).error || "Something went wrong." }]);
@@ -711,7 +711,7 @@ export default function Leadgen() {
         `Target persona: ${niche}${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}.`,
       ].filter(Boolean).join(" ");
 
-      const resp = await fetch(CHAT_URL, {
+      const resp = await fetchWithTimeout(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
@@ -778,7 +778,7 @@ export default function Leadgen() {
     }
     toast.info(`Enriching ${nicheLeads.length} leads...`);
     try {
-      const resp = await fetch(CHAT_URL, {
+      const resp = await fetchWithTimeout(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
@@ -864,7 +864,7 @@ export default function Leadgen() {
         parentNiche ? `Market segment: ${parentNiche.label}.` : "",
         `Target persona: ${niche}${nicheEntry?.description ? ` — ${nicheEntry.description}` : ""}.`,
       ].filter(Boolean).join(" ");
-      const resp = await fetch(CHAT_URL, {
+      const resp = await fetchWithTimeout(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
@@ -913,7 +913,7 @@ export default function Leadgen() {
     setIsFindingLeads(true);
     toast.info(`Finding lookalikes for ${lead.name}...`);
     try {
-      const resp = await fetch(CHAT_URL, {
+      const resp = await fetchWithTimeout(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
