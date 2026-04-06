@@ -97,9 +97,10 @@ Named customers: ${customers.join(", ") || "None identified"}
         chatMessages.push({ role: "user", content: text.trim() });
       }
 
-      const { data } = await supabase.functions.invoke("leadgen-chat", {
+      const resp = await supabase.functions.invoke("leadgen-chat", {
         body: { messages: chatMessages },
       });
+      const data = resp.data;
 
       let assistantContent = "";
       let nichesFromStream: string[] = [];
@@ -110,8 +111,17 @@ Named customers: ${customers.join(", ") || "None identified"}
         raw = data;
       } else if (data instanceof Blob) {
         raw = await data.text();
+      } else if (data instanceof ReadableStream) {
+        const reader = data.getReader();
+        const chunks: string[] = [];
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(decoder.decode(value, { stream: true }));
+        }
+        raw = chunks.join("");
       } else if (data && typeof data === "object") {
-        // Already parsed JSON — check for direct content
         const directContent = data?.choices?.[0]?.delta?.content;
         if (directContent) {
           assistantContent = directContent;
