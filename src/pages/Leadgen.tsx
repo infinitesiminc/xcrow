@@ -1127,7 +1127,8 @@ export default function Leadgen() {
     toast.info("Scoring leads — this feature is coming soon!");
   };
 
-  const showSkeleton = !hasDiscovered || (isDiscovering) || (hasDiscovered && !gtmTreeData);
+  const hasWebsiteContext = !!websiteUrl || !!searchParams.get("website") || !!sessionStorage.getItem("pendingWebsite");
+  const showSkeleton = hasWebsiteContext && (!hasDiscovered || isDiscovering || (hasDiscovered && !gtmTreeData));
 
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
