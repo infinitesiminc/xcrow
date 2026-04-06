@@ -80,10 +80,10 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             className="text-xl font-bold"
             
           >
-            {isSignUp ? "Join the Realm" : "Welcome back"}
+            {isSignUp ? "Create your account" : "Welcome back"}
           </DialogTitle>
           <DialogDescription className="text-sm">
-            {isSignUp ? "Begin your quest — track your skill journey" : "Sign in to continue your conquest"}
+            {isSignUp ? "Sign up to start finding leads" : "Sign in to continue"}
           </DialogDescription>
         </DialogHeader>
 
@@ -157,12 +157,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             disabled={loading}
             
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Begin Quest" : "Enter Realm"}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Create account" : "Sign in"}
           </Button>
         </form>
 
         <p className="text-xs text-muted-foreground text-center">
-          {isSignUp ? "Already a warrior?" : "New to the realm?"}{" "}
+          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
             {isSignUp ? "Sign in" : "Create account"}
           </button>
