@@ -60,7 +60,7 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
       .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false });
 
-    if (data) setLeads(data as unknown as SavedLead[]);
+    if (data) setLeads((data as any[]).map((d: any) => ({ ...d, score: d.rating ?? undefined })) as unknown as SavedLead[]);
   }, [userId, workspaceKey]);
 
   const fetchOutreach = useCallback(async () => {
