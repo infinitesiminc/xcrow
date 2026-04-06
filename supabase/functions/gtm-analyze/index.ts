@@ -251,6 +251,32 @@ serve(async (req) => {
 
     const prev = previousResults || {};
 
+    // Validate website reachability on first step
+    if (stepId === "products" && company?.website) {
+      const siteUrl = company.website.startsWith("http") ? company.website : `https://${company.website}`;
+      try {
+        const probe = await fetch(siteUrl, {
+          method: "HEAD",
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)" },
+          redirect: "follow",
+        });
+        if (!probe.ok && probe.status !== 405) {
+          // Try GET as fallback (some servers reject HEAD)
+          const probeGet = await fetch(siteUrl, {
+            method: "GET",
+            headers: { "User-Agent": "Mozilla/5.0 (compatible; LeadHunterBot/1.0)", Accept: "text/html" },
+            redirect: "follow",
+          });
+          if (!probeGet.ok) {
+            return respond({ error: `Website unreachable (HTTP ${probeGet.status}). Please check the URL and try again.` }, 400);
+          }
+        }
+      } catch (fetchErr) {
+        console.error("Website probe failed:", fetchErr);
+        return respond({ error: "Website not found. Please check the URL for typos and try again." }, 400);
+      }
+    }
+
     /* ═══════════════════════════════════════════════════
        STEP 1: Company DNA + Product Lines
        Returns: { company_summary, products: [{ id, name, description, target_user, pricing, competitors }] }
