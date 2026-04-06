@@ -428,6 +428,8 @@ ${JSON.stringify(customersJSON?.conquest_targets || [], null, 2)}`
     if (stepId === "linkedin-profiles") {
       const generateMore = body.generateMore as { count?: number; productId?: string; vertical?: string | null; existingLeads?: string[]; productName?: string } | undefined;
       const locationFilter = body.location as string | undefined;
+      const chatContext = body.chatContext as { location?: string; verticalFocus?: string; competitorTarget?: string; customNotes?: string } | undefined;
+      const effectiveLocation = locationFilter || chatContext?.location;
       const requestedCount = generateMore?.count || body.batchSize || 5;
       const existingNames = new Set((generateMore?.existingLeads || []).map((n: string) => n.toLowerCase()));
 
