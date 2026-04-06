@@ -170,12 +170,12 @@ export default function Leadgen() {
 
   // Fetch GTM tree data (products, verticals, buyer roles) via multi-step pipeline — with cache
   const fetchGtmAnalysis = useCallback(async (website: string) => {
+    setIsGtmLoading(true);
     try {
       const domain = website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
       const websiteKey = normalizeWebsiteKey(domain);
       const company = { id: domain, name: domain.split(".")[0], website: `https://${domain}` };
 
-      // Check cache first
       try {
         const { data: cached } = await supabase
           .from("leadhunter_cache")
@@ -202,7 +202,6 @@ export default function Leadgen() {
             setGtmPersonasLoading(false);
             console.log(`[GTM] Loaded from cache: ${cachedTree.products.length} products, ${cachedTree.mappings?.length || 0} personas`);
 
-            // If mappings are missing, only fetch icp-buyers step
             if (!hasMappings) {
               setGtmPersonasLoading(true);
               const stepResults = cached.step_results as Record<string, any>;
@@ -225,16 +224,17 @@ export default function Leadgen() {
         console.warn("[GTM] Cache lookup failed, running fresh:", e);
       }
 
-      // No cache — run full pipeline
       const previousResults: Record<string, any> = {};
 
-      // Step 1: Products
       const r1 = await supabase.functions.invoke("gtm-analyze", {
         body: { stepId: "products", company, previousResults },
       });
       let d1 = r1.data;
       if (d1 instanceof Blob) d1 = JSON.parse(await d1.text());
-      if (!d1?.structured?.products) return;
+      if (!d1?.structured?.products) {
+        setGtmTreeData(null);
+        return;
+      }
       previousResults["products"] = d1;
       const products = d1.structured.products;
       const summary = d1.structured.company_summary || "";
@@ -242,7 +242,6 @@ export default function Leadgen() {
       if (summary) setCompanySummary(summary);
       if (hq) setTargetLocation(hq);
 
-      // Set partial tree immediately so product cards appear fast
       setGtmTreeData({
         company_summary: summary,
         products,
@@ -253,13 +252,12 @@ export default function Leadgen() {
       });
       setGtmPersonasLoading(true);
 
-      // Steps 2 & 3 in parallel (both only need step 1)
       const [r2, r3] = await Promise.all([
         supabase.functions.invoke("gtm-analyze", {
-        body: { stepId: "customers", company, previousResults },
+          body: { stepId: "customers", company, previousResults },
         }),
         supabase.functions.invoke("gtm-analyze", {
-        body: { stepId: "icp-buyers", company, previousResults },
+          body: { stepId: "icp-buyers", company, previousResults },
         }),
       ]);
 
@@ -281,12 +279,13 @@ export default function Leadgen() {
       };
       setGtmTreeData(fullTree);
       setGtmPersonasLoading(false);
-
-      // Write through to cache
       updateGtmCache(websiteKey, previousResults, fullTree, company);
     } catch (e) {
       console.warn("GTM analysis unavailable:", e);
+      setGtmTreeData(null);
       setGtmPersonasLoading(false);
+    } finally {
+      setIsGtmLoading(false);
     }
   }, [updateGtmCache]);
 
