@@ -66,27 +66,32 @@ export default function TargetZone({ cards, onGenerate, isGenerating, onStop }: 
           </p>
         </div>
       )}
-      {isGenerating ? (
-        <Button
-          size="lg"
-          variant="destructive"
-          className="w-full h-12 gap-2 text-base font-semibold"
-          onClick={onStop}
-        >
-          <Square className="w-4 h-4" />
-          Stop
-        </Button>
-      ) : (
-        <Button
-          size="lg"
-          className="w-full h-12 gap-2 text-base font-semibold"
-          onClick={onGenerate}
-          disabled={cards.length === 0}
-        >
-          <Zap className="w-4 h-4" />
-          Generate Leads
-        </Button>
-      )}
+      <Button
+        size="lg"
+        className={`w-full h-12 gap-2 text-base font-semibold transition-all duration-300 ${
+          isGenerating
+            ? "bg-primary/90 hover:bg-primary/80 animate-pulse"
+            : ""
+        }`}
+        onClick={isGenerating ? onStop : onGenerate}
+        disabled={!isGenerating && cards.length === 0}
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="flex-1 text-left">Finding leads…</span>
+            <span className="flex items-center gap-1 text-xs opacity-80 font-normal bg-primary-foreground/20 px-2 py-0.5 rounded-md">
+              <Square className="w-3 h-3" />
+              Stop
+            </span>
+          </>
+        ) : (
+          <>
+            <Zap className="w-4 h-4" />
+            Generate Leads
+          </>
+        )}
+      </Button>
     </div>
   );
 }
