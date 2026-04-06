@@ -54,6 +54,15 @@ const SAMPLE_DATA: Record<string, object> = {
     siteUrl: SAMPLE_PROJECT_URL,
     recipient: SAMPLE_EMAIL,
     confirmationUrl: SAMPLE_PROJECT_URL,
+    workspace: {
+      company_name: "Acme Corp",
+      company_summary: "Acme Corp is a B2B SaaS company specializing in project management tools for remote teams.",
+      products: [
+        { name: "Acme Projects", description: "AI-powered project management platform" },
+        { name: "Acme Teams", description: "Team collaboration and communication hub" },
+      ],
+      top_niches: ["Remote-first SaaS Companies", "Tech Startups (Series A-B)", "Digital Agencies"],
+    },
   },
   magiclink: {
     siteName: SITE_NAME,
