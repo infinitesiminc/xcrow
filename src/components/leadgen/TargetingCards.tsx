@@ -79,7 +79,7 @@ export default function TargetingCards({ treeData, droppedIds, vertical }: Targe
   }
 
   return (
-    <div className="space-y-3 px-4 py-3">
+    <div className={`space-y-3 px-3 py-3 ${vertical ? '' : 'px-4'}`}>
       {/* Products row */}
       {productItems.length > 0 && (
         <div>
