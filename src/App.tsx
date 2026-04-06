@@ -28,6 +28,7 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
+const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
 
 
 const queryClient = new QueryClient();
