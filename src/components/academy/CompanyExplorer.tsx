@@ -1,15 +1,14 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CURATED_COMPANIES, getAllCuratedCompanies, type CuratedCompany } from "@/data/curated-companies";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
-  Building2, ArrowLeft, Loader2, ChevronRight, RefreshCw, Rocket,
+  Building2, ArrowLeft, Loader2, RefreshCw,
 } from "lucide-react";
 import GTMTreeView from "./GTMTreeView";
-import StrategyChatPanel from "./StrategyChatPanel";
+import StrategyStrip from "./StrategyStrip";
+import StrategyChat from "./StrategyChat";
 import type { GTMTreeData } from "./gtm-types";
 
 /* ── types ── */
@@ -24,7 +23,7 @@ interface CompanyData {
   headquarters: string | null;
 }
 
-type ExplorerPhase = "input" | "icp-mapping" | "strategy-chat" | "first-batch" | "explore";
+type ExplorerPhase = "input" | "icp-mapping" | "explore";
 
 /* ── pipeline steps ── */
 const STEPS = [
@@ -48,9 +47,11 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   const [cancelRef] = useState({ cancelled: false });
   const autoStarted = useRef(false);
   const accumulatedRef = useRef<Record<string, any>>({});
-  const [chatContext, setChatContext] = useState<{
-    location?: string; verticalFocus?: string; competitorTarget?: string; customNotes?: string;
-  }>({});
+
+  // Strategy state (lifted from StrategyChatPanel)
+  const [activeCards, setActiveCards] = useState<Record<string, string | boolean>>({});
+  const [cardInputs, setCardInputs] = useState<Record<string, string>>({});
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   // Auto-start analysis from URL param
   useEffect(() => {
@@ -103,7 +104,6 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
 
     accumulatedRef.current = accumulated;
 
-    // Assemble framework tree data (no leads)
     const products = accumulated["products"]?.structured;
     const customers = accumulated["customers"]?.structured;
     const icpBuyers = accumulated["icp-buyers"]?.structured;
@@ -115,7 +115,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         customers: customers?.customers || [],
         conquest_targets: customers?.conquest_targets || [],
         mappings: icpBuyers?.mappings || [],
-        leads: [], // No leads yet — framework only
+        leads: [],
       });
     }
 
@@ -124,13 +124,24 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     setPhase("icp-mapping");
   }, [cancelRef]);
 
-  /* ── run lead generation (step 4) with chat context ── */
-  const runLeadGeneration = useCallback(async (context: {
-    location?: string; verticalFocus?: string; competitorTarget?: string; customNotes?: string;
-  }) => {
+  /* ── build context from active cards ── */
+  function buildContext() {
+    const ctx: any = {};
+    if (activeCards.location && typeof activeCards.location === "string") ctx.location = activeCards.location;
+    if (activeCards.vertical && typeof activeCards.vertical === "string") ctx.verticalFocus = activeCards.vertical;
+    if (activeCards.competitor && typeof activeCards.competitor === "string") ctx.competitorTarget = activeCards.competitor;
+    const notes: string[] = [];
+    if (activeCards.lookalike && typeof activeCards.lookalike === "string") notes.push(`Lookalike: ${activeCards.lookalike}`);
+    if (activeCards.persona && typeof activeCards.persona === "string") notes.push(`Persona: ${activeCards.persona}`);
+    if (activeCards.upload && typeof activeCards.upload === "string") notes.push(`Brochure: ${activeCards.upload}`);
+    if (notes.length) ctx.customNotes = notes.join("; ");
+    return ctx;
+  }
+
+  /* ── run lead generation (step 4) ── */
+  const runLeadGeneration = useCallback(async () => {
     if (!selectedCompany) return;
-    setChatContext(context);
-    setPhase("first-batch");
+    const context = buildContext();
     setIsRunning(true);
     setCurrentStepIdx(3);
 
@@ -155,7 +166,6 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       toast.error("Lead generation failed — try again.");
     }
 
-    // Assemble full tree data with leads
     const products = accumulated["products"]?.structured;
     const customers = accumulated["customers"]?.structured;
     const icpBuyers = accumulated["icp-buyers"]?.structured;
@@ -175,12 +185,13 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     setIsRunning(false);
     setCurrentStepIdx(-1);
     setPhase("explore");
-  }, [selectedCompany]);
+  }, [selectedCompany, activeCards]);
 
   /* ── generate more leads ── */
   const handleGenerateMore = useCallback(async (productId: string, vertical: string | null) => {
     if (!selectedCompany || !treeData) return;
     setIsGeneratingMore(true);
+    const context = buildContext();
     try {
       const product = treeData.products.find(p => p.id === productId);
       const { data, error } = await supabase.functions.invoke("gtm-analyze", {
@@ -192,8 +203,8 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             customers: { structured: { customers: treeData.customers, conquest_targets: treeData.conquest_targets } },
             "icp-buyers": { structured: { mappings: treeData.mappings } },
           },
-          location: chatContext.location || undefined,
-          chatContext,
+          location: context.location || undefined,
+          chatContext: context,
           generateMore: {
             count: 5,
             productId,
@@ -219,7 +230,49 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     } finally {
       setIsGeneratingMore(false);
     }
-  }, [selectedCompany, treeData, chatContext]);
+  }, [selectedCompany, treeData, activeCards]);
+
+  /* ── strategy card handlers ── */
+  function toggleCard(id: string) {
+    setActiveCards(prev => {
+      const next = { ...prev };
+      if (next[id] !== undefined) {
+        delete next[id];
+      } else {
+        next[id] = cardInputs[id] || true;
+      }
+      return next;
+    });
+  }
+
+  function updateCardValue(id: string, value: string) {
+    setCardInputs(prev => ({ ...prev, [id]: value }));
+    setActiveCards(prev => {
+      if (prev[id] !== undefined) {
+        return { ...prev, [id]: value };
+      }
+      return prev;
+    });
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const label = `📎 ${file.name}`;
+    setCardInputs(prev => ({ ...prev, upload: label }));
+    setActiveCards(prev => ({ ...prev, upload: label }));
+  }
+
+  /* ── product lead counts ── */
+  const productLeadCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    if (!treeData) return counts;
+    for (const l of treeData.leads) {
+      if (l.role !== "dm") continue;
+      counts[l.product_id] = (counts[l.product_id] || 0) + 1;
+    }
+    return counts;
+  }, [treeData]);
 
   /* ── handlers ── */
   function handleReset() {
@@ -230,14 +283,24 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     setTreeData(null);
     setIsRunning(false);
     setCurrentStepIdx(-1);
-    setChatContext({});
+    setActiveCards({});
+    setCardInputs({});
+    setSelectedProductId(null);
     accumulatedRef.current = {};
   }
 
-  /* ── LOADING / ANALYSIS VIEW ── */
+  /* ── RENDER ── */
   const completedCount = Object.keys(stepResults).length;
-  const totalSteps = phase === "first-batch" || phase === "explore" ? STEPS.length : 3;
+  const totalSteps = phase === "explore" ? STEPS.length : 3;
   const progressPct = Math.round((Math.min(completedCount, totalSteps) / totalSteps) * 100);
+
+  const companyMeta = selectedCompany ? {
+    industry: selectedCompany.industry,
+    employee_range: selectedCompany.employee_range,
+    funding_stage: selectedCompany.funding_stage,
+    headquarters: selectedCompany.headquarters,
+    website: selectedCompany.website,
+  } : undefined;
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
@@ -285,7 +348,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         </div>
       )}
 
-      {/* Loading skeleton (during ICP pipeline) */}
+      {/* Loading skeleton */}
       {isRunning && !treeData && (
         <div className="space-y-4 animate-pulse">
           <div className="rounded-xl border border-border bg-card p-4">
@@ -325,104 +388,64 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         </div>
       )}
 
-      {/* Phase 2: ICP Framework (no leads) */}
+      {/* Phase 2: ICP Framework */}
       {phase === "icp-mapping" && treeData && (
         <GTMTreeView
           companyName={selectedCompany?.name || ""}
           data={treeData}
-          companyMeta={selectedCompany ? {
-            industry: selectedCompany.industry,
-            employee_range: selectedCompany.employee_range,
-            funding_stage: selectedCompany.funding_stage,
-            headquarters: selectedCompany.headquarters,
-            website: selectedCompany.website,
-          } : undefined}
+          companyMeta={companyMeta}
           frameworkOnly={true}
-          onContinueToStrategy={() => setPhase("strategy-chat")}
+          onContinueToStrategy={() => setPhase("explore")}
         />
       )}
 
-      {/* Phase 3: Strategy Chat */}
-      {phase === "strategy-chat" && treeData && selectedCompany && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
-          <GTMTreeView
-            companyName={selectedCompany.name}
-            data={treeData}
-            companyMeta={{
-              industry: selectedCompany.industry,
-              employee_range: selectedCompany.employee_range,
-              funding_stage: selectedCompany.funding_stage,
-              headquarters: selectedCompany.headquarters,
-              website: selectedCompany.website,
-            }}
-            frameworkOnly={true}
-          />
-          <div className="lg:sticky lg:top-4">
-            <StrategyChatPanel
-              companyName={selectedCompany.name}
+      {/* Phase: Explore (merged strategy + leads) */}
+      {phase === "explore" && treeData && selectedCompany && (
+        <GTMTreeView
+          companyName={selectedCompany.name}
+          data={treeData}
+          companyMeta={companyMeta}
+          onGenerateMore={handleGenerateMore}
+          isGeneratingMore={isGeneratingMore}
+          selectedProductId={selectedProductId}
+          onSelectProduct={setSelectedProductId}
+          strategyStrip={
+            <StrategyStrip
               treeData={treeData}
-              onStartLeadGen={runLeadGeneration}
+              activeCards={activeCards}
+              cardInputs={cardInputs}
+              onToggleCard={toggleCard}
+              onUpdateCardValue={updateCardValue}
+              onFileUpload={handleFileUpload}
+              onGenerate={runLeadGeneration}
               isGenerating={isRunning}
+              selectedProductId={selectedProductId}
+              products={treeData.products}
+              onSelectProduct={setSelectedProductId}
+              productLeadCounts={productLeadCounts}
             />
+          }
+          chatPanel={
+            <StrategyChat
+              companyName={selectedCompany.name}
+              activeCards={activeCards}
+            />
+          }
+        />
+      )}
+
+      {/* Generating first batch overlay */}
+      {phase === "explore" && isRunning && treeData && treeData.leads.length === 0 && (
+        <div className="flex items-center gap-3 mt-4 p-4 rounded-xl border border-primary/30 bg-primary/5">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Generating your first 5 leads...</p>
+            <p className="text-xs text-muted-foreground">Finding decision-makers matching your strategy</p>
           </div>
         </div>
       )}
 
-      {/* Phase 4: First batch generating */}
-      {phase === "first-batch" && isRunning && treeData && (
-        <div className="space-y-4">
-          <GTMTreeView
-            companyName={selectedCompany?.name || ""}
-            data={treeData}
-            companyMeta={selectedCompany ? {
-              industry: selectedCompany.industry,
-              employee_range: selectedCompany.employee_range,
-              funding_stage: selectedCompany.funding_stage,
-              headquarters: selectedCompany.headquarters,
-              website: selectedCompany.website,
-            } : undefined}
-            frameworkOnly={true}
-          />
-          <div className="flex items-center gap-3 p-4 rounded-xl border border-primary/30 bg-primary/5">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <div>
-              <p className="text-sm font-medium text-foreground">Generating your first 5 leads...</p>
-              <p className="text-xs text-muted-foreground">Finding decision-makers matching your strategy</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Phase 5: Explore (full tree with leads + strategy actions) */}
-      {phase === "explore" && treeData && (
-        <div className="space-y-4">
-          <GTMTreeView
-            companyName={selectedCompany?.name || ""}
-            data={treeData}
-            companyMeta={selectedCompany ? {
-              industry: selectedCompany.industry,
-              employee_range: selectedCompany.employee_range,
-              funding_stage: selectedCompany.funding_stage,
-              headquarters: selectedCompany.headquarters,
-              website: selectedCompany.website,
-            } : undefined}
-            onGenerateMore={handleGenerateMore}
-            isGeneratingMore={isGeneratingMore}
-          />
-
-          {/* Strategy actions */}
-          <div className="flex flex-wrap gap-2 justify-center">
-            <Button variant="outline" size="sm" onClick={() => setPhase("strategy-chat")} className="gap-1.5 text-xs">
-              <Rocket className="w-3.5 h-3.5" /> Refine strategy
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleReset} className="gap-1.5 text-xs">
-              <RefreshCw className="w-3.5 h-3.5" /> New company
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Empty state: no company selected */}
+      {/* Empty state */}
       {!selectedCompany && !isRunning && (
         <div className="text-center py-12 text-muted-foreground">
           <Building2 className="w-12 h-12 mx-auto mb-4 opacity-30" />
