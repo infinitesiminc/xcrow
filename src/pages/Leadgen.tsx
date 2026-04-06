@@ -1330,7 +1330,7 @@ export default function Leadgen() {
             </form>
             {/* Company summary inline */}
             {companySummary && (
-              <p className="text-xs text-muted-foreground truncate flex-1 min-w-0 px-2 border-l border-border/40">
+              <p className="hidden sm:block text-xs text-muted-foreground truncate flex-1 min-w-0 px-2 border-l border-border/40">
                 {companySummary}
               </p>
             )}
