@@ -168,6 +168,7 @@ export default function Leadgen() {
       }
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
 
 
   const {
