@@ -162,7 +162,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         </form>
 
         <p className="text-xs text-muted-foreground text-center">
-          {isSignUp ? "Already a warrior?" : "New to the realm?"}{" "}
+          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
             {isSignUp ? "Sign in" : "Create account"}
           </button>
