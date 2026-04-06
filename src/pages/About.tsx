@@ -103,6 +103,7 @@ export default function About() {
                   <Mail className="w-4 h-4" /> jackson@xcrow.ai
                 </a>
               </div>
+              </div>
             </motion.div>
           </div>
         </section>
