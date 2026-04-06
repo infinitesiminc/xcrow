@@ -985,11 +985,12 @@ export default function Leadgen() {
 
 
   // Redirect to homepage if no website param and no existing data
+  // Only redirect unauthenticated users with no context back to homepage
   useEffect(() => {
-    if (!hasDiscovered && !isDiscovering && !searchParams.get("website") && !sessionStorage.getItem("pendingWebsite") && !websiteUrl) {
+    if (!user && !hasDiscovered && !isDiscovering && !searchParams.get("website") && !sessionStorage.getItem("pendingWebsite") && !websiteUrl) {
       navigate("/", { replace: true });
     }
-  }, [hasDiscovered, isDiscovering, searchParams, websiteUrl, navigate]);
+  }, [user, hasDiscovered, isDiscovering, searchParams, websiteUrl, navigate]);
 
   // Discovery loading screen — skeleton overlay matching dashboard layout
   const discoveryLoading = (
