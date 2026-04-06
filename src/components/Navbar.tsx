@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2 } from "lucide-react";
+import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2, Plus } from "lucide-react";
 import type { UserWorkspace } from "@/hooks/use-workspaces";
 
 interface NavbarProps {
@@ -21,9 +21,10 @@ interface NavbarProps {
   activeWorkspaceKey?: string;
   onSwitchWorkspace?: (websiteKey: string) => void;
   onDeleteWorkspace?: (websiteKey: string) => void;
+  onNewWorkspace?: () => void;
 }
 
-export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspace, onDeleteWorkspace }: NavbarProps) {
+export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspace, onDeleteWorkspace, onNewWorkspace }: NavbarProps) {
   const { user, signOut, openAuthModal, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -110,6 +111,18 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
                       </div>
                     ))}
                   </div>
+                  {onNewWorkspace && (
+                    <button
+                      className="flex items-center gap-2 w-full px-2 py-1.5 mt-1 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors border-t border-border/40 pt-2"
+                      onClick={() => {
+                        onNewWorkspace();
+                        setWsOpen(false);
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      New workspace
+                    </button>
+                  )}
                 </PopoverContent>
               </Popover>
             </>
