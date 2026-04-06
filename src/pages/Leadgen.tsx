@@ -275,11 +275,23 @@ export default function Leadgen() {
         toast.info("No leads found. Try different targeting criteria.");
       }
     } catch (e: any) {
-      toast.error(e.message || "Lead search failed");
+      if (e.name === "AbortError") {
+        toast.info("Lead generation stopped.");
+      } else {
+        toast.error(e.message || "Lead search failed");
+      }
     } finally {
+      abortRef.current = null;
       setIsFindingLeads(false);
     }
   }, [user, websiteUrl, companySummary, targetLocation, upsertLeads]);
+
+  const handleStopGenerating = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+  }, []);
 
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
