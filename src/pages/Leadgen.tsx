@@ -1490,7 +1490,7 @@ export default function Leadgen() {
         onDeleteWorkspace={handleDeleteWorkspace}
         onNewWorkspace={handleNewWorkspace}
       />
-      <div className="flex flex-col h-screen pt-14">
+      <div className="flex flex-col min-h-[100dvh] md:h-screen pt-14">
         {mainContent}
       </div>
 
