@@ -58,6 +58,18 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "").toLowerCase();
   }
 
+  /* ── write-through cache helper ── */
+  function updateCache(company: CompanyData, stepResults: Record<string, any>, tree: GTMTreeData) {
+    const websiteKey = normalizeWebsiteKey(company.website || company.id);
+    supabase.from("leadhunter_cache").upsert({
+      website_key: websiteKey,
+      company_data: company as any,
+      step_results: stepResults as any,
+      tree_data: tree as any,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }, { onConflict: "website_key" }).then(() => {});
+  }
+
   // Auto-start analysis from URL param
   useEffect(() => {
     if (initialWebsite && !autoStarted.current) {
@@ -122,7 +134,8 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         setTreeData(cached.tree_data as any);
         setIsRunning(false);
         setCurrentStepIdx(-1);
-        setPhase("icp-mapping");
+        const hasLeads = cachedTree?.leads?.length > 0;
+        setPhase(hasLeads ? "explore" : "icp-mapping");
         toast.success("Loaded from cache — instant results!");
         return;
       }
@@ -200,13 +213,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         name: (aiName && aiName.length <= 40) ? aiName : company.name,
         headquarters: products?.headquarters || company.headquarters,
       };
-      supabase.from("leadhunter_cache").upsert({
-        website_key: websiteKey,
-        company_data: cachedCompany as any,
-        step_results: accumulated as any,
-        tree_data: builtTree as any,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      }, { onConflict: "website_key" }).then(() => {});
+      updateCache(cachedCompany as CompanyData, accumulated, builtTree);
     }
 
     setIsRunning(false);
@@ -272,6 +279,13 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       });
     }
 
+    // Update cache with leads
+    const updatedTree = treeData ? { ...treeData } : null;
+    if (updatedTree && profiles) {
+      updatedTree.leads = profiles.leads || [];
+      updateCache(selectedCompany, accumulated, updatedTree);
+    }
+
     setIsRunning(false);
     setCurrentStepIdx(-1);
     setPhase("explore");
@@ -309,7 +323,12 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       if (error) throw error;
       const newLeads = data?.structured?.leads || [];
       if (newLeads.length > 0) {
-        setTreeData(prev => prev ? { ...prev, leads: [...prev.leads, ...newLeads] } : prev);
+        setTreeData(prev => {
+          if (!prev) return prev;
+          const updated = { ...prev, leads: [...prev.leads, ...newLeads] };
+          updateCache(selectedCompany!, accumulatedRef.current, updated);
+          return updated;
+        });
         toast.success(`Added ${newLeads.length} new leads`);
       } else {
         toast.info("No additional leads found");
