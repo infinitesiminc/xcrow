@@ -22,7 +22,7 @@ import type { Lead } from "@/components/leadgen/LeadCard";
 import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import type { GTMTreeData } from "@/components/academy/gtm-types";
 import type { DroppedCard } from "@/components/leadgen/TargetZone";
-
+import { useWorkspaces } from "@/hooks/use-workspaces";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-chat`;
 const SCOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leadgen-scout`;
