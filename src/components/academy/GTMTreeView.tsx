@@ -463,8 +463,7 @@ export default function GTMTreeView({
         {/* ══════════════════════════════════════════════════════ */}
         {showFullMode && (
           <div className="rounded-lg border border-border overflow-hidden bg-card">
-            {/* Top horizontal strip */}
-            {strategyStrip}
+            {/* Chat/Leads Split */}
 
             {/* Bottom split: Chat | Leads */}
             <div className="flex h-[520px]">

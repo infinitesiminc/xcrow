@@ -461,22 +461,6 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
           isGeneratingMore={isGeneratingMore}
           selectedProductId={selectedProductId}
           onSelectProduct={setSelectedProductId}
-          strategyStrip={
-            <StrategyStrip
-              treeData={treeData}
-              activeCards={activeCards}
-              cardInputs={cardInputs}
-              onToggleCard={toggleCard}
-              onUpdateCardValue={updateCardValue}
-              onFileUpload={handleFileUpload}
-              onGenerate={runLeadGeneration}
-              isGenerating={isRunning}
-              selectedProductId={selectedProductId}
-              products={treeData.products}
-              onSelectProduct={setSelectedProductId}
-              productLeadCounts={productLeadCounts}
-            />
-          }
           chatPanel={
             <StrategyChat
               companyName={selectedCompany.name}
