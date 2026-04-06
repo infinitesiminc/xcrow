@@ -207,8 +207,10 @@ export default function Leadgen() {
         mappings: d3?.structured?.mappings || [],
         leads: [],
       });
+      setGtmPersonasLoading(false);
     } catch (e) {
       console.warn("GTM analysis unavailable:", e);
+      setGtmPersonasLoading(false);
     }
   }, []);
 
