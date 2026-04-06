@@ -11,8 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Bot, User, Loader2, MessageSquare, Mail, Check, X, Users, Globe, Sparkles, ArrowRight, Target, Zap, BarChart3, MapPin } from "lucide-react";
-import CompanyMarquee from "@/components/CompanyMarquee";
-import crowHero from "@/assets/crow-hero.png";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -892,132 +890,42 @@ export default function Leadgen() {
     ["Datadog", "Notion", "Shopify", "HubSpot", "Snowflake", "Cloudflare", "Twilio", "Zoom"],
   ];
 
-  const VALUE_PROPS = [
-    { icon: Globe, title: "One URL Input", desc: "Enter any company website. AI scrapes, analyzes, and maps your ideal customers automatically." },
-    { icon: Target, title: "3-Layer ICP Map", desc: "Industry verticals → company segments → buyer personas. Full ICP tree in seconds." },
-    { icon: Zap, title: "Instant Lead Pipeline", desc: "Find, enrich, and score prospects directly from your ICP map. No manual research." },
-    { icon: BarChart3, title: "Outreach Ready", desc: "AI-drafted emails personalized to each lead. Send directly from the platform." },
-  ];
+  // Redirect to homepage if no website param and no existing data
+  useEffect(() => {
+    if (!hasDiscovered && !isDiscovering && !searchParams.get("website") && !sessionStorage.getItem("pendingWebsite") && !websiteUrl) {
+      navigate("/", { replace: true });
+    }
+  }, [hasDiscovered, isDiscovering, searchParams, websiteUrl, navigate]);
 
-  // Discovery hero (shown when no niches) — full landing page
-  const discoveryHero = (
-    <div className="flex-1 flex flex-col min-h-screen bg-background relative overflow-hidden">
-      {/* Hero section */}
-      <div className="relative flex flex-col items-center justify-start px-4 pt-12 pb-10 z-10">
-        {/* Crow hero image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <img
-            src={crowHero}
-            alt="Xcrow — B2B Lead Hunter"
-            className="w-64 h-auto mx-auto"
-            width={1920}
-            height={1080}
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-3">B2B Lead Hunter</p>
-          <h1 className="text-4xl md:text-5xl font-semibold text-foreground mb-3 tracking-tight">
-            One Website. Perfect Leads.
-          </h1>
-
-          <div className="flex items-center justify-center gap-3 my-4">
-            <div className="w-16 h-px bg-gradient-to-r from-transparent to-border" />
-            <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
-            <div className="w-16 h-px bg-gradient-to-l from-transparent to-border" />
-          </div>
-
-          <p className="text-muted-foreground text-sm md:text-base max-w-lg mx-auto mb-8">
-            Drop your URL — AI finds, qualifies, and delivers your perfect prospects in seconds.
-          </p>
-
-          <form
-            className="flex flex-col gap-2 max-w-lg mx-auto w-full"
-            onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
+  // Discovery loading screen (shown during analysis)
+  const discoveryLoading = (
+    <div className="flex-1 flex flex-col items-center justify-center bg-background">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-md mx-auto px-4"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+        <h2 className="text-xl font-semibold text-foreground mb-2">
+          Analyzing {websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}
+        </h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          This usually takes 15–30 seconds
+        </p>
+        {discoveryPhase && (
+          <motion.div
+            key={discoveryPhase}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center gap-2 text-sm text-primary"
           >
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                  placeholder="yourcompany.com"
-                  className="pl-9 h-12 text-sm bg-card/80 border-border/60 backdrop-blur"
-                  disabled={isDiscovering}
-                />
-              </div>
-            </div>
-            <Button type="submit" size="lg" className="h-12 px-6 gap-2 w-full" disabled={!websiteUrl.trim() || isDiscovering}>
-              {isDiscovering ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Sparkles className="w-4 h-4" />
-              )}
-              {isDiscovering ? "Analyzing..." : "Hunt Leads"}
-            </Button>
-          </form>
-
-          {isDiscovering && discoveryPhase && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center justify-center gap-2 text-sm text-primary mt-4"
-            >
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              {discoveryPhase}
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Logo Marquee */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="w-full max-w-4xl mx-auto"
-        >
-          <p className="text-center text-xs text-muted-foreground/70 mb-3 tracking-wide uppercase">
-            Trusted across 3,700+ companies worldwide
-          </p>
-          <CompanyMarquee rows={MARQUEE_ROWS} />
-        </motion.div>
-
-        {/* Value Props */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl w-full mt-16"
-        >
-          {VALUE_PROPS.map((vp, i) => (
-            <div
-              key={i}
-              className="bg-card border border-border rounded-lg p-5 text-center group hover:shadow-md transition-all duration-300"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/15 transition-colors">
-                <vp.icon className="w-5 h-5 text-primary" />
-              </div>
-              <h3 className="text-sm font-semibold text-foreground mb-1.5">{vp.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{vp.desc}</p>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-auto">
-        <Footer />
-      </div>
+            <Sparkles className="w-3.5 h-3.5" />
+            {discoveryPhase}
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 
@@ -1067,7 +975,7 @@ export default function Leadgen() {
 
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
-      {!hasDiscovered ? discoveryHero : (
+      {!hasDiscovered ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Website + Location bar */}
           <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
