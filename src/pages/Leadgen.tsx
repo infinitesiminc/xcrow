@@ -539,11 +539,10 @@ export default function Leadgen() {
 
   const handleSendEmail = async () => {
     if (!draftLead?.email || !draftSubject || !draftBody) return;
-    // Build mailto link with pre-filled subject & body
-    const mailto = `mailto:${encodeURIComponent(draftLead.email)}?subject=${encodeURIComponent(draftSubject)}&body=${encodeURIComponent(draftBody)}`;
-    window.open(mailto, "_blank");
+    // Use window.location.href for better mailto compatibility across browsers
+    const mailto = `mailto:${draftLead.email}?subject=${encodeURIComponent(draftSubject)}&body=${encodeURIComponent(draftBody)}`;
+    window.location.href = mailto;
     toast.success(`Opening email client for ${draftLead.email}`);
-    // Log outreach if user is authenticated
     if (user) {
       const matchedLead = savedLeads.find((l) => l.email === draftLead.email && l.company === draftLead.company);
       if (matchedLead) {
