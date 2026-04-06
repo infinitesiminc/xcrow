@@ -41,6 +41,9 @@ export default function StrategyChat({ companyName, activeCards, treeData }: Str
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Keep ref in sync
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
+
   /* ── Build ICP context string from treeData ── */
   const icpContext = useMemo(() => {
     if (!treeData) return "";
