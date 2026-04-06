@@ -316,7 +316,12 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
       if (error) throw error;
       const newLeads = data?.structured?.leads || [];
       if (newLeads.length > 0) {
-        setTreeData(prev => prev ? { ...prev, leads: [...prev.leads, ...newLeads] } : prev);
+        setTreeData(prev => {
+          if (!prev) return prev;
+          const updated = { ...prev, leads: [...prev.leads, ...newLeads] };
+          updateCache(selectedCompany!, accumulatedRef.current, updated);
+          return updated;
+        });
         toast.success(`Added ${newLeads.length} new leads`);
       } else {
         toast.info("No additional leads found");
