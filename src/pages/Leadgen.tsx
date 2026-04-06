@@ -1143,6 +1143,7 @@ export default function Leadgen() {
             gtmTreeData={gtmTreeData}
             onGenerateFromTargeting={handleGenerateFromTargeting}
             onStopGenerating={handleStopGenerating}
+            loadingPersonas={gtmPersonasLoading}
           />
         </div>
       )}
