@@ -157,7 +157,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             disabled={loading}
             
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Begin Quest" : "Enter Realm"}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Create account" : "Sign in"}
           </Button>
         </form>
 
