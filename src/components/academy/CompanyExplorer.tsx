@@ -212,13 +212,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
         name: (aiName && aiName.length <= 40) ? aiName : company.name,
         headquarters: products?.headquarters || company.headquarters,
       };
-      supabase.from("leadhunter_cache").upsert({
-        website_key: websiteKey,
-        company_data: cachedCompany as any,
-        step_results: accumulated as any,
-        tree_data: builtTree as any,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      }, { onConflict: "website_key" }).then(() => {});
+      updateCache(cachedCompany as CompanyData, accumulated, builtTree);
     }
 
     setIsRunning(false);
