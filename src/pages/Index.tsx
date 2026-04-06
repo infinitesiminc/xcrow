@@ -212,8 +212,6 @@ export default function Index() {
           </motion.div>
         </section>
 
-        {/* ═══ Visual 1: Website → Leads pipeline ═══ */}
-        <WebsiteToLeadsVisual />
 
         {/* ═══ Visual 2: Targeting controls ═══ */}
         <TargetingControlsVisual />
