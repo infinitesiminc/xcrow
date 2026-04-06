@@ -78,6 +78,10 @@ const App = () => (
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/use-cases" element={<UseCasesIndex />} />
               <Route path="/use-cases/:slug" element={<UseCasePage />} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/demo" element={<Demo />} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
