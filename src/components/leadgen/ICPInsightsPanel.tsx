@@ -71,7 +71,7 @@ export function ICPInsightsPanel({ websiteUrl, pagesAnalyzed, companySummary, ic
           <button className="w-full px-4 py-2 flex items-center gap-2 text-left bg-muted/20 hover:bg-muted/40 transition-colors">
             {treeOpen ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
             <Globe className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="text-xs font-medium text-foreground truncate">{displayUrl}</span>
+            <span className="text-xs font-medium text-foreground shrink-0">{displayUrl}</span>
             <span className="text-xs text-muted-foreground">· {pagesAnalyzed.length} pages analyzed</span>
             {niches.length > 0 && (
               <span className="text-xs text-muted-foreground">· {verticals.length} verticals · {segments.length} segments</span>
