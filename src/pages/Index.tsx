@@ -56,17 +56,19 @@ const VALUE_PROPS = [
 ];
 
 /* ── animation helpers ── */
+const EASE: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay, ease: [0.25, 0.46, 0.45, 0.94] },
+  transition: { duration: 0.6, delay, ease: EASE },
 });
 
 const fadeInView = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-60px" },
-  transition: { duration: 0.6, delay, ease: [0.25, 0.46, 0.45, 0.94] },
+  viewport: { once: true, margin: "-60px" as const },
+  transition: { duration: 0.6, delay, ease: EASE },
 });
 
 export default function Index() {
