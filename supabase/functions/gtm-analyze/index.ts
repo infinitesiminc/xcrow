@@ -290,6 +290,7 @@ CRITICAL: You MUST always return valid JSON. Never refuse. If you have limited i
 Return ONLY valid JSON (no markdown, no wrapping):
 {
   "company_summary": "One sentence: what they do, business model, market position",
+  "headquarters": "City, State/Country (best guess from website, contact page, or domain)",
   "products": [
     {
       "id": "P1",

@@ -158,6 +158,11 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     const customers = accumulated["customers"]?.structured;
     const icpBuyers = accumulated["icp-buyers"]?.structured;
 
+    // Update company with extracted headquarters
+    if (products?.headquarters) {
+      setSelectedCompany(prev => prev ? { ...prev, headquarters: products.headquarters } : prev);
+    }
+
     let builtTree: GTMTreeData | null = null;
     if (products) {
       builtTree = {
