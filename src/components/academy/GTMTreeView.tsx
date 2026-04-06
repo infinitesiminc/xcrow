@@ -396,12 +396,7 @@ export default function GTMTreeView({
                   {data.products.map(product => (
                     <div
                       key={product.id}
-                      onClick={() => selectProduct(product.id)}
-                      className={`p-3 rounded-lg border min-w-[200px] max-w-[240px] shrink-0 cursor-pointer transition-colors ${
-                        selectedProductId === product.id
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-card hover:border-primary/50"
-                      }`}
+                      className="p-3 rounded-lg border border-border bg-card min-w-[200px] max-w-[240px] shrink-0"
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <Package className="w-4 h-4 text-primary shrink-0" />
