@@ -264,7 +264,9 @@ export default function StrategyChat({ companyName, activeCards, treeData }: Str
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/80 border border-border"
               }`}>
-                <div className="text-foreground [&_p]:mb-0.5 [&_p:last-child]:mb-0 [&_strong]:font-semibold">
+                <div className={`[&_p]:mb-0.5 [&_p:last-child]:mb-0 [&_strong]:font-semibold ${
+                  msg.role === "user" ? "text-primary-foreground" : "text-foreground"
+                }`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
               </div>
