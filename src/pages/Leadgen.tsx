@@ -1442,7 +1442,7 @@ export default function Leadgen() {
             </Button>
             <Button size="sm" onClick={handleSendEmail} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
               {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-              {sending ? "Sending..." : "Send Email"}
+              {sending ? "Opening..." : "Open in Email Client"}
             </Button>
           </DialogFooter>
         </DialogContent>
