@@ -3,6 +3,8 @@
  */
 import { useState, useRef } from "react";
 import logoCrow from "@/assets/logo-crow.png";
+import WebsiteToLeadsVisual from "@/components/home/WebsiteToLeadsVisual";
+import TargetingControlsVisual from "@/components/home/TargetingControlsVisual";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
