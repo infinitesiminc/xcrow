@@ -128,7 +128,7 @@ export default function Index() {
                 {...fadeUp(0)}
                 className="text-primary text-sm font-semibold tracking-[0.2em] uppercase mb-6"
               >
-                The #1 Outbound Lead Hunter
+                FASTEST LEAD GEN MACHINE
               </motion.p>
 
               {/* Headline — Gong style: big uppercase with accent color */}
