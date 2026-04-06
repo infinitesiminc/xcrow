@@ -350,57 +350,15 @@ async function executeLeadSearch(
   if (apolloKey) {
     console.log("Searching Apollo for decision-makers...");
     apolloLeads = await searchApollopeople(apolloKey, args);
-    console.log(`Apollo returned ${apolloLeads.length} people`);
+    console.log(`Apollo returned ${apolloLeads.length} verified people`);
   }
 
-  // 2. If Apollo returned results, use AI to score and enrich with summaries
-  if (apolloLeads.length > 0) {
-    const aiRes = await fetch(AI_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `You are scoring and enriching leads for relevance. Given an ICP and a list of Apollo results, return the top ${extractLimit} most relevant leads as JSON (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin url or null","email":"email or null","website":"company website or null","photo_url":"photo url or null","source":"Apollo People Search","summary":"1-2 sentence summary of who this person is","reason":"1-2 sentence explanation of why they match the ICP","score":85,"is_decision_maker":true}]}
-
-CRITICAL:
-- Rank by ICP fit — closest matches first
-- ONLY keep decision-makers with purchasing authority
-- Every lead MUST have summary, reason, and score fields
-- "score" is 0-100 ICP fit score: 90+ = perfect match, 70-89 = strong, 50-69 = moderate, <50 = weak
-- Score based on: title seniority, company relevance to ICP, industry alignment, location match
-- Preserve all Apollo data (linkedin, email, photo_url)`,
-          },
-          {
-            role: "user",
-            content: `ICP: ${args.icp_summary}\n\nApollo Results:\n${JSON.stringify(apolloLeads.slice(0, 30))}`,
-          },
-        ],
-      }),
-    });
-    const aiData = await aiRes.json();
-    const aiText = aiData?.choices?.[0]?.message?.content || "";
-    try {
-      const cleaned = aiText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      const parsed = JSON.parse(cleaned);
-      return (parsed.leads || []).slice(0, extractLimit).map((l: any) => ({ ...l, linkedin: validLinkedIn(l.linkedin) }));
-    } catch {
-      console.error("AI scoring parse failed, returning raw Apollo results");
-      // Add default summary/reason to raw results
-      return apolloLeads.slice(0, extractLimit).map((l) => ({
-        ...l,
-        summary: `${l.title || "Professional"} at ${l.company || "Unknown"}`,
-        reason: "Matched ICP criteria via Apollo search",
-        is_decision_maker: true,
-      }));
-    }
+  if (apolloLeads.length === 0) {
+    console.log("No Apollo results — returning empty (no AI fallback)");
+    return [];
   }
 
-  // 3. Fallback: AI-only search using web knowledge
-  console.log("No Apollo results, falling back to AI web knowledge...");
+  // 2. Use AI to score and enrich Apollo results with summaries
   const aiRes = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
@@ -409,20 +367,20 @@ CRITICAL:
       messages: [
         {
           role: "system",
-          content: `Find up to ${extractLimit} real decision-makers matching this ICP. Return JSON only (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin profile url or null","email":"null","website":"company website or null","source":"AI Discovery","summary":"1-2 sentence summary","reason":"1-2 sentence ICP match explanation","score":85,"is_decision_maker":true}]}
+          content: `You are scoring and enriching leads for relevance. Given an ICP and a list of Apollo results, return the top ${extractLimit} most relevant leads as JSON (no markdown fences):
+{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin url or null","email":"email or null","website":"company website or null","photo_url":"photo url or null","source":"Apollo People Search","summary":"1-2 sentence summary of who this person is","reason":"1-2 sentence explanation of why they match the ICP","score":85,"is_decision_maker":true}]}
 
 CRITICAL:
-- Use your knowledge of real companies and executives
-- Every lead must be from a DIFFERENT company
-- Focus on decision-makers: Owner, CEO, VP, Director, Head of
-- Do NOT include LinkedIn profile URLs — they are usually wrong. Set linkedin to null.
-- Only include people you're confident exist
-- Be honest — only include people you're confident exist`,
+- Rank by ICP fit — closest matches first
+- ONLY keep decision-makers with purchasing authority
+- Every lead MUST have summary, reason, and score fields
+- "score" is 0-100 ICP fit score: 90+ = perfect match, 70-89 = strong, 50-69 = moderate, <50 = weak
+- Score based on: title seniority, company relevance to ICP, industry alignment, location match
+- Preserve ALL Apollo data exactly (linkedin, email, photo_url) — do NOT modify URLs`,
         },
         {
           role: "user",
-          content: `ICP: ${args.icp_summary}\nTarget titles: ${(args.target_titles || []).join(", ")}\nLocation: ${args.target_location || "Any"}\nIndustries: ${(args.target_industries || []).join(", ")}`,
+          content: `ICP: ${args.icp_summary}\n\nApollo Results:\n${JSON.stringify(apolloLeads.slice(0, 30))}`,
         },
       ],
     }),
@@ -434,8 +392,14 @@ CRITICAL:
     const parsed = JSON.parse(cleaned);
     return (parsed.leads || []).slice(0, extractLimit).map((l: any) => ({ ...l, linkedin: validLinkedIn(l.linkedin) }));
   } catch {
-    console.error("AI fallback parse failed");
-    return [];
+    console.error("AI scoring parse failed, returning raw Apollo results");
+    return apolloLeads.slice(0, extractLimit).map((l) => ({
+      ...l,
+      summary: `${l.title || "Professional"} at ${l.company || "Unknown"}`,
+      reason: "Matched ICP criteria via Apollo search",
+      score: 70,
+      is_decision_maker: true,
+    }));
   }
 }
 
