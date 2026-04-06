@@ -29,6 +29,10 @@ const Contact = lazy(() => import("./pages/Contact.tsx"));
 const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
+const Pricing = lazy(() => import("./pages/Pricing.tsx"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
+const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
+const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -66,6 +70,10 @@ const App = () => (
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/vs/:slug" element={<CompetitorComparison />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/use-cases" element={<UseCasesIndex />} />
+              <Route path="/use-cases/:slug" element={<UseCasePage />} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
@@ -79,10 +87,8 @@ const App = () => (
               <Route path="/map" element={<Navigate to="/" replace />} />
               <Route path="/journey" element={<Navigate to="/" replace />} />
               <Route path="/skills" element={<Navigate to="/" replace />} />
-              <Route path="/pricing" element={<Navigate to="/" replace />} />
               <Route path="/schools" element={<Navigate to="/" replace />} />
               <Route path="/about" element={<Navigate to="/" replace />} />
-              <Route path="/how-it-works" element={<Navigate to="/" replace />} />
               <Route path="/competition" element={<Navigate to="/" replace />} />
               <Route path="/investors" element={<Navigate to="/" replace />} />
               <Route path="/leaderboard" element={<Navigate to="/" replace />} />
