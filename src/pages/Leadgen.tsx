@@ -1049,9 +1049,11 @@ export default function Leadgen() {
     toast.info("Scoring leads — this feature is coming soon!");
   };
 
+  const showSkeleton = !hasDiscovered || (isDiscovering) || (hasDiscovered && !gtmTreeData);
+
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
-      {!hasDiscovered ? discoveryLoading : (
+      {showSkeleton ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Website + Location bar */}
           <div className="border-b border-border/40 bg-card/30 px-3 py-1 flex items-center gap-1.5 shrink-0 flex-wrap">
