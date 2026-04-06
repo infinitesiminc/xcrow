@@ -804,9 +804,8 @@ export default function Leadgen() {
     }
   };
 
-  const handleScoreLeads = (niche: string) => {
-    if (!user) { openAuthModal(); return; }
-    toast.info("Scoring leads — this feature is coming soon!");
+  const handleScoreLeads = (_niche: string) => {
+    // Score is embedded at lead generation time
   };
 
   const handleDraftAllOutreach = (niche: string) => {
