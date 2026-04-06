@@ -148,7 +148,7 @@ Named customers: ${customers.join(", ") || "None identified"}
     } finally {
       setIsThinking(false);
     }
-  }, [messages, icpContext, isThinking]);
+  }, [icpContext, treeData, companyName]);
 
   function handlePillClick(pill: string) {
     handleSendMessage(pill);
