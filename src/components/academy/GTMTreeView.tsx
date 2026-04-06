@@ -468,12 +468,6 @@ export default function GTMTreeView({
                 <span className="text-[10px] text-muted-foreground">{data.products.length} products</span>
                 <span className="text-[10px] text-muted-foreground">•</span>
                 <span className="text-[10px] text-muted-foreground">{[...new Set(data.mappings.map(m => m.vertical))].length} verticals</span>
-                {namedCustomers.length > 0 && (
-                  <>
-                    <span className="text-[10px] text-muted-foreground">•</span>
-                    <span className="text-[10px] text-muted-foreground">{namedCustomers.length} customers</span>
-                  </>
-                )}
               </div>
               <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${contextExpanded ? "rotate-180" : ""}`} />
             </button>
