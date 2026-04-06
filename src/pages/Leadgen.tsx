@@ -1181,35 +1181,38 @@ export default function Leadgen() {
   const hasWebsiteContext = !!websiteUrl || !!searchParams.get("website") || !!sessionStorage.getItem("pendingWebsite");
   const showSkeleton = hasWebsiteContext && (isDiscovering || isGtmLoading);
 
-  const emptyState = (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="text-center max-w-md mx-auto px-4">
-        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Globe className="w-7 h-7 text-primary" />
-        </div>
-        <h2 className="text-lg font-semibold text-foreground mb-2">Enter a website to start</h2>
-        <p className="text-sm text-muted-foreground mb-6">Drop any company URL to discover their products, map buyer personas, and generate qualified leads.</p>
-        <form
-          className="flex gap-2 max-w-sm mx-auto"
-          onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
-        >
-          <div className="relative flex-1">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="company.com"
-              className="pl-9 h-10"
-            />
+  const EmptyState = () => {
+    const [emptyInput, setEmptyInput] = useState("");
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Globe className="w-7 h-7 text-primary" />
           </div>
-          <Button type="submit" className="gap-1.5" disabled={!websiteUrl.trim()}>
-            <Sparkles className="w-4 h-4" />
-            Analyze
-          </Button>
-        </form>
+          <h2 className="text-lg font-semibold text-foreground mb-2">Enter a website to start</h2>
+          <p className="text-sm text-muted-foreground mb-6">Drop any company URL to discover their products, map buyer personas, and generate qualified leads.</p>
+          <form
+            className="flex gap-2 max-w-sm mx-auto"
+            onSubmit={(e) => { e.preventDefault(); const url = emptyInput.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
+          >
+            <div className="relative flex-1">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={emptyInput}
+                onChange={(e) => setEmptyInput(e.target.value)}
+                placeholder="company.com"
+                className="pl-9 h-10"
+              />
+            </div>
+            <Button type="submit" className="gap-1.5" disabled={!emptyInput.trim()}>
+              <Sparkles className="w-4 h-4" />
+              Analyze
+            </Button>
+          </form>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
