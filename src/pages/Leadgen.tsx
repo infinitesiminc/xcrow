@@ -371,15 +371,22 @@ export default function Leadgen() {
     }
   }, []);
 
-  // Auto-discover from homepage URL input
+  // Always hydrate websiteUrl from URL param (even if data already exists)
   const autoDiscoverRef = useRef(false);
   useEffect(() => {
     const website = searchParams.get("website") || sessionStorage.getItem("pendingWebsite");
-    if (website) sessionStorage.removeItem("pendingWebsite");
-    if (website && !autoDiscoverRef.current && !hasDiscovered && !isDiscovering) {
-      autoDiscoverRef.current = true;
+    if (website) {
+      sessionStorage.removeItem("pendingWebsite");
       setWebsiteUrl(website);
       setSearchParams({}, { replace: true });
+      // Also track workspace for authenticated users
+      if (user) {
+        const wk = normalizeWorkspaceKey(website);
+        if (wk) upsertWorkspace(wk, wk);
+      }
+    }
+    if (website && !autoDiscoverRef.current && !hasDiscovered && !isDiscovering) {
+      autoDiscoverRef.current = true;
       setTimeout(() => {
         setIsDiscovering(true);
         setDiscoveryPhase("Mapping site pages...");
