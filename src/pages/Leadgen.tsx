@@ -100,6 +100,7 @@ export default function Leadgen() {
   const [localWorkspaceKey, setLocalWorkspaceKey] = useState("");
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
   const [isFindingLeads, setIsFindingLeads] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
   const [isEnrichingLeads, setIsEnrichingLeads] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
