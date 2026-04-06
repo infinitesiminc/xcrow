@@ -25,7 +25,6 @@ const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
-const Academy = lazy(() => import("./pages/Academy.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -53,7 +52,7 @@ const App = () => (
           <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<SmartHome />} />
-              <Route path="/leadgen" element={<Navigate to="/" replace />} />
+              <Route path="/leadgen" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/blog" element={<Blog />} />
@@ -65,7 +64,7 @@ const App = () => (
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/use-cases" element={<><UseCasesIndex /></>} />
               <Route path="/use-cases/:slug" element={<><UseCasePage /></>} />
-              <Route path="/leadhunter" element={<AuthGate><Academy /></AuthGate>} />
+              <Route path="/leadhunter" element={<AuthGate><Leadgen /></AuthGate>} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy/*" element={<Navigate to="/leadhunter" replace />} />
