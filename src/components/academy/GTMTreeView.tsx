@@ -341,43 +341,43 @@ export default function GTMTreeView({
     <TooltipProvider delayDuration={200}>
       <div className="space-y-1">
         {/* ── Executive Overview ── */}
-        <div className="px-3 py-3 border-b border-border/50 bg-card/50 rounded-t-lg">
+        <div className="px-4 py-4 border-b border-border/50 bg-card/50 rounded-t-lg">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-foreground tracking-tight leading-tight">{companyName}</h2>
+              <h2 className="text-2xl font-bold text-foreground tracking-tight leading-tight">{companyName}</h2>
               {data.company_summary && (
-                <p className="text-sm text-muted-foreground mt-0.5 leading-snug">{data.company_summary}</p>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{data.company_summary}</p>
               )}
             </div>
             {namedCustomers.length > 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Badge variant="outline" className="text-xs h-6 px-2 cursor-default gap-1 shrink-0">
-                    <Building2 className="w-3 h-3 text-primary" />
+                  <Badge variant="outline" className="text-xs h-7 px-3 cursor-default gap-1.5 shrink-0">
+                    <Building2 className="w-3.5 h-3.5 text-primary" />
                     {namedCustomers.length} customers
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[300px]">
-                  <p className="text-xs font-medium mb-1">Named Customers</p>
+                  <p className="text-sm font-medium mb-1">Named Customers</p>
                   <p className="text-xs text-muted-foreground">{namedCustomers.map(c => c.name).join(", ")}</p>
                 </TooltipContent>
               </Tooltip>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <div className="flex items-center gap-2 mt-2.5 flex-wrap">
             {companyMeta?.website && (() => {
               const raw = companyMeta.website;
               const href = raw.startsWith("http") ? raw : `https://${raw}`;
               const display = raw.replace(/^https?:\/\//, "").replace(/\/$/, "");
               return (
-                <a href={href} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  <Globe className="w-3 h-3" /> {display}
+                <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                  <Globe className="w-3.5 h-3.5" /> {display}
                 </a>
               );
             })()}
-            {companyMeta?.industry && <Badge variant="secondary" className="text-xs">{companyMeta.industry}</Badge>}
-            {companyMeta?.employee_range && <Badge variant="outline" className="text-xs">{companyMeta.employee_range}</Badge>}
-            {companyMeta?.headquarters && <Badge variant="outline" className="text-xs">{companyMeta.headquarters}</Badge>}
+            {companyMeta?.industry && <Badge variant="secondary" className="text-sm">{companyMeta.industry}</Badge>}
+            {companyMeta?.employee_range && <Badge variant="outline" className="text-sm">{companyMeta.employee_range}</Badge>}
+            {companyMeta?.headquarters && <Badge variant="outline" className="text-sm">{companyMeta.headquarters}</Badge>}
           </div>
         </div>
 
