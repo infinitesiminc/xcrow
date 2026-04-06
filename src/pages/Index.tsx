@@ -66,8 +66,8 @@ export default function Index() {
             transition={{ duration: 0.5 }}
             className="text-center relative z-10 max-w-3xl mx-auto"
           >
+            <img src={logoCrow} alt="Xcrow" className="h-16 w-16 object-contain mx-auto mb-4" />
             <p className="text-primary font-semibold text-sm tracking-wide uppercase mb-4">
-              B2B Lead Intelligence
             </p>
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.1] uppercase">
