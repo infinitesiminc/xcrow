@@ -112,29 +112,22 @@ export function LeadgenDashboard({
   }
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full">
-      {/* Company summary banner */}
-      {companySummary && !gtmTreeData && (
-        <ICPInsightsPanel
-          websiteUrl={websiteUrl || ""}
-          pagesAnalyzed={pagesAnalyzed || []}
-          companySummary={companySummary}
-          icpSummary={icpSummary || ""}
-          niches={niches}
-        />
-      )}
-
-      {/* GTM Targeting Cards */}
+    <div className="flex flex-1 min-w-0 h-full">
+      {/* LEFT COLUMN: Targeting inputs (33%) */}
       {gtmTreeData && (
-        <div className="border-b border-border/40">
+        <div className="w-1/3 min-w-[280px] max-w-[400px] border-r border-border/40 flex flex-col h-full overflow-y-auto shrink-0">
           {companySummary && (
-            <div className="px-4 py-2 bg-card/40 flex items-start gap-3 text-xs border-b border-border/40">
+            <div className="px-3 py-2 bg-card/40 flex items-start gap-2 text-xs border-b border-border/40">
               <span className="font-medium text-foreground shrink-0">Summary</span>
-              <p className="text-muted-foreground line-clamp-2 leading-relaxed">{companySummary}</p>
+              <p className="text-muted-foreground line-clamp-3 leading-relaxed">{companySummary}</p>
             </div>
           )}
-          <TargetingCards treeData={gtmTreeData} droppedIds={droppedIds} />
-          <div onDrop={handleDrop} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}>
+          <TargetingCards treeData={gtmTreeData} droppedIds={droppedIds} vertical />
+          <div
+            className="mt-auto"
+            onDrop={handleDrop}
+            onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
+          >
             <TargetZone
               cards={droppedCards}
               onRemoveCard={handleRemoveCard}
@@ -146,78 +139,92 @@ export function LeadgenDashboard({
         </div>
       )}
 
-      {/* Action Toolbar */}
-      <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
-        <span className="text-xs font-medium text-muted-foreground mr-1">
-          {leads.length} leads
-          {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
-        </span>
-        <div className="flex-1" />
-        <Button
-          variant="default"
-          size="sm"
-          className="h-7 gap-1.5 text-xs"
-          disabled={isGenerating}
-          onClick={() => onGenerateAll?.()}
-        >
-          {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-          Generate All
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 gap-1.5 text-xs"
-          disabled={isEnriching || leads.length === 0}
-          onClick={() => onEnrichAll?.()}
-        >
-          {isEnriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-          Enrich
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 gap-1.5 text-xs"
-          disabled={leads.length === 0}
-          onClick={() => onScoreAll?.()}
-        >
-          <Target className="w-3.5 h-3.5" />
-          Score
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 gap-1.5 text-xs"
-          disabled={leads.length === 0}
-          onClick={() => onDraftAll?.()}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          Draft
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 gap-1.5 text-xs"
-          disabled={leads.length === 0}
-          onClick={onExportCSV}
-        >
-          <Download className="w-3.5 h-3.5" />
-          Export
-        </Button>
-      </div>
+      {/* RIGHT COLUMN: Leads (67%) */}
+      <div className="flex flex-col flex-1 min-w-0 h-full">
+        {/* Company summary when no GTM data */}
+        {companySummary && !gtmTreeData && (
+          <ICPInsightsPanel
+            websiteUrl={websiteUrl || ""}
+            pagesAnalyzed={pagesAnalyzed || []}
+            companySummary={companySummary}
+            icpSummary={icpSummary || ""}
+            niches={niches}
+          />
+        )}
 
-      {/* Lead Pipeline (full area) */}
-      <LeadPipeline
-        leads={leads}
-        onUpdateStatus={onUpdateStatus}
-        onDraftEmail={onDraftEmail}
-        onExportCSV={onExportCSV}
-        outreachCount={outreach.length}
-        onSelectLead={onSelectLead}
-        onFindLookalikes={onFindLookalikes}
-        selectedIds={selectedIds}
-        onToggleSelect={toggleSelect}
-        onSelectAll={selectAll}
-      />
+        {/* Action Toolbar */}
+        <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
+          <span className="text-xs font-medium text-muted-foreground mr-1">
+            {leads.length} leads
+            {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
+          </span>
+          <div className="flex-1" />
+          <Button
+            variant="default"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            disabled={isGenerating}
+            onClick={() => onGenerateAll?.()}
+          >
+            {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+            Generate All
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            disabled={isEnriching || leads.length === 0}
+            onClick={() => onEnrichAll?.()}
+          >
+            {isEnriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            Enrich
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            disabled={leads.length === 0}
+            onClick={() => onScoreAll?.()}
+          >
+            <Target className="w-3.5 h-3.5" />
+            Score
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            disabled={leads.length === 0}
+            onClick={() => onDraftAll?.()}
+          >
+            <Mail className="w-3.5 h-3.5" />
+            Draft
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            disabled={leads.length === 0}
+            onClick={onExportCSV}
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export
+          </Button>
+        </div>
+
+        {/* Lead Pipeline */}
+        <LeadPipeline
+          leads={leads}
+          onUpdateStatus={onUpdateStatus}
+          onDraftEmail={onDraftEmail}
+          onExportCSV={onExportCSV}
+          outreachCount={outreach.length}
+          onSelectLead={onSelectLead}
+          onFindLookalikes={onFindLookalikes}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onSelectAll={selectAll}
+        />
+      </div>
     </div>
   );
 }
