@@ -99,6 +99,12 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
           body: { stepId: step.id, company, previousResults: accumulated },
         });
         if (error) throw error;
+        if (data?.error) {
+          toast.error(data.error);
+          setIsRunning(false);
+          setCurrentStepIdx(-1);
+          return;
+        }
         accumulated[step.id] = data;
         setStepResults((prev) => ({ ...prev, [step.id]: data }));
       } catch (e) {

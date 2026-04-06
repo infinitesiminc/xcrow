@@ -33,6 +33,13 @@ export default function Index() {
     e.preventDefault();
     const url = websiteUrl.trim();
     if (!url) return;
+    // Strip protocol and validate domain format
+    const domain = url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+    const domainPattern = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
+    if (!domainPattern.test(domain)) {
+      toast.error("Please enter a valid website URL (e.g. company.com)");
+      return;
+    }
     navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
   };
 
