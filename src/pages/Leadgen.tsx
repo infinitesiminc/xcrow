@@ -169,7 +169,7 @@ export default function Leadgen() {
       sessionStorage.setItem("pendingLeads", JSON.stringify(guestLeads));
     }
     rawOpenAuthModal();
-  }, [websiteUrl, rawOpenAuthModal, localNiches, companySummary, icpSummary, allLeads]);
+  }, [websiteUrl, rawOpenAuthModal, localNiches, companySummary, icpSummary, items]);
 
   // Restore workspace after sign-in: re-hydrate from cache + session state
   useEffect(() => {
