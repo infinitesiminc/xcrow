@@ -246,7 +246,6 @@ export default function GTMTreeView({
 
   const [selectedVerticalIdx, setSelectedVerticalIdx] = useState<number | null>(null);
   const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
-  const [customersOpen, setCustomersOpen] = useState(false);
 
   // Auto-select first product
   useEffect(() => {
