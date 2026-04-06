@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -257,6 +257,13 @@ export default function GTMTreeView({ companyName, data, companyMeta, onGenerate
   const [selectedVerticalIdx, setSelectedVerticalIdx] = useState<number | null>(null);
   const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
   const [customersOpen, setCustomersOpen] = useState(false);
+
+  // Auto-select first product
+  useEffect(() => {
+    if (!selectedProductId && data.products.length > 0) {
+      setSelectedProductId(data.products[0].id);
+    }
+  }, [data.products, selectedProductId]);
 
   // Filters
   const [productFilter, setProductFilter] = useState("");
