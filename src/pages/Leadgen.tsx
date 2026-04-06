@@ -1108,9 +1108,9 @@ export default function Leadgen() {
   const discoveryLoading = (
     <div className="flex-1 flex min-h-0 relative">
       {/* Skeleton background matching LeadgenDashboard layout */}
-      <div className="flex flex-1 min-w-0 h-full opacity-40 animate-pulse">
+      <div className="flex flex-col md:flex-row flex-1 min-w-0 h-full opacity-40 animate-pulse">
         {/* Left column skeleton (targeting cards) */}
-        <div className="w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex flex-col h-full shrink-0">
+        <div className="hidden md:flex w-2/5 min-w-[320px] max-w-[480px] border-r border-border/40 flex-col h-full shrink-0">
           <div className="px-3 py-2 bg-card/40 border-b border-border/40">
             <div className="h-3 w-20 bg-muted rounded mb-1.5" />
             <div className="h-2.5 w-full bg-muted/60 rounded" />
@@ -1273,12 +1273,12 @@ export default function Leadgen() {
       {!hasWebsiteContext && !hasDiscovered ? <EmptyState /> : showSkeleton ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Consolidated header strip: URL + location + summary */}
-          <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex items-center gap-2 shrink-0">
+          <div className="border-b border-border/40 bg-card/30 px-3 py-1.5 flex flex-wrap items-center gap-2 shrink-0">
             <form
               className="flex items-center gap-1.5 shrink-0"
               onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
             >
-              <div className="relative w-[160px]">
+              <div className="relative w-[140px] sm:w-[160px]">
                 <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                 <Input
                   value={websiteUrl}
@@ -1330,7 +1330,7 @@ export default function Leadgen() {
             </form>
             {/* Company summary inline */}
             {companySummary && (
-              <p className="text-xs text-muted-foreground truncate flex-1 min-w-0 px-2 border-l border-border/40">
+              <p className="hidden sm:block text-xs text-muted-foreground truncate flex-1 min-w-0 px-2 border-l border-border/40">
                 {companySummary}
               </p>
             )}
