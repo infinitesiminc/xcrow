@@ -106,8 +106,16 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
 
       if (cached?.tree_data && cached?.step_results) {
         const cachedCompany = cached.company_data as any;
-        if (cachedCompany?.name) {
-          setSelectedCompany(prev => ({ ...prev!, ...cachedCompany }));
+        const cachedTree = cached.tree_data as any;
+        // Extract proper company name from AI summary
+        const aiName = cachedTree?.company_summary?.split(/\s+(is|are|was|provides|offers|builds)\s+/i)?.[0]?.trim();
+        if (cachedCompany?.name || aiName) {
+          setSelectedCompany(prev => ({
+            ...prev!,
+            ...cachedCompany,
+            name: (aiName && aiName.length <= 40) ? aiName : cachedCompany?.name || prev?.name || "",
+            headquarters: cachedTree?.products?.[0]?.headquarters || cachedCompany?.headquarters || prev?.headquarters,
+          }));
         }
         setStepResults(cached.step_results as Record<string, any>);
         accumulatedRef.current = cached.step_results as Record<string, any>;
