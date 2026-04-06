@@ -37,6 +37,7 @@ const BlogIndex = lazy(() => import("./pages/BlogIndex.tsx"));
 const BlogPostPage = lazy(() => import("./pages/BlogPostPage.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Demo = lazy(() => import("./pages/Demo.tsx"));
+const Texas = lazy(() => import("./pages/Texas.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -82,6 +83,7 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/about" element={<About />} />
               <Route path="/demo" element={<Demo />} />
+              <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
 
