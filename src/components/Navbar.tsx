@@ -21,6 +21,7 @@ interface NavbarProps {
   activeWorkspaceKey?: string;
   onSwitchWorkspace?: (websiteKey: string) => void;
   onDeleteWorkspace?: (websiteKey: string) => void;
+  onNewWorkspace?: () => void;
 }
 
 export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspace, onDeleteWorkspace }: NavbarProps) {
