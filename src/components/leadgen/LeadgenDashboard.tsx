@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Target, Mail, Download, Loader2, Zap } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
