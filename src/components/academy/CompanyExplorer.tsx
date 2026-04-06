@@ -58,6 +58,18 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "").toLowerCase();
   }
 
+  /* ── write-through cache helper ── */
+  function updateCache(company: CompanyData, stepResults: Record<string, any>, tree: GTMTreeData) {
+    const websiteKey = normalizeWebsiteKey(company.website || company.id);
+    supabase.from("leadhunter_cache").upsert({
+      website_key: websiteKey,
+      company_data: company as any,
+      step_results: stepResults as any,
+      tree_data: tree as any,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }, { onConflict: "website_key" }).then(() => {});
+  }
+
   // Auto-start analysis from URL param
   useEffect(() => {
     if (initialWebsite && !autoStarted.current) {
