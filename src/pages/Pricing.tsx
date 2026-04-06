@@ -22,10 +22,9 @@ const PLANS = [
     cta: "Start Free",
     featured: false,
     features: [
-      { text: "3 lead hunts per month", included: true },
+      { text: "15 leads per month", included: true },
       { text: "AI company DNA analysis", included: true },
       { text: "Prospect map generation", included: true },
-      { text: "Up to 5 leads per hunt", included: true },
       { text: "Basic outreach drafts", included: true },
       { text: "1 workspace", included: true },
       { text: "Priority lead scoring", included: false },
@@ -41,10 +40,9 @@ const PLANS = [
     cta: "Get Starter",
     featured: false,
     features: [
-      { text: "30 lead hunts per month", included: true },
+      { text: "150 leads per month", included: true },
       { text: "AI company DNA analysis", included: true },
       { text: "Prospect map generation", included: true },
-      { text: "Up to 15 leads per hunt", included: true },
       { text: "Advanced outreach drafts", included: true },
       { text: "3 workspaces", included: true },
       { text: "Priority lead scoring", included: true },
@@ -60,10 +58,9 @@ const PLANS = [
     cta: "Upgrade to Pro",
     featured: true,
     features: [
-      { text: "100 lead hunts per month", included: true },
+      { text: "500 leads per month", included: true },
       { text: "AI company DNA analysis", included: true },
       { text: "Prospect map generation", included: true },
-      { text: "Up to 25 leads per hunt", included: true },
       { text: "Advanced outreach drafts", included: true },
       { text: "Unlimited workspaces", included: true },
       { text: "Priority lead scoring", included: true },
@@ -80,10 +77,9 @@ const PLANS = [
     featured: false,
     enterprise: true,
     features: [
-      { text: "Unlimited lead hunts", included: true },
+      { text: "Unlimited leads", included: true },
       { text: "AI company DNA analysis", included: true },
       { text: "Prospect map generation", included: true },
-      { text: "Up to 50 leads per hunt", included: true },
       { text: "Advanced outreach drafts", included: true },
       { text: "Unlimited workspaces", included: true },
       { text: "Priority lead scoring", included: true },
@@ -95,9 +91,10 @@ const PLANS = [
   },
 ];
 const FAQ = [
-  { q: "Can I try Xcrow before paying?", a: "Yes — the Free plan gives you 3 lead hunts per month with no credit card required. You can upgrade anytime." },
-  { q: "What counts as a lead hunt?", a: "One lead hunt = pasting a URL and generating a scored prospect list. Each hunt returns up to 5 leads on Free, 15 on Starter, or 25 on Pro." },
+  { q: "Can I try Xcrow before paying?", a: "Yes — the Free plan gives you 15 leads per month with no credit card required. Upgrade anytime." },
+  { q: "How are leads counted?", a: "Each lead is a verified prospect with name, title, LinkedIn, and email. Your monthly count resets on your billing date." },
   { q: "Can I cancel anytime?", a: "Yes. Starter and Pro are month-to-month with no contracts. Cancel from your Settings page and you'll keep access until the end of your billing period." },
+  { q: "What's the Enterprise plan?", a: "Enterprise is for teams with high-volume needs. Contact jackson@xcrow.ai for custom pricing, onboarding, and integrations." },
   { q: "What's the Enterprise plan?", a: "Enterprise is for teams with high-volume needs. Contact jackson@xcrow.ai for custom pricing, onboarding, and integrations." },
 ];
 
