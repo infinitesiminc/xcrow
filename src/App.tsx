@@ -96,7 +96,6 @@ const App = () => (
               <Route path="/journey" element={<Navigate to="/" replace />} />
               <Route path="/skills" element={<Navigate to="/" replace />} />
               <Route path="/schools" element={<Navigate to="/" replace />} />
-              <Route path="/about" element={<Navigate to="/" replace />} />
               <Route path="/competition" element={<Navigate to="/" replace />} />
               <Route path="/investors" element={<Navigate to="/" replace />} />
               <Route path="/leaderboard" element={<Navigate to="/" replace />} />
