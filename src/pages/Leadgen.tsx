@@ -105,7 +105,8 @@ const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | n
 };
 
 export default function Leadgen() {
-  const { user, profile, openAuthModal } = useAuth();
+  const { user, profile, openAuthModal: rawOpenAuthModal } = useAuth();
+  const prevUserRef = useRef<string | null>(null);
   const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -138,7 +139,37 @@ export default function Leadgen() {
    const [gtmPersonasLoading, setGtmPersonasLoading] = useState(false);
    const [isGtmLoading, setIsGtmLoading] = useState(false);
 
+  // Wrap openAuthModal to persist current workspace before auth flow
+  const openAuthModal = useCallback(() => {
+    if (websiteUrl.trim()) {
+      sessionStorage.setItem("pendingWebsite", websiteUrl.trim());
+    }
+    rawOpenAuthModal();
+  }, [websiteUrl, rawOpenAuthModal]);
+
+  // Restore workspace after sign-in: re-hydrate from cache
+  useEffect(() => {
+    const prevId = prevUserRef.current;
+    const curId = user?.id ?? null;
+    prevUserRef.current = curId;
+
+    // User just signed in (was null, now has id)
+    if (!prevId && curId) {
+      const pending = sessionStorage.getItem("pendingWebsite");
+      if (pending) {
+        sessionStorage.removeItem("pendingWebsite");
+        setWebsiteUrl(pending);
+        const wk = normalizeWorkspaceKey(pending);
+        if (wk) {
+          upsertWorkspace(wk, wk);
+          // Re-hydrate GTM tree from cache
+          fetchGtmAnalysis(pending);
+        }
+      }
+    }
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
   const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
+
 
   const {
     leads: savedLeads, outreach, niches: savedNiches,
