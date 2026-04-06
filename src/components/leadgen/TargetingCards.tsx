@@ -39,6 +39,8 @@ interface TargetingCardsProps {
   treeData: GTMTreeData;
   selectedIds: Set<string>;
   onToggle: (item: { id: string; type: "product" | "vertical"; label: string; description: string; meta?: string }) => void;
+  loadingProducts?: boolean;
+  loadingPersonas?: boolean;
 }
 
 export default function TargetingCards({ treeData, selectedIds, onToggle }: TargetingCardsProps) {
