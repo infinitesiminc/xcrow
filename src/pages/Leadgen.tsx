@@ -1023,6 +1023,18 @@ export default function Leadgen() {
   }, [deleteWorkspace, activeWorkspaceKey]);
 
 
+  // Auto-load most recent workspace for logged-in users with no context
+  const autoLoadedRef = useRef(false);
+  useEffect(() => {
+    if (autoLoadedRef.current) return;
+    if (!user || hasDiscovered || isDiscovering || searchParams.get("website") || sessionStorage.getItem("pendingWebsite") || websiteUrl) return;
+    if (workspaces.length > 0) {
+      autoLoadedRef.current = true;
+      const most = workspaces[0]; // already sorted by last_accessed_at DESC
+      handleSwitchWorkspace(most.website_key);
+    }
+  }, [user, workspaces, hasDiscovered, isDiscovering, searchParams, websiteUrl, handleSwitchWorkspace]);
+
   // Redirect to homepage if no website param and no existing data
   // Only redirect unauthenticated users with no context back to homepage
   useEffect(() => {
