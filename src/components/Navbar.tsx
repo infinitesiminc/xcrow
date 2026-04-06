@@ -111,6 +111,18 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
                       </div>
                     ))}
                   </div>
+                  {onNewWorkspace && (
+                    <button
+                      className="flex items-center gap-2 w-full px-2 py-1.5 mt-1 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors border-t border-border/40 pt-2"
+                      onClick={() => {
+                        onNewWorkspace();
+                        setWsOpen(false);
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      New workspace
+                    </button>
+                  )}
                 </PopoverContent>
               </Popover>
             </>
