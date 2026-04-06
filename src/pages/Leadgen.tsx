@@ -142,7 +142,7 @@ export default function Leadgen() {
 
   const {
     leads: savedLeads, outreach, niches: savedNiches,
-    upsertLeads, upsertNiches, updateLeadStatus, logOutreach, exportCSV,
+    upsertLeads, upsertNiches, updateLeadStatus, deleteLead, logOutreach, exportCSV,
   } = useLeadsCRUD(user?.id, activeWorkspaceKey || undefined);
 
   const currentLocalNiches = useMemo(
