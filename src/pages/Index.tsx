@@ -2,6 +2,7 @@
  * Index — Landing page with Gong-inspired bold design
  */
 import { useState } from "react";
+import logoCrow from "@/assets/logo-crow.png";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
@@ -65,9 +66,7 @@ export default function Index() {
             transition={{ duration: 0.5 }}
             className="text-center relative z-10 max-w-3xl mx-auto"
           >
-            <p className="text-primary font-semibold text-sm tracking-wide uppercase mb-4">
-              B2B Lead Intelligence
-            </p>
+            <img src={logoCrow} alt="Xcrow" className="h-16 w-16 object-contain mx-auto mb-4" />
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.1] uppercase">
               The <span className="text-primary">#1</span> AI Lead Hunter

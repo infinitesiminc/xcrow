@@ -1,4 +1,5 @@
 import { useState } from "react";
+import logoCrow from "@/assets/logo-crow.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -54,8 +55,9 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleNav("/")}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
           >
+            <img src={logoCrow} alt="Xcrow" className="h-7 w-7 object-contain" />
             <span className="text-lg font-bold text-foreground tracking-tight">
               Xcrow
             </span>
