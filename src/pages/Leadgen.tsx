@@ -152,23 +152,60 @@ export default function Leadgen() {
   const [selectedLead, setSelectedLead] = useState<SavedLead | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Fetch GTM tree data (products, verticals, buyer roles)
+  // Fetch GTM tree data (products, verticals, buyer roles) via multi-step pipeline
   const fetchGtmAnalysis = useCallback(async (website: string) => {
     try {
-      const resp = await supabase.functions.invoke("gtm-analyze", {
-        body: { website },
+      const domain = website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const company = { id: domain, name: domain.split(".")[0], website: `https://${domain}` };
+      const previousResults: Record<string, any> = {};
+
+      // Step 1: Products
+      const r1 = await supabase.functions.invoke("gtm-analyze", {
+        body: { stepId: "products", company, previousResults },
       });
-      if (resp.data && typeof resp.data === "object") {
-        let raw = resp.data;
-        if (raw instanceof Blob) {
-          raw = JSON.parse(await raw.text());
-        }
-        // gtm-analyze wraps data in { structured: { ... } }
-        const data = raw.structured || raw.tree || raw;
-        if (data.products || data.mappings) {
-          setGtmTreeData(data as GTMTreeData);
-        }
-      }
+      let d1 = r1.data;
+      if (d1 instanceof Blob) d1 = JSON.parse(await d1.text());
+      if (!d1?.structured?.products) return;
+      previousResults["products"] = d1;
+      const products = d1.structured.products;
+      const summary = d1.structured.company_summary || "";
+      const hq = d1.structured.headquarters || "";
+      if (summary) setCompanySummary(summary);
+      if (hq) setTargetLocation(hq);
+
+      // Set partial tree immediately so product cards appear fast
+      setGtmTreeData({
+        company_summary: summary,
+        products,
+        customers: [],
+        conquest_targets: [],
+        mappings: [],
+        leads: [],
+      });
+
+      // Step 2: Customers
+      const r2 = await supabase.functions.invoke("gtm-analyze", {
+        body: { stepId: "customers", company, previousResults },
+      });
+      let d2 = r2.data;
+      if (d2 instanceof Blob) d2 = JSON.parse(await d2.text());
+      if (d2?.structured) previousResults["customers"] = d2;
+
+      // Step 3: ICP Buyers (mappings / verticals)
+      const r3 = await supabase.functions.invoke("gtm-analyze", {
+        body: { stepId: "icp-buyers", company, previousResults },
+      });
+      let d3 = r3.data;
+      if (d3 instanceof Blob) d3 = JSON.parse(await d3.text());
+
+      setGtmTreeData({
+        company_summary: summary,
+        products,
+        customers: d2?.structured?.customers || [],
+        conquest_targets: d2?.structured?.competitors_customers || [],
+        mappings: d3?.structured?.mappings || [],
+        leads: [],
+      });
     } catch (e) {
       console.warn("GTM analysis unavailable:", e);
     }
