@@ -30,6 +30,7 @@ function parsePills(text: string): { cleanText: string; pills: string[] } {
 
 export default function StrategyChat({ companyName, activeCards, treeData }: StrategyChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const messagesRef = useRef<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
