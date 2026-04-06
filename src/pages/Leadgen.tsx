@@ -411,8 +411,7 @@ export default function Leadgen() {
             toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
             // Track workspace
             const wk = normalizeWorkspaceKey(website);
-            const companyName = data.company_summary?.split(/[.!,—]/)?.[0]?.trim() || wk;
-            upsertWorkspace(wk, companyName);
+            upsertWorkspace(wk, wk);
             // Trigger GTM analysis for product/vertical cards
             fetchGtmAnalysis(website.trim());
           })
@@ -504,8 +503,7 @@ export default function Leadgen() {
       setChatOpen(false);
       toast.success(`ICP mapped: ${niches.filter(n => n.niche_type === "vertical").length} verticals discovered`);
       // Track workspace
-      const companyName = data.company_summary?.split(/[.!,—]/)?.[0]?.trim() || activeWorkspaceKey;
-      upsertWorkspace(activeWorkspaceKey, companyName);
+      upsertWorkspace(activeWorkspaceKey, activeWorkspaceKey);
       fetchGtmAnalysis(url);
 
       // Auto-seed 1 lead per persona
