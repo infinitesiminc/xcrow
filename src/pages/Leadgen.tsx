@@ -530,9 +530,9 @@ export default function Leadgen() {
       recipient_email: email,
       subject,
       body,
-      workspace_key: workspaceKey,
+      workspace_key: activeWorkspaceKey || "default",
     }, { onConflict: "user_id,lead_id" });
-  }, [user, workspaceKey]);
+  }, [user, activeWorkspaceKey]);
 
   const handleDraftEmail = async (lead: Lead) => {
     if (!user) { openAuthModal(); return; }
