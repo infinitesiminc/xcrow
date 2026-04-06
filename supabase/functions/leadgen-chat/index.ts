@@ -479,7 +479,7 @@ CRITICAL:
     try {
       const cleaned = aiText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       const parsed = JSON.parse(cleaned);
-      return (parsed.leads || []).slice(0, extractLimit);
+      return (parsed.leads || []).slice(0, extractLimit).map((l: any) => ({ ...l, linkedin: validLinkedIn(l.linkedin) }));
     } catch {
       console.error("AI scoring parse failed, returning raw Apollo results");
       // Add default summary/reason to raw results
