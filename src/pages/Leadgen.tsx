@@ -105,7 +105,8 @@ const leadMatchesNiche = (lead: { niche_tag?: string | null }, niche: string | n
 };
 
 export default function Leadgen() {
-  const { user, profile, openAuthModal } = useAuth();
+  const { user, profile, openAuthModal: rawOpenAuthModal } = useAuth();
+  const prevUserRef = useRef<string | null>(null);
   const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
