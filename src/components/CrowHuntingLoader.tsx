@@ -2,7 +2,6 @@
  * CrowHuntingLoader — Branded crow logo with hunting radar animation.
  */
 import { motion } from "framer-motion";
-import logoCrow from "@/assets/logo-crow.png";
 
 interface CrowHuntingLoaderProps {
   label?: string;
