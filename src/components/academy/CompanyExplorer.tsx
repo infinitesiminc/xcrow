@@ -344,7 +344,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
 
       {/* Phase 3: Strategy Chat */}
       {phase === "strategy-chat" && treeData && selectedCompany && (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
           <GTMTreeView
             companyName={selectedCompany.name}
             data={treeData}
@@ -357,12 +357,14 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
             }}
             frameworkOnly={true}
           />
-          <StrategyChatPanel
-            companyName={selectedCompany.name}
-            treeData={treeData}
-            onStartLeadGen={runLeadGeneration}
-            isGenerating={isRunning}
-          />
+          <div className="lg:sticky lg:top-4">
+            <StrategyChatPanel
+              companyName={selectedCompany.name}
+              treeData={treeData}
+              onStartLeadGen={runLeadGeneration}
+              isGenerating={isRunning}
+            />
+          </div>
         </div>
       )}
 
