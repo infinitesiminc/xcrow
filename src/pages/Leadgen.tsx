@@ -984,20 +984,22 @@ export default function Leadgen() {
             <Loader2 className="w-7 h-7 text-primary animate-spin" />
           </div>
           <h2 className="text-lg font-semibold text-foreground mb-1">
-            Analyzing {websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}
+            {isDiscovering
+              ? `Analyzing ${websiteUrl ? new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace("www.", "") : "website"}`
+              : "Loading product map..."}
           </h2>
           <p className="text-xs text-muted-foreground mb-4">
-            This usually takes 15–30 seconds
+            {isDiscovering ? "This usually takes 15–30 seconds" : "Extracting products and personas..."}
           </p>
-          {discoveryPhase && (
+          {(discoveryPhase || !isDiscovering) && (
             <motion.div
-              key={discoveryPhase}
+              key={discoveryPhase || "products"}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex items-center justify-center gap-2 text-xs text-primary"
             >
               <Sparkles className="w-3 h-3" />
-              {discoveryPhase}
+              {discoveryPhase || "Mapping product lines..."}
             </motion.div>
           )}
         </motion.div>
