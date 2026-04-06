@@ -221,15 +221,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     (async () => {
-      const { data } = await (supabase.from("school_admins" as any) as any)
-        .select("school_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
-      if (data) {
-        setSchoolId(data.school_id);
-        setIsSchoolAdmin(true);
-      } else {
+      try {
+        const { data } = await supabase.rpc("is_superadmin" as any, { _user_id: user.id });
+        // School admin check removed — school_admins table doesn't exist
+        setSchoolId(null);
+        setIsSchoolAdmin(false);
+      } catch {
         setSchoolId(null);
         setIsSchoolAdmin(false);
       }

@@ -30,7 +30,7 @@ interface LeadgenDashboardProps {
   onExportCSV: () => void;
   onGenerateAll?: () => void;
   onEnrichAll?: () => void;
-  onScoreAll?: () => void;
+  
   onDraftAll?: () => void;
   isGenerating?: boolean;
   isEnriching?: boolean;
@@ -58,7 +58,7 @@ export function LeadgenDashboard({
   onExportCSV,
   onGenerateAll,
   onEnrichAll,
-  onScoreAll,
+  
   onDraftAll,
   isGenerating,
   isEnriching,

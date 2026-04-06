@@ -143,11 +143,16 @@ export default function Settings() {
     if (!user) return;
     setDeleting(true);
     try {
+      // Delete related records first (outreach_log references saved_leads)
+      await supabase.from("outreach_log").delete().eq("user_id", user.id);
+      await supabase.from("lead_notes").delete().eq("user_id", user.id);
       await Promise.all([
         supabase.from("saved_leads").delete().eq("user_id", user.id),
         supabase.from("leadgen_niches").delete().eq("user_id", user.id),
-        supabase.from("profiles").delete().eq("id", user.id),
+        supabase.from("chat_messages").delete().eq("user_id", user.id),
+        (supabase.from("user_workspaces") as any).delete().eq("user_id", user.id),
       ]);
+      await supabase.from("profiles").delete().eq("id", user.id);
       await signOut();
       toast({ title: "Account deleted", description: "Your data has been removed." });
       navigate("/");
@@ -291,7 +296,7 @@ export default function Settings() {
                 schoolName={schoolName}
                 portalLoading={portalLoading}
                 onManage={handleManageSubscription}
-                onUpgrade={() => navigate("/pricing")}
+                onUpgrade={() => window.open("https://xcrow.ai/#pricing", "_blank")}
               />
             )}
 
