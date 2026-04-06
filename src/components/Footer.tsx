@@ -5,6 +5,8 @@ const PRODUCT = [
   { label: "Lead Hunter", to: "/leadhunter" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Pricing", to: "/pricing" },
+  { label: "Blog", to: "/blog" },
+  { label: "Demo", to: "/demo" },
 ];
 
 const USE_CASES = [
