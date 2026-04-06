@@ -101,7 +101,7 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — The #1 Outbound Lead Hunter"
+        title="Xcrow — FASTEST LEAD GEN MACHINE"
         description="Enter one website. Get a full prospect map, qualified decision-makers, and outreach-ready leads — in seconds. No GTM expertise required."
         path="/"
       />
