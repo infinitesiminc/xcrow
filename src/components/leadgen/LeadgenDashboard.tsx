@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Target, Mail, Download, Loader2, Zap } from "lucide-react";
 import { LeadPipeline } from "./LeadPipeline";
 import { ICPInsightsPanel } from "./ICPInsightsPanel";
+import TargetingCards from "./TargetingCards";
+import TargetZone, { type DroppedCard } from "./TargetZone";
 import type { SavedLead, LeadStatus, OutreachEntry } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
+import type { GTMTreeData } from "@/components/academy/gtm-types";
 
 interface PageAnalyzed {
   url: string;
@@ -39,6 +42,9 @@ interface LeadgenDashboardProps {
   companySummary?: string;
   icpSummary?: string;
   niches?: NicheItem[];
+  // GTM tree data for targeting cards
+  gtmTreeData?: GTMTreeData | null;
+  onGenerateFromTargeting?: (cards: DroppedCard[]) => void;
 }
 
 export function LeadgenDashboard({
@@ -60,8 +66,13 @@ export function LeadgenDashboard({
   companySummary,
   icpSummary,
   niches,
+  gtmTreeData,
+  onGenerateFromTargeting,
 }: LeadgenDashboardProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
+
+  const droppedIds = new Set(droppedCards.map(c => c.id));
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -80,16 +91,60 @@ export function LeadgenDashboard({
     }
   }, [leads, selectedIds.size]);
 
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    try {
+      const data = JSON.parse(e.dataTransfer.getData("application/json")) as DroppedCard;
+      if (!droppedIds.has(data.id)) {
+        setDroppedCards(prev => [...prev, data]);
+      }
+    } catch {}
+  }
+
+  function handleRemoveCard(id: string) {
+    setDroppedCards(prev => prev.filter(c => c.id !== id));
+  }
+
+  function handleGenerate() {
+    if (onGenerateFromTargeting && droppedCards.length > 0) {
+      onGenerateFromTargeting(droppedCards);
+    }
+  }
+
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full">
-      {/* ICP Insights Panel */}
-      <ICPInsightsPanel
-        websiteUrl={websiteUrl || ""}
-        pagesAnalyzed={pagesAnalyzed || []}
-        companySummary={companySummary || ""}
-        icpSummary={icpSummary || ""}
-        niches={niches}
-      />
+      {/* Company summary banner */}
+      {companySummary && !gtmTreeData && (
+        <ICPInsightsPanel
+          websiteUrl={websiteUrl || ""}
+          pagesAnalyzed={pagesAnalyzed || []}
+          companySummary={companySummary}
+          icpSummary={icpSummary || ""}
+          niches={niches}
+        />
+      )}
+
+      {/* GTM Targeting Cards */}
+      {gtmTreeData && (
+        <div className="border-b border-border/40">
+          {companySummary && (
+            <div className="px-4 py-2 bg-card/40 flex items-start gap-3 text-xs border-b border-border/40">
+              <span className="font-medium text-foreground shrink-0">Summary</span>
+              <p className="text-muted-foreground line-clamp-2 leading-relaxed">{companySummary}</p>
+            </div>
+          )}
+          <TargetingCards treeData={gtmTreeData} droppedIds={droppedIds} />
+          <div onDrop={handleDrop} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}>
+            <TargetZone
+              cards={droppedCards}
+              onRemoveCard={handleRemoveCard}
+              onGenerate={handleGenerate}
+              isGenerating={isGenerating}
+              companySummary={companySummary}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Action Toolbar */}
       <div className="border-b border-border/40 bg-card/30 px-4 py-2 flex items-center gap-2 shrink-0 flex-wrap">
