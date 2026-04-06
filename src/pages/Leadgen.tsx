@@ -514,11 +514,24 @@ export default function Leadgen() {
     }
   };
 
+  // --- Draft email cache (keyed by lead email) ---
+  const draftCacheRef = useRef<Record<string, { subject: string; body: string }>>({}); 
+
   // --- Chat handlers (kept for follow-up) ---
   const handleDraftEmail = async (lead: Lead) => {
     if (!user) { openAuthModal(); return; }
     if (!lead.email) { toast.error("This lead has no email address."); return; }
-    setDraftLead(lead); setDraftModalOpen(true); setDraftLoading(true);
+    setDraftLead(lead); setDraftModalOpen(true);
+
+    // Check cache first
+    const cached = draftCacheRef.current[lead.email];
+    if (cached) {
+      setDraftSubject(cached.subject); setDraftBody(cached.body); setDraftCtaText("");
+      setDraftLoading(false);
+      return;
+    }
+
+    setDraftLoading(true);
     setDraftSubject(""); setDraftBody(""); setDraftCtaText("");
     try {
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/draft-outreach`, {
@@ -531,7 +544,10 @@ export default function Leadgen() {
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Failed to draft");
-      setDraftSubject(data.draft.subject || ""); setDraftBody(data.draft.body || ""); setDraftCtaText(data.draft.ctaText || "");
+      const subject = data.draft.subject || "";
+      const body = data.draft.body || "";
+      draftCacheRef.current[lead.email] = { subject, body };
+      setDraftSubject(subject); setDraftBody(body); setDraftCtaText(data.draft.ctaText || "");
     } catch (e: any) {
       toast.error(e.message || "Failed to generate draft"); setDraftModalOpen(false);
     } finally { setDraftLoading(false); }
