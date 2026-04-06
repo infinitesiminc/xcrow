@@ -185,11 +185,11 @@ export default function StrategyChat({ companyName, activeCards, treeData }: Str
         {messages.length > 0 && (
           <Button
             variant="ghost"
-            size="icon"
-            className="h-5 w-5"
+            size="sm"
+            className="h-6 px-2 text-[10px] gap-1"
             onClick={() => setChipsCollapsed(!chipsCollapsed)}
           >
-            {chipsCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+            🎯 {chipsCollapsed ? "Refine" : "Hide"}
           </Button>
         )}
       </div>
