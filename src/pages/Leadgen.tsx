@@ -211,7 +211,6 @@ export default function Leadgen() {
 
   // Generate leads from targeting cards
   const handleGenerateFromTargeting = useCallback(async (cards: DroppedCard[]) => {
-    if (!user) { openAuthModal(); return; }
     setIsFindingLeads(true);
 
     const productNames = cards.filter(c => c.type === "product").map(c => c.label);
@@ -232,7 +231,7 @@ export default function Leadgen() {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({
-          messages: [{ role: "user", content: `${contextParts}\n\nSkip discovery. Find 5 real people with verified emails matching these targeting criteria. Return them as leads.` }],
+          messages: [{ role: "user", content: `${contextParts}\n\nI have already chosen the product, vertical, buyer role, and geography. Do not ask follow-up questions or restate the briefing. Immediately call run_lead_search and return 5 real decision-makers as leads for this exact ICP. Use the selected vertical and buyer role as the core ICP, prefer different companies, and include verified emails when available.` }],
         }),
       });
       if (!resp.ok) throw new Error("Search failed");
@@ -261,7 +260,11 @@ export default function Leadgen() {
         }
       }
       if (foundLeads.length > 0) {
-        await upsertLeads(foundLeads);
+        if (user) {
+          await upsertLeads(foundLeads);
+        } else {
+          setItems((prev) => [...prev, { type: "leads", leads: foundLeads }]);
+        }
         toast.success(`Added ${foundLeads.length} targeted leads!`);
       } else {
         toast.info("No leads found. Try different targeting criteria.");
@@ -271,7 +274,7 @@ export default function Leadgen() {
     } finally {
       setIsFindingLeads(false);
     }
-  }, [user, openAuthModal, websiteUrl, companySummary, targetLocation, upsertLeads]);
+  }, [user, websiteUrl, companySummary, targetLocation, upsertLeads]);
 
   // Auto-discover from homepage URL input
   const autoDiscoverRef = useRef(false);
