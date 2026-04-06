@@ -276,10 +276,52 @@ serve(async (req) => {
        Returns: { company_summary, products: [{ id, name, description, target_user, pricing, competitors }] }
        ═══════════════════════════════════════════════════ */
     if (stepId === "products") {
-      const raw = await callAI(LOVABLE_API_KEY,
-        `You are a GTM product analyst. Analyze the company and map ALL product lines.
+      // Scrape the website for better product discovery
+      let websiteContent = "";
+      const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+      if (FIRECRAWL_API_KEY && company.website) {
+        const baseUrl = company.website.startsWith("http") ? company.website : `https://${company.website}`;
+        try {
+          // Map for product/solution pages
+          const mapRes = await fetch("https://api.firecrawl.dev/v1/map", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ url: baseUrl, search: "products solutions platform features pricing", limit: 30 }),
+          });
+          if (mapRes.ok) {
+            const mapData = await mapRes.json();
+            const allLinks: string[] = mapData.links || [];
+            const productPatterns = /product|solution|platform|feature|capabilit|pricing|overview|what.?we/i;
+            const productUrls = allLinks.filter((u: string) => productPatterns.test(u)).slice(0, 4);
+            productUrls.unshift(baseUrl);
+            const uniqueUrls = [...new Set(productUrls)].slice(0, 5);
 
-CRITICAL: You MUST always return valid JSON. Never refuse. If you have limited information, infer from the company name and website URL. Make your best educated guess — partial data is fine.
+            for (const url of uniqueUrls) {
+              try {
+                const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
+                  body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
+                });
+                if (scrapeRes.ok) {
+                  const scrapeData = await scrapeRes.json();
+                  const md = scrapeData.data?.markdown || scrapeData.markdown || "";
+                  if (md) websiteContent += `--- ${url} ---\n${md.slice(0, 4000)}\n\n`;
+                }
+              } catch (e) {
+                console.warn("Product scrape error:", url, e);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Product map error:", e);
+        }
+      }
+
+      const raw = await callAI(LOVABLE_API_KEY,
+        `You are a GTM product analyst. Analyze the company and map ALL distinct product lines and platform capabilities.
+
+CRITICAL: You MUST always return valid JSON. Never refuse. Be THOROUGH — large companies like Snowflake, Salesforce, or AWS may have 10-20+ distinct products. List every separately marketed product, platform module, or standalone capability.
 
 Return ONLY valid JSON (no markdown, no wrapping):
 {
@@ -297,15 +339,12 @@ Return ONLY valid JSON (no markdown, no wrapping):
   ]
 }
 
-Be thorough — include every distinct product line or platform module.
-If you cannot find specific products, infer the primary service from the company name and domain.
-
-IMPORTANT CONSOLIDATION RULES:
-- Tier/plan variants of the SAME product are ONE product (e.g. "Claude" not "Claude Opus + Claude Sonnet + Claude Haiku")
-- Pricing tiers (Free, Pro, Enterprise) are NOT separate products — mention them in pricing_model instead
-- Model versions (GPT-4, GPT-3.5) or size variants (Small, Medium, Large) are NOT separate products
-- Add-ons that only work with a parent product are NOT separate products — mention them in the parent's description
-- Ask: "Would a sales team pitch this separately to a different buyer?" — if no, consolidate
+CONSOLIDATION RULES:
+- Tier/plan variants of the SAME product are ONE product (e.g. "Claude" not "Claude Opus + Claude Sonnet")
+- Pricing tiers (Free, Pro, Enterprise) are NOT separate products
+- BUT separately branded platform modules ARE separate products (e.g. Snowflake Cortex AI, Snowflake Notebooks, Snowpark are all separate)
+- If a capability has its own product page, marketing name, or distinct buyer — it IS a separate product
+- Ask: "Does this have its own product page or distinct buyer?" — if yes, list it separately
 
 Assign sequential IDs: P1, P2, P3...`,
         `Company: ${company.name}
@@ -314,7 +353,9 @@ Description: ${company.description || "Not available — infer from name and URL
 Industry: ${company.industry || "Unknown — infer from name and URL"}
 Employees: ${company.employee_range || "Unknown"}
 Funding: ${company.funding_stage || "Unknown"}
-HQ: ${company.headquarters || "Unknown"}`
+HQ: ${company.headquarters || "Unknown"}
+
+${websiteContent ? `Scraped product/solution pages:\n${websiteContent}` : "No website content scraped — use your knowledge of this company."}`
       );
 
       const parsed = extractJSON(raw);
