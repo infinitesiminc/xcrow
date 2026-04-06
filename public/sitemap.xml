@@ -3,6 +3,14 @@
   <url><loc>https://xcrow.ai/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://xcrow.ai/pricing</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://xcrow.ai/how-it-works</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/demo</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/about</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/blog</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://xcrow.ai/blog/cold-email-best-practices-2026</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/blog/what-is-icp-targeting</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/blog/outbound-vs-inbound-lead-generation</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/blog/how-to-find-decision-makers</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/blog/b2b-lead-generation-tools-compared</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://xcrow.ai/use-cases</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://xcrow.ai/use-cases/saas</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://xcrow.ai/use-cases/agencies</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>

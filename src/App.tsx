@@ -33,6 +33,10 @@ const Pricing = lazy(() => import("./pages/Pricing.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
 const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
 const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
+const BlogIndex = lazy(() => import("./pages/BlogIndex.tsx"));
+const BlogPostPage = lazy(() => import("./pages/BlogPostPage.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
+const Demo = lazy(() => import("./pages/Demo.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -74,6 +78,10 @@ const App = () => (
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/use-cases" element={<UseCasesIndex />} />
               <Route path="/use-cases/:slug" element={<UseCasePage />} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/demo" element={<Demo />} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
@@ -88,7 +96,6 @@ const App = () => (
               <Route path="/journey" element={<Navigate to="/" replace />} />
               <Route path="/skills" element={<Navigate to="/" replace />} />
               <Route path="/schools" element={<Navigate to="/" replace />} />
-              <Route path="/about" element={<Navigate to="/" replace />} />
               <Route path="/competition" element={<Navigate to="/" replace />} />
               <Route path="/investors" element={<Navigate to="/" replace />} />
               <Route path="/leaderboard" element={<Navigate to="/" replace />} />
