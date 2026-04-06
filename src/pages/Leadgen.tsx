@@ -1128,7 +1128,7 @@ export default function Leadgen() {
   };
 
   const hasWebsiteContext = !!websiteUrl || !!searchParams.get("website") || !!sessionStorage.getItem("pendingWebsite");
-  const showSkeleton = hasWebsiteContext && (!hasDiscovered || isDiscovering || (hasDiscovered && !gtmTreeData));
+  const showSkeleton = hasWebsiteContext && (isDiscovering || isGtmLoading);
 
   const emptyState = (
     <div className="flex-1 flex items-center justify-center">
