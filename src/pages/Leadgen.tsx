@@ -1200,11 +1200,6 @@ export default function Leadgen() {
     handleDraftEmail(lead);
   };
 
-  // --- Score All placeholder ---
-  const handleScoreAll = () => {
-    if (!user) { openAuthModal(); return; }
-    toast.info("Scoring leads — this feature is coming soon!");
-  };
 
   const hasWebsiteContext = !!websiteUrl || !!searchParams.get("website") || !!sessionStorage.getItem("pendingWebsite");
   const showSkeleton = hasWebsiteContext && (isDiscovering || isGtmLoading);

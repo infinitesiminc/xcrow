@@ -25,7 +25,7 @@ export default function SubscriptionBadge() {
 
   return (
     <button
-      onClick={() => navigate("/pricing")}
+      onClick={() => window.open("https://xcrow.ai/#pricing", "_blank")}
       className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all border hover:opacity-80 bg-muted/30 border-border/40 text-muted-foreground"
     >
       <Sparkles size={13} />

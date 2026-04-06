@@ -291,7 +291,7 @@ export default function Settings() {
                 schoolName={schoolName}
                 portalLoading={portalLoading}
                 onManage={handleManageSubscription}
-                onUpgrade={() => navigate("/pricing")}
+                onUpgrade={() => window.open("https://xcrow.ai/#pricing", "_blank")}
               />
             )}
 
