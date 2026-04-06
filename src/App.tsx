@@ -84,37 +84,6 @@ const App = () => (
               <Route path="/demo" element={<Demo />} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/academy" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/academy/*" element={<Navigate to="/leadhunter" replace />} />
-
-              {/* Redirects — old routes */}
-              <Route path="/upskill" element={<Navigate to="/" replace />} />
-              <Route path="/agentlauncher" element={<Navigate to="/" replace />} />
-              <Route path="/founder" element={<Navigate to="/" replace />} />
-              <Route path="/disrupt" element={<Navigate to="/" replace />} />
-              <Route path="/map" element={<Navigate to="/" replace />} />
-              <Route path="/journey" element={<Navigate to="/" replace />} />
-              <Route path="/skills" element={<Navigate to="/" replace />} />
-              <Route path="/schools" element={<Navigate to="/" replace />} />
-              <Route path="/competition" element={<Navigate to="/" replace />} />
-              <Route path="/investors" element={<Navigate to="/" replace />} />
-              <Route path="/leaderboard" element={<Navigate to="/" replace />} />
-              <Route path="/students" element={<Navigate to="/" replace />} />
-              <Route path="/practice" element={<Navigate to="/" replace />} />
-              <Route path="/simulations" element={<Navigate to="/" replace />} />
-              <Route path="/learning-path" element={<Navigate to="/" replace />} />
-              <Route path="/play" element={<Navigate to="/" replace />} />
-              <Route path="/progression" element={<Navigate to="/" replace />} />
-              <Route path="/professionals" element={<Navigate to="/" replace />} />
-              <Route path="/enterprise" element={<Navigate to="/" replace />} />
-              <Route path="/tools" element={<Navigate to="/" replace />} />
-              <Route path="/org-stack" element={<Navigate to="/" replace />} />
-              <Route path="/sponsor" element={<Navigate to="/" replace />} />
-              <Route path="/join" element={<Navigate to="/" replace />} />
-              <Route path="/analysis" element={<Navigate to="/" replace />} />
-              <Route path="/role/:jobTitle" element={<Navigate to="/" replace />} />
-              <Route path="/company/:slug" element={<Navigate to="/" replace />} />
-              <Route path="/u/:username" element={<Navigate to="/" replace />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
