@@ -815,6 +815,22 @@ export default function Leadgen() {
     let assistantSoFar = "";
     try {
       const apiMessages = allItems.filter((it): it is ChatItem & { type: "user" | "assistant" } => it.type !== "leads").map((m) => ({ role: m.type, content: m.content }));
+      // Inject current targeting context
+      const selectedProducts = droppedCards.filter(c => c.type === "product").map(c => c.label);
+      const selectedPersonas = droppedCards.filter(c => c.type === "vertical").map(c => c.label);
+      const availableProducts = gtmTreeData?.products.map(p => p.name) || [];
+      const availablePersonas = gtmTreeData?.mappings.map(m => m.vertical) || [];
+      const targetingContext = [
+        `[TARGETING STATE]`,
+        `Selected products: ${selectedProducts.length > 0 ? selectedProducts.join(", ") : "none"}`,
+        `Selected personas: ${selectedPersonas.length > 0 ? selectedPersonas.join(", ") : "none"}`,
+        `Available products: ${availableProducts.join(", ") || "none"}`,
+        `Available personas/verticals: ${availablePersonas.join(", ") || "none"}`,
+        targetLocation ? `Location: ${targetLocation}` : "Location: not set",
+        `Leads found: ${savedLeads.length}`,
+        `[END TARGETING STATE]`,
+      ].join("\n");
+      apiMessages.unshift({ role: "system" as any, content: targetingContext });
       const resp = await fetchWithTimeout(CHAT_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` }, body: JSON.stringify({ messages: apiMessages }) });
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
