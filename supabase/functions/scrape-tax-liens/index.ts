@@ -26,7 +26,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify user
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -42,65 +41,71 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { county = "Travis", search_query } = await req.json().catch(() => ({}));
+    const { county = "Travis", search_query, scrape_url } = await req.json().catch(() => ({}));
 
-    // Step 1: Use Firecrawl search to find recent federal tax lien filings
-    const searchQuery = search_query || `federal tax lien filing ${county} county Texas 2025 2026 site:tccsearch.org OR site:countyclerk.traviscountytx.gov`;
+    // Step 0: If a direct URL was provided, scrape it with Firecrawl
+    let directScrapeLiens: any[] = [];
+    let directScrapeMarkdown = "";
+    if (scrape_url) {
+      console.log("Direct scraping URL:", scrape_url);
+      try {
+        const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ url: scrape_url, formats: ["markdown"], waitFor: 8000 }),
+        });
+        const scrapeData = await scrapeRes.json();
+        console.log("Direct scrape status:", scrapeRes.status, "success:", scrapeData.success);
+        if (scrapeData.success && scrapeData.data?.markdown) {
+          directScrapeMarkdown = scrapeData.data.markdown;
+          console.log("Scraped content length:", directScrapeMarkdown.length);
+          directScrapeLiens = extractLiensFromMarkdown(directScrapeMarkdown, county);
+          console.log("Liens parsed from direct scrape:", directScrapeLiens.length);
+        }
+      } catch (e) {
+        console.log("Direct scrape failed:", e);
+      }
+    }
 
-    console.log("Searching for liens with query:", searchQuery);
+    // Step 1: Broader Firecrawl search queries (no site: restriction)
+    const searchQueries = search_query
+      ? [search_query]
+      : [
+          `"federal tax lien" "Travis County" Texas taxpayer filed 2025 OR 2026`,
+          `IRS "notice of federal tax lien" Travis County Austin Texas`,
+          `"668(Y)" tax lien Travis County Texas recording`,
+        ];
 
-    const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query: searchQuery,
-        limit: 10,
-        scrapeOptions: { formats: ["markdown"] },
-      }),
+    let allResults: any[] = [];
+    for (const query of searchQueries) {
+      console.log("Searching:", query);
+      try {
+        const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ query, limit: 10, scrapeOptions: { formats: ["markdown"] } }),
+        });
+        const searchData = await searchRes.json();
+        if (searchRes.ok && searchData.data) {
+          allResults.push(...searchData.data);
+        } else {
+          console.log("Search failed:", query, searchData.error);
+        }
+      } catch (e) {
+        console.log("Search error:", query, e);
+      }
+    }
+
+    // Deduplicate by URL
+    const seenUrls = new Set<string>();
+    const results = allResults.filter((r: any) => {
+      if (!r.url || seenUrls.has(r.url)) return false;
+      seenUrls.add(r.url);
+      return true;
     });
 
-    const searchData = await searchRes.json();
-
-    if (!searchRes.ok) {
-      console.error("Firecrawl search error:", searchData);
-      return new Response(
-        JSON.stringify({ success: false, error: searchData.error || "Search failed" }),
-        { status: searchRes.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Step 2: Also try scraping a known public records page
-    let scrapedContent = "";
-    try {
-      const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: "https://www.tccsearch.org/RealEstate/SearchEntry.aspx",
-          formats: ["markdown"],
-          waitFor: 5000,
-        }),
-      });
-      const scrapeData = await scrapeRes.json();
-      if (scrapeData.success && scrapeData.data?.markdown) {
-        scrapedContent = scrapeData.data.markdown;
-      }
-    } catch (e) {
-      console.log("Direct scrape failed (expected for Cloudflare sites):", e);
-    }
-
-    const genericResultThreshold = 0;
-
-    // Step 3: Parse results into lien records
+    // Step 2: Parse search results into lien records
     const liens: any[] = [];
-    const results = searchData.data || [];
-
     for (const result of results) {
       const md = result.markdown || result.description || "";
       const parsed = parseLienFromText(md, result.title || "", county);
@@ -109,41 +114,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Step 4: If we got raw scraped content, try to extract liens from it too
-    if (scrapedContent) {
-      const additionalLiens = extractLiensFromMarkdown(scrapedContent, county);
-      for (const l of additionalLiens) {
-        liens.push({ ...l, user_id: user.id });
-      }
+    // Add direct scrape liens
+    for (const l of directScrapeLiens) {
+      liens.push({ ...l, user_id: user.id });
     }
 
-    const hasOnlyGenericPages =
-      results.length > 0 &&
-      liens.length <= genericResultThreshold &&
-      results.every((result: any) => isGenericCountyPage(result));
-
-    if (hasOnlyGenericPages) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Travis County did not expose any public lien record pages to search. The current source is returning only generic county pages, not actual filing records.",
-          total_results: results.length,
-          liens_parsed: 0,
-          liens_inserted: 0,
-          raw_results: results.map((r: any) => ({
-            title: r.title,
-            url: r.url,
-            description: r.description?.substring(0, 200),
-          })),
-        }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Step 5: Insert into database (skip duplicates by serial_number)
+    // Step 3: Insert into database (skip duplicates by serial_number)
     let inserted = 0;
     for (const lien of liens) {
-      // Check for existing serial number
       if (lien.serial_number) {
         const { data: existing } = await supabase
           .from("federal_tax_liens")
@@ -153,10 +131,7 @@ Deno.serve(async (req) => {
           .limit(1);
         if (existing && existing.length > 0) continue;
       }
-
-      const { error: insertError } = await supabase
-        .from("federal_tax_liens")
-        .insert(lien);
+      const { error: insertError } = await supabase.from("federal_tax_liens").insert(lien);
       if (!insertError) inserted++;
     }
 
@@ -166,7 +141,8 @@ Deno.serve(async (req) => {
         total_results: results.length,
         liens_parsed: liens.length,
         liens_inserted: inserted,
-        raw_results: results.map((r: any) => ({
+        direct_scrape_content_length: directScrapeMarkdown.length || 0,
+        raw_results: results.slice(0, 10).map((r: any) => ({
           title: r.title,
           url: r.url,
           description: r.description?.substring(0, 200),
@@ -187,30 +163,19 @@ function parseLienFromText(text: string, title: string, county: string): any | n
   if (!text && !title) return null;
   const combined = `${title}\n${text}`;
 
-  // Look for tax lien indicators
   const isLien = /tax\s*lien|668\s*\(?\s*Y\s*\)?|federal\s*lien|IRS\s*lien/i.test(combined);
   if (!isLien) return null;
 
-  // Extract taxpayer name
-  const nameMatch = combined.match(/(?:taxpayer|name)[:\s]*([A-Z][A-Z\s,.']+(?:LLC|INC|CORP|LTD|LP|CO)?)/i)
-    || combined.match(/(?:filed against|lien on)\s+([A-Z][A-Z\s,.']+)/i);
+  const nameMatch = combined.match(/(?:taxpayer|name|debtor)[:\s]*([A-Z][A-Z\s,.'&-]+(?:LLC|INC|CORP|LTD|LP|CO)?)/i)
+    || combined.match(/(?:filed against|lien on|against)\s+([A-Z][A-Z\s,.'&-]+)/i);
   const taxpayerName = nameMatch ? nameMatch[1].trim() : title.replace(/federal tax lien/i, "").trim();
   if (!taxpayerName || taxpayerName.length < 2) return null;
 
-  // Extract serial number
   const serialMatch = combined.match(/(?:serial|serial\s*number|#)\s*[:\s]*(\d{6,})/i);
-
-  // Extract amounts
   const amountMatch = combined.match(/\$\s*([\d,]+\.?\d*)/);
-
-  // Extract dates
   const dateMatch = combined.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
-
-  // Extract SSN/EIN
   const einMatch = combined.match(/(\d{2}-\d{7})/);
   const ssnMatch = combined.match(/(\d{3}-\d{2}-\d{4})/);
-
-  // Extract kind of tax
   const taxMatch = combined.match(/(?:kind of tax|tax type)[:\s]*([\w\d]+)/i)
     || combined.match(/\b(941|1040|1120|940)\b/);
 
@@ -221,7 +186,7 @@ function parseLienFromText(text: string, title: string, county: string): any | n
     filing_date: dateMatch ? dateMatch[1] : null,
     taxpayer_ssn_or_ein: einMatch ? einMatch[1] : ssnMatch ? ssnMatch[1] : null,
     kind_of_tax: taxMatch ? taxMatch[1] : null,
-    county: county,
+    county,
     state_filed: "Texas",
     place_of_filing: `${county} County, TX`,
     status: "active",
@@ -230,25 +195,10 @@ function parseLienFromText(text: string, title: string, county: string): any | n
 
 function extractLiensFromMarkdown(markdown: string, county: string): any[] {
   const liens: any[] = [];
-  // Split by potential record boundaries
   const sections = markdown.split(/(?:\n{2,}|\|{2,}|---+)/);
-
   for (const section of sections) {
     const parsed = parseLienFromText(section, "", county);
     if (parsed) liens.push(parsed);
   }
   return liens;
-}
-
-function isGenericCountyPage(result: { title?: string; url?: string; description?: string }) {
-  const combined = `${result.title || ""}\n${result.description || ""}\n${result.url || ""}`.toLowerCase();
-
-  return [
-    "recording search + copies of records",
-    "travis county clerk: home",
-    "recording fee information",
-    "real property",
-    "meetings and official notices",
-    "search case data",
-  ].some((pattern) => combined.includes(pattern));
 }
