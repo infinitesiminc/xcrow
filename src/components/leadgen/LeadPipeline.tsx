@@ -237,6 +237,19 @@ export function LeadPipeline({
                       <LeadAvatar lead={lead} />
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{lead.name}</p>
+                        <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                          {lead.niche_tag && (
+                            <Badge variant="outline" className="text-[9px] px-1 py-0 font-normal text-primary/70 border-primary/20 bg-primary/5 truncate max-w-[120px]">
+                              {lead.niche_tag}
+                            </Badge>
+                          )}
+                          {lead.address && (
+                            <span className="text-[9px] text-muted-foreground/70 truncate max-w-[120px] flex items-center gap-0.5">
+                              <MapPin className="w-2.5 h-2.5 shrink-0" />
+                              {lead.address}
+                            </span>
+                          )}
+                        </div>
                         {lead.reason && (
                           <p className="text-[10px] text-primary/70 truncate max-w-[160px]">💡 {lead.reason}</p>
                         )}
