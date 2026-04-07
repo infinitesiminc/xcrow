@@ -959,6 +959,7 @@ export default function Leadgen() {
               }
               continue;
             }
+            if (parsed.type === "action" && parsed.action) { handleChatAction(parsed); continue; }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) upsert(content);
