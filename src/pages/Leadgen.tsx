@@ -805,6 +805,38 @@ export default function Leadgen() {
       toast.error("Could not copy the draft.");
     }
   };
+  // Handle chat-driven actions from AI tool calls
+  const handleChatAction = useCallback((payload: { action: string; products?: string[]; personas?: string[]; auto_generate?: boolean; location?: string; lead_name?: string }) => {
+    const { action } = payload;
+    if (action === "update_targeting") {
+      const newCards: DroppedCard[] = [];
+      if (payload.products && gtmTreeData) {
+        for (const label of payload.products) {
+          const p = gtmTreeData.products.find(pr => pr.name.toLowerCase() === label.toLowerCase());
+          if (p) newCards.push({ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model });
+        }
+      }
+      if (payload.personas && gtmTreeData) {
+        for (const label of payload.personas) {
+          const m = gtmTreeData.mappings.find(mp => mp.vertical.toLowerCase() === label.toLowerCase());
+          if (m) newCards.push({ id: `vertical-${m.vertical}`, type: "vertical", label: m.vertical, description: m.buyer_roles?.join(", ") || "", meta: m.buyer_roles?.[0] });
+        }
+      }
+      if (newCards.length > 0) setDroppedCards(newCards);
+      if (payload.auto_generate && newCards.length > 0) {
+        setTimeout(() => handleGenerateFromTargeting(newCards), 300);
+      }
+    } else if (action === "generate_leads") {
+      if (droppedCards.length > 0) handleGenerateFromTargeting(droppedCards);
+    } else if (action === "reset_targeting") {
+      setDroppedCards(defaultCards);
+    } else if (action === "change_location" && payload.location) {
+      setTargetLocation(payload.location);
+    } else if (action === "draft_email" && payload.lead_name) {
+      const lead = savedLeads.find(l => l.name.toLowerCase().includes(payload.lead_name!.toLowerCase()));
+      if (lead) handleDraftEmail(lead);
+    }
+  }, [gtmTreeData, droppedCards, defaultCards, savedLeads, handleGenerateFromTargeting, handleDraftEmail]);
 
   const sendMessage = async (overrideText?: string) => {
     const text = (overrideText || input).trim();
