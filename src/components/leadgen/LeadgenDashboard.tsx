@@ -190,6 +190,8 @@ export function LeadgenDashboard({
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
               onStop={onStopGenerating}
+              hasCustomizations={hasCustomizations}
+              onReset={onResetToDefaults}
             />
           </div>
           <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} loadingProducts={loadingProducts} loadingPersonas={loadingPersonas} />
