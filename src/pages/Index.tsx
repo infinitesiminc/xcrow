@@ -363,6 +363,87 @@ export default function Index() {
           </div>
         </section>
 
+        {/* ═══ LinkedIn Sales Navigator comparison ═══ */}
+        <section className="bg-muted/30 py-20 sm:py-28">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <motion.div {...fadeInView()} className="text-center mb-14">
+              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
+                Xcrow vs. LinkedIn Sales Navigator
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
+                Stop Overpaying for InMail
+              </h2>
+              <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
+                LinkedIn gives you <span className="text-foreground font-semibold">50 InMails/month</span> for $120+/mo.
+                We give you <span className="text-primary font-semibold">500 leads with direct emails</span> for $49/mo.
+              </p>
+            </motion.div>
+
+            <motion.div {...fadeInView(0.1)} className="grid md:grid-cols-2 gap-8 items-start">
+              {/* LinkedIn side */}
+              <div className="bg-card border border-border rounded-2xl p-8 space-y-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em] bg-muted px-3 py-1 rounded-full">LinkedIn Sales Navigator</span>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    { plan: "Core", price: "$119.99/mo", annual: "$89.99/mo billed annually" },
+                    { plan: "Advanced", price: "$179.99/mo", annual: "$139.99/mo billed annually" },
+                    { plan: "Advanced Plus", price: "~$1,600/seat/yr", annual: "Custom pricing" },
+                  ].map((tier) => (
+                    <div key={tier.plan} className="flex items-center justify-between border-b border-border/50 pb-3 last:border-0 last:pb-0">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{tier.plan}</p>
+                        <p className="text-xs text-muted-foreground">{tier.annual}</p>
+                      </div>
+                      <p className="text-sm font-bold text-foreground">{tier.price}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 text-center">
+                  <p className="text-3xl font-extrabold text-destructive">50</p>
+                  <p className="text-sm text-muted-foreground mt-1">InMails per month — <span className="text-destructive font-medium">that's it</span></p>
+                </div>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> 50 InMails/mo — burns through fast</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No direct email addresses</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Starts at $120/mo per seat</li>
+                </ul>
+              </div>
+
+              {/* Xcrow side */}
+              <div className="bg-card border border-primary/20 rounded-2xl p-8 space-y-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold text-primary uppercase tracking-[0.1em] bg-primary/10 px-3 py-1 rounded-full">Xcrow Pro</span>
+                </div>
+                <div className="flex items-center justify-between border-b border-border/50 pb-4">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Pro Plan</p>
+                    <p className="text-xs text-muted-foreground">Everything you need</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-primary">$49<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                </div>
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
+                  <p className="text-3xl font-extrabold text-primary">500</p>
+                  <p className="text-sm text-muted-foreground mt-1">Leads with <span className="text-primary font-medium">direct email addresses</span></p>
+                </div>
+                <ul className="space-y-2 text-sm text-foreground">
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 500 verified leads with emails</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI-drafted outreach per lead</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 10x more contacts, 60% cheaper</li>
+                </ul>
+              </div>
+            </motion.div>
+
+            {/* Bottom callout */}
+            <motion.div {...fadeInView(0.2)} className="mt-10 text-center">
+              <p className="text-muted-foreground text-sm">
+                That's <span className="text-primary font-bold">10× the reach</span> at <span className="text-primary font-bold">60% less cost</span>. No LinkedIn subscription needed.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
         {/* ═══ Bottom CTA ═══ */}
         <section className="bg-primary/[0.04] border-t border-primary/10">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 sm:py-24 text-center">
