@@ -17,6 +17,33 @@ const Texas = () => {
   const [editingLien, setEditingLien] = useState<Lien | null>(null);
   const [search, setSearch] = useState("");
   const [isScraping, setIsScraping] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data, error: fnError } = await supabase.functions.invoke("extract-lien-pdf", {
+        body: formData,
+      });
+      if (fnError) throw fnError;
+      if (data?.success) {
+        toast.success(`Extracted ${data.entries_found} entries for ${data.taxpayer_name}, inserted ${data.entries_inserted} new records`);
+        refetch();
+      } else {
+        toast.error(data?.error || "Extraction failed");
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast.error(err.message || "Failed to extract lien from PDF");
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
+  };
 
   const filteredLiens = (liens ?? []).filter((l) => {
     if (!search) return true;
