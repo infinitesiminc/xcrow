@@ -14,7 +14,7 @@ import type { Lead } from "./LeadCard";
 
 interface LeadPipelineProps {
   leads: SavedLead[];
-  onUpdateStatus: (id: string, status: LeadStatus) => void;
+  onUpdateStatus: (id: string, status: string) => void;
   onDraftEmail: (lead: Lead) => void;
   onExportCSV: () => void;
   outreachCount: number;
