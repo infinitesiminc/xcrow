@@ -1647,16 +1647,35 @@ export default function Leadgen() {
                         </div>
                       </div>
                     )}
-                    {item.type === "assistant" && (
-                      <div className="flex gap-1.5">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                          <Bot className="w-3 h-3 text-primary" />
+                    {item.type === "assistant" && (() => {
+                      const { cleanText, pills } = parsePills(item.content);
+                      return (
+                        <div className="flex gap-1.5">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <Bot className="w-3 h-3 text-primary" />
+                          </div>
+                          <div className="max-w-[85%] space-y-2">
+                            <div className="bg-muted border border-border/40 rounded-2xl rounded-bl-md px-4 py-3 text-sm text-foreground prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-strong:text-primary [&_ol]:list-decimal [&_ol]:pl-4 leading-relaxed">
+                              <ReactMarkdown>{formatAssistantMessage(cleanText)}</ReactMarkdown>
+                            </div>
+                            {pills.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5">
+                                {pills.map((pill, pi) => (
+                                  <button
+                                    key={pi}
+                                    type="button"
+                                    onClick={() => sendMessage(pill)}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
+                                  >
+                                    {pill}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="bg-muted border border-border/40 rounded-2xl rounded-bl-md px-4 py-3 max-w-[85%] text-sm text-foreground prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-strong:text-primary [&_ol]:list-decimal [&_ol]:pl-4 leading-relaxed">
-                          <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 ))}
                 {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
