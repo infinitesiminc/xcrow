@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,18 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Mail, MessageSquare, TrendingUp, Download, Search, ExternalLink, MapPin, Globe } from "lucide-react";
+import { Download, Search, ExternalLink, MapPin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { SavedLead, LeadStatus } from "./useLeadsCRUD";
+import type { SavedLead } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
 
-const STATUS_COLORS: Record<LeadStatus, string> = {
-  new: "bg-blue-500/10 text-blue-600 border-blue-500/30",
-  contacted: "bg-amber-500/10 text-amber-600 border-amber-500/30",
-  replied: "bg-green-500/10 text-green-600 border-green-500/30",
-  won: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-  lost: "bg-muted text-muted-foreground border-border",
-};
 
 interface LeadPipelineProps {
   leads: SavedLead[];
