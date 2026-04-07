@@ -163,9 +163,70 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "update_targeting",
+      description: "Update the product and persona card selections in the targeting UI. Set auto_generate=true to also trigger lead generation.",
+      parameters: {
+        type: "object",
+        properties: {
+          products: { type: "array", items: { type: "string" }, description: "Product names to select" },
+          personas: { type: "array", items: { type: "string" }, description: "Persona/vertical names to select" },
+          auto_generate: { type: "boolean", description: "If true, automatically generate leads after updating" },
+        },
+        required: [],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_leads",
+      description: "Trigger lead generation with the current targeting selections.",
+      parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "reset_targeting",
+      description: "Reset all targeting selections back to the defaults detected during initial analysis.",
+      parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "change_location",
+      description: "Update the target geographic location for lead generation.",
+      parameters: {
+        type: "object",
+        properties: {
+          location: { type: "string", description: "New target location" },
+        },
+        required: ["location"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "draft_email",
+      description: "Open the email draft modal for a specific lead by name.",
+      parameters: {
+        type: "object",
+        properties: {
+          lead_name: { type: "string", description: "Name of the lead to draft email for" },
+        },
+        required: ["lead_name"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
-
-function normalizeResponseText(content: string): string {
   if (!content) return content;
   return content
     .replace(/\r\n/g, "\n")
