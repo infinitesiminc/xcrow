@@ -287,6 +287,60 @@ export default function Leadgen() {
   const activeWorkspaceKey = useMemo(() => normalizeWorkspaceKey(websiteUrl), [websiteUrl]);
 
 
+function CopyFieldButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* ignore */ }
+  };
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="h-7 text-xs gap-1 shrink-0"
+      onClick={handleCopy}
+      disabled={!text}
+    >
+      {copied ? <><ClipboardCheck className="w-3.5 h-3.5 text-green-500" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> {label}</>}
+    </Button>
+  );
+}
+
+function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange }: {
+  email: string; subject: string; body: string;
+  onSubjectChange: (v: string) => void; onBodyChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs font-medium text-muted-foreground">To</label>
+          <CopyFieldButton text={email} label="Copy" />
+        </div>
+        <Input value={email} disabled className="bg-muted/30 text-sm" />
+      </div>
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs font-medium text-muted-foreground">Subject</label>
+          <CopyFieldButton text={subject} label="Copy" />
+        </div>
+        <Input value={subject} onChange={(e) => onSubjectChange(e.target.value)} className="text-sm" placeholder="Email subject..." />
+      </div>
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs font-medium text-muted-foreground">Body</label>
+          <CopyFieldButton text={body} label="Copy" />
+        </div>
+        <Textarea value={body} onChange={(e) => onBodyChange(e.target.value)} className="text-sm min-h-[180px] whitespace-pre-wrap" placeholder="Email body..." />
+      </div>
+    </div>
+  );
+}
+
   const {
     leads: savedLeads, outreach, niches: savedNiches,
     upsertLeads, upsertNiches, updateLeadStatus, deleteLead, logOutreach, exportCSV,
