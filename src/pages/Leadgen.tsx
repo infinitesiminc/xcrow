@@ -305,7 +305,7 @@ function CopyFieldButton({ text, label }: { text: string; label: string }) {
       onClick={handleCopy}
       disabled={!text}
     >
-      {copied ? <><ClipboardCheck className="w-3.5 h-3.5 text-green-500" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> {label}</>}
+      {copied ? <><ClipboardCheck className="w-3.5 h-3.5 text-primary" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> {label}</>}
     </Button>
   );
 }
