@@ -933,7 +933,12 @@ export default function Leadgen() {
               handleChatAction(parsed);
               continue;
             }
-            if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
+            if (parsed.type === "leads" && parsed.leads) {
+              const chatLeads = parsed.leads.map((l: Lead) => ({ ...l, niche_tag: l.niche_tag || "chat", source: websiteUrl || "chat" }));
+              setItems((prev) => [...prev, { type: "leads", leads: chatLeads }]);
+              if (user) upsertLeads(chatLeads);
+              continue;
+            }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) upsert(content);
           } catch { buf = line + "\n" + buf; break; }
@@ -971,7 +976,12 @@ export default function Leadgen() {
               continue;
             }
             if (parsed.type === "action" && parsed.action) { handleChatAction(parsed); continue; }
-            if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
+            if (parsed.type === "leads" && parsed.leads) {
+              const chatLeads = parsed.leads.map((l: Lead) => ({ ...l, niche_tag: l.niche_tag || "chat", source: websiteUrl || "chat" }));
+              setItems((prev) => [...prev, { type: "leads", leads: chatLeads }]);
+              if (user) upsertLeads(chatLeads);
+              continue;
+            }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) upsert(content);
           } catch {}
