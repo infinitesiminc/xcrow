@@ -35,7 +35,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspace, onDeleteWorkspace, onNewWorkspace }: NavbarProps) {
-  const { user, signOut, openAuthModal, profile } = useAuth();
+  const { user, signOut, openAuthModal, profile, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
