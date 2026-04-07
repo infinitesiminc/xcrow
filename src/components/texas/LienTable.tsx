@@ -57,8 +57,9 @@ export function LienTable({ liens, onEdit }: LienTableProps) {
               <TableHead className="font-semibold">SSN/EIN</TableHead>
               <TableHead className="font-semibold">Serial #</TableHead>
               <TableHead className="font-semibold">Kind of Tax</TableHead>
+              <TableHead className="font-semibold">Tax Period Ending</TableHead>
               <TableHead className="font-semibold text-right">Unpaid Balance</TableHead>
-              <TableHead className="font-semibold">Filing Date</TableHead>
+              <TableHead className="font-semibold">Date of Assessment</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold text-right">Actions</TableHead>
             </TableRow>
