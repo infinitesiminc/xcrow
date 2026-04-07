@@ -207,16 +207,17 @@ export function LeadPipeline({
                   </TableHead>
                 )}
                 <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Title</TableHead>
+                <TableHead className="hidden sm:table-cell">Title</TableHead>
                 <TableHead className="hidden sm:table-cell">Company</TableHead>
-                <TableHead className="w-[70px] text-right">Actions</TableHead>
+                <TableHead className="hidden md:table-cell">Location</TableHead>
+                <TableHead className="w-[90px]">Persona</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((lead) => (
                 <TableRow
                   key={lead.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-muted/50 h-12"
                   onClick={() => onSelectLead?.(lead)}
                 >
                   {onToggleSelect && (
@@ -228,51 +229,32 @@ export function LeadPipeline({
                     </TableCell>
                   )}
                   <TableCell>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
                       <LeadAvatar lead={lead} />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{lead.name}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          {lead.niche_tag && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-normal text-primary/70 border-primary/20 bg-primary/5 shrink-0 whitespace-nowrap">
-                              {lead.niche_tag}
-                            </Badge>
-                          )}
-                          {lead.address && (
-                            <span className="text-[9px] text-muted-foreground/60 flex items-center gap-0.5 whitespace-nowrap">
-                              <MapPin className="w-2.5 h-2.5 shrink-0" />
-                              {lead.address}
-                            </span>
-                          )}
-                          {lead.score != null && (
-                            <span className={`text-[9px] font-semibold ${lead.score >= 90 ? "text-emerald-600" : lead.score >= 70 ? "text-primary" : lead.score >= 50 ? "text-amber-600" : "text-muted-foreground"}`}>
-                              {lead.score}%
-                            </span>
-                          )}
-                        </div>
-                        {lead.reason && (
-                          <p className="text-[10px] text-primary/60 truncate max-w-[220px] mt-0.5">💡 {lead.reason}</p>
-                        )}
-                      </div>
+                      <span className="text-sm font-medium text-foreground truncate">{lead.name}</span>
                     </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <span className="text-xs text-muted-foreground">{lead.title || "—"}</span>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <span className="text-xs text-muted-foreground">{lead.company || "—"}</span>
+                    <span className="text-xs text-muted-foreground truncate block max-w-[200px]">{lead.title || "—"}</span>
                   </TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-0.5">
-                      <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${STATUS_COLORS[lead.status]}`}>
-                        {lead.status}
+                  <TableCell className="hidden sm:table-cell">
+                    <span className="text-xs text-muted-foreground truncate block max-w-[160px]">{lead.company || "—"}</span>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {lead.address ? (
+                      <span className="text-xs text-muted-foreground truncate block max-w-[140px]">{lead.address}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/40">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {lead.niche_tag ? (
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-normal text-primary/70 border-primary/20 bg-primary/5 whitespace-nowrap truncate max-w-[85px]">
+                        {lead.niche_tag.split(" ")[0]}
                       </Badge>
-                      {lead.linkedin && (
-                        <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-accent">
-                          <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                        </a>
-                      )}
-                    </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/40">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
