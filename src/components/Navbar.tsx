@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2, Plus, Check } from "lucide-react";
+import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2, Plus, Check, Shield } from "lucide-react";
 import type { UserWorkspace } from "@/hooks/use-workspaces";
 
 interface NavbarProps {
