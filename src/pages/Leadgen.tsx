@@ -1516,6 +1516,10 @@ export default function Leadgen() {
             onGenerateFromTargeting={handleGenerateFromTargeting}
             onStopGenerating={handleStopGenerating}
             loadingPersonas={gtmPersonasLoading}
+            droppedCards={droppedCards}
+            setDroppedCards={setDroppedCards}
+            hasCustomizations={JSON.stringify(droppedCards) !== JSON.stringify(defaultCards)}
+            onResetToDefaults={() => setDroppedCards(defaultCards)}
           />
         </div>
       )}
