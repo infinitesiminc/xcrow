@@ -442,7 +442,21 @@ export default function Leadgen() {
     }
   }, [updateGtmCache]);
 
-  // Generate leads from targeting cards
+  // Set default cards when GTM tree first loads (auto-select single product)
+  useEffect(() => {
+    if (!gtmTreeData || gtmTreeData.products.length === 0) return;
+    if (defaultCards.length > 0) return; // already set
+    const autoCards: DroppedCard[] = [];
+    if (gtmTreeData.products.length === 1) {
+      const p = gtmTreeData.products[0];
+      autoCards.push({ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model });
+    }
+    if (autoCards.length > 0) {
+      setDefaultCards(autoCards);
+      setDroppedCards(autoCards);
+    }
+  }, [gtmTreeData]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleGenerateFromTargeting = useCallback(async (cards: DroppedCard[]) => {
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
