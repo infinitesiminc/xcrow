@@ -83,13 +83,14 @@ export function LeadgenDashboard({
 
   const droppedIds = new Set(droppedCards.map(c => c.id));
 
-  // Auto-select single product
+  // Auto-select single product (lifted to parent but kept as fallback)
   useEffect(() => {
     if (gtmTreeData && gtmTreeData.products.length === 1 && droppedCards.length === 0) {
       const p = gtmTreeData.products[0];
-      setDroppedCards([{ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model }]);
+      const autoCard: DroppedCard = { id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model };
+      setDroppedCards([autoCard]);
     }
-  }, [gtmTreeData]);
+  }, [gtmTreeData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
