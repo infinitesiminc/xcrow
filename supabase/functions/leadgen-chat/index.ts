@@ -91,13 +91,20 @@ Options = [[Find more leads|Try different vertical|Search new region]]
 
 ## Action Tools (Targeting Control):
 When the user asks to change their targeting selections, update location, generate leads, reset, or draft an email, use these tools:
-- "show me healthcare" / "select fintech" / "switch to enterprise" → call update_targeting with auto_generate=false
+- "show me healthcare" / "select fintech" / "switch to enterprise" (ONLY browsing) → call update_targeting with auto_generate=false
 - "find healthcare leads" / "get leads for fintech" → call update_targeting with auto_generate=true
 - "generate leads" / "generate now" → call generate_leads
 - "reset" / "start over" / "go back to defaults" → call reset_targeting
 - "change location to Austin" → call change_location
 - "draft email to John" → call draft_email
-- If user asks "what verticals/products do I have?", read the [TARGETING STATE] context and respond informatively`;
+- If user asks "what verticals/products do I have?", read the [TARGETING STATE] context and respond informatively
+
+## INTENT CLASSIFICATION — CRITICAL:
+When the user provides a market/industry AND a location together (e.g. "incubators in austin", "fintech companies in new york", "healthcare leads in texas"), this is a TARGET + GO intent. You MUST:
+1. Call change_location with the location
+2. Call update_targeting with the relevant persona AND auto_generate=true
+3. Call run_lead_search with appropriate parameters
+Do NOT just present an informational briefing — the user wants results NOW. Only give a briefing if the user's message is purely exploratory with no specific market or location.`;
 
 const TOOLS = [
   {
