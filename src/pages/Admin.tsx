@@ -117,23 +117,8 @@ const Admin = () => {
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-muted-foreground text-sm mb-1">Total Sims</div>
-              <p className="text-2xl font-bold text-foreground">
-                {users.reduce((s, u) => s + (u.total_sims || 0), 0)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-muted-foreground text-sm mb-1">Total XP</div>
-              <p className="text-2xl font-bold text-foreground">
-                {users.reduce((s, u) => s + (u.total_xp || 0), 0).toLocaleString()}
-              </p>
-            </CardContent>
-          </Card>
         </div>
+
 
         {/* User Table */}
         <Card>
