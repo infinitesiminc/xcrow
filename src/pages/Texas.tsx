@@ -43,7 +43,7 @@ const Texas = () => {
     setIsScraping(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("scrape-tax-liens", {
-        body: { county: "Travis" },
+        body: { county: "Travis", scrape_url: "https://countyclerk.traviscountytx.gov/departments/recording/search-copies-of-records/" },
       });
 
       if (fnError) throw fnError;
