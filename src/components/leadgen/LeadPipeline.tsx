@@ -199,22 +199,17 @@ export function LeadPipeline({
             <TableHeader>
               <TableRow>
                 {onToggleSelect && (
-                  <TableHead className="w-[40px]">
+                  <TableHead className="w-[36px] px-2">
                     <Checkbox
                       checked={allSelected}
                       onCheckedChange={() => onSelectAll?.()}
                     />
                   </TableHead>
                 )}
-                <TableHead className="w-[200px]">Name</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead className="hidden md:table-cell">Title</TableHead>
                 <TableHead className="hidden sm:table-cell">Company</TableHead>
-                <TableHead className="w-[60px]">Score</TableHead>
-                <TableHead className="hidden lg:table-cell w-[140px]">Niche</TableHead>
-                <TableHead className="hidden lg:table-cell w-[140px]">Location</TableHead>
-                <TableHead className="hidden lg:table-cell">Email</TableHead>
-                <TableHead className="w-[100px]">Stage</TableHead>
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
+                <TableHead className="w-[70px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -225,7 +220,7 @@ export function LeadPipeline({
                   onClick={() => onSelectLead?.(lead)}
                 >
                   {onToggleSelect && (
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-2" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selectedIds?.has(lead.id) || false}
                         onCheckedChange={() => onToggleSelect(lead.id)}
@@ -237,87 +232,41 @@ export function LeadPipeline({
                       <LeadAvatar lead={lead} />
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{lead.name}</p>
-                        <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                        <div className="flex items-center gap-1.5 mt-0.5">
                           {lead.niche_tag && (
-                            <Badge variant="outline" className="text-[9px] px-1 py-0 font-normal text-primary/70 border-primary/20 bg-primary/5 truncate max-w-[120px]">
+                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-normal text-primary/70 border-primary/20 bg-primary/5 shrink-0 whitespace-nowrap">
                               {lead.niche_tag}
                             </Badge>
                           )}
                           {lead.address && (
-                            <span className="text-[9px] text-muted-foreground/70 truncate max-w-[120px] flex items-center gap-0.5">
+                            <span className="text-[9px] text-muted-foreground/60 flex items-center gap-0.5 whitespace-nowrap">
                               <MapPin className="w-2.5 h-2.5 shrink-0" />
                               {lead.address}
                             </span>
                           )}
+                          {lead.score != null && (
+                            <span className={`text-[9px] font-semibold ${lead.score >= 90 ? "text-emerald-600" : lead.score >= 70 ? "text-primary" : lead.score >= 50 ? "text-amber-600" : "text-muted-foreground"}`}>
+                              {lead.score}%
+                            </span>
+                          )}
                         </div>
                         {lead.reason && (
-                          <p className="text-[10px] text-primary/70 truncate max-w-[160px]">💡 {lead.reason}</p>
+                          <p className="text-[10px] text-primary/60 truncate max-w-[220px] mt-0.5">💡 {lead.reason}</p>
                         )}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    <span className="text-xs text-muted-foreground truncate">{lead.title || "—"}</span>
+                    <span className="text-xs text-muted-foreground">{lead.title || "—"}</span>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <span className="text-xs text-muted-foreground truncate">{lead.company || "—"}</span>
-                  </TableCell>
-                  <TableCell>
-                    {lead.score != null ? (
-                      <span className={`text-xs font-semibold ${lead.score >= 90 ? "text-emerald-600" : lead.score >= 70 ? "text-primary" : lead.score >= 50 ? "text-amber-600" : "text-muted-foreground"}`}>
-                        {lead.score}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/50">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal truncate max-w-[130px]">
-                      {lead.niche_tag || "Uncategorized"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {lead.address ? (
-                      <span className="text-xs text-muted-foreground truncate max-w-[130px] block">{lead.address}</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/50">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {lead.email ? (
-                      <span className="text-xs text-muted-foreground truncate max-w-[180px] block">{lead.email}</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/50">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Select value={lead.status} onValueChange={(v) => onUpdateStatus(lead.id, v as LeadStatus)}>
-                      <SelectTrigger className="h-6 text-xs w-[85px] px-1.5">
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${STATUS_COLORS[lead.status]}`}>
-                          {lead.status}
-                        </Badge>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="contacted">Contacted</SelectItem>
-                        <SelectItem value="replied">Replied</SelectItem>
-                        <SelectItem value="won">Won</SelectItem>
-                        <SelectItem value="lost">Lost</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <span className="text-xs text-muted-foreground">{lead.company || "—"}</span>
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-1">
-                      {lead.email && (
-                        <Button variant="ghost" size="icon" className="h-6 w-6" title="Draft email" onClick={() => onDraftEmail(lead)}>
-                          <Mail className="w-3 h-3" />
-                        </Button>
-                      )}
-                      {onFindLookalikes && (
-                        <Button variant="ghost" size="icon" className="h-6 w-6" title="Find lookalikes" onClick={() => onFindLookalikes(lead)}>
-                          <Users className="w-3 h-3" />
-                        </Button>
-                      )}
+                    <div className="flex items-center justify-end gap-0.5">
+                      <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${STATUS_COLORS[lead.status]}`}>
+                        {lead.status}
+                      </Badge>
                       {lead.linkedin && (
                         <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-accent">
                           <ExternalLink className="w-3 h-3 text-muted-foreground" />
