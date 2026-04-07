@@ -73,10 +73,13 @@ export function LeadgenDashboard({
   onStopGenerating,
   loadingProducts,
   loadingPersonas,
+  droppedCards,
+  setDroppedCards,
+  hasCustomizations,
+  onResetToDefaults,
 }: LeadgenDashboardProps) {
   const isMobile = useIsMobile();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
 
   const droppedIds = new Set(droppedCards.map(c => c.id));
 
