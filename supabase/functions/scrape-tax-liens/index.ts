@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
         if (scrapeData.success && scrapeData.data?.markdown) {
           directScrapeMarkdown = scrapeData.data.markdown;
           console.log("Scraped content length:", directScrapeMarkdown.length);
+          console.log("Scraped content preview:", directScrapeMarkdown.substring(0, 500));
           directScrapeLiens = extractLiensFromMarkdown(directScrapeMarkdown, county);
           console.log("Liens parsed from direct scrape:", directScrapeLiens.length);
         }
@@ -67,11 +68,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Step 1: Broader Firecrawl search queries (no site: restriction)
+    // Step 1: Firecrawl search for actual lien filings with structured data
     const searchQueries = search_query
       ? [search_query]
       : [
-          `"federal tax lien" "${county} County" Texas taxpayer filed`,
+          `IRS "notice of federal tax lien" "kind of tax" "unpaid balance" "${county} County" Texas`,
+          `"668(Y)" "unpaid balance of assessment" "tax period ending" "${county}" Texas`,
+          `site:countyclerk.traviscountytx.gov "federal tax lien"`,
         ];
 
     let allResults: any[] = [];
@@ -106,15 +109,20 @@ Deno.serve(async (req) => {
     const liens: any[] = [];
     for (const result of results) {
       const md = result.markdown || result.description || "";
-      const parsed = parseLienFromText(md, result.title || "", county);
-      if (parsed) {
-        liens.push({ ...parsed, user_id: user.id });
+      const parsed = extractForm668Fields(md, result.title || "", county);
+      for (const p of parsed) {
+        liens.push({ ...p, user_id: user.id });
       }
     }
 
     // Add direct scrape liens
     for (const l of directScrapeLiens) {
       liens.push({ ...l, user_id: user.id });
+    }
+
+    console.log("Total liens to insert:", liens.length);
+    if (liens.length > 0) {
+      console.log("Sample lien:", JSON.stringify(liens[0]));
     }
 
     // Step 3: Insert into database (skip duplicates by serial_number)
@@ -131,6 +139,7 @@ Deno.serve(async (req) => {
       }
       const { error: insertError } = await supabase.from("federal_tax_liens").insert(lien);
       if (!insertError) inserted++;
+      else console.log("Insert error:", insertError.message);
     }
 
     return new Response(
@@ -157,33 +166,129 @@ Deno.serve(async (req) => {
   }
 });
 
-function parseLienFromText(text: string, title: string, county: string): any | null {
-  if (!text && !title) return null;
+/**
+ * Extract Form 668 fields from text. Targets the specific fields on IRS Form 668(Y):
+ * - Name of Taxpayer
+ * - Kind of Tax (e.g., 941, 1040, 1120)
+ * - Tax Period Ending
+ * - Unpaid Balance of Assessment
+ * - Serial Number
+ * - Date of Assessment
+ * - Identifying Number (SSN/EIN)
+ */
+function extractForm668Fields(text: string, title: string, county: string): any[] {
+  if (!text && !title) return [];
   const combined = `${title}\n${text}`;
 
-  const isLien = /tax\s*lien|668\s*\(?\s*Y\s*\)?|federal\s*lien|IRS\s*lien/i.test(combined);
-  if (!isLien) return null;
+  const isLien = /tax\s*lien|668\s*\(?\s*[YZ]\s*\)?|federal\s*lien|IRS\s*lien|unpaid\s*balance\s*of\s*assessment|notice\s*of\s*federal/i.test(combined);
+  if (!isLien) return [];
 
-  const nameMatch = combined.match(/(?:taxpayer|name|debtor)[:\s]*([A-Z][A-Z\s,.'&-]+(?:LLC|INC|CORP|LTD|LP|CO)?)/i)
-    || combined.match(/(?:filed against|lien on|against)\s+([A-Z][A-Z\s,.'&-]+)/i);
-  const taxpayerName = nameMatch ? nameMatch[1].trim() : title.replace(/federal tax lien/i, "").trim();
+  // Try to find tabular data with multiple entries (Form 668 lists multiple tax periods)
+  const entries = parseTabularLienData(combined, county);
+  if (entries.length > 0) return entries;
+
+  // Fallback: single record extraction
+  const single = parseSingleLienRecord(combined, county);
+  return single ? [single] : [];
+}
+
+function parseTabularLienData(text: string, county: string): any[] {
+  const liens: any[] = [];
+
+  // Extract taxpayer name (appears once at top of form)
+  const nameMatch = text.match(/(?:name\s*of\s*taxpayer|taxpayer\s*name|taxpayer)[:\s]*([A-Z][A-Z\s,.'&\-]+?)(?:\n|$|\|)/i)
+    || text.match(/(?:filed against|lien\s*(?:on|against))\s+([A-Z][A-Z\s,.'&\-]+?)(?:\n|$|for)/i);
+  const taxpayerName = nameMatch ? nameMatch[1].trim().replace(/\s+/g, ' ') : null;
+
+  // EIN/SSN (appears once)
+  const einMatch = text.match(/(?:identifying\s*number|EIN|employer\s*id)[:\s]*(\d{2}-\d{7})/i);
+  const ssnMatch = text.match(/(?:identifying\s*number|SSN|social)[:\s]*(\d{3}-\d{2}-\d{4})/i);
+  const idNumber = einMatch ? einMatch[1] : ssnMatch ? ssnMatch[1] : text.match(/(\d{2}-\d{7})/)?.[1] || text.match(/(\d{3}-\d{2}-\d{4})/)?.[1] || null;
+
+  // Serial number
+  const serialMatch = text.match(/(?:serial\s*(?:number)?|lien\s*#)[:\s]*(\d{6,})/i);
+
+  // Look for rows with: Kind of Tax | Tax Period Ending | Unpaid Balance
+  // Pattern: tax type code, date, dollar amount on same line or nearby
+  const rowPattern = /\b(941|1040|1120[A-Z]?|940|720|CT-1|2290|709|706|11C)\b[\s|,]*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}-\d{2}-\d{2}|\d{2}\/\d{4})[\s|,]*\$?\s*([\d,]+\.?\d*)/g;
+  let match;
+  while ((match = rowPattern.exec(text)) !== null) {
+    liens.push({
+      taxpayer_name: taxpayerName || "Unknown Taxpayer",
+      taxpayer_ssn_or_ein: idNumber,
+      serial_number: serialMatch ? serialMatch[1] : null,
+      kind_of_tax: match[1],
+      tax_period_ending: match[2],
+      unpaid_balance: parseFloat(match[3].replace(/,/g, "")),
+      county,
+      state_filed: "Texas",
+      place_of_filing: `${county} County, TX`,
+      status: "active",
+    });
+  }
+
+  // Also try: dollar amount then tax type then date
+  if (liens.length === 0) {
+    const altPattern = /\$\s*([\d,]+\.?\d*)\s*[\s|]*\b(941|1040|1120[A-Z]?|940|720)\b\s*[\s|]*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/g;
+    while ((match = altPattern.exec(text)) !== null) {
+      liens.push({
+        taxpayer_name: taxpayerName || "Unknown Taxpayer",
+        taxpayer_ssn_or_ein: idNumber,
+        serial_number: serialMatch ? serialMatch[1] : null,
+        kind_of_tax: match[2],
+        tax_period_ending: match[3],
+        unpaid_balance: parseFloat(match[1].replace(/,/g, "")),
+        county,
+        state_filed: "Texas",
+        place_of_filing: `${county} County, TX`,
+        status: "active",
+      });
+    }
+  }
+
+  return liens;
+}
+
+function parseSingleLienRecord(text: string, county: string): any | null {
+  // Taxpayer name
+  const nameMatch = text.match(/(?:name\s*of\s*taxpayer|taxpayer\s*name|taxpayer|name)[:\s]*([A-Z][A-Z\s,.'&\-]+(?:LLC|INC|CORP|LTD|LP|CO)?)/i)
+    || text.match(/(?:filed against|lien on|against)\s+([A-Z][A-Z\s,.'&\-]+)/i);
+  const taxpayerName = nameMatch ? nameMatch[1].trim().replace(/\s+/g, ' ') : null;
   if (!taxpayerName || taxpayerName.length < 2) return null;
 
-  const serialMatch = combined.match(/(?:serial|serial\s*number|#)\s*[:\s]*(\d{6,})/i);
-  const amountMatch = combined.match(/\$\s*([\d,]+\.?\d*)/);
-  const dateMatch = combined.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
-  const einMatch = combined.match(/(\d{2}-\d{7})/);
-  const ssnMatch = combined.match(/(\d{3}-\d{2}-\d{4})/);
-  const taxMatch = combined.match(/(?:kind of tax|tax type)[:\s]*([\w\d]+)/i)
-    || combined.match(/\b(941|1040|1120|940)\b/);
+  // Serial number
+  const serialMatch = text.match(/(?:serial|serial\s*number|#)\s*[:\s]*(\d{6,})/i);
+
+  // Kind of tax
+  const taxMatch = text.match(/(?:kind\s*of\s*tax|tax\s*type|type\s*of\s*tax)[:\s]*([\w\d]+)/i)
+    || text.match(/\b(941|1040|1120[A-Z]?|940|720)\b/);
+
+  // Tax period ending
+  const periodMatch = text.match(/(?:tax\s*period\s*ending|period\s*ending|tax\s*period)[:\s]*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{2}\/\d{4})/i);
+
+  // Unpaid balance
+  const balanceMatch = text.match(/(?:unpaid\s*balance(?:\s*of\s*assessment)?)[:\s]*\$?\s*([\d,]+\.?\d*)/i)
+    || text.match(/\$\s*([\d,]+\.?\d*)/);
+
+  // Date of assessment
+  const assessMatch = text.match(/(?:date\s*of\s*assessment|assessment\s*date)[:\s]*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/i);
+
+  // Filing date
+  const filingMatch = text.match(/(?:filed|filing\s*date|date\s*filed|recorded)[:\s]*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/i);
+
+  // Identifying number
+  const einMatch = text.match(/(\d{2}-\d{7})/);
+  const ssnMatch = text.match(/(\d{3}-\d{2}-\d{4})/);
 
   return {
     taxpayer_name: taxpayerName,
     serial_number: serialMatch ? serialMatch[1] : null,
-    unpaid_balance: amountMatch ? parseFloat(amountMatch[1].replace(/,/g, "")) : null,
-    filing_date: dateMatch ? dateMatch[1] : null,
-    taxpayer_ssn_or_ein: einMatch ? einMatch[1] : ssnMatch ? ssnMatch[1] : null,
     kind_of_tax: taxMatch ? taxMatch[1] : null,
+    tax_period_ending: periodMatch ? periodMatch[1] : null,
+    unpaid_balance: balanceMatch ? parseFloat(balanceMatch[1].replace(/,/g, "")) : null,
+    date_of_assessment: assessMatch ? assessMatch[1] : null,
+    filing_date: filingMatch ? filingMatch[1] : null,
+    taxpayer_ssn_or_ein: einMatch ? einMatch[1] : ssnMatch ? ssnMatch[1] : null,
     county,
     state_filed: "Texas",
     place_of_filing: `${county} County, TX`,
@@ -193,10 +298,14 @@ function parseLienFromText(text: string, title: string, county: string): any | n
 
 function extractLiensFromMarkdown(markdown: string, county: string): any[] {
   const liens: any[] = [];
+  // Try full document first
+  const full = extractForm668Fields(markdown, "", county);
+  if (full.length > 0) return full;
+  // Fallback: split into sections
   const sections = markdown.split(/(?:\n{2,}|\|{2,}|---+)/);
   for (const section of sections) {
-    const parsed = parseLienFromText(section, "", county);
-    if (parsed) liens.push(parsed);
+    const parsed = extractForm668Fields(section, "", county);
+    liens.push(...parsed);
   }
   return liens;
 }

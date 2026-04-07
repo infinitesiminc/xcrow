@@ -57,8 +57,9 @@ export function LienTable({ liens, onEdit }: LienTableProps) {
               <TableHead className="font-semibold">SSN/EIN</TableHead>
               <TableHead className="font-semibold">Serial #</TableHead>
               <TableHead className="font-semibold">Kind of Tax</TableHead>
+              <TableHead className="font-semibold">Tax Period Ending</TableHead>
               <TableHead className="font-semibold text-right">Unpaid Balance</TableHead>
-              <TableHead className="font-semibold">Filing Date</TableHead>
+              <TableHead className="font-semibold">Date of Assessment</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold text-right">Actions</TableHead>
             </TableRow>
@@ -70,8 +71,9 @@ export function LienTable({ liens, onEdit }: LienTableProps) {
                 <TableCell className="font-mono text-sm">{lien.taxpayer_ssn_or_ein || "—"}</TableCell>
                 <TableCell>{lien.serial_number || "—"}</TableCell>
                 <TableCell>{lien.kind_of_tax || "—"}</TableCell>
+                <TableCell>{lien.tax_period_ending || "—"}</TableCell>
                 <TableCell className="text-right font-mono">{formatCurrency(lien.unpaid_balance)}</TableCell>
-                <TableCell>{formatDate(lien.filing_date)}</TableCell>
+                <TableCell>{formatDate(lien.date_of_assessment)}</TableCell>
                 <TableCell>
                   <Badge variant={statusVariant[lien.status ?? "active"] ?? "default"}>
                     {lien.status ?? "active"}
