@@ -819,7 +819,7 @@ export default function Leadgen() {
       if (payload.personas && gtmTreeData) {
         for (const label of payload.personas) {
           const m = gtmTreeData.mappings.find(mp => mp.vertical.toLowerCase() === label.toLowerCase());
-          if (m) newCards.push({ id: `vertical-${m.vertical}`, type: "vertical", label: m.vertical, description: m.buyer_roles?.join(", ") || "", meta: m.buyer_roles?.[0] });
+          if (m) newCards.push({ id: `vertical-${m.vertical}`, type: "vertical", label: m.vertical, description: m.segment || "", meta: m.dm?.title });
         }
       }
       if (newCards.length > 0) setDroppedCards(newCards);
