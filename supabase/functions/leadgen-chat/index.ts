@@ -584,6 +584,7 @@ Deno.serve(async (req) => {
       const toolCalls = Object.values(toolCallChunks);
       let nichesToEmit: any[] = [];
       let leadSearchArgs: any = null;
+      const actionEvents: any[] = [];
 
       for (const tc of toolCalls) {
         if (tc.name === "register_niches") {
@@ -591,6 +592,30 @@ Deno.serve(async (req) => {
         }
         if (tc.name === "run_lead_search") {
           try { leadSearchArgs = JSON.parse(tc.args); } catch {}
+        }
+        if (tc.name === "update_targeting") {
+          try {
+            const args = JSON.parse(tc.args);
+            actionEvents.push({ type: "action", action: "update_targeting", products: args.products || [], personas: args.personas || [], auto_generate: !!args.auto_generate });
+          } catch {}
+        }
+        if (tc.name === "generate_leads") {
+          actionEvents.push({ type: "action", action: "generate_leads" });
+        }
+        if (tc.name === "reset_targeting") {
+          actionEvents.push({ type: "action", action: "reset_targeting" });
+        }
+        if (tc.name === "change_location") {
+          try {
+            const args = JSON.parse(tc.args);
+            actionEvents.push({ type: "action", action: "change_location", location: args.location });
+          } catch {}
+        }
+        if (tc.name === "draft_email") {
+          try {
+            const args = JSON.parse(tc.args);
+            actionEvents.push({ type: "action", action: "draft_email", lead_name: args.lead_name });
+          } catch {}
         }
       }
 
