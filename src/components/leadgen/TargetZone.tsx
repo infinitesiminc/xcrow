@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Zap, Loader2, Sparkles, TrendingUp, Square } from "lucide-react";
+import { Zap, Loader2, Sparkles, TrendingUp, Square, RotateCcw } from "lucide-react";
 
 export interface DroppedCard {
   id: string;
@@ -15,9 +15,11 @@ interface TargetZoneProps {
   onGenerate: () => void;
   isGenerating?: boolean;
   onStop?: () => void;
+  hasCustomizations?: boolean;
+  onReset?: () => void;
 }
 
-export default function TargetZone({ cards, onGenerate, isGenerating, onStop }: TargetZoneProps) {
+export default function TargetZone({ cards, onGenerate, isGenerating, onStop, hasCustomizations, onReset }: TargetZoneProps) {
   const [feedback, setFeedback] = useState({ successRate: 0, recommendation: "", loading: false });
   const feedbackTimeout = useRef<ReturnType<typeof setTimeout>>();
 
@@ -66,32 +68,45 @@ export default function TargetZone({ cards, onGenerate, isGenerating, onStop }: 
           </p>
         </div>
       )}
-      <Button
-        size="lg"
-        className={`w-full h-12 gap-2 text-base font-semibold transition-all duration-300 ${
-          isGenerating
-            ? "bg-primary/90 hover:bg-primary/80 animate-pulse"
-            : ""
-        }`}
-        onClick={isGenerating ? onStop : onGenerate}
-        disabled={!isGenerating && cards.length === 0}
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="flex-1 text-left">Finding leads…</span>
-            <span className="flex items-center gap-1 text-xs opacity-80 font-normal bg-primary-foreground/20 px-2 py-0.5 rounded-md">
-              <Square className="w-3 h-3" />
-              Stop
-            </span>
-          </>
-        ) : (
-          <>
-            <Zap className="w-4 h-4" />
-            Generate Leads
-          </>
+      <div className="flex items-center gap-2">
+        <Button
+          size="lg"
+          className={`flex-1 h-12 gap-2 text-base font-semibold transition-all duration-300 ${
+            isGenerating
+              ? "bg-primary/90 hover:bg-primary/80 animate-pulse"
+              : ""
+          }`}
+          onClick={isGenerating ? onStop : onGenerate}
+          disabled={!isGenerating && cards.length === 0}
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="flex-1 text-left">Finding leads…</span>
+              <span className="flex items-center gap-1 text-xs opacity-80 font-normal bg-primary-foreground/20 px-2 py-0.5 rounded-md">
+                <Square className="w-3 h-3" />
+                Stop
+              </span>
+            </>
+          ) : (
+            <>
+              <Zap className="w-4 h-4" />
+              Generate Leads
+            </>
+          )}
+        </Button>
+        {hasCustomizations && onReset && (
+          <Button
+            variant="ghost"
+            size="lg"
+            className="h-12 px-3 gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
+            onClick={onReset}
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </Button>
         )}
-      </Button>
+      </div>
     </div>
   );
 }

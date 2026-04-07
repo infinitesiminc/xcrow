@@ -44,6 +44,10 @@ interface LeadgenDashboardProps {
   onStopGenerating?: () => void;
   loadingProducts?: boolean;
   loadingPersonas?: boolean;
+  droppedCards: DroppedCard[];
+  setDroppedCards: React.Dispatch<React.SetStateAction<DroppedCard[]>>;
+  hasCustomizations?: boolean;
+  onResetToDefaults?: () => void;
 }
 
 export function LeadgenDashboard({
