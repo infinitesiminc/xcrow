@@ -50,6 +50,8 @@ type ChatItem =
 const formatAssistantMessage = (text: string): string => {
   if (!text) return text;
   let result = text.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  // Remove [[pill]] syntax — rendered separately
+  result = result.replace(/\[\[([^\]]+)\]\]\s*$/, "").trim();
   const lines = result.split("\n");
   const optionRe = /^(?:[-*•]\s*)?(?:\d+[.)]\s*)?(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|--)\s+.+$/;
   const optionIndexes: number[] = [];
@@ -67,6 +69,15 @@ const formatAssistantMessage = (text: string): string => {
     result = lines.join("\n");
   }
   return result;
+};
+
+/** Parse [[Option A|Option B|Option C]] from end of AI response */
+const parsePills = (text: string): { cleanText: string; pills: string[] } => {
+  const match = text.match(/\[\[([^\]]+)\]\]\s*$/);
+  if (!match) return { cleanText: text, pills: [] };
+  const pills = match[1].split("|").map(s => s.trim()).filter(Boolean);
+  const cleanText = text.slice(0, match.index).trim();
+  return { cleanText, pills };
 };
 
 const normalizeNicheLabel = (value?: string | null) =>
@@ -1636,16 +1647,35 @@ export default function Leadgen() {
                         </div>
                       </div>
                     )}
-                    {item.type === "assistant" && (
-                      <div className="flex gap-1.5">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                          <Bot className="w-3 h-3 text-primary" />
+                    {item.type === "assistant" && (() => {
+                      const { cleanText, pills } = parsePills(item.content);
+                      return (
+                        <div className="flex gap-1.5">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <Bot className="w-3 h-3 text-primary" />
+                          </div>
+                          <div className="max-w-[85%] space-y-2">
+                            <div className="bg-muted border border-border/40 rounded-2xl rounded-bl-md px-4 py-3 text-sm text-foreground prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-strong:text-primary [&_ol]:list-decimal [&_ol]:pl-4 leading-relaxed">
+                              <ReactMarkdown>{formatAssistantMessage(cleanText)}</ReactMarkdown>
+                            </div>
+                            {pills.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5">
+                                {pills.map((pill, pi) => (
+                                  <button
+                                    key={pi}
+                                    type="button"
+                                    onClick={() => sendMessage(pill)}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
+                                  >
+                                    {pill}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="bg-muted border border-border/40 rounded-2xl rounded-bl-md px-4 py-3 max-w-[85%] text-sm text-foreground prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-strong:text-primary [&_ol]:list-decimal [&_ol]:pl-4 leading-relaxed">
-                          <ReactMarkdown>{formatAssistantMessage(item.content)}</ReactMarkdown>
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 ))}
                 {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
