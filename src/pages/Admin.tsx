@@ -145,14 +145,12 @@ const Admin = () => {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Company</TableHead>
-                      <TableHead className="text-center">Sims</TableHead>
-                      <TableHead className="text-center">XP</TableHead>
+                      <TableHead>Role</TableHead>
                       <TableHead>Joined</TableHead>
-                      <TableHead>Last Active</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -167,13 +165,9 @@ const Admin = () => {
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">{u.email}</TableCell>
                         <TableCell className="text-sm">{u.company || "—"}</TableCell>
-                        <TableCell className="text-center">{u.total_sims}</TableCell>
-                        <TableCell className="text-center">{(u.total_xp || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-sm">{u.job_title || "—"}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {u.created_at ? format(new Date(u.created_at), "MMM d, yyyy") : "—"}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {u.last_active ? format(new Date(u.last_active), "MMM d, yyyy") : "—"}
                         </TableCell>
                         <TableCell>
                           <Button
