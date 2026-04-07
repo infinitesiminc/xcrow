@@ -646,6 +646,9 @@ Deno.serve(async (req) => {
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
           start(controller) {
+            for (const evt of actionEvents) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(evt)}\n\n`));
+            }
             if (nichesToEmit.length > 0) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "niches", niches: nichesToEmit })}\n\n`));
             }
