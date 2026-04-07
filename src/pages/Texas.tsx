@@ -110,6 +110,15 @@ const Texas = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <label className="cursor-pointer">
+                <input type="file" accept=".pdf,image/*" onChange={handlePdfUpload} className="hidden" disabled={isUploading} />
+                <Button variant="outline" asChild disabled={isUploading} className="gap-2">
+                  <span>
+                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    <span className="hidden sm:inline">{isUploading ? "Extracting..." : "Upload PDF"}</span>
+                  </span>
+                </Button>
+              </label>
               <Button variant="outline" onClick={handleScrape} disabled={isScraping} className="gap-2">
                 {isScraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 <span className="hidden sm:inline">{isScraping ? "Scraping..." : "Scrape Recent"}</span>
