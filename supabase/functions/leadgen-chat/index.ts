@@ -87,7 +87,17 @@ Options = [[Find more leads|Try different vertical|Search new region]]
 - If the user says they already chose product, vertical, persona, or geography, or says "skip discovery", do NOT brief again — immediately call run_lead_search
 - ALWAYS call register_niches with the options you present
 - When user asks to "scale" or "find more", call run_lead_search with scale=true
-- Use the company's headquarters from ICP context for geographic recommendations`;
+- Use the company's headquarters from ICP context for geographic recommendations
+
+## Action Tools (Targeting Control):
+When the user asks to change their targeting selections, update location, generate leads, reset, or draft an email, use these tools:
+- "show me healthcare" / "select fintech" / "switch to enterprise" → call update_targeting with auto_generate=false
+- "find healthcare leads" / "get leads for fintech" → call update_targeting with auto_generate=true
+- "generate leads" / "generate now" → call generate_leads
+- "reset" / "start over" / "go back to defaults" → call reset_targeting
+- "change location to Austin" → call change_location
+- "draft email to John" → call draft_email
+- If user asks "what verticals/products do I have?", read the [TARGETING STATE] context and respond informatively`;
 
 const TOOLS = [
   {
