@@ -71,9 +71,7 @@ Deno.serve(async (req) => {
     const searchQueries = search_query
       ? [search_query]
       : [
-          `"federal tax lien" "Travis County" Texas taxpayer filed 2025 OR 2026`,
-          `IRS "notice of federal tax lien" Travis County Austin Texas`,
-          `"668(Y)" tax lien Travis County Texas recording`,
+          `"federal tax lien" "${county} County" Texas taxpayer filed`,
         ];
 
     let allResults: any[] = [];
