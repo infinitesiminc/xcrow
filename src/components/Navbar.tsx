@@ -51,6 +51,7 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
     { label: "Lead Hunter", path: "/leadhunter", icon: Compass },
     { label: "How It Works", path: "/how-it-works", icon: undefined },
     { label: "Pricing", path: "/pricing", icon: undefined },
+    ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
   ];
 
   const handleNav = (path: string) => {
