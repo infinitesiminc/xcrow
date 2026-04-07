@@ -102,36 +102,15 @@ export function LeadPipeline({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Search first on mobile */}
-      <div className={`px-3 md:px-4 ${isMobile ? "pt-2 pb-1" : "pb-3"}`}>
-        <div className="relative w-full">
+      {/* Search */}
+      <div className="px-3 md:px-4 pt-2 pb-2 flex items-center gap-2">
+        <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search leads..." className="pl-8 h-9 md:h-8 text-sm" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search leads..." className="pl-8 h-8 text-sm" />
         </div>
-      </div>
-
-      {/* KPI Cards — compact horizontal strip on mobile, grid on desktop */}
-      {isMobile ? (
-        <div className="flex gap-2 px-3 pb-2 overflow-x-auto">
-          <MiniKPI label="Leads" value={leads.length} />
-          <MiniKPI label="Sent" value={outreachCount} />
-          <MiniKPI label="Contacted" value={contacted} />
-          <MiniKPI label="Reply" value={`${replyRate}%`} />
-        </div>
-      ) : (
-        <div className="grid grid-cols-4 gap-3 px-4 pb-3">
-          <KPI icon={<Users className="w-4 h-4" />} label="Total Leads" value={leads.length} />
-          <KPI icon={<Mail className="w-4 h-4" />} label="Emails Sent" value={outreachCount} />
-          <KPI icon={<MessageSquare className="w-4 h-4" />} label="Contacted" value={contacted} />
-          <KPI icon={<TrendingUp className="w-4 h-4" />} label="Reply Rate" value={`${replyRate}%`} />
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className={`px-3 md:px-4 pb-2 flex items-center gap-2 flex-wrap`}>
         {nicheOptions.length > 1 && (
           <Select value={nicheFilter} onValueChange={setNicheFilter}>
-            <SelectTrigger className="w-[130px] md:w-[160px] h-8 text-xs">
+            <SelectTrigger className="w-[140px] h-8 text-xs">
               <SelectValue placeholder="All Niches" />
             </SelectTrigger>
             <SelectContent>
@@ -142,48 +121,7 @@ export function LeadPipeline({
             </SelectContent>
           </Select>
         )}
-        {!isMobile && locationOptions.length > 0 && (
-          <Select value={locationFilter} onValueChange={setLocationFilter}>
-            <SelectTrigger className="w-[160px] h-8 text-xs">
-              <MapPin className="w-3 h-3 mr-1 shrink-0" />
-              <SelectValue placeholder="All Locations" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              {locationOptions.map((loc) => (
-                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        {!isMobile && sourceOptions.length > 1 && (
-          <Select value={sourceFilter} onValueChange={setSourceFilter}>
-            <SelectTrigger className="w-[160px] h-8 text-xs">
-              <Globe className="w-3 h-3 mr-1 shrink-0" />
-              <SelectValue placeholder="All Sources" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sources</SelectItem>
-              {sourceOptions.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[100px] md:w-[120px] h-8 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="new">New</SelectItem>
-            <SelectItem value="contacted">Contacted</SelectItem>
-            <SelectItem value="replied">Replied</SelectItem>
-            <SelectItem value="won">Won</SelectItem>
-            <SelectItem value="lost">Lost</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs ml-auto" onClick={onExportCSV}>
+        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs shrink-0" onClick={onExportCSV}>
           <Download className="w-3.5 h-3.5" /> CSV
         </Button>
       </div>
