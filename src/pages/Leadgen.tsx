@@ -1200,7 +1200,7 @@ export default function Leadgen() {
     toast.success(`Seeded ${targets.length} sample leads!`, { id: "auto-seed" });
   };
 
-  const chatOnlyItems = items.filter(it => it.type !== "leads");
+  const chatOnlyItems = items;
   const filteredPanelLeads = useMemo(() => {
     if (!activeNiche) return allLeads;
     return allLeads.filter((lead) => (lead.niche_tag || "Uncategorized") === activeNiche);
