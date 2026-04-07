@@ -38,6 +38,7 @@ const BlogPostPage = lazy(() => import("./pages/BlogPostPage.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Demo = lazy(() => import("./pages/Demo.tsx"));
 const Texas = lazy(() => import("./pages/Texas.tsx"));
+const Admin = lazy(() => import("./pages/Admin.tsx"));
 
 
 const queryClient = new QueryClient();
