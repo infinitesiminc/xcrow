@@ -87,6 +87,7 @@ const App = () => (
               <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/admin" element={<AuthGate><Navbar /><Admin /><Footer /></AuthGate>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
