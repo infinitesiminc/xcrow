@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useLiens, type Lien } from "@/hooks/useLiens";
 import { LienForm } from "@/components/texas/LienForm";
 import { LienTable } from "@/components/texas/LienTable";
-import { Plus, Search, FileText, Download, Loader2, Upload } from "lucide-react";
+import { Plus, Search, FileText, Loader2, Upload, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
@@ -16,8 +16,9 @@ const Texas = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingLien, setEditingLien] = useState<Lien | null>(null);
   const [search, setSearch] = useState("");
-  const [isScraping, setIsScraping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [addressSearch, setAddressSearch] = useState("");
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,6 +46,35 @@ const Texas = () => {
     }
   };
 
+  const handleAddressSearch = async () => {
+    if (!addressSearch.trim()) {
+      toast.error("Enter a property address to search");
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("search-liens", {
+        body: { address: addressSearch, county: "Travis" },
+      });
+      if (fnError) throw fnError;
+      if (data?.success) {
+        if (data.liens_found === 0) {
+          toast.info("No liens found for this address");
+        } else {
+          toast.success(`Found ${data.liens_found} liens, inserted ${data.liens_inserted} new records`);
+          refetch();
+        }
+      } else {
+        toast.error(data?.error || "Search failed");
+      }
+    } catch (err: any) {
+      console.error("Search error:", err);
+      toast.error(err.message || "Failed to search liens");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const filteredLiens = (liens ?? []).filter((l) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -64,29 +94,6 @@ const Texas = () => {
   const handleClose = () => {
     setShowForm(false);
     setEditingLien(null);
-  };
-
-  const handleScrape = async () => {
-    setIsScraping(true);
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke("scrape-tax-liens", {
-        body: { county: "Travis" },
-      });
-
-      if (fnError) throw fnError;
-
-      if (data?.success) {
-        toast.success(`Found ${data.liens_parsed} liens, inserted ${data.liens_inserted} new records`);
-        refetch();
-      } else {
-        toast.error(data?.error || "Scraping failed");
-      }
-    } catch (err: any) {
-      console.error("Scrape error:", err);
-      toast.error(err.message || "Failed to scrape liens");
-    } finally {
-      setIsScraping(false);
-    }
   };
 
   return (
@@ -119,10 +126,6 @@ const Texas = () => {
                   </span>
                 </Button>
               </label>
-              <Button variant="outline" onClick={handleScrape} disabled={isScraping} className="gap-2">
-                {isScraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                <span className="hidden sm:inline">{isScraping ? "Scraping..." : "Scrape Recent"}</span>
-              </Button>
               <Button onClick={() => { setEditingLien(null); setShowForm(true); }} className="gap-2">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">New Lien</span>
@@ -136,10 +139,35 @@ const Texas = () => {
             <LienForm editingLien={editingLien} onClose={handleClose} />
           )}
 
+          {/* Address Search */}
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" />
+              Search Liens by Property Address
+            </h2>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Enter full property address (e.g. 123 Main St, Austin, TX 78701)"
+                value={addressSearch}
+                onChange={(e) => setAddressSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddressSearch()}
+                className="flex-1"
+              />
+              <Button onClick={handleAddressSearch} disabled={isSearching} className="gap-2">
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                {isSearching ? "Searching..." : "Search"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Searches public lien records for the property address via RealEstateAPI
+            </p>
+          </div>
+
+          {/* Filter existing records */}
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, serial #, SSN/EIN, or status..."
+              placeholder="Filter by name, serial #, SSN/EIN, or status..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
