@@ -1801,39 +1801,14 @@ export default function Leadgen() {
               <p className="text-sm text-muted-foreground">AI is drafting your email...</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">To</label>
-                <Input value={draftLead?.email || ""} disabled className="bg-muted/30 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
-                <Input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} className="text-sm" placeholder="Email subject..." />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
-                <Textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} className="text-sm min-h-[180px] whitespace-pre-wrap" placeholder="Email body..." />
-              </div>
-            </div>
+            <DraftEmailFields
+              email={draftLead?.email || ""}
+              subject={draftSubject}
+              body={draftBody}
+              onSubjectChange={setDraftSubject}
+              onBodyChange={setDraftBody}
+            />
           )}
-          <DialogFooter className="gap-2 sm:gap-0 sm:flex-wrap sm:justify-between">
-            <p className="w-full text-xs text-muted-foreground sm:order-1">
-              If your desktop email app does nothing, use Gmail or copy the draft.
-            </p>
-            <Button variant="ghost" size="sm" onClick={() => setDraftModalOpen(false)} disabled={sending}>
-              <X className="w-3.5 h-3.5 mr-1" /> Cancel
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleCopyDraft} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
-              <Copy className="w-3.5 h-3.5" /> Copy Draft
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleSendEmail} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
-              <Mail className="w-3.5 h-3.5" /> Email App
-            </Button>
-            <Button size="sm" onClick={handleOpenGmailDraft} disabled={draftLoading || sending || !draftSubject || !draftBody} className="gap-1.5">
-              {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-              {sending ? "Opening..." : "Open in Gmail"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
