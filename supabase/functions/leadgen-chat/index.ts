@@ -294,7 +294,90 @@ async function scrapePage(url: string): Promise<string> {
   }
 }
 
-/** Search Apollo People API for LinkedIn profiles — uses api_search endpoint + people/match enrichment */
+/** Run a single Apollo search attempt and return raw people array */
+async function apolloSearchAttempt(
+  apolloKey: string,
+  body: Record<string, unknown>,
+  label: string,
+): Promise<any[]> {
+  try {
+    console.log(`Apollo ${label}:`, JSON.stringify(body).slice(0, 400));
+    const res = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Api-Key": apolloKey },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      console.error(`Apollo ${label} failed:`, res.status, await res.text());
+      return [];
+    }
+    const data = await res.json();
+    const people = data?.people || [];
+    console.log(`Apollo ${label} returned ${people.length} results`);
+    return people;
+  } catch (e) {
+    console.error(`Apollo ${label} error:`, e);
+    return [];
+  }
+}
+
+/** Enrich people via Apollo people/match for verified LinkedIn/email */
+async function enrichApolloResults(
+  apolloKey: string,
+  people: any[],
+): Promise<any[]> {
+  const toEnrich = people.slice(0, 10).filter((p: any) => p.id);
+  const enrichedPeople: any[] = [];
+
+  for (const person of toEnrich) {
+    try {
+      const enrichRes = await fetch("https://api.apollo.io/api/v1/people/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Api-Key": apolloKey },
+        body: JSON.stringify({ id: person.id }),
+      });
+      if (enrichRes.ok) {
+        const enrichData = await enrichRes.json();
+        if (enrichData.person) enrichedPeople.push(enrichData.person);
+      } else if (enrichRes.status === 400 || enrichRes.status === 403) {
+        console.warn("Apollo enrichment not available — API key may lack scope");
+        break;
+      }
+    } catch (e) {
+      console.warn("Apollo match error:", e);
+    }
+  }
+  console.log(`Apollo enriched: ${enrichedPeople.length} of ${toEnrich.length}`);
+  return enrichedPeople.length > 0 ? enrichedPeople : people;
+}
+
+/** Convert raw Apollo people to lead objects, filtering for verified LinkedIn */
+function apolloPeopleToLeads(
+  people: any[],
+  seenNames: Set<string>,
+): any[] {
+  const leads: any[] = [];
+  for (const p of people) {
+    const name = p.name || `${p.first_name || ""} ${p.last_name || ""}`.trim();
+    if (!name || seenNames.has(name.toLowerCase())) continue;
+    const linkedinUrl = validLinkedIn(p.linkedin_url);
+    if (!linkedinUrl) continue;
+    seenNames.add(name.toLowerCase());
+    leads.push({
+      name,
+      title: p.title || null,
+      company: p.organization?.name || p.organization_name || null,
+      linkedin: linkedinUrl,
+      email: p.email || null,
+      website: p.organization?.website_url || null,
+      photo_url: p.photo_url || null,
+      source: "Apollo People Search",
+    });
+  }
+  return leads;
+}
+
+/** Search Apollo People API with progressive broadening — retries with relaxed filters when 0 results */
 async function searchApollopeople(
   apolloKey: string,
   args: {
@@ -305,99 +388,72 @@ async function searchApollopeople(
     search_queries: string[];
   },
 ): Promise<any[]> {
-  const allPeople: any[] = [];
+  if (!args.target_titles?.length) return [];
+
   const seenNames = new Set<string>();
 
-  // Strategy 1: Apollo People Search with structured filters (correct endpoint)
-  if (args.target_titles?.length) {
-    const body: Record<string, unknown> = {
+  // Build broadening attempts — each removes one filter layer
+  const attempts: { body: Record<string, unknown>; label: string }[] = [];
+
+  // Attempt 1: Full filters
+  const fullBody: Record<string, unknown> = {
+    person_titles: args.target_titles,
+    page: 1,
+    per_page: 10,
+    person_seniorities: ["director", "vp", "c_suite", "owner"],
+  };
+  if (args.target_location) fullBody.person_locations = [args.target_location];
+  if (args.employee_ranges?.length) {
+    fullBody.organization_num_employees_ranges = args.employee_ranges.map((r) => {
+      const [min, max] = r.split("-").map(Number);
+      return max ? `${min},${max}` : `${min},`;
+    });
+  }
+  if (args.target_industries?.length) fullBody.q_organization_keyword_tags = args.target_industries;
+  attempts.push({ body: { ...fullBody }, label: "full-filters" });
+
+  // Attempt 2: Drop industry keywords (most restrictive filter)
+  if (args.target_industries?.length) {
+    const noIndustry = { ...fullBody };
+    delete noIndustry.q_organization_keyword_tags;
+    attempts.push({ body: noIndustry, label: "no-industry" });
+  }
+
+  // Attempt 3: Drop location too
+  if (args.target_location) {
+    const noLocation = { ...fullBody };
+    delete noLocation.q_organization_keyword_tags;
+    delete noLocation.person_locations;
+    attempts.push({ body: noLocation, label: "no-location" });
+  }
+
+  // Attempt 4: Drop seniority filter (broadest)
+  if (attempts.length > 1) {
+    const broadest: Record<string, unknown> = {
       person_titles: args.target_titles,
       page: 1,
       per_page: 10,
-      person_seniorities: ["director", "vp", "c_suite", "owner"],
     };
-    if (args.target_location) {
-      body.person_locations = [args.target_location];
-    }
-    if (args.employee_ranges?.length) {
-      body.organization_num_employees_ranges = args.employee_ranges.map((r) => {
-        const [min, max] = r.split("-").map(Number);
-        return max ? `${min},${max}` : `${min},`;
-      });
-    }
-    if (args.target_industries?.length) {
-      body.q_organization_keyword_tags = args.target_industries;
-    }
+    attempts.push({ body: broadest, label: "titles-only" });
+  }
 
-    try {
-      console.log("Apollo api_search:", JSON.stringify(body).slice(0, 300));
-      const res = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Api-Key": apolloKey },
-        body: JSON.stringify(body),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const people = data?.people || [];
-        console.log(`Apollo api_search returned ${people.length} results`);
-
-        // Enrich top results via people/match for verified LinkedIn/email
-        const toEnrich = people.slice(0, 10).filter((p: any) => p.id);
-        const enrichedPeople: any[] = [];
-
-        for (const person of toEnrich) {
-          try {
-            const enrichRes = await fetch("https://api.apollo.io/api/v1/people/match", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "X-Api-Key": apolloKey },
-              body: JSON.stringify({ id: person.id }),
-            });
-            if (enrichRes.ok) {
-              const enrichData = await enrichRes.json();
-              if (enrichData.person) {
-                enrichedPeople.push(enrichData.person);
-              }
-            } else if (enrichRes.status === 400 || enrichRes.status === 403) {
-              console.warn("Apollo enrichment not available — API key may lack scope");
-              break;
-            }
-          } catch (e) {
-            console.warn("Apollo match error:", e);
-          }
-        }
-
-        console.log(`Apollo enriched: ${enrichedPeople.length} of ${toEnrich.length}`);
-        const finalPeople = enrichedPeople.length > 0 ? enrichedPeople : people;
-
-        for (const p of finalPeople) {
-          const name = p.name || `${p.first_name || ""} ${p.last_name || ""}`.trim();
-          if (!name || seenNames.has(name.toLowerCase())) continue;
-          const linkedinUrl = validLinkedIn(p.linkedin_url);
-          if (!linkedinUrl) continue; // Only keep leads with verified LinkedIn
-          seenNames.add(name.toLowerCase());
-          allPeople.push({
-            name,
-            title: p.title || null,
-            company: p.organization?.name || p.organization_name || null,
-            linkedin: linkedinUrl,
-            email: p.email || null,
-            website: p.organization?.website_url || null,
-            photo_url: p.photo_url || null,
-            source: "Apollo People Search",
-          });
-        }
-        console.log(`Final leads with verified LinkedIn: ${allPeople.length}`);
-      } else {
-        const errText = await res.text();
-        console.error("Apollo api_search failed:", res.status, errText);
+  // Try each attempt, stop when we get results
+  for (const attempt of attempts) {
+    const people = await apolloSearchAttempt(apolloKey, attempt.body, attempt.label);
+    if (people.length > 0) {
+      const enriched = await enrichApolloResults(apolloKey, people);
+      const leads = apolloPeopleToLeads(enriched, seenNames);
+      if (leads.length > 0) {
+        console.log(`Progressive broadening succeeded at "${attempt.label}" with ${leads.length} leads`);
+        return leads;
       }
-    } catch (e) {
-      console.error("Apollo People Search error:", e);
+      // Had results but none with verified LinkedIn — continue broadening
+      console.log(`${attempt.label}: ${people.length} raw but 0 with verified LinkedIn, broadening...`);
     }
   }
 
-  return allPeople;
+  console.log("All broadening attempts exhausted — 0 leads");
+  return [];
 }
 
 /** Execute the full lead search pipeline: AI + Apollo */
