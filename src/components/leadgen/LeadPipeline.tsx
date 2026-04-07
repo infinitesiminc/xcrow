@@ -169,26 +169,3 @@ export function LeadPipeline({
     </div>
   );
 }
-
-function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
-  return (
-    <Card className="bg-card/40 border-border/30">
-      <CardContent className="p-3 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">{icon}</div>
-        <div>
-          <p className="text-lg font-bold text-foreground leading-none">{value}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function MiniKPI({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-card/40 border border-border/30 shrink-0">
-      <span className="text-sm font-bold text-foreground">{value}</span>
-      <span className="text-[10px] text-muted-foreground">{label}</span>
-    </div>
-  );
-}
