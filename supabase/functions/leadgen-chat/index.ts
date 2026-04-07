@@ -87,7 +87,17 @@ Options = [[Find more leads|Try different vertical|Search new region]]
 - If the user says they already chose product, vertical, persona, or geography, or says "skip discovery", do NOT brief again — immediately call run_lead_search
 - ALWAYS call register_niches with the options you present
 - When user asks to "scale" or "find more", call run_lead_search with scale=true
-- Use the company's headquarters from ICP context for geographic recommendations`;
+- Use the company's headquarters from ICP context for geographic recommendations
+
+## Action Tools (Targeting Control):
+When the user asks to change their targeting selections, update location, generate leads, reset, or draft an email, use these tools:
+- "show me healthcare" / "select fintech" / "switch to enterprise" → call update_targeting with auto_generate=false
+- "find healthcare leads" / "get leads for fintech" → call update_targeting with auto_generate=true
+- "generate leads" / "generate now" → call generate_leads
+- "reset" / "start over" / "go back to defaults" → call reset_targeting
+- "change location to Austin" → call change_location
+- "draft email to John" → call draft_email
+- If user asks "what verticals/products do I have?", read the [TARGETING STATE] context and respond informatively`;
 
 const TOOLS = [
   {
@@ -149,6 +159,69 @@ const TOOLS = [
           },
         },
         required: ["niches"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_targeting",
+      description: "Update the product and persona card selections in the targeting UI. Set auto_generate=true to also trigger lead generation.",
+      parameters: {
+        type: "object",
+        properties: {
+          products: { type: "array", items: { type: "string" }, description: "Product names to select" },
+          personas: { type: "array", items: { type: "string" }, description: "Persona/vertical names to select" },
+          auto_generate: { type: "boolean", description: "If true, automatically generate leads after updating" },
+        },
+        required: [],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_leads",
+      description: "Trigger lead generation with the current targeting selections.",
+      parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "reset_targeting",
+      description: "Reset all targeting selections back to the defaults detected during initial analysis.",
+      parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "change_location",
+      description: "Update the target geographic location for lead generation.",
+      parameters: {
+        type: "object",
+        properties: {
+          location: { type: "string", description: "New target location" },
+        },
+        required: ["location"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "draft_email",
+      description: "Open the email draft modal for a specific lead by name.",
+      parameters: {
+        type: "object",
+        properties: {
+          lead_name: { type: "string", description: "Name of the lead to draft email for" },
+        },
+        required: ["lead_name"],
         additionalProperties: false,
       },
     },
@@ -513,6 +586,7 @@ Deno.serve(async (req) => {
       const toolCalls = Object.values(toolCallChunks);
       let nichesToEmit: any[] = [];
       let leadSearchArgs: any = null;
+      const actionEvents: any[] = [];
 
       for (const tc of toolCalls) {
         if (tc.name === "register_niches") {
@@ -520,6 +594,30 @@ Deno.serve(async (req) => {
         }
         if (tc.name === "run_lead_search") {
           try { leadSearchArgs = JSON.parse(tc.args); } catch {}
+        }
+        if (tc.name === "update_targeting") {
+          try {
+            const args = JSON.parse(tc.args);
+            actionEvents.push({ type: "action", action: "update_targeting", products: args.products || [], personas: args.personas || [], auto_generate: !!args.auto_generate });
+          } catch {}
+        }
+        if (tc.name === "generate_leads") {
+          actionEvents.push({ type: "action", action: "generate_leads" });
+        }
+        if (tc.name === "reset_targeting") {
+          actionEvents.push({ type: "action", action: "reset_targeting" });
+        }
+        if (tc.name === "change_location") {
+          try {
+            const args = JSON.parse(tc.args);
+            actionEvents.push({ type: "action", action: "change_location", location: args.location });
+          } catch {}
+        }
+        if (tc.name === "draft_email") {
+          try {
+            const args = JSON.parse(tc.args);
+            actionEvents.push({ type: "action", action: "draft_email", lead_name: args.lead_name });
+          } catch {}
         }
       }
 
@@ -550,6 +648,9 @@ Deno.serve(async (req) => {
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
           start(controller) {
+            for (const evt of actionEvents) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(evt)}\n\n`));
+            }
             if (nichesToEmit.length > 0) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "niches", niches: nichesToEmit })}\n\n`));
             }

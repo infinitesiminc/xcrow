@@ -138,6 +138,8 @@ export default function Leadgen() {
    const [gtmTreeData, setGtmTreeData] = useState<GTMTreeData | null>(null);
    const [gtmPersonasLoading, setGtmPersonasLoading] = useState(false);
    const [isGtmLoading, setIsGtmLoading] = useState(false);
+   const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
+   const [defaultCards, setDefaultCards] = useState<DroppedCard[]>([]);
 
   // Wrap openAuthModal to persist current workspace + discovery state before auth flow
   const openAuthModal = useCallback(() => {
@@ -440,7 +442,21 @@ export default function Leadgen() {
     }
   }, [updateGtmCache]);
 
-  // Generate leads from targeting cards
+  // Set default cards when GTM tree first loads (auto-select single product)
+  useEffect(() => {
+    if (!gtmTreeData || gtmTreeData.products.length === 0) return;
+    if (defaultCards.length > 0) return; // already set
+    const autoCards: DroppedCard[] = [];
+    if (gtmTreeData.products.length === 1) {
+      const p = gtmTreeData.products[0];
+      autoCards.push({ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model });
+    }
+    if (autoCards.length > 0) {
+      setDefaultCards(autoCards);
+      setDroppedCards(autoCards);
+    }
+  }, [gtmTreeData]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleGenerateFromTargeting = useCallback(async (cards: DroppedCard[]) => {
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
@@ -789,6 +805,38 @@ export default function Leadgen() {
       toast.error("Could not copy the draft.");
     }
   };
+  // Handle chat-driven actions from AI tool calls
+  const handleChatAction = useCallback((payload: { action: string; products?: string[]; personas?: string[]; auto_generate?: boolean; location?: string; lead_name?: string }) => {
+    const { action } = payload;
+    if (action === "update_targeting") {
+      const newCards: DroppedCard[] = [];
+      if (payload.products && gtmTreeData) {
+        for (const label of payload.products) {
+          const p = gtmTreeData.products.find(pr => pr.name.toLowerCase() === label.toLowerCase());
+          if (p) newCards.push({ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model });
+        }
+      }
+      if (payload.personas && gtmTreeData) {
+        for (const label of payload.personas) {
+          const m = gtmTreeData.mappings.find(mp => mp.vertical.toLowerCase() === label.toLowerCase());
+          if (m) newCards.push({ id: `vertical-${m.vertical}`, type: "vertical", label: m.vertical, description: m.segment || "", meta: m.dm?.title });
+        }
+      }
+      if (newCards.length > 0) setDroppedCards(newCards);
+      if (payload.auto_generate && newCards.length > 0) {
+        setTimeout(() => handleGenerateFromTargeting(newCards), 300);
+      }
+    } else if (action === "generate_leads") {
+      if (droppedCards.length > 0) handleGenerateFromTargeting(droppedCards);
+    } else if (action === "reset_targeting") {
+      setDroppedCards(defaultCards);
+    } else if (action === "change_location" && payload.location) {
+      setTargetLocation(payload.location);
+    } else if (action === "draft_email" && payload.lead_name) {
+      const lead = savedLeads.find(l => l.name.toLowerCase().includes(payload.lead_name!.toLowerCase()));
+      if (lead) handleDraftEmail(lead);
+    }
+  }, [gtmTreeData, droppedCards, defaultCards, savedLeads, handleGenerateFromTargeting, handleDraftEmail]);
 
   const sendMessage = async (overrideText?: string) => {
     const text = (overrideText || input).trim();
@@ -799,6 +847,22 @@ export default function Leadgen() {
     let assistantSoFar = "";
     try {
       const apiMessages = allItems.filter((it): it is ChatItem & { type: "user" | "assistant" } => it.type !== "leads").map((m) => ({ role: m.type, content: m.content }));
+      // Inject current targeting context
+      const selectedProducts = droppedCards.filter(c => c.type === "product").map(c => c.label);
+      const selectedPersonas = droppedCards.filter(c => c.type === "vertical").map(c => c.label);
+      const availableProducts = gtmTreeData?.products.map(p => p.name) || [];
+      const availablePersonas = gtmTreeData?.mappings.map(m => m.vertical) || [];
+      const targetingContext = [
+        `[TARGETING STATE]`,
+        `Selected products: ${selectedProducts.length > 0 ? selectedProducts.join(", ") : "none"}`,
+        `Selected personas: ${selectedPersonas.length > 0 ? selectedPersonas.join(", ") : "none"}`,
+        `Available products: ${availableProducts.join(", ") || "none"}`,
+        `Available personas/verticals: ${availablePersonas.join(", ") || "none"}`,
+        targetLocation ? `Location: ${targetLocation}` : "Location: not set",
+        `Leads found: ${savedLeads.length}`,
+        `[END TARGETING STATE]`,
+      ].join("\n");
+      apiMessages.unshift({ role: "system" as any, content: targetingContext });
       const resp = await fetchWithTimeout(CHAT_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` }, body: JSON.stringify({ messages: apiMessages }) });
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
@@ -854,6 +918,10 @@ export default function Leadgen() {
               }
               continue;
             }
+            if (parsed.type === "action" && parsed.action) {
+              handleChatAction(parsed);
+              continue;
+            }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) upsert(content);
@@ -891,6 +959,7 @@ export default function Leadgen() {
               }
               continue;
             }
+            if (parsed.type === "action" && parsed.action) { handleChatAction(parsed); continue; }
             if (parsed.type === "leads" && parsed.leads) { setItems((prev) => [...prev, { type: "leads", leads: parsed.leads }]); continue; }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) upsert(content);
@@ -1514,6 +1583,10 @@ export default function Leadgen() {
             onGenerateFromTargeting={handleGenerateFromTargeting}
             onStopGenerating={handleStopGenerating}
             loadingPersonas={gtmPersonasLoading}
+            droppedCards={droppedCards}
+            setDroppedCards={setDroppedCards}
+            hasCustomizations={JSON.stringify(droppedCards) !== JSON.stringify(defaultCards)}
+            onResetToDefaults={() => setDroppedCards(defaultCards)}
           />
         </div>
       )}

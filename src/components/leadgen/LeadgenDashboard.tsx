@@ -44,6 +44,10 @@ interface LeadgenDashboardProps {
   onStopGenerating?: () => void;
   loadingProducts?: boolean;
   loadingPersonas?: boolean;
+  droppedCards: DroppedCard[];
+  setDroppedCards: React.Dispatch<React.SetStateAction<DroppedCard[]>>;
+  hasCustomizations?: boolean;
+  onResetToDefaults?: () => void;
 }
 
 export function LeadgenDashboard({
@@ -69,20 +73,24 @@ export function LeadgenDashboard({
   onStopGenerating,
   loadingProducts,
   loadingPersonas,
+  droppedCards,
+  setDroppedCards,
+  hasCustomizations,
+  onResetToDefaults,
 }: LeadgenDashboardProps) {
   const isMobile = useIsMobile();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
 
   const droppedIds = new Set(droppedCards.map(c => c.id));
 
-  // Auto-select single product
+  // Auto-select single product (lifted to parent but kept as fallback)
   useEffect(() => {
     if (gtmTreeData && gtmTreeData.products.length === 1 && droppedCards.length === 0) {
       const p = gtmTreeData.products[0];
-      setDroppedCards([{ id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model }]);
+      const autoCard: DroppedCard = { id: `product-${p.id}`, type: "product", label: p.name, description: p.description, meta: p.pricing_model };
+      setDroppedCards([autoCard]);
     }
-  }, [gtmTreeData]);
+  }, [gtmTreeData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -127,6 +135,8 @@ export function LeadgenDashboard({
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
               onStop={onStopGenerating}
+              hasCustomizations={hasCustomizations}
+              onReset={onResetToDefaults}
             />
             <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} loadingProducts={loadingProducts} loadingPersonas={loadingPersonas} />
           </div>
@@ -180,6 +190,8 @@ export function LeadgenDashboard({
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
               onStop={onStopGenerating}
+              hasCustomizations={hasCustomizations}
+              onReset={onResetToDefaults}
             />
           </div>
           <TargetingCards treeData={gtmTreeData} selectedIds={droppedIds} onToggle={handleToggleCard} loadingProducts={loadingProducts} loadingPersonas={loadingPersonas} />
