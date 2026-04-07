@@ -138,6 +138,8 @@ export default function Leadgen() {
    const [gtmTreeData, setGtmTreeData] = useState<GTMTreeData | null>(null);
    const [gtmPersonasLoading, setGtmPersonasLoading] = useState(false);
    const [isGtmLoading, setIsGtmLoading] = useState(false);
+   const [droppedCards, setDroppedCards] = useState<DroppedCard[]>([]);
+   const [defaultCards, setDefaultCards] = useState<DroppedCard[]>([]);
 
   // Wrap openAuthModal to persist current workspace + discovery state before auth flow
   const openAuthModal = useCallback(() => {
