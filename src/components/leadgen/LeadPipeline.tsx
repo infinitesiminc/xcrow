@@ -54,10 +54,7 @@ export function LeadPipeline({
 }: LeadPipelineProps) {
   const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [nicheFilter, setNicheFilter] = useState<string>("all");
-  const [locationFilter, setLocationFilter] = useState<string>("all");
-  const [sourceFilter, setSourceFilter] = useState<string>("all");
 
   const nicheOptions = useMemo(() => {
     const set = new Set<string>();
@@ -65,38 +62,15 @@ export function LeadPipeline({
     return Array.from(set).sort();
   }, [leads]);
 
-  const locationOptions = useMemo(() => {
-    const set = new Set<string>();
-    for (const l of leads) {
-      if (l.address) set.add(l.address);
-    }
-    return Array.from(set).sort();
-  }, [leads]);
-
-  const sourceOptions = useMemo(() => {
-    const set = new Set<string>();
-    for (const l of leads) {
-      if (l.source) set.add(l.source);
-    }
-    return Array.from(set).sort();
-  }, [leads]);
-
   const filtered = useMemo(() => {
     let result = leads;
-    if (statusFilter !== "all") result = result.filter((l) => l.status === statusFilter);
     if (nicheFilter !== "all") result = result.filter((l) => (l.niche_tag || "Uncategorized") === nicheFilter);
-    if (locationFilter !== "all") result = result.filter((l) => (l.address || "") === locationFilter);
-    if (sourceFilter !== "all") result = result.filter((l) => (l.source || "") === sourceFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((l) => l.name.toLowerCase().includes(q) || l.company?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) || l.address?.toLowerCase().includes(q));
     }
     return result;
-  }, [leads, search, statusFilter, nicheFilter, locationFilter, sourceFilter]);
-
-  const contacted = leads.filter((l) => l.status !== "new").length;
-  const replied = leads.filter((l) => l.status === "replied" || l.status === "won").length;
-  const replyRate = contacted > 0 ? Math.round((replied / contacted) * 100) : 0;
+  }, [leads, search, nicheFilter]);
 
   const allSelected = filtered.length > 0 && selectedIds && filtered.every(l => selectedIds.has(l.id));
 
