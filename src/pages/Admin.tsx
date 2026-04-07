@@ -15,16 +15,11 @@ interface UserStat {
   user_id: string;
   display_name: string;
   email: string;
-  career_stage: string;
-  school_name: string;
   company: string;
   job_title: string;
   created_at: string;
   onboarding_completed: boolean;
-  total_sims: number;
-  total_analyses: number;
-  total_xp: number;
-  last_active: string;
+  career_stage: string;
 }
 
 const Admin = () => {
@@ -42,8 +37,30 @@ const Admin = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("get_admin_user_stats");
-    if (!error && data) setUsers(data as unknown as UserStat[]);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, display_name, company, job_title, created_at, onboarding_completed, career_stage")
+      .order("created_at", { ascending: false });
+    if (!error && data) {
+      // Get emails from auth - we'll use the edge function
+      const { data: authData } = await supabase.auth.admin.listUsers().catch(() => ({ data: null }));
+      const emailMap = new Map<string, string>();
+      if (authData?.users) {
+        authData.users.forEach((u: any) => emailMap.set(u.id, u.email || ""));
+      }
+      setUsers(
+        data.map((p: any) => ({
+          user_id: p.id,
+          display_name: p.display_name || "—",
+          email: emailMap.get(p.id) || "—",
+          company: p.company || "",
+          job_title: p.job_title || "",
+          created_at: p.created_at,
+          onboarding_completed: p.onboarding_completed,
+          career_stage: p.career_stage || "",
+        }))
+      );
+    }
     setLoading(false);
   };
 
