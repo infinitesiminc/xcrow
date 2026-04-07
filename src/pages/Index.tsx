@@ -75,13 +75,17 @@ const fadeInView = (delay = 0) => ({
 });
 
 export default function Index() {
-  const { openAuthModal } = useAuth();
+  const { openAuthModal, user } = useAuth();
   const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleDiscover = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      openAuthModal();
+      return;
+    }
     const url = websiteUrl.trim();
     if (!url) return;
     const domain = url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
