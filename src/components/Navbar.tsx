@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2, Plus, Check } from "lucide-react";
+import { User, Menu, X, Compass, Settings, LogOut, Globe, ChevronDown, Trash2, Plus, Check, Shield } from "lucide-react";
 import type { UserWorkspace } from "@/hooks/use-workspaces";
 
 interface NavbarProps {
@@ -35,7 +35,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspace, onDeleteWorkspace, onNewWorkspace }: NavbarProps) {
-  const { user, signOut, openAuthModal, profile } = useAuth();
+  const { user, signOut, openAuthModal, profile, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -51,6 +51,7 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
     { label: "Lead Hunter", path: "/leadhunter", icon: Compass },
     { label: "How It Works", path: "/how-it-works", icon: undefined },
     { label: "Pricing", path: "/pricing", icon: undefined },
+    ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
   ];
 
   const handleNav = (path: string) => {
