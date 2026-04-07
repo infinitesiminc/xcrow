@@ -294,52 +294,71 @@ export default function Index() {
           </div>
         </section>
 
-        {/* ═══ Comparison table ═══ */}
+        {/* ═══ Apollo comparison callout ═══ */}
         <section className="py-20 sm:py-28">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <motion.div {...fadeInView()} className="text-center mb-14">
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                Xcrow vs. the rest
+                Xcrow vs. Apollo
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Built Different
+                Skip the Complexity
               </h2>
-              <p className="text-muted-foreground mt-4 max-w-md mx-auto">
-                Other tools give you a database. Xcrow gives you a strategy.
+              <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
+                Apollo gives you 240 million contacts and expects you to figure it out.
+                We give you the <span className="text-foreground font-semibold">right 10</span>.
               </p>
             </motion.div>
 
-            <motion.div {...fadeInView(0.1)} className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-              {/* Header */}
-              <div className="grid grid-cols-[1fr_100px_100px] sm:grid-cols-[1fr_120px_120px] items-center px-6 py-4 border-b border-border bg-muted/40">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em]">Feature</span>
-                <span className="text-xs font-bold text-primary text-center uppercase tracking-[0.1em]">Xcrow</span>
-                <span className="text-xs font-bold text-muted-foreground text-center uppercase tracking-[0.1em]">Others</span>
-              </div>
-              {COMPARISONS.map((row, i) => (
-                <div
-                  key={i}
-                  className={`grid grid-cols-[1fr_100px_100px] sm:grid-cols-[1fr_120px_120px] items-center px-6 py-4 ${
-                    i < COMPARISONS.length - 1 ? "border-b border-border/40" : ""
-                  } ${!row.xcrow ? "opacity-50" : ""}`}
-                >
-                  <span className="text-sm text-foreground font-medium">{row.feature}</span>
-                  <div className="flex justify-center">
-                    {row.xcrow ? (
-                      <CheckCircle2 className="w-5 h-5 text-primary" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-muted-foreground/30" />
-                    )}
-                  </div>
-                  <div className="flex justify-center">
-                    {row.others ? (
-                      <CheckCircle2 className="w-5 h-5 text-muted-foreground/50" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-muted-foreground/30" />
-                    )}
+            <motion.div {...fadeInView(0.1)} className="grid md:grid-cols-2 gap-8 items-start">
+              {/* Apollo side */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.1em] bg-muted px-3 py-1 rounded-full">Apollo.io</span>
+                </div>
+                <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg">
+                  <img
+                    src={apolloComplexUi}
+                    alt="Apollo.io complex filter interface with dozens of options"
+                    className="w-full"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <p className="text-sm font-bold text-foreground">15+ filters. Dozens of menus. Workflow builders.</p>
+                    <p className="text-xs text-muted-foreground mt-1">You need GTM expertise just to get started.</p>
                   </div>
                 </div>
-              ))}
+                <ul className="space-y-2 text-sm text-muted-foreground pl-1">
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Requires GTM expertise to build searches</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Manual filter configuration for every search</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No fit scoring — just raw contact dumps</li>
+                </ul>
+              </div>
+
+              {/* Xcrow side */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-primary uppercase tracking-[0.1em] bg-primary/10 px-3 py-1 rounded-full">Xcrow</span>
+                </div>
+                <div className="relative rounded-2xl overflow-hidden border border-primary/20 shadow-lg bg-card p-8 flex flex-col items-center justify-center min-h-[320px]">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                    <img src={logoCrow} alt="" className="w-10 h-10 object-contain" />
+                  </div>
+                  <p className="text-2xl font-extrabold text-foreground mb-2 text-center tracking-tight">Paste one URL.</p>
+                  <p className="text-2xl font-extrabold text-primary mb-4 text-center tracking-tight">Get perfect leads.</p>
+                  <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-3 w-full max-w-xs">
+                    <Globe className="w-4 h-4 text-muted-foreground/60" />
+                    <span className="text-sm text-muted-foreground">company.com</span>
+                    <ArrowRight className="w-4 h-4 text-primary ml-auto" />
+                  </div>
+                </div>
+                <ul className="space-y-2 text-sm text-foreground pl-1">
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Zero GTM knowledge needed</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI builds your targeting automatically</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Every lead scored with fit reason</li>
+                </ul>
+              </div>
             </motion.div>
           </div>
         </section>
