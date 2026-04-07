@@ -1686,6 +1686,37 @@ export default function Leadgen() {
                         </div>
                       );
                     })()}
+                    {item.type === "leads" && (
+                      <div className="flex gap-1.5">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                          <Users className="w-3 h-3 text-primary" />
+                        </div>
+                        <div className="max-w-[85%] space-y-1.5">
+                          <div className="bg-muted border border-border/40 rounded-2xl rounded-bl-md px-3 py-2 text-xs space-y-1">
+                            {item.leads.map((lead, li) => (
+                              <div key={li} className="flex items-center gap-2 py-0.5">
+                                <span className="font-medium text-foreground">{lead.name}</span>
+                                {lead.title && <span className="text-muted-foreground">— {lead.title}</span>}
+                              </div>
+                            ))}
+                          </div>
+                          {user && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                              onClick={() => {
+                                upsertLeads(item.leads.map((l: Lead) => ({ ...l, niche_tag: l.niche_tag || "chat", source: websiteUrl || "chat" })));
+                                toast.success(`Added ${item.leads.length} leads to pipeline!`);
+                              }}
+                            >
+                              <Users className="w-3 h-3" />
+                              Add {item.leads.length} to pipeline
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {isStreaming && chatOnlyItems[chatOnlyItems.length - 1]?.type !== "assistant" && (
