@@ -37,29 +37,11 @@ const Admin = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, display_name, company, job_title, created_at, onboarding_completed, career_stage")
-      .order("created_at", { ascending: false });
-    if (!error && data) {
-      // Get emails from auth - we'll use the edge function
-      const { data: authData } = await supabase.auth.admin.listUsers().catch(() => ({ data: null }));
-      const emailMap = new Map<string, string>();
-      if (authData?.users) {
-        authData.users.forEach((u: any) => emailMap.set(u.id, u.email || ""));
-      }
-      setUsers(
-        data.map((p: any) => ({
-          user_id: p.id,
-          display_name: p.display_name || "—",
-          email: emailMap.get(p.id) || "—",
-          company: p.company || "",
-          job_title: p.job_title || "",
-          created_at: p.created_at,
-          onboarding_completed: p.onboarding_completed,
-          career_stage: p.career_stage || "",
-        }))
-      );
+    const { data, error } = await supabase.functions.invoke("admin-list-users");
+    if (!error && Array.isArray(data)) {
+      setUsers(data);
+    } else if (error) {
+      toast({ title: "Error loading users", description: error.message, variant: "destructive" });
     }
     setLoading(false);
   };
