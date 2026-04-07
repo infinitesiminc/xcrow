@@ -15,16 +15,11 @@ interface UserStat {
   user_id: string;
   display_name: string;
   email: string;
-  career_stage: string;
-  school_name: string;
   company: string;
   job_title: string;
   created_at: string;
   onboarding_completed: boolean;
-  total_sims: number;
-  total_analyses: number;
-  total_xp: number;
-  last_active: string;
+  career_stage: string;
 }
 
 const Admin = () => {
@@ -42,8 +37,12 @@ const Admin = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("get_admin_user_stats");
-    if (!error && data) setUsers(data as unknown as UserStat[]);
+    const { data, error } = await supabase.functions.invoke("admin-list-users");
+    if (!error && Array.isArray(data)) {
+      setUsers(data);
+    } else if (error) {
+      toast({ title: "Error loading users", description: error.message, variant: "destructive" });
+    }
     setLoading(false);
   };
 
@@ -100,23 +99,8 @@ const Admin = () => {
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-muted-foreground text-sm mb-1">Total Sims</div>
-              <p className="text-2xl font-bold text-foreground">
-                {users.reduce((s, u) => s + (u.total_sims || 0), 0)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-muted-foreground text-sm mb-1">Total XP</div>
-              <p className="text-2xl font-bold text-foreground">
-                {users.reduce((s, u) => s + (u.total_xp || 0), 0).toLocaleString()}
-              </p>
-            </CardContent>
-          </Card>
         </div>
+
 
         {/* User Table */}
         <Card>
@@ -143,14 +127,12 @@ const Admin = () => {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Company</TableHead>
-                      <TableHead className="text-center">Sims</TableHead>
-                      <TableHead className="text-center">XP</TableHead>
+                      <TableHead>Role</TableHead>
                       <TableHead>Joined</TableHead>
-                      <TableHead>Last Active</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -165,13 +147,9 @@ const Admin = () => {
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">{u.email}</TableCell>
                         <TableCell className="text-sm">{u.company || "—"}</TableCell>
-                        <TableCell className="text-center">{u.total_sims}</TableCell>
-                        <TableCell className="text-center">{(u.total_xp || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-sm">{u.job_title || "—"}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {u.created_at ? format(new Date(u.created_at), "MMM d, yyyy") : "—"}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {u.last_active ? format(new Date(u.last_active), "MMM d, yyyy") : "—"}
                         </TableCell>
                         <TableCell>
                           <Button
