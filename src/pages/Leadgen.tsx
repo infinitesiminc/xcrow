@@ -50,6 +50,8 @@ type ChatItem =
 const formatAssistantMessage = (text: string): string => {
   if (!text) return text;
   let result = text.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  // Remove [[pill]] syntax — rendered separately
+  result = result.replace(/\[\[([^\]]+)\]\]\s*$/, "").trim();
   const lines = result.split("\n");
   const optionRe = /^(?:[-*•]\s*)?(?:\d+[.)]\s*)?(\*\*[^*]+\*\*|[A-Z][A-Za-z0-9&/',()+\s]{2,120})\s*(?:—|–|--)\s+.+$/;
   const optionIndexes: number[] = [];
@@ -67,6 +69,15 @@ const formatAssistantMessage = (text: string): string => {
     result = lines.join("\n");
   }
   return result;
+};
+
+/** Parse [[Option A|Option B|Option C]] from end of AI response */
+const parsePills = (text: string): { cleanText: string; pills: string[] } => {
+  const match = text.match(/\[\[([^\]]+)\]\]\s*$/);
+  if (!match) return { cleanText: text, pills: [] };
+  const pills = match[1].split("|").map(s => s.trim()).filter(Boolean);
+  const cleanText = text.slice(0, match.index).trim();
+  return { cleanText, pills };
 };
 
 const normalizeNicheLabel = (value?: string | null) =>
