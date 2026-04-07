@@ -227,6 +227,8 @@ const TOOLS = [
     },
   },
 ];
+
+function normalizeResponseText(content: string): string {
   if (!content) return content;
   return content
     .replace(/\r\n/g, "\n")
