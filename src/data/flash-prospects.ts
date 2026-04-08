@@ -1,5 +1,5 @@
 export type AccountType = "large_venue" | "fleet_operator" | "airport";
-export type AccountStage = "active" | "target" | "whitespace" | "competitor";
+export type AccountStage = "active" | "target" | "whitespace" | "competitor" | "hq";
 
 export interface FlashAccount {
   id: string;
