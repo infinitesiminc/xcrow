@@ -95,6 +95,8 @@ interface AccountLeadData {
 
 function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
+  accountLeads: Record<string, AccountLeadData>; loadingLeads: Set<string>;
+  onFindContacts: (account: FlashAccount) => void;
 }) {
   const isOpen = !!(account || site);
   return (
