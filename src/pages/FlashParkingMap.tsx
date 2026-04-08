@@ -405,7 +405,10 @@ export default function FlashParkingMap() {
     setLoadingLeads((prev) => new Set(prev).add(account.id));
     try {
       const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-      const content = `You are prospecting ${account.name} (${domain}), a ${account.accountType === "airport" ? "commercial airport" : account.focusArea} account with ${account.estimatedSpaces} parking spaces. ${account.currentVendor ? `They currently use ${account.currentVendor}.` : ""} First define the ideal buyer persona for selling parking management technology to this account. Then find the top 5 decision-makers matching that persona. Return leads ranked by fit score (0-100) with a "reason" field and a "score" field.`;
+      const isAirportAccount = account.accountType === "airport";
+      const content = isAirportAccount
+        ? `Find 5 decision-makers at ${account.name} who control parking operations, ground transportation, or landside infrastructure. CRITICAL: search ONLY within the airport authority or airport corporation that operates this airport — domain "${domain}". Do NOT search by city location. Target titles: Director of Parking, VP of Landside Operations, Chief Commercial Officer, Director of Ground Transportation, Airport Director. Return leads ranked by fit score (0-100) with a "reason" and "score" field explaining why they'd buy parking management technology. ${account.currentVendor && account.currentVendor !== "Unknown" ? `Current vendor: ${account.currentVendor}.` : ""}`
+        : `You are prospecting ${account.name} (${domain}), a ${account.focusArea} account with ${account.estimatedSpaces} parking spaces. ${account.currentVendor ? `They currently use ${account.currentVendor}.` : ""} First define the ideal buyer persona for selling parking management technology to this account. Then find the top 5 decision-makers matching that persona. Return leads ranked by fit score (0-100) with a "reason" field and a "score" field.`;
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
