@@ -387,9 +387,6 @@ export default function FlashParkingMap() {
   const { isSuperAdmin, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
-
-  if (authLoading) return null;
-  if (!isSuperAdmin) return <Navigate to="/" replace />;
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
   const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator", "airport"]));
   const [showDeployed, setShowDeployed] = useState(false);
@@ -399,6 +396,9 @@ export default function FlashParkingMap() {
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
   const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
+
+  if (authLoading) return null;
+  if (!isSuperAdmin) return <Navigate to="/" replace />;
 
 
   const toggleStage = useCallback((s: AccountStage) => {
