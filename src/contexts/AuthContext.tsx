@@ -241,6 +241,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setPlan("free");
     setSubscriptionEnd(null);
     setSchoolName(null);
+    navigate("/", { replace: true });
   };
 
   const openAuthModal = useCallback(() => {
