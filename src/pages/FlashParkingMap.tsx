@@ -458,7 +458,7 @@ export default function FlashParkingMap() {
                 deployedLocations={FLASH_LOCATIONS}
                 onSelectSite={handleSelectSite}
               />
-              <PanTo lat={panTarget?.lat ?? null} lng={panTarget?.lng ?? null} />
+              
             </Map>
           </APIProvider>
         </div>
