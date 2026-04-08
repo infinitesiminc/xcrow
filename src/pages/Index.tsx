@@ -30,33 +30,22 @@ const MARQUEE_ROWS = [
 ];
 
 const STEPS = [
-  { icon: Globe, title: "Paste a website", desc: "Drop any company URL. Our AI scrapes and analyzes the business in seconds." },
-  { icon: Brain, title: "AI maps your prospects", desc: "Verticals, personas, and decision-makers — an entire targeting tree, automatically." },
-  { icon: ListChecks, title: "Get scored leads", desc: "Real people with verified LinkedIn profiles, fit scores, and recommendation reasons." },
-  { icon: Send, title: "Send outreach", desc: "Personalized emails drafted per lead. Track opens, replies, and manage your pipeline." },
+  { icon: Globe, title: "Paste a website", desc: "Any company URL. That's literally all you do." },
+  { icon: Brain, title: "AI does the thinking", desc: "Markets, personas, decision-makers — mapped in seconds, not days." },
+  { icon: ListChecks, title: "Get real leads", desc: "Verified people with emails, LinkedIn profiles, and fit scores. Not a data dump." },
+  { icon: Send, title: "Hit send", desc: "AI-drafted outreach per lead. Copy, paste, close." },
 ];
 
 const STATS = [
-  { value: "60s", label: "From URL to leads" },
-  { value: "0", label: "GTM expertise needed" },
-  { value: "100%", label: "Verified profiles" },
-];
-
-const COMPARISONS = [
-  { feature: "Zero GTM knowledge needed", xcrow: true, others: false },
-  { feature: "One URL → full prospect map", xcrow: true, others: false },
-  { feature: "AI-analyzed company DNA", xcrow: true, others: false },
-  { feature: "Verified LinkedIn profiles", xcrow: true, others: true },
-  { feature: "Per-lead fit score + reason", xcrow: true, others: false },
-  { feature: "Built-in outreach drafts", xcrow: true, others: false },
-  { feature: "Massive contact database", xcrow: false, others: true },
-  { feature: "Complex workflow builder", xcrow: false, others: true },
+  { value: "$49", label: "vs. $120+ on LinkedIn" },
+  { value: "500", label: "Leads with emails" },
+  { value: "10s", label: "To your first lead" },
 ];
 
 const VALUE_PROPS = [
-  { icon: Zap, title: "Instant pipeline", desc: "No manual research. AI builds your entire prospect list from a single URL." },
-  { icon: Shield, title: "Verified data only", desc: "Every lead comes from Apollo with real LinkedIn profiles — zero hallucinated contacts." },
-  { icon: BarChart3, title: "Smart scoring", desc: "AI scores each lead on fit, seniority, and buying signals so you focus on the best." },
+  { icon: Zap, title: "No SDR needed", desc: "Apollo needs a trained operator. LinkedIn needs a Sales Navigator license. Xcrow needs a URL." },
+  { icon: Shield, title: "Real contacts only", desc: "Every lead has a verified email and LinkedIn profile. Zero fakes. Zero guessing." },
+  { icon: BarChart3, title: "AI does the filtering", desc: "Other tools give you 10,000 contacts and say 'good luck.' We give you the 5 that matter." },
 ];
 
 /* ── animation helpers ── */
