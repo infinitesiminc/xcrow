@@ -126,7 +126,7 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
                 <AccountIcon account={account} className="w-4 h-4 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] text-muted-foreground leading-tight">{account.hqCity}</p>
+                <p className="text-[11px] text-muted-foreground leading-tight">{account.accountType === "fleet_operator" ? `HQ: ${account.hqCity}` : account.hqCity}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-[9px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
                     {STAGE_CONFIG[account.stage].label}
