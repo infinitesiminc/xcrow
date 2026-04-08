@@ -15,8 +15,8 @@ import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import apolloComplexUi from "@/assets/apollo-complex-ui.png";
 import {
-  Globe, Sparkles, ArrowRight,
-  Search, Brain, ListChecks, Send,
+  Globe, ArrowRight,
+  Brain, ListChecks, Send,
   CheckCircle2, XCircle, Zap, Shield, BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
