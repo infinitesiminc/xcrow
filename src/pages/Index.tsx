@@ -364,11 +364,11 @@ export default function Index() {
                 Xcrow vs. LinkedIn Sales Navigator
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Stop Overpaying for InMail
+                $120/mo for 50 InMails.<br /><span className="text-primary">$49/mo for 500 Leads With Emails.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                LinkedIn gives you <span className="text-foreground font-semibold">50 InMails/month</span> for $120+/mo.
-                We give you <span className="text-primary font-semibold">500 leads with direct emails</span> for $49/mo.
+                LinkedIn charges you <span className="text-foreground font-semibold">$2.40 per InMail</span> that might get ignored.
+                We give you <span className="text-primary font-semibold">direct email addresses</span> you own forever.
               </p>
             </motion.div>
 
@@ -395,12 +395,12 @@ export default function Index() {
                 </div>
                 <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 text-center">
                   <p className="text-3xl font-extrabold text-destructive">50</p>
-                  <p className="text-sm text-muted-foreground mt-1">InMails per month — <span className="text-destructive font-medium">that's it</span></p>
+                  <p className="text-sm text-muted-foreground mt-1">InMails per month — <span className="text-destructive font-medium">and they expire</span></p>
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> 50 InMails/mo — burns through fast</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No direct email addresses</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Starts at $120/mo per seat</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> $2.40 per message that might get ignored</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No email addresses — ever</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> You don't own the data. LinkedIn does.</li>
                 </ul>
               </div>
 
@@ -412,27 +412,28 @@ export default function Index() {
                 <div className="flex items-center justify-between border-b border-border/50 pb-4">
                   <div>
                     <p className="text-sm font-semibold text-foreground">Pro Plan</p>
-                    <p className="text-xs text-muted-foreground">Everything you need</p>
+                    <p className="text-xs text-muted-foreground">Everything. No limits on outreach.</p>
                   </div>
                   <p className="text-2xl font-extrabold text-primary">$49<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
                 </div>
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
                   <p className="text-3xl font-extrabold text-primary">500</p>
-                  <p className="text-sm text-muted-foreground mt-1">Leads with <span className="text-primary font-medium">direct email addresses</span></p>
+                  <p className="text-sm text-muted-foreground mt-1">Leads with <span className="text-primary font-medium">direct email addresses you keep</span></p>
                 </div>
                 <ul className="space-y-2 text-sm text-foreground">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 500 verified leads with emails</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI-drafted outreach per lead</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 10x more contacts, 60% cheaper</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 10× more contacts than LinkedIn</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Real email addresses, not InMails</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI writes the outreach for you</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 60% cheaper. 10× the reach.</li>
                 </ul>
               </div>
             </motion.div>
 
-            {/* Bottom callout */}
             <motion.div {...fadeInView(0.2)} className="mt-10 text-center">
-              <p className="text-muted-foreground text-sm">
-                That's <span className="text-primary font-bold">10× the reach</span> at <span className="text-primary font-bold">60% less cost</span>. No LinkedIn subscription needed.
+              <p className="text-foreground font-bold text-lg">
+                LinkedIn: <span className="text-destructive">$120/mo → 50 messages</span> · Xcrow: <span className="text-primary">$49/mo → 500 leads with emails</span>
               </p>
+              <p className="text-muted-foreground text-sm mt-2">Do the math. Then paste a URL.</p>
             </motion.div>
           </div>
         </section>
