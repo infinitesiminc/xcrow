@@ -59,7 +59,7 @@ function DetailPanel({ account, site, onClose }: {
 }) {
   const isOpen = !!(account || site);
   return (
-    <div className={`absolute top-3 right-3 z-20 w-80 max-h-[calc(100%-24px)] transition-all duration-300 ease-out ${
+    <div className={`absolute top-3 right-3 z-[1000] w-80 max-h-[calc(100%-24px)] transition-all duration-300 ease-out ${
       isOpen ? "translate-x-0 opacity-100" : "translate-x-[110%] opacity-0 pointer-events-none"
     }`}>
       <div className="bg-background/95 backdrop-blur-lg border border-border rounded-xl shadow-2xl overflow-hidden">
