@@ -1,34 +1,66 @@
 
 
-## Reclaim Vertical Space for the Account List
+## Integrate Leadgen into Flash Account Map
 
-### Problem
-The sidebar has ~5 fixed sections above the scrollable account list (header, stats banner, search, stage filters, type filters, deployed toggle), consuming over half the viewport height. The list gets squeezed.
+### What
 
-### Proposed Approach: Collapsible Filter Section
+Add a "Find Contacts" button to the account detail panel. When clicked, it calls the existing `leadgen-chat` edge function (via Apollo) scoped to that account's domain, and displays the resulting decision-maker contacts inline in the detail panel.
 
-Wrap the **Stats Banner**, **Stage filters**, **Type filters**, and **Deployed toggle** into a single collapsible section with a small toggle button (e.g., "Filters ▾"). When collapsed, these 4 blocks hide, freeing ~180px of vertical space for the list.
+### How It Works
 
-**What stays always visible:**
-- Header (logo + title) — brand identity
-- Search bar — primary interaction
-- Account list — the main content
-
-**What collapses:**
-- Stats banner (3 stat boxes + stage counts)
-- Stage filter toggles
-- Type filter toggles  
-- Deployed sites toggle
-
-The section defaults to **expanded** so filters are discoverable, but one click collapses it to maximize list space.
+1. User clicks an account on the map to open the detail panel
+2. A new "Find Contacts" button appears below the existing account info
+3. Clicking it calls `leadgen-chat` with a direct `run_lead_search` intent, passing the account's website domain, name, and industry context (focusArea)
+4. Results stream in via SSE using the existing `parseSSEStream` utility
+5. Contacts appear as a compact list in the detail panel: name, title, LinkedIn link, email
 
 ### Implementation
 
 | File | Change |
 |------|--------|
-| `src/pages/FlashParkingMap.tsx` | Wrap stats + filters in a `Collapsible` from `@/components/ui/collapsible`. Add a small trigger button between search and the collapsible block. Active filter count shown on the trigger when collapsed. |
+| `src/pages/FlashParkingMap.tsx` | Add state for `accountLeads` (map of account ID to leads array) and `loadingLeads` set. Add "Find Contacts" button to `DetailPanel`. On click, invoke `leadgen-chat` edge function with the account's website/domain. Parse SSE stream with `parseSSEStream` from `@/lib/sse-parser`. Render leads inline below account details. |
 
-### Result
-- Expanded: identical to current layout
-- Collapsed: header + search + full-height list, filters hidden behind a single toggle
+### Detail Panel Addition
+
+```text
+┌─────────────────────────────┐
+│  Account Name           [X] │
+│  Austin, TX  ● Whitespace   │
+│  ┌───────┐  ┌───────┐       │
+│  │Spaces │  │Facils │       │
+│  └───────┘  └───────┘       │
+│  Focus: ...                 │
+│  Current Vendor: T2 Systems │
+│  Differentiator: ...        │
+│  Website | Case Study       │
+│─────────────────────────────│
+│  [👤 Find Decision-Makers]  │  ← NEW
+│                             │
+│  Loading... or:             │
+│  ┌─────────────────────────┐│
+│  │ John Smith              ││
+│  │ VP Parking Ops          ││
+│  │ 📧 john@co.com  🔗 LI  ││
+│  ├─────────────────────────┤│
+│  │ Jane Doe                ││
+│  │ Director, Technology    ││
+│  │ 📧 jane@co.com  🔗 LI  ││
+│  └─────────────────────────┘│
+└─────────────────────────────┘
+```
+
+### Technical Details
+
+- Reuses `parseSSEStream` from `src/lib/sse-parser.ts` for SSE handling
+- Calls `supabase.functions.invoke("leadgen-chat", ...)` with `stream: true` option to get raw response
+- Passes context: `{ website: account.website, messages: [{ role: "user", content: "Find 5 decision-makers at {account.name} who would buy parking management software" }] }`
+- Apollo seniority filters (Director, VP, C-Suite, Owner) are already enforced server-side
+- Leads cached in component state keyed by account ID so re-opening the panel shows previous results
+- No auth required for the search itself (edge function handles it), but results are ephemeral (not persisted to `saved_leads`)
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `src/pages/FlashParkingMap.tsx` | ~80 lines: contact search state, API call, lead list UI in DetailPanel |
 
