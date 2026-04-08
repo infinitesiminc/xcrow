@@ -265,6 +265,14 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
   );
 }
 
+/* ── Z-index by priority ── */
+const STAGE_Z: Record<string, number> = { whitespace: 1, target: 2, active: 3, competitor: 4 };
+
+function getMarkerZ(account: FlashAccount) {
+  if (account.id === "acct-flash-hq") return 100;
+  return STAGE_Z[account.stage] ?? 1;
+}
+
 /* ── Map content ── */
 function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite }: {
   accounts: FlashAccount[];
@@ -275,12 +283,12 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
   return (
     <>
       {showDeployed && deployedLocations.map((loc) => (
-        <AdvancedMarker key={loc.id} position={{ lat: loc.lat, lng: loc.lng }} onClick={() => onSelectSite(loc)}>
+        <AdvancedMarker key={loc.id} position={{ lat: loc.lat, lng: loc.lng }} zIndex={0} onClick={() => onSelectSite(loc)}>
           <DeployedSitePin />
         </AdvancedMarker>
       ))}
       {accounts.map((acct) => (
-        <AdvancedMarker key={acct.id} position={{ lat: acct.hqLat, lng: acct.hqLng }} onClick={() => onSelectAccount(acct)}>
+        <AdvancedMarker key={acct.id} position={{ lat: acct.hqLat, lng: acct.hqLng }} zIndex={getMarkerZ(acct)} onClick={() => onSelectAccount(acct)}>
           <AccountPin account={acct} />
         </AdvancedMarker>
       ))}
