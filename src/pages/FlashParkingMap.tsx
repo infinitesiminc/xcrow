@@ -1,4 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { parseSSEStream } from "@/lib/sse-parser";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
