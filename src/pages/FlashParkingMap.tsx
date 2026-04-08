@@ -83,7 +83,7 @@ function DetailPanel({ account, site, onClose }: {
     <div className={`absolute top-0 right-0 z-[1000] w-80 h-full transition-transform duration-300 ease-out ${
       isOpen ? "translate-x-0" : "translate-x-full"
     }`}>
-      <div className="h-full bg-background border-l border-border shadow-2xl overflow-y-auto">
+      <div className="h-full bg-background/80 backdrop-blur-xl border-l border-border shadow-2xl overflow-y-auto">
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
           <h3 className="font-semibold text-sm truncate pr-2">
             {account?.name || site?.name || "Details"}
