@@ -525,6 +525,10 @@ export default function FlashParkingMap() {
   const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
 
+
+  if (authLoading) return null;
+  if (!isSuperAdmin) return <Navigate to="/" replace />;
+
   if (!API_KEY) {
     return (
       <>
