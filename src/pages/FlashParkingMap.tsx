@@ -244,11 +244,7 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            {account.accountType === "large_venue" ? (
-              <Building2 className="w-3 h-3 text-muted-foreground shrink-0" />
-            ) : (
-              <Grid3X3 className="w-3 h-3 text-muted-foreground shrink-0" />
-            )}
+            <AccountIcon account={account} className="w-3 h-3 text-muted-foreground shrink-0" />
             <p className="text-xs font-semibold leading-tight">{account.name}</p>
           </div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{account.hqCity}</p>
