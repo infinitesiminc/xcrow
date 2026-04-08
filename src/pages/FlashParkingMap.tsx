@@ -56,14 +56,19 @@ function AccountPin({ account }: { account: FlashAccount }) {
     );
   }
 
+  const showHQLabel = account.accountType === "fleet_operator";
+
   return (
-    <div className="relative cursor-pointer group">
+    <div className="relative cursor-pointer group flex flex-col items-center">
       <div
         className="w-9 h-9 rounded-full border-[3px] border-white shadow-lg transition-all group-hover:scale-125 flex items-center justify-center"
         style={{ backgroundColor: cfg.markerColor }}
       >
         <AccountIcon account={account} className="w-4 h-4 text-white" />
       </div>
+      {showHQLabel && (
+        <span className="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-foreground bg-background/80 px-1 rounded shadow-sm">HQ</span>
+      )}
     </div>
   );
 }
