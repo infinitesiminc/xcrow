@@ -15,6 +15,7 @@ export interface FlashAccount {
   website: string;
   differentiator: string;
   caseStudyUrl?: string;
+  currentVendor?: string;
 }
 
 export const STAGE_CONFIG: Record<AccountStage, { label: string; color: string; markerColor: string; description: string }> = {
@@ -447,6 +448,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -74.0060,
     website: "https://abm.com",
     differentiator: "Division of ABM Industries; bundled facility + parking",
+    currentVendor: "T2 Systems",
   },
   {
     id: "acct-propark",
@@ -461,6 +463,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -72.6734,
     website: "https://propark.com",
     differentiator: "Rapid growth via acquisitions; tech-forward operator",
+    currentVendor: "Passport",
   },
   {
     id: "acct-ace",
@@ -475,6 +478,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -117.1611,
     website: "https://aceparking.com",
     differentiator: "Strong in hospitality & airport verticals",
+    currentVendor: "T2 Systems",
   },
   {
     id: "acct-parking-spot",
@@ -489,6 +493,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -76.4922,
     website: "https://theparkingspot.com",
     differentiator: "Largest near-airport parking company in US",
+    currentVendor: "Proprietary",
   },
   {
     id: "acct-icon",
@@ -503,6 +508,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -73.9840,
     website: "https://iconparking.com",
     differentiator: "Dominant NYC operator; high-value urban garages",
+    currentVendor: "Metropolis",
   },
   {
     id: "acct-towne-park",
@@ -517,6 +523,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -76.4922,
     website: "https://townepark.com",
     differentiator: "Largest US hospitality valet provider",
+    currentVendor: "T2 Systems",
   },
   {
     id: "acct-interpark",
@@ -531,8 +538,8 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -87.6278,
     website: "https://interparking.com",
     differentiator: "Major urban market operator in Chicago, LA, NYC",
+    currentVendor: "Metropolis",
   },
-
   // ══════════════════════════════════════════
   // WHITESPACE
   // ══════════════════════════════════════════
@@ -549,6 +556,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -90.0715,
     website: "https://premiumparking.com",
     differentiator: "Tech-native operator; app-first model",
+    currentVendor: "Proprietary",
   },
   {
     id: "acct-park-n-fly",
@@ -563,6 +571,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -84.4277,
     website: "https://pnf.com",
     differentiator: "Pioneer in off-airport parking; premium brand",
+    currentVendor: "T2 Systems",
   },
   {
     id: "acct-colonial",

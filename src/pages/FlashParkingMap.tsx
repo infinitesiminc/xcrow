@@ -116,6 +116,15 @@ function DetailPanel({ account, site, onClose }: {
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Focus Area</p>
                 <p className="text-foreground text-sm">{account.focusArea}</p>
               </div>
+              {account.currentVendor && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Current Vendor</p>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive">
+                    <Swords className="w-3.5 h-3.5" />
+                    {account.currentVendor}
+                  </span>
+                </div>
+              )}
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Differentiator</p>
                 <p className="text-muted-foreground text-sm">{account.differentiator}</p>
@@ -246,6 +255,9 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
         <span className="text-muted-foreground"><span className="font-medium text-foreground">{account.estimatedSpaces}</span> spaces</span>
         <span className="text-muted-foreground">{account.facilityCount}</span>
       </div>
+      {account.currentVendor && (
+        <p className="text-[10px] text-destructive mt-0.5">⚔ {account.currentVendor}</p>
+      )}
       <p className="text-[10px] text-muted-foreground mt-0.5">{account.differentiator}</p>
     </button>
   );
