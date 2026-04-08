@@ -68,8 +68,8 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-flash-hq",
     name: "Flash (HQ)",
-    accountType: "fleet_operator",
-    stage: "active",
+    accountType: "large_venue",
+    stage: "hq",
     estimatedSpaces: "N/A",
     facilityCount: "16,000+ locations",
     focusArea: "Cloud-based PARCS & EV Charging platform",
