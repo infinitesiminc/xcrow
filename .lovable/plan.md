@@ -1,72 +1,105 @@
 
 
-## Flash Parking Map — `/flashparkingmap`
+## Flash Partnership Intelligence & Prospecting Tool
 
-### What We're Building
-A research tool page at `/flashparkingmap` that displays an interactive Google Maps view of known Flash Parking technology deployments. Each location gets a marker color-coded by confidence level (Confirmed, Likely, Possible). Users can filter by operator/partner, click markers for details, and browse a sidebar list.
+### Research Findings from flashparking.com
 
-### Prerequisites
-- **Google Maps API Key**: Required. You'll need to add a `GOOGLE_MAPS_API_KEY` as a build-time environment variable (via `VITE_GOOGLE_MAPS_API_KEY`). We'll use the `@vis.gl/react-google-maps` library.
+Scraped all case studies, press releases, news articles, and product pages. Here are the **confirmed partners not yet in the map** that need to be added:
 
-### Navigation & UX Design
+**New partners from case studies:**
+- Park Rite (multi-location operator)
+- Parkwell Management / The Music Garage (Chicago)
+- Omni Hotel (hospitality)
+- Downtown Tempe District (municipal)
+- Graduate Annapolis (hospitality)
+- Bal Harbour Shops (luxury retail, Miami)
+- Weymouth Lane Beach (municipal)
+- Weston Urban / Renaissance Tower (San Antonio)
+- Hotel Californian (Santa Barbara)
+- 1111 Lincoln Road (Miami)
+- Resort at Squaw Creek (Lake Tahoe)
 
-```text
-┌─────────────────────────────────────────────────────┐
-│  Navbar                                             │
-├──────────┬──────────────────────────────────────────┤
-│ SIDEBAR  │                                          │
-│          │         GOOGLE MAP                       │
-│ Filter   │         (full height)                    │
-│ by:      │                                          │
-│ □ Conf.  │    🟢 Confirmed  🟡 Likely  🔴 Possible │
-│ □ Likely │                                          │
-│ □ Poss.  │         Markers clustered               │
-│          │         Click → InfoWindow               │
-│ Partners │                                          │
-│ ☑ Wally  │                                          │
-│ ☑ Plat.  │                                          │
-│ ☑ LAZ    │                                          │
-│ ...      │                                          │
-│          │                                          │
-│ Location │                                          │
-│ List     │                                          │
-│ (scroll) │                                          │
-└──────────┴──────────────────────────────────────────┘
-```
+**New partners from press releases:**
+- Miami HEAT / Kaseya Center (400 garage spaces + 50 valet)
+- New York Jets / MetLife Stadium (event parking)
+- Ball Arena Denver (60 EV charging ports)
+- Get My Parking (reseller partnership)
 
-- **Sidebar (left, collapsible on mobile)**: Filter checkboxes by confidence level and by partner/operator. Scrollable location list below filters — clicking a location pans the map and opens its info window.
-- **Map (main area)**: Markers with color by confidence. Clustered when zoomed out. InfoWindow on click shows: location name, address, operator, deployment scope, confidence badge, and source link.
-- **No auth required** — public research page.
+**Acquisitions (Flash-owned entities):**
+- Ticketech (NYC metered parking)
+- Parkonect
+- ZipPark
+- Mountain Parking Equipment
+- CSI (Northeast)
 
-### Technical Plan
+**Technology/demand partners:**
+- ParkMobile/Arrive (8,000+ new locations)
+- Waze (30,000+ locations)
+- ParkWhiz (Flash-owned marketplace)
+- Ticketmaster, AXS, SeatGeek, Vivid Seats
 
-1. **Install `@vis.gl/react-google-maps`** npm package
+### Implementation Plan
 
-2. **Create data file `src/data/flash-parking-locations.ts`**
-   - Hard-coded array of ~40-50 locations extracted from the uploaded MD file
-   - Each entry: `{ name, address, lat, lng, operator, scope, confidence: 'confirmed'|'likely'|'possible', notes, sourceUrl }`
-   - Geocode coordinates manually for known locations (airports, venues, cities)
-   - WallyPark locations (ATL, DEN, JAX, LAX, MCO, PHL, SAN, SEA) all marked as "likely" since case study confirms 10/10 but doesn't specify which
-   - Airports with explicit press releases → "confirmed"
-   - Portfolio-level mentions (Diamond/Seattle, Platinum/13 markets) → "possible" with city-center pins
+#### 1. Create `src/data/flash-prospects.ts`
 
-3. **Create page `src/pages/FlashParkingMap.tsx`**
-   - Full-viewport layout: sidebar + map
-   - Sidebar with: confidence filter checkboxes, partner/operator filter checkboxes, scrollable location list with confidence badges
-   - Google Map with colored markers (green/yellow/red), marker clustering, and InfoWindows
-   - Responsive: sidebar collapses to bottom sheet on mobile
+Two data sets in one file:
 
-4. **Add route to `src/App.tsx`**
-   - Public route: `<Route path="/flashparkingmap" element={<FlashParkingMap />} />`
+**A. Confirmed Partners** (~25 entries with official stats):
+Each entry includes: name, partnerType ("operator" | "venue" | "acquisition" | "technology"), estimatedSpaces, facilityCount, focusArea, hqCity, hqLat, hqLng, website, differentiator, caseStudyUrl
 
-5. **API Key Setup**
-   - The Google Maps JavaScript API key needs to be a **public/client-side** key, so it will be stored as `VITE_GOOGLE_MAPS_API_KEY` in the codebase or as a build secret
-   - I'll prompt you to provide it before the map renders
+Partners: WallyPark, Diamond Parking, Platinum Parking, Parkway Corp, Park Rite, Parkwell, City of Las Vegas, TMC/LAZ, Miami Design District, Bal Harbour Shops, Omni Hotel, Downtown Tempe, Graduate Annapolis, ParkMobile, Waze, Ticketech, Ball Arena, Kaseya Center (Miami HEAT), MetLife Stadium (NY Jets), One Parking, Get My Parking, CSI, Mountain Parking Equipment
 
-### Confidence Classification Logic
-| Level | Color | Criteria |
-|-------|-------|----------|
-| Confirmed | Green 🟢 | Named in press release or case study with specific facility details |
-| Likely | Yellow 🟡 | Operator confirmed as Flash partner; specific location matches operator's known sites |
-| Possible | Red 🔴 | Portfolio-level mention only; city-center pin representing "somewhere in this market" |
+**B. Prospect Operators** (~20 entries):
+Each includes: name, accountType ("large_venue" | "fleet_operator"), estimatedSpaces, facilityCount, focusArea, hqCity, hqLat, hqLng, website, differentiator, status ("prospect")
+
+Prospects: ABM Parking (2,000+ locations), Propark Mobility (1,000+ sites), Ace Parking (500+ locations), The Parking Spot (47 airports), Icon Parking (200+ NYC), Towne Park (800+ sites), InterPark, Premium Parking, Park 'N Fly, Colonial Parking, AirGarage, Edison ParkFast, Denison Parking, Douglas Parking, National Parking, Evolution Parking, The Car Park, Indigo Park, United Parking, MuniPark
+
+#### 2. Add new deployment pins to `src/data/flash-parking-locations.ts`
+
+Add ~15 new confirmed locations discovered from case studies:
+- Kaseya Center, Miami (Miami HEAT)
+- MetLife Stadium, East Rutherford NJ (NY Jets)
+- Ball Arena, Denver (EV hub)
+- Bal Harbour Shops, Miami
+- 1111 Lincoln Road, Miami
+- Downtown Tempe, AZ
+- Graduate Annapolis, MD
+- Hotel Californian, Santa Barbara
+- Resort at Squaw Creek, Lake Tahoe
+- Weston Urban, San Antonio
+- The Music Garage, Chicago
+
+#### 3. Major redesign of `src/pages/FlashParkingMap.tsx`
+
+**Sidebar header**: "Flash Partnership Intelligence" with subtitle "Account growth & deployment tracker"
+
+**Stats banner**: Three metric cards:
+- "16,000+" Locations (official)
+- "30,000+" Network (via Waze/ParkMobile)
+- "~180 Mapped" with coverage gap indicator
+
+**Two tabs** (Deployed | Prospects):
+
+*Deployed tab* — current functionality with one visual change: all pins become light gray as a base layer
+
+*Prospects tab* — scrollable list grouped into:
+- "Existing Partners" section showing confirmed Flash partners with their official stats, case study links, and mapped location counts
+- "Large Venue Accounts" section (airports, stadiums, convention centers)
+- "Fleet Operators" section (multi-location operators)
+- Each card shows: name, estimated spaces, facility count, focus area, status badge, differentiator
+
+**Map visual changes:**
+- Deployed pins: light gray base layer when Prospects tab active, normal colors when Deployed tab active
+- Prospect HQ markers: blue diamonds with account-type icons
+- When prospect clicked: InfoWindow shows operator stats and highlights overlapping deployed pins
+
+**Legend** updates to show both marker types
+
+#### Files Modified
+
+| File | Action |
+|------|--------|
+| `src/data/flash-prospects.ts` | Create — ~45 entries (25 partners + 20 prospects) |
+| `src/data/flash-parking-locations.ts` | Edit — add ~15 new confirmed case study locations |
+| `src/pages/FlashParkingMap.tsx` | Major edit — tabs, stats, prospect panel, visual reorientation |
 
