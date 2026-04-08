@@ -78,7 +78,22 @@ function DeployedSitePin() {
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
-function DetailPanel({ account, site, onClose }: {
+/* ── Contact lead type ── */
+interface AccountLead {
+  name: string;
+  title?: string;
+  email?: string;
+  linkedin?: string;
+  score?: number;
+  reason?: string;
+}
+
+interface AccountLeadData {
+  persona?: string;
+  leads: AccountLead[];
+}
+
+function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
 }) {
   const isOpen = !!(account || site);
