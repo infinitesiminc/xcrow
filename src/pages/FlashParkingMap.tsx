@@ -358,13 +358,11 @@ export default function FlashParkingMap() {
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-primary" />
-          </div>
+        <div className="flex items-center gap-3">
+          <img src={flashLogo} alt="Flash" className="w-8 h-8 object-contain" />
           <div>
-            <h2 className="text-sm font-bold leading-tight">Flash Account Map</h2>
-            <p className="text-[10px] text-muted-foreground">Partnership intelligence & pipeline</p>
+            <h2 className="text-lg font-bold leading-tight">Flash Account Map</h2>
+            <p className="text-xs text-muted-foreground">Partnership intelligence & pipeline</p>
           </div>
         </div>
       </div>
