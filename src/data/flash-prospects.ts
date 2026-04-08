@@ -81,6 +81,9 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -97.7431,
     website: "https://flashparking.com",
     differentiator: "Platform powering 16,000+ locations, 30,000+ network, 50M+ mobile users",
+    annualRevenue: "$500M+",
+    employeeCount: "1,000+",
+    founded: 2011,
   },
 
   // ══════════════════════════════════════════
