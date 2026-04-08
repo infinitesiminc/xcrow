@@ -78,7 +78,7 @@ export default function EnterpriseSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>Accounts</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
