@@ -100,7 +100,29 @@ interface AccountLeadData {
 /* ── Place photo component ── */
 const photoCache: Record<string, string | null> = {};
 
-function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number }) {
+async function searchPlacePhoto(query: string, lat: number, lng: number): Promise<string | null> {
+  const resp = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": API_KEY,
+      "X-Goog-FieldMask": "places.photos",
+    },
+    body: JSON.stringify({
+      textQuery: query,
+      locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 5000 } },
+      maxResultCount: 1,
+    }),
+  });
+  const data = await resp.json();
+  const photoRef = data?.places?.[0]?.photos?.[0]?.name;
+  if (photoRef) {
+    return `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
+  }
+  return null;
+}
+
+function PlacePhoto({ name, lat, lng, hqCity }: { name: string; lat: number; lng: number; hqCity?: string }) {
   const key = `${lat},${lng}`;
   const [url, setUrl] = useState<string | null>(photoCache[key] ?? null);
   const [tried, setTried] = useState(key in photoCache);
@@ -110,39 +132,37 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
     if (k in photoCache) { setUrl(photoCache[k] ?? null); setTried(true); return; }
     let cancelled = false;
 
-    // Clean name for better Google Places search results
     const cleanName = name
       .replace(/\s*\(HQ\)\s*/gi, "")
-      .replace(/\s*\([A-Z]{3}\)\s*/gi, (m) => ` ${m.trim()}`) // keep airport codes
+      .replace(/\s*\(Flash-owned\)\s*/gi, "")
+      .replace(/\s*\(North America\)\s*/gi, "")
+      .replace(/\s*\(fka[^)]*\)\s*/gi, "")
       .replace(/\s*HQ\s*$/i, "")
       .trim();
 
     (async () => {
       try {
-        const resp = await fetch(
-          `https://places.googleapis.com/v1/places:searchText`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Goog-Api-Key": API_KEY,
-              "X-Goog-FieldMask": "places.photos",
-            },
-            body: JSON.stringify({
-              textQuery: cleanName,
-              locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 5000 } },
-              maxResultCount: 1,
-            }),
-          }
-        );
-        const data = await resp.json();
-        const photoRef = data?.places?.[0]?.photos?.[0]?.name;
-        if (photoRef && !cancelled) {
-          const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
+        // Try exact name first
+        let photoUrl = await searchPlacePhoto(cleanName, lat, lng);
+
+        // Fallback: try with "parking" appended
+        if (!photoUrl && !cancelled) {
+          photoUrl = await searchPlacePhoto(`${cleanName} parking`, lat, lng);
+        }
+
+        // Fallback: try city name + "parking"
+        if (!photoUrl && !cancelled && hqCity) {
+          photoUrl = await searchPlacePhoto(`${hqCity} parking`, lat, lng);
+        }
+
+        // Fallback: try just the location landmark
+        if (!photoUrl && !cancelled && hqCity) {
+          photoUrl = await searchPlacePhoto(hqCity, lat, lng);
+        }
+
+        if (!cancelled) {
           photoCache[k] = photoUrl;
           setUrl(photoUrl);
-        } else {
-          photoCache[k] = null;
         }
       } catch {
         photoCache[`${lat},${lng}`] = null;
@@ -150,7 +170,7 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
       if (!cancelled) setTried(true);
     })();
     return () => { cancelled = true; };
-  }, [name, lat, lng]);
+  }, [name, lat, lng, hqCity]);
 
   if (!tried) return <div className="w-full h-32 rounded-lg bg-muted animate-pulse" />;
   if (!url) return null;
