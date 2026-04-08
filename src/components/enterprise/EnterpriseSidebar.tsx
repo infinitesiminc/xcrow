@@ -83,7 +83,7 @@ export default function EnterpriseSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {ENTERPRISE_ACCOUNTS.map((account) => {
-                const isActive = location.pathname === `/enterprise/${account.slug}`;
+                const isActive = location.pathname === `/admin/${account.slug}`;
                 return (
                   <SidebarMenuItem key={account.id}>
                     <SidebarMenuButton asChild>
