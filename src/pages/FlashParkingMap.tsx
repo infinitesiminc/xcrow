@@ -131,6 +131,33 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
               </div>
             </div>
 
+            {/* Stats grid */}
+            {(account.annualRevenue || account.employeeCount || account.founded) && (
+              <div className="grid grid-cols-3 gap-1.5">
+                {account.annualRevenue && (
+                  <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
+                    <DollarSign className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
+                    <p className="text-[10px] font-semibold">{account.annualRevenue}</p>
+                    <p className="text-[8px] text-muted-foreground">Revenue</p>
+                  </div>
+                )}
+                {account.employeeCount && (
+                  <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
+                    <UserCheck className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
+                    <p className="text-[10px] font-semibold">{account.employeeCount}</p>
+                    <p className="text-[8px] text-muted-foreground">Employees</p>
+                  </div>
+                )}
+                {account.founded && (
+                  <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
+                    <Calendar className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
+                    <p className="text-[10px] font-semibold">{account.founded}</p>
+                    <p className="text-[8px] text-muted-foreground">Founded</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Inline metadata chips */}
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
               {account.currentVendor && (
