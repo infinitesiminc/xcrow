@@ -198,9 +198,15 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
           </button>
         </div>
         {account && (
+          <PlaceInfo name={account.name} lat={account.hqLat} lng={account.hqLng} hqCity={account.hqCity}>
+            {(placeData) => (
           <div className="p-3 space-y-2">
             {/* Location photo */}
-            <PlacePhoto name={account.name} lat={account.hqLat} lng={account.hqLng} hqCity={account.hqCity} />
+            {placeData.photoUrl && (
+              <div className="w-full h-32 rounded-lg overflow-hidden">
+                <img src={placeData.photoUrl} alt={account.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+              </div>
+            )}
 
             {/* Compact header row */}
             <div className="flex items-center gap-2.5">
@@ -217,6 +223,14 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
                 </div>
               </div>
             </div>
+
+            {/* Address */}
+            {placeData.address && (
+              <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+                <span>{placeData.address}</span>
+              </div>
+            )}
 
             {/* Stats grid */}
             {(account.annualRevenue || account.employeeCount || account.founded) && (
