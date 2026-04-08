@@ -401,6 +401,43 @@ export default function FlashParkingMap() {
     setSelectedSiteId(null);
   }, []);
 
+  const handleFindContacts = useCallback(async (account: FlashAccount) => {
+    if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
+    setLoadingLeads(prev => new Set(prev).add(account.id));
+    try {
+      const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const { data, error } = await supabase.functions.invoke("leadgen-chat", {
+        body: {
+          website: account.website,
+          messages: [{
+            role: "user",
+            content: `Find 5 decision-makers at ${account.name} (${domain}) who would buy parking management software. Focus on ${account.focusArea}. Use run_lead_search immediately.`
+          }]
+        },
+      });
+      if (error) throw error;
+      const reader = (data as ReadableStream<Uint8Array>).getReader();
+      const collectedLeads: any[] = [];
+      await parseSSEStream(reader, {
+        onLeads: (leads) => {
+          collectedLeads.push(...leads);
+          setAccountLeads(prev => ({ ...prev, [account.id]: [...collectedLeads] }));
+        },
+        onDone: () => {
+          setAccountLeads(prev => ({ ...prev, [account.id]: collectedLeads.length > 0 ? collectedLeads : [] }));
+        }
+      });
+      if (collectedLeads.length === 0) {
+        setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+      }
+    } catch (err) {
+      console.error("Find contacts error:", err);
+      setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+    } finally {
+      setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
+    }
+  }, [loadingLeads, accountLeads]);
+
   const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
 
