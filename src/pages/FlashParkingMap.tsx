@@ -640,7 +640,7 @@ Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "
 
           {/* Detail slide-in panel */}
           <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail}
-            accountLeads={accountLeads} loadingLeads={loadingLeads} onFindContacts={handleFindContacts} />
+            accountLeads={accountLeads} loadingLeads={loadingLeads} activityLog={activityLog} onFindContacts={handleFindContacts} />
 
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
