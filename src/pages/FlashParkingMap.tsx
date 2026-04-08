@@ -450,7 +450,7 @@ export default function FlashParkingMap() {
           "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
           "apikey": supabaseKey,
         },
-        body: JSON.stringify({ website: domain, messages: [{ role: "user", content }] }),
+        body: JSON.stringify({ website: "flashparking.com", messages: [{ role: "user", content }] }),
       });
 
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
