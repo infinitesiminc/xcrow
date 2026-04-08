@@ -400,6 +400,38 @@ export default function FlashParkingMap() {
     setSelectedSiteId(null);
   }, []);
 
+  const handleFindContacts = useCallback(async (account: FlashAccount) => {
+    if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
+    setLoadingLeads((prev) => new Set(prev).add(account.id));
+    try {
+      const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const content = `You are prospecting ${account.name} (${domain}), a ${account.accountType === "airport" ? "commercial airport" : account.focusArea} account with ${account.estimatedSpaces} parking spaces. ${account.currentVendor ? `They currently use ${account.currentVendor}.` : ""} First define the ideal buyer persona for selling parking management technology to this account. Then find the top 5 decision-makers matching that persona. Return leads ranked by fit score (0-100) with a "reason" field and a "score" field.`;
+      const { data, error } = await supabase.functions.invoke("leadgen-chat", {
+        body: { website: domain, messages: [{ role: "user", content }] },
+      });
+      if (error) throw error;
+      const stream = data as ReadableStream;
+      const collectedLeads: any[] = [];
+      let personaText = "";
+      await parseSSEStream(stream.getReader(), {
+        onTextDelta: (chunk) => { personaText += chunk; },
+        onLeads: (leads) => {
+          collectedLeads.push(...leads);
+          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
+          setAccountLeads((prev) => ({ ...prev, [account.id]: { persona: personaText, leads: sorted } }));
+        },
+        onDone: () => {
+          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
+          setAccountLeads((prev) => ({ ...prev, [account.id]: { persona: personaText, leads: sorted } }));
+        },
+      });
+    } catch (e) {
+      console.error("Find contacts failed:", e);
+    } finally {
+      setLoadingLeads((prev) => { const n = new Set(prev); n.delete(account.id); return n; });
+    }
+  }, [loadingLeads, accountLeads]);
+
   const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
 
