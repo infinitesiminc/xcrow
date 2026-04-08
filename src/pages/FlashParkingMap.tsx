@@ -16,7 +16,7 @@ import {
   type ConfidenceLevel,
 } from "@/data/flash-parking-locations";
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKesJxuvh-sKL1z_gCj371z0";
 
 const MAP_ID = "flash-parking-map";
 
