@@ -217,7 +217,7 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
             ) : (
               <Grid3X3 className="w-3 h-3 text-muted-foreground shrink-0" />
             )}
-            <p className="text-xs font-semibold leading-tight truncate">{account.name}</p>
+            <p className="text-xs font-semibold leading-tight">{account.name}</p>
           </div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{account.hqCity}</p>
         </div>
