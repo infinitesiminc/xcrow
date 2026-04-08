@@ -504,7 +504,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -73.9840,
     website: "https://iconparking.com",
     differentiator: "Dominant NYC operator; high-value urban garages",
-  },
+    currentVendor: "Metropolis",
   {
     id: "acct-towne-park",
     name: "Towne Park",
