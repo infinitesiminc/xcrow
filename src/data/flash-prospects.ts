@@ -103,6 +103,9 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     website: "https://wallypark.com",
     differentiator: "Premium valet off-airport; 100+ Flash lanes deployed",
     caseStudyUrl: "https://www.flashparking.com/category/case-studies/",
+    annualRevenue: "$50M+",
+    employeeCount: "300+",
+    founded: 2000,
   },
   {
     id: "acct-diamond",
