@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -97,6 +97,62 @@ interface AccountLeadData {
   leads: AccountLead[];
 }
 
+/* ── Place photo component ── */
+const photoCache: Record<string, string | null> = {};
+
+function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number }) {
+  const key = `${lat},${lng}`;
+  const [url, setUrl] = useState<string | null>(photoCache[key] ?? null);
+  const [tried, setTried] = useState(key in photoCache);
+
+  useEffect(() => {
+    const k = `${lat},${lng}`;
+    if (k in photoCache) { setUrl(photoCache[k] ?? null); setTried(true); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const resp = await fetch(
+          `https://places.googleapis.com/v1/places:searchText`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Goog-Api-Key": API_KEY,
+              "X-Goog-FieldMask": "places.photos",
+            },
+            body: JSON.stringify({
+              textQuery: name,
+              locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 2000 } },
+              maxResultCount: 1,
+            }),
+          }
+        );
+        const data = await resp.json();
+        const photoRef = data?.places?.[0]?.photos?.[0]?.name;
+        if (photoRef && !cancelled) {
+          const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
+          photoCache[k] = photoUrl;
+          setUrl(photoUrl);
+        } else {
+          photoCache[k] = null;
+        }
+      } catch {
+        photoCache[`${lat},${lng}`] = null;
+      }
+      if (!cancelled) setTried(true);
+    })();
+    return () => { cancelled = true; };
+  }, [name, lat, lng]);
+
+  if (!tried) return <div className="w-full h-32 rounded-lg bg-muted animate-pulse" />;
+  if (!url) return null;
+  return (
+    <div className="w-full h-32 rounded-lg overflow-hidden">
+      <img src={url} alt={name} className="w-full h-full object-cover" />
+    </div>
+  );
+}
+
 function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
   accountLeads: Record<string, AccountLeadData>; loadingLeads: Set<string>;
@@ -120,6 +176,9 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
         </div>
         {account && (
           <div className="p-3 space-y-2">
+            {/* Location photo */}
+            <PlacePhoto name={account.name} lat={account.hqLat} lng={account.hqLng} />
+
             {/* Compact header row */}
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
