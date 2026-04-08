@@ -15,6 +15,7 @@ export interface FlashAccount {
   website: string;
   differentiator: string;
   caseStudyUrl?: string;
+  currentVendor?: string;
 }
 
 export const STAGE_CONFIG: Record<AccountStage, { label: string; color: string; markerColor: string; description: string }> = {
