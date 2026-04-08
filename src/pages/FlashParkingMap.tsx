@@ -299,13 +299,11 @@ export default function FlashParkingMap() {
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
     setSelectedSiteId(null);
-    setPanTarget({ lat: a.hqLat, lng: a.hqLng });
   }, []);
 
   const handleSelectSite = useCallback((l: FlashLocation) => {
     setSelectedSiteId(l.id);
     setSelectedAccountId(null);
-    setPanTarget({ lat: l.lat, lng: l.lng });
   }, []);
 
   const handleCloseDetail = useCallback(() => {
