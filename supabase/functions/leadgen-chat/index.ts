@@ -389,6 +389,18 @@ function apolloPeopleToLeads(
   return leads;
 }
 
+/** Extract company name from domain for fallback searches */
+function companyNameFromDomain(domain: string): string | null {
+  const clean = domain.replace(/^(www\.)?/, "").split(".")[0];
+  if (!clean || clean.length < 2) return null;
+  // Convert camelCase/lowercase to spaced words, capitalize
+  return clean
+    .replace(/parking|solutions|group|inc|corp|llc|co$/gi, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
 /** Search Apollo People API with progressive broadening — retries with relaxed filters when 0 results */
 async function searchApollopeople(
   apolloKey: string,
@@ -408,7 +420,7 @@ async function searchApollopeople(
   // Build broadening attempts — each removes one filter layer
   const attempts: { body: Record<string, unknown>; label: string }[] = [];
 
-  // Attempt 1: Full filters
+  // Attempt 1: Full filters (domain + location + seniority)
   const fullBody: Record<string, unknown> = {
     person_titles: args.target_titles,
     page: 1,
@@ -426,14 +438,14 @@ async function searchApollopeople(
   if (args.organization_domains?.length) fullBody.q_organization_domains = args.organization_domains.join("\n");
   attempts.push({ body: { ...fullBody }, label: "full-filters" });
 
-  // Attempt 2: Drop industry keywords (most restrictive filter)
+  // Attempt 2: Drop industry keywords
   if (args.target_industries?.length) {
     const noIndustry = { ...fullBody };
     delete noIndustry.q_organization_keyword_tags;
     attempts.push({ body: noIndustry, label: "no-industry" });
   }
 
-  // Attempt 3: Drop location too
+  // Attempt 3: Drop location too (domain + seniority only)
   if (args.target_location) {
     const noLocation = { ...fullBody };
     delete noLocation.q_organization_keyword_tags;
@@ -441,7 +453,22 @@ async function searchApollopeople(
     attempts.push({ body: noLocation, label: "no-location" });
   }
 
-  // Attempt 4: Drop seniority filter (broadest)
+  // Attempt 4: Search by company NAME instead of domain (catches companies with thin domain coverage)
+  if (args.organization_domains?.length) {
+    const companyName = companyNameFromDomain(args.organization_domains[0]);
+    if (companyName && companyName.length >= 3) {
+      const byName: Record<string, unknown> = {
+        person_titles: args.target_titles,
+        page: 1,
+        per_page: 10,
+        person_seniorities: ["director", "vp", "c_suite", "owner"],
+        q_organization_name: companyName,
+      };
+      attempts.push({ body: byName, label: "company-name" });
+    }
+  }
+
+  // Attempt 5: Titles only (broadest — no domain, no location)
   if (attempts.length > 1) {
     const broadest: Record<string, unknown> = {
       person_titles: args.target_titles,
