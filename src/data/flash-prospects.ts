@@ -919,6 +919,9 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -86.1581,
     website: "https://t2systems.com",
     differentiator: "Long-standing PARCS & permit management; strong in university & municipal",
+    annualRevenue: "$100M+",
+    employeeCount: "400+",
+    founded: 1991,
   },
   {
     id: "acct-metropolis",
@@ -933,6 +936,9 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -118.4912,
     website: "https://metropolis.io",
     differentiator: "$800M+ raised; AI-driven Vision PARCS; smart city & aviation focus",
+    annualRevenue: "$200M+",
+    employeeCount: "1,000+",
+    founded: 2017,
   },
   {
     id: "acct-parkhub",
@@ -947,6 +953,9 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -96.7970,
     website: "https://parkhub.com",
     differentiator: "Mobile POS & analytics for large-scale events and venues",
+    annualRevenue: "$30M+",
+    employeeCount: "100+",
+    founded: 2010,
   },
   {
     id: "acct-spothero",
@@ -961,6 +970,9 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -87.6233,
     website: "https://spothero.com",
     differentiator: "Consumer-facing reservation platform; competes with Flash's digital ecosystem",
+    annualRevenue: "$100M+",
+    employeeCount: "300+",
+    founded: 2011,
   },
   {
     id: "acct-passport",
@@ -975,5 +987,8 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -80.8431,
     website: "https://passportinc.com",
     differentiator: "Leader in municipal mobile payments; competes for commercial contracts",
+    annualRevenue: "$75M+",
+    employeeCount: "400+",
+    founded: 2010,
   },
 ];
