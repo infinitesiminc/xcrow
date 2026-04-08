@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
@@ -30,6 +30,15 @@ const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKes
 const MAP_ID = "flash-parking-map";
 
 /* ── Account HQ Pin ── */
+const isAirport = (id: string) => id.startsWith("acct-airport-");
+
+function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
+  if (isAirport(account.id)) return <Plane className={className} />;
+  if (account.stage === "competitor") return <Swords className={className} />;
+  if (account.accountType === "large_venue") return <Building2 className={className} />;
+  return <Grid3X3 className={className} />;
+}
+
 function AccountPin({ account }: { account: FlashAccount }) {
   const cfg = STAGE_CONFIG[account.stage];
   const isFlashHQ = account.id === "acct-flash-hq";
@@ -50,13 +59,7 @@ function AccountPin({ account }: { account: FlashAccount }) {
         className="w-9 h-9 rounded-full border-[3px] border-white shadow-lg transition-all group-hover:scale-125 flex items-center justify-center"
         style={{ backgroundColor: cfg.markerColor }}
       >
-        {account.stage === "competitor" ? (
-          <Swords className="w-4 h-4 text-white" />
-        ) : account.accountType === "large_venue" ? (
-          <Building2 className="w-4 h-4 text-white" />
-        ) : (
-          <Grid3X3 className="w-4 h-4 text-white" />
-        )}
+        <AccountIcon account={account} className="w-4 h-4 text-white" />
       </div>
     </div>
   );
@@ -94,7 +97,7 @@ function DetailPanel({ account, site, onClose }: {
           <div className="p-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                {account.accountType === "large_venue" ? <Building2 className="w-5 h-5 text-white" /> : <Grid3X3 className="w-5 h-5 text-white" />}
+                <AccountIcon account={account} className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{account.hqCity}</p>
@@ -241,11 +244,7 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            {account.accountType === "large_venue" ? (
-              <Building2 className="w-3 h-3 text-muted-foreground shrink-0" />
-            ) : (
-              <Grid3X3 className="w-3 h-3 text-muted-foreground shrink-0" />
-            )}
+            <AccountIcon account={account} className="w-3 h-3 text-muted-foreground shrink-0" />
             <p className="text-xs font-semibold leading-tight">{account.name}</p>
           </div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{account.hqCity}</p>
