@@ -4,7 +4,6 @@
 import { useState, useRef } from "react";
 import logoCrow from "@/assets/logo-crow.png";
 import { useNavigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
