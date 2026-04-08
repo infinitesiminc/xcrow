@@ -438,7 +438,7 @@ export default function FlashParkingMap() {
 
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
-            {(["active", "target", "whitespace"] as AccountStage[]).map((s) => (
+            {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
               <div key={s} className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: STAGE_CONFIG[s].markerColor }} />
                 <span>{STAGE_CONFIG[s].label}</span>
