@@ -176,6 +176,9 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
         </div>
         {account && (
           <div className="p-3 space-y-2">
+            {/* Location photo */}
+            <PlacePhoto name={account.name} lat={account.hqLat} lng={account.hqLng} />
+
             {/* Compact header row */}
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
