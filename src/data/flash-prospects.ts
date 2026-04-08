@@ -36,6 +36,12 @@ export const STAGE_CONFIG: Record<AccountStage, { label: string; color: string; 
     markerColor: "#a3a3a3",
     description: "Large operator with no known Flash relationship",
   },
+  competitor: {
+    label: "Competitor",
+    color: "hsl(0, 84%, 60%)",
+    markerColor: "#ef4444",
+    description: "Direct competitor to Flash in parking technology",
+  },
 };
 
 export const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; icon: string }> = {
