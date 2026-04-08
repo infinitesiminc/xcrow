@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
@@ -34,7 +34,9 @@ function AccountPin({ stage, accountType }: { stage: AccountStage; accountType: 
         className="w-9 h-9 rounded-full border-[3px] border-white shadow-lg transition-all group-hover:scale-125 flex items-center justify-center"
         style={{ backgroundColor: cfg.markerColor }}
       >
-        {accountType === "large_venue" ? (
+        {stage === "competitor" ? (
+          <Swords className="w-4 h-4 text-white" />
+        ) : accountType === "large_venue" ? (
           <Building2 className="w-4 h-4 text-white" />
         ) : (
           <Grid3X3 className="w-4 h-4 text-white" />
@@ -145,6 +147,7 @@ function StatsBanner() {
   const activeCount = FLASH_ACCOUNTS.filter((a) => a.stage === "active").length;
   const targetCount = FLASH_ACCOUNTS.filter((a) => a.stage === "target").length;
   const whitespaceCount = FLASH_ACCOUNTS.filter((a) => a.stage === "whitespace").length;
+  const competitorCount = FLASH_ACCOUNTS.filter((a) => a.stage === "competitor").length;
   return (
     <div className="px-3 py-2 space-y-2">
       <div className="grid grid-cols-3 gap-1.5">
@@ -165,6 +168,7 @@ function StatsBanner() {
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.active.markerColor }} />{activeCount} Active</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.target.markerColor }} />{targetCount} Target</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.whitespace.markerColor }} />{whitespaceCount} Whitespace</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.competitor.markerColor }} />{competitorCount} Competitor</span>
       </div>
     </div>
   );
@@ -262,7 +266,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 export default function FlashParkingMap() {
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
-  const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace"]));
+  const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
   const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator"]));
   const [showDeployed, setShowDeployed] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
@@ -357,7 +361,7 @@ export default function FlashParkingMap() {
       <div className="px-3 pb-1.5">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Stage</p>
         <div className="flex flex-wrap gap-1">
-          {(["active", "target", "whitespace"] as AccountStage[]).map((s) => (
+          {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
             <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} />
           ))}
         </div>
@@ -434,7 +438,7 @@ export default function FlashParkingMap() {
 
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
-            {(["active", "target", "whitespace"] as AccountStage[]).map((s) => (
+            {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
               <div key={s} className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: STAGE_CONFIG[s].markerColor }} />
                 <span>{STAGE_CONFIG[s].label}</span>

@@ -1,5 +1,5 @@
 export type AccountType = "large_venue" | "fleet_operator";
-export type AccountStage = "active" | "target" | "whitespace";
+export type AccountStage = "active" | "target" | "whitespace" | "competitor";
 
 export interface FlashAccount {
   id: string;
@@ -35,6 +35,12 @@ export const STAGE_CONFIG: Record<AccountStage, { label: string; color: string; 
     color: "hsl(0, 0%, 65%)",
     markerColor: "#a3a3a3",
     description: "Large operator with no known Flash relationship",
+  },
+  competitor: {
+    label: "Competitor",
+    color: "hsl(0, 84%, 60%)",
+    markerColor: "#ef4444",
+    description: "Direct competitor to Flash in parking technology",
   },
 };
 
@@ -693,5 +699,79 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -82.4572,
     website: "https://munipark.com",
     differentiator: "Specialist in municipal and university parking",
+  },
+
+  // ══════════════════════════════════════════
+  // COMPETITORS
+  // ══════════════════════════════════════════
+  {
+    id: "acct-t2-systems",
+    name: "T2 Systems",
+    accountType: "fleet_operator",
+    stage: "competitor",
+    estimatedSpaces: "N/A",
+    facilityCount: "1,000+ clients",
+    focusArea: "Integrated parking & mobility tech",
+    hqCity: "Indianapolis, IN",
+    hqLat: 39.7684,
+    hqLng: -86.1581,
+    website: "https://t2systems.com",
+    differentiator: "Long-standing PARCS & permit management; strong in university & municipal",
+  },
+  {
+    id: "acct-metropolis",
+    name: "Metropolis Technologies",
+    accountType: "large_venue",
+    stage: "competitor",
+    estimatedSpaces: "N/A",
+    facilityCount: "4,000+ locations",
+    focusArea: "AI & computer vision checkout-free parking",
+    hqCity: "Santa Monica, CA",
+    hqLat: 34.0195,
+    hqLng: -118.4912,
+    website: "https://metropolis.io",
+    differentiator: "$800M+ raised; AI-driven Vision PARCS; smart city & aviation focus",
+  },
+  {
+    id: "acct-parkhub",
+    name: "ParkHub",
+    accountType: "large_venue",
+    stage: "competitor",
+    estimatedSpaces: "N/A",
+    facilityCount: "500+ venues",
+    focusArea: "Real-time event parking & BI tools",
+    hqCity: "Dallas, TX",
+    hqLat: 32.7767,
+    hqLng: -96.7970,
+    website: "https://parkhub.com",
+    differentiator: "Mobile POS & analytics for large-scale events and venues",
+  },
+  {
+    id: "acct-spothero",
+    name: "SpotHero",
+    accountType: "fleet_operator",
+    stage: "competitor",
+    estimatedSpaces: "N/A",
+    facilityCount: "8,000+ locations",
+    focusArea: "Digital parking reservations",
+    hqCity: "Chicago, IL",
+    hqLat: 41.8827,
+    hqLng: -87.6233,
+    website: "https://spothero.com",
+    differentiator: "Consumer-facing reservation platform; competes with Flash's digital ecosystem",
+  },
+  {
+    id: "acct-passport",
+    name: "Passport",
+    accountType: "fleet_operator",
+    stage: "competitor",
+    estimatedSpaces: "N/A",
+    facilityCount: "800+ clients",
+    focusArea: "Mobile payments & curb management",
+    hqCity: "Charlotte, NC",
+    hqLat: 35.2271,
+    hqLng: -80.8431,
+    website: "https://passportinc.com",
+    differentiator: "Leader in municipal mobile payments; competes for commercial contracts",
   },
 ];
