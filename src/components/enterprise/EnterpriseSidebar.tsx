@@ -58,8 +58,8 @@ export default function EnterpriseSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/enterprise"
+                    <NavLink
+                    to="/admin"
                     end
                     className={({ isActive }) =>
                       `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
