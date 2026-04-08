@@ -89,12 +89,13 @@ const App = () => (
               <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/admin" element={<AuthGate><Navbar /><Admin /><Footer /></AuthGate>} />
-              <Route path="/flashparkingmap" element={<Navigate to="/enterprise/flash" replace />} />
-              <Route path="/enterprise" element={<EnterpriseLayout />}>
+              <Route path="/admin" element={<EnterpriseLayout />}>
                 <Route index element={<Admin />} />
                 <Route path="flash" element={<FlashParkingMap />} />
               </Route>
+              <Route path="/flashparkingmap" element={<Navigate to="/admin/flash" replace />} />
+              <Route path="/enterprise/*" element={<Navigate to="/admin" replace />} />
+              <Route path="/enterprise" element={<Navigate to="/admin" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

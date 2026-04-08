@@ -88,7 +88,7 @@ export default function EnterpriseSidebar() {
                   <SidebarMenuItem key={account.id}>
                     <SidebarMenuButton asChild>
                       <NavLink
-                        to={`/enterprise/${account.slug}`}
+                        to={`/admin/${account.slug}`}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
                           isActive
                             ? "bg-accent text-accent-foreground font-medium"
