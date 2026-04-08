@@ -98,7 +98,7 @@ interface AccountLeadData {
 }
 
 /* ── Place photo component ── */
-const photoCache = new Map<string, string | null>();
+const photoCache: Record<string, string | null> = {};
 
 function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number }) {
   const [url, setUrl] = useState<string | null>(photoCache.get(`${lat},${lng}`) ?? null);
