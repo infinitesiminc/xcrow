@@ -224,6 +224,38 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
     </div>
   );
 }
+/* ── Stats Banner ── */
+function StatsBanner() {
+  const activeCount = ALL_ACCOUNTS.filter((a) => a.stage === "active").length;
+  const targetCount = ALL_ACCOUNTS.filter((a) => a.stage === "target").length;
+  const whitespaceCount = ALL_ACCOUNTS.filter((a) => a.stage === "whitespace").length;
+  const competitorCount = ALL_ACCOUNTS.filter((a) => a.stage === "competitor").length;
+  return (
+    <div className="px-3 py-2 space-y-2">
+      <div className="grid grid-cols-3 gap-1.5">
+        <div className="bg-muted/50 rounded-lg p-2 text-center">
+          <p className="text-base font-bold text-foreground">{FLASH_PLATFORM_STATS.totalLocations}</p>
+          <p className="text-[9px] text-muted-foreground leading-tight">Locations</p>
+        </div>
+        <div className="bg-muted/50 rounded-lg p-2 text-center">
+          <p className="text-base font-bold text-foreground">{FLASH_PLATFORM_STATS.networkLocations}</p>
+          <p className="text-[9px] text-muted-foreground leading-tight">Network</p>
+        </div>
+        <div className="bg-muted/50 rounded-lg p-2 text-center">
+          <p className="text-base font-bold text-foreground">{ALL_ACCOUNTS.length}</p>
+          <p className="text-[9px] text-muted-foreground leading-tight">Accounts</p>
+        </div>
+      </div>
+      <div className="flex gap-1.5 text-[10px]">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.active.markerColor }} />{activeCount} Active</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.target.markerColor }} />{targetCount} Target</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.whitespace.markerColor }} />{whitespaceCount} Whitespace</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.competitor.markerColor }} />{competitorCount} Competitor</span>
+      </div>
+    </div>
+  );
+}
+
 /* ── Stage filter toggle ── */
 function StageToggle({ stage, active, onClick }: { stage: AccountStage; active: boolean; onClick: () => void }) {
   const cfg = STAGE_CONFIG[stage];
