@@ -95,8 +95,8 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — FASTEST LEAD GEN MACHINE"
-        description="Enter one website. Get a full prospect map, qualified decision-makers, and outreach-ready leads — in seconds. No GTM expertise required."
+        title="Xcrow — The $49 Sales Team"
+        description="Paste a URL. Get 5 ready-to-email decision-makers in 10 seconds. Apollo charges $99 for complexity. LinkedIn charges $120 for 50 InMails. We charge $49 for 500 leads with emails."
         path="/"
       />
 
