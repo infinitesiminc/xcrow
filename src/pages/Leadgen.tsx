@@ -635,7 +635,13 @@ function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange 
             // Trigger GTM analysis for product/vertical cards
             fetchGtmAnalysis(website.trim());
           })
-          .catch((e: any) => toast.error(e.message || "Failed to analyze website"))
+          .catch((e: any) => {
+            toast.error(e.message || "Failed to analyze website");
+            setHasDiscovered(false);
+            setWebsiteUrl("");
+            setLocalNiches([]);
+            setLocalWorkspaceKey("");
+          })
           .finally(() => { setIsDiscovering(false); setDiscoveryPhase(""); });
       }, 100);
     }
