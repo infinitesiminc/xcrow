@@ -396,6 +396,7 @@ async function searchApollopeople(
     target_titles?: string[];
     target_location?: string;
     target_industries?: string[];
+    organization_domains?: string[];
     employee_ranges?: string[];
     search_queries: string[];
   },
