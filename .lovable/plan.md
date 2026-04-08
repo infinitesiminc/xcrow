@@ -1,48 +1,34 @@
 
 
-## Add Flash Competitors to the Map
+## Reclaim Vertical Space for the Account List
 
-### What
+### Problem
+The sidebar has ~5 fixed sections above the scrollable account list (header, stats banner, search, stage filters, type filters, deployed toggle), consuming over half the viewport height. The list gets squeezed.
 
-Add a new **"Competitor"** category to the account-based map, showing Flash's direct competitors as red pins at their HQ locations. This turns the tool into a full competitive landscape view alongside the existing partner/prospect/whitespace layers.
+### Proposed Approach: Collapsible Filter Section
 
-### Data Changes — `src/data/flash-prospects.ts`
+Wrap the **Stats Banner**, **Stage filters**, **Type filters**, and **Deployed toggle** into a single collapsible section with a small toggle button (e.g., "Filters ▾"). When collapsed, these 4 blocks hide, freeing ~180px of vertical space for the list.
 
-1. Add a new `AccountStage` value: `"competitor"`
-2. Add `STAGE_CONFIG` entry for competitor: red marker color (`#ef4444`), label "Competitor"
-3. Add 5 competitor entries to `FLASH_ACCOUNTS`:
+**What stays always visible:**
+- Header (logo + title) — brand identity
+- Search bar — primary interaction
+- Account list — the main content
 
-| Name | HQ | Type | Core Focus |
-|------|-----|------|------------|
-| T2 Systems | Indianapolis, IN | fleet_operator | Integrated parking & mobility tech |
-| Metropolis Technologies | Santa Monica, CA | large_venue | AI & computer vision PARCS |
-| ParkHub | Dallas, TX | large_venue | Event & asset management |
-| SpotHero | Chicago, IL | fleet_operator | Digital parking reservations |
-| Passport | Charlotte, NC | fleet_operator | Mobile payments & curb management |
+**What collapses:**
+- Stats banner (3 stat boxes + stage counts)
+- Stage filter toggles
+- Type filter toggles  
+- Deployed sites toggle
 
-### UI Changes — `src/pages/FlashParkingMap.tsx`
+The section defaults to **expanded** so filters are discoverable, but one click collapses it to maximize list space.
 
-1. Add "Competitor" to the stage filter toggle row (red button)
-2. Red circle pins with a distinct icon (e.g., `Swords` or `Shield` from lucide) on the map
-3. Competitor cards in the sidebar list, styled with red accent
-4. Detail panel shows competitor-specific info (core focus, funding context in differentiator)
-5. Legend updated with the red competitor marker
-6. Stats banner adds a "Competitors" count
-
-### Visual Summary
-
-```text
-Pin Colors:
-  🟢 Active Partner     — green
-  🟡 Target Account     — yellow  
-  ⚪ Whitespace          — gray
-  🔴 Competitor          — red (NEW)
-```
-
-### Files Modified
+### Implementation
 
 | File | Change |
 |------|--------|
-| `src/data/flash-prospects.ts` | Add `"competitor"` stage, config, and 5 entries |
-| `src/pages/FlashParkingMap.tsx` | Red filter toggle, red pins, legend update |
+| `src/pages/FlashParkingMap.tsx` | Wrap stats + filters in a `Collapsible` from `@/components/ui/collapsible`. Add a small trigger button between search and the collapsible block. Active filter count shown on the trigger when collapsed. |
+
+### Result
+- Expanded: identical to current layout
+- Collapsed: header + search + full-height list, filters hidden behind a single toggle
 
