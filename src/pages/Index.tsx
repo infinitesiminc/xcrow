@@ -122,17 +122,17 @@ export default function Index() {
                 {...fadeUp(0)}
                 className="text-primary text-sm font-semibold tracking-[0.2em] uppercase mb-6"
               >
-                FASTEST LEAD GEN MACHINE
+                THE $49 SALES TEAM
               </motion.p>
 
-              {/* Headline — Gong style: big uppercase with accent color */}
+              {/* Headline */}
               <motion.h1
                 {...fadeUp(0.1)}
                 className="text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] font-extrabold text-foreground leading-[1.05] tracking-[-0.02em] uppercase mb-6"
               >
-                One Website.
+                Paste a URL.
                 <br />
-                <span className="text-primary">Perfect Leads.</span>
+                <span className="text-primary">Skip the SDR.</span>
               </motion.h1>
 
               {/* Subheadline */}
@@ -140,7 +140,9 @@ export default function Index() {
                 {...fadeUp(0.2)}
                 className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
               >
-                Get accurate B2B leads that fit your Ideal Customer Profile in 10 seconds.
+                Other tools give you a database and say <span className="text-foreground font-semibold">"figure it out."</span>
+                <br />
+                We give you <span className="text-primary font-semibold">5 ready-to-email decision-makers in 10 seconds.</span>
               </motion.p>
 
               {/* CTA Input */}
