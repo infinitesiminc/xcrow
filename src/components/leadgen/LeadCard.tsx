@@ -106,11 +106,6 @@ export function LeadCard({ lead, index, onDraftEmail }: LeadCardProps) {
           )}
         </div>
 
-        {lead.source && (
-          <Badge variant="outline" className="text-xs px-1.5 py-0 mt-1 border-muted-foreground/30 text-muted-foreground">
-            {lead.source}
-          </Badge>
-        )}
 
         {lead.email && (
           <Button variant="outline" size="sm" className="gap-1.5 mt-2 text-xs w-full" onClick={() => onDraftEmail(lead)}>

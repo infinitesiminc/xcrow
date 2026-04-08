@@ -134,9 +134,6 @@ export function LeadDetailDrawer({
                 {lead.niche_tag && (
                   <Badge variant="secondary" className="text-xs">{lead.niche_tag}</Badge>
                 )}
-                {lead.source && (
-                  <Badge variant="outline" className="text-xs border-border/40">{lead.source}</Badge>
-                )}
               </div>
             </div>
           </div>
