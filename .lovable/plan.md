@@ -1,105 +1,45 @@
+## Account-Based Map Redesign
 
+### New Category System (2 dimensions)
 
-## Flash Partnership Intelligence & Prospecting Tool
+**Account Type** (visual icon):
+- 🏢 **Large Venue** — airports, stadiums, medical centers, convention centers
+- 🔲 **Fleet Operator** — multi-location parking companies
 
-### Research Findings from flashparking.com
+**Relationship Stage** (marker color):
+- 🟢 **Active Partner** — confirmed Flash customer with deployed technology
+- 🟡 **Target Account** — identified prospect, not yet a customer
+- ⚪ **Whitespace** — large operator with no known Flash relationship
 
-Scraped all case studies, press releases, news articles, and product pages. Here are the **confirmed partners not yet in the map** that need to be added:
+### Map Changes
 
-**New partners from case studies:**
-- Park Rite (multi-location operator)
-- Parkwell Management / The Music Garage (Chicago)
-- Omni Hotel (hospitality)
-- Downtown Tempe District (municipal)
-- Graduate Annapolis (hospitality)
-- Bal Harbour Shops (luxury retail, Miami)
-- Weymouth Lane Beach (municipal)
-- Weston Urban / Renaissance Tower (San Antonio)
-- Hotel Californian (Santa Barbara)
-- 1111 Lincoln Road (Miami)
-- Resort at Squaw Creek (Lake Tahoe)
+1. **Default view**: One pin per operator at HQ location
+   - Green circle = Active Partner
+   - Yellow circle = Target Account  
+   - Gray circle = Whitespace
+   - Icon overlay distinguishes venue vs fleet
 
-**New partners from press releases:**
-- Miami HEAT / Kaseya Center (400 garage spaces + 50 valet)
-- New York Jets / MetLife Stadium (event parking)
-- Ball Arena Denver (60 EV charging ports)
-- Get My Parking (reseller partnership)
+2. **Toggle**: "Show deployed sites" checkbox reveals the 168+ facility-level pins as a subtle gray background layer
 
-**Acquisitions (Flash-owned entities):**
-- Ticketech (NYC metered parking)
-- Parkonect
-- ZipPark
-- Mountain Parking Equipment
-- CSI (Northeast)
+3. **Remove** confidence filter (confirmed/likely/possible) entirely from UI
 
-**Technology/demand partners:**
-- ParkMobile/Arrive (8,000+ new locations)
-- Waze (30,000+ locations)
-- ParkWhiz (Flash-owned marketplace)
-- Ticketmaster, AXS, SeatGeek, Vivid Seats
+4. **Sidebar**: 
+   - Filter by stage: Active / Target / Whitespace
+   - Filter by type: Large Venue / Fleet Operator
+   - Each card shows: name, HQ, est. spaces, facilities, stage badge
+   - Remove the old operator partner chip filters
 
-### Implementation Plan
+5. **Legend** updates to show the new color/icon system
 
-#### 1. Create `src/data/flash-prospects.ts`
+### Data Changes
 
-Two data sets in one file:
+- Merge `flash-prospects.ts` partner/prospect data into a single unified list with a `stage` field
+- Add `stage: "active" | "target" | "whitespace"` to each entry
+- Deployed locations data file stays untouched, just rendered conditionally
 
-**A. Confirmed Partners** (~25 entries with official stats):
-Each entry includes: name, partnerType ("operator" | "venue" | "acquisition" | "technology"), estimatedSpaces, facilityCount, focusArea, hqCity, hqLat, hqLng, website, differentiator, caseStudyUrl
+### Files Modified
 
-Partners: WallyPark, Diamond Parking, Platinum Parking, Parkway Corp, Park Rite, Parkwell, City of Las Vegas, TMC/LAZ, Miami Design District, Bal Harbour Shops, Omni Hotel, Downtown Tempe, Graduate Annapolis, ParkMobile, Waze, Ticketech, Ball Arena, Kaseya Center (Miami HEAT), MetLife Stadium (NY Jets), One Parking, Get My Parking, CSI, Mountain Parking Equipment
-
-**B. Prospect Operators** (~20 entries):
-Each includes: name, accountType ("large_venue" | "fleet_operator"), estimatedSpaces, facilityCount, focusArea, hqCity, hqLat, hqLng, website, differentiator, status ("prospect")
-
-Prospects: ABM Parking (2,000+ locations), Propark Mobility (1,000+ sites), Ace Parking (500+ locations), The Parking Spot (47 airports), Icon Parking (200+ NYC), Towne Park (800+ sites), InterPark, Premium Parking, Park 'N Fly, Colonial Parking, AirGarage, Edison ParkFast, Denison Parking, Douglas Parking, National Parking, Evolution Parking, The Car Park, Indigo Park, United Parking, MuniPark
-
-#### 2. Add new deployment pins to `src/data/flash-parking-locations.ts`
-
-Add ~15 new confirmed locations discovered from case studies:
-- Kaseya Center, Miami (Miami HEAT)
-- MetLife Stadium, East Rutherford NJ (NY Jets)
-- Ball Arena, Denver (EV hub)
-- Bal Harbour Shops, Miami
-- 1111 Lincoln Road, Miami
-- Downtown Tempe, AZ
-- Graduate Annapolis, MD
-- Hotel Californian, Santa Barbara
-- Resort at Squaw Creek, Lake Tahoe
-- Weston Urban, San Antonio
-- The Music Garage, Chicago
-
-#### 3. Major redesign of `src/pages/FlashParkingMap.tsx`
-
-**Sidebar header**: "Flash Partnership Intelligence" with subtitle "Account growth & deployment tracker"
-
-**Stats banner**: Three metric cards:
-- "16,000+" Locations (official)
-- "30,000+" Network (via Waze/ParkMobile)
-- "~180 Mapped" with coverage gap indicator
-
-**Two tabs** (Deployed | Prospects):
-
-*Deployed tab* — current functionality with one visual change: all pins become light gray as a base layer
-
-*Prospects tab* — scrollable list grouped into:
-- "Existing Partners" section showing confirmed Flash partners with their official stats, case study links, and mapped location counts
-- "Large Venue Accounts" section (airports, stadiums, convention centers)
-- "Fleet Operators" section (multi-location operators)
-- Each card shows: name, estimated spaces, facility count, focus area, status badge, differentiator
-
-**Map visual changes:**
-- Deployed pins: light gray base layer when Prospects tab active, normal colors when Deployed tab active
-- Prospect HQ markers: blue diamonds with account-type icons
-- When prospect clicked: InfoWindow shows operator stats and highlights overlapping deployed pins
-
-**Legend** updates to show both marker types
-
-#### Files Modified
-
-| File | Action |
+| File | Change |
 |------|--------|
-| `src/data/flash-prospects.ts` | Create — ~45 entries (25 partners + 20 prospects) |
-| `src/data/flash-parking-locations.ts` | Edit — add ~15 new confirmed case study locations |
-| `src/pages/FlashParkingMap.tsx` | Major edit — tabs, stats, prospect panel, visual reorientation |
-
+| `src/data/flash-prospects.ts` | Add `stage` field, reclassify entries |
+| `src/pages/FlashParkingMap.tsx` | Remove confidence system, add stage/type filters, HQ-only default, toggle for deployed layer |
