@@ -825,7 +825,6 @@ export const FLASH_LOCATIONS: FlashLocation[] = [
     confidence: "possible",
     notes: "Known Platinum Parking market.",
   },
-];
 
   // ── Additional WallyPark Specific Addresses ──
   {
