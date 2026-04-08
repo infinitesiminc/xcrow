@@ -43,6 +43,12 @@ export const STAGE_CONFIG: Record<AccountStage, { label: string; color: string; 
     markerColor: "#ef4444",
     description: "Direct competitor to Flash in parking technology",
   },
+  hq: {
+    label: "Flash HQ",
+    color: "hsl(262, 83%, 58%)",
+    markerColor: "#7c3aed",
+    description: "Flash Parking headquarters",
+  },
 };
 
 export const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; icon: string }> = {
