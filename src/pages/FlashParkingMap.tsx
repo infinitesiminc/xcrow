@@ -205,7 +205,7 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
         {account && (
           <div className="p-3 space-y-2">
             {/* Location photo */}
-            <PlacePhoto name={account.name} lat={account.hqLat} lng={account.hqLng} />
+            <PlacePhoto name={account.name} lat={account.hqLat} lng={account.hqLng} hqCity={account.hqCity} />
 
             {/* Compact header row */}
             <div className="flex items-center gap-2.5">
