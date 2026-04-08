@@ -360,6 +360,8 @@ export default function FlashParkingMap() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
+  const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
 
 
   const toggleStage = useCallback((s: AccountStage) => {
