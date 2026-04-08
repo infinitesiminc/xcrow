@@ -449,6 +449,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     website: "https://abm.com",
     differentiator: "Division of ABM Industries; bundled facility + parking",
     currentVendor: "T2 Systems",
+  },
   {
     id: "acct-propark",
     name: "Propark Mobility",
