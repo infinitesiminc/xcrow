@@ -130,9 +130,18 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
         const data = await resp.json();
         const photoRef = data?.places?.[0]?.photos?.[0]?.name;
         if (photoRef && !cancelled) {
-          const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
-          photoCache[k] = photoUrl;
-          setUrl(photoUrl);
+          // Fetch the actual photo URL via the media endpoint
+          const mediaResp = await fetch(
+            `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&skipHttpRedirect=true&key=${API_KEY}`
+          );
+          const mediaData = await mediaResp.json();
+          const photoUrl = mediaData?.photoUri;
+          if (photoUrl) {
+            photoCache[k] = photoUrl;
+            setUrl(photoUrl);
+          } else {
+            photoCache[k] = null;
+          }
         } else {
           photoCache[k] = null;
         }
