@@ -147,6 +147,7 @@ function StatsBanner() {
   const activeCount = FLASH_ACCOUNTS.filter((a) => a.stage === "active").length;
   const targetCount = FLASH_ACCOUNTS.filter((a) => a.stage === "target").length;
   const whitespaceCount = FLASH_ACCOUNTS.filter((a) => a.stage === "whitespace").length;
+  const competitorCount = FLASH_ACCOUNTS.filter((a) => a.stage === "competitor").length;
   return (
     <div className="px-3 py-2 space-y-2">
       <div className="grid grid-cols-3 gap-1.5">
