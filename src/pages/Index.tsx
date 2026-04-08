@@ -220,10 +220,10 @@ export default function Index() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <motion.div {...fadeInView()} className="text-center mb-16">
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                Why Xcrow
+                Why Xcrow wins
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Outbound Without the Overhead
+                Your Competitors Use Apollo.<br /><span className="text-primary">You Use Xcrow.</span>
               </h2>
             </motion.div>
 
