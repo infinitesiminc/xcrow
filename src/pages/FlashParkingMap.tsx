@@ -89,13 +89,13 @@ interface AccountLead {
 }
 
 interface AccountLeadData {
-  persona?: string;
   leads: AccountLead[];
 }
 
-function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
+function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
   accountLeads: Record<string, AccountLeadData>; loadingLeads: Set<string>;
+  activityLog: Record<string, string[]>;
   onFindContacts: (account: FlashAccount) => void;
 }) {
   const isOpen = !!(account || site);
@@ -178,15 +178,21 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
                   </Button>
                 )}
                 {loadingLeads.has(account.id) && (
-                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Finding contacts…
+                  <div className="space-y-1.5 py-2">
+                    {(activityLog[account.id] || []).map((msg, i) => (
+                      <div key={i} className={`flex items-start gap-2 text-[11px] ${i === (activityLog[account.id]?.length ?? 1) - 1 ? "text-foreground" : "text-muted-foreground"}`}>
+                        {i === (activityLog[account.id]?.length ?? 1) - 1 ? (
+                          <Loader2 className="w-3 h-3 animate-spin shrink-0 mt-0.5" />
+                        ) : (
+                          <span className="w-3 h-3 shrink-0 mt-0.5 text-center text-[9px]">✓</span>
+                        )}
+                        <span>{msg}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 {accountLeads[account.id] && (
                   <div className="space-y-2">
-                    {accountLeads[account.id].persona && (
-                      <p className="text-[10px] text-muted-foreground italic">{accountLeads[account.id].persona}</p>
-                    )}
                     {accountLeads[account.id].leads.map((lead, i) => (
                       <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/40">
                         <span className="text-[10px] font-bold text-muted-foreground mt-0.5 shrink-0 w-4">{i + 1}</span>
@@ -362,6 +368,7 @@ export default function FlashParkingMap() {
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
+  const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
 
 
   const toggleStage = useCallback((s: AccountStage) => {
@@ -403,8 +410,15 @@ export default function FlashParkingMap() {
   const handleFindContacts = useCallback(async (account: FlashAccount) => {
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
     setLoadingLeads((prev) => new Set(prev).add(account.id));
+
+    const addLog = (msg: string) => {
+      setActivityLog((prev) => ({ ...prev, [account.id]: [...(prev[account.id] || []), msg] }));
+    };
+
     try {
       const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      addLog(`Analyzing ${account.name} account profile`);
+
       const vendorNote = account.currentVendor && account.currentVendor !== "Unknown"
         ? `Current parking technology vendor: ${account.currentVendor}. Frame the outreach as a competitive displacement opportunity.`
         : "No known incumbent vendor — this is a greenfield opportunity.";
@@ -420,61 +434,22 @@ export default function FlashParkingMap() {
 
       let content: string;
       if (account.accountType === "airport") {
-        content = `${FLASH_CONTEXT}
-
-Account: ${account.name} (${domain}) — a commercial airport with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.
-
-CRITICAL: Search ONLY within the airport authority/corporation that operates this airport — use domain "${domain}". Do NOT search broadly by city.
-
-Flash sells airports: cloud PARCS to replace legacy gate hardware, real-time occupancy & wayfinding, mobile pre-booking, EV charging infrastructure, and revenue analytics dashboards.
-
-Target these airport-specific titles (in priority order):
-1. Director/VP of Parking & Ground Transportation
-2. Chief Commercial/Revenue Officer
-3. Director of Landside Operations
-4. Airport Director/CEO (for smaller airports)
-5. VP of Facilities & Infrastructure
-
-Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: direct parking oversight, revenue responsibility, technology modernization mandate.`;
+        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a commercial airport with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nCRITICAL: Search ONLY within the airport authority/corporation that operates this airport — use domain "${domain}". Do NOT search broadly by city.\n\nFlash sells airports: cloud PARCS to replace legacy gate hardware, real-time occupancy & wayfinding, mobile pre-booking, EV charging infrastructure, and revenue analytics dashboards.\n\nTarget these airport-specific titles (in priority order):\n1. Director/VP of Parking & Ground Transportation\n2. Chief Commercial/Revenue Officer\n3. Director of Landside Operations\n4. Airport Director/CEO (for smaller airports)\n5. VP of Facilities & Infrastructure\n\nReturn the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: direct parking oversight, revenue responsibility, technology modernization mandate.`;
       } else if (account.accountType === "large_venue") {
-        content = `${FLASH_CONTEXT}
-
-Account: ${account.name} (${domain}) — a large venue operator in ${account.hqCity} with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}. Focus: ${account.focusArea}.
-
-Search within organization domain "${domain}" first, then broaden to the parent organization if needed.
-
-Flash sells venues: frictionless entry/exit (LPR, touchless), dynamic pricing, event-day surge management, mobile pre-booking, EV charging, and real-time occupancy dashboards.
-
-Target these venue-specific titles (in priority order):
-1. VP/Director of Parking Operations
-2. VP/Director of Facilities & Operations
-3. Chief Operating Officer
-4. VP of Guest Experience / Fan Experience
-5. Director of Revenue Operations / Commercial Strategy
-
-Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: parking P&L ownership, technology budget authority, guest experience mandate.`;
+        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a large venue operator in ${account.hqCity} with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}. Focus: ${account.focusArea}.\n\nSearch within organization domain "${domain}" first, then broaden to the parent organization if needed.\n\nFlash sells venues: frictionless entry/exit (LPR, touchless), dynamic pricing, event-day surge management, mobile pre-booking, EV charging, and real-time occupancy dashboards.\n\nTarget these venue-specific titles (in priority order):\n1. VP/Director of Parking Operations\n2. VP/Director of Facilities & Operations\n3. Chief Operating Officer\n4. VP of Guest Experience / Fan Experience\n5. Director of Revenue Operations / Commercial Strategy\n\nReturn the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: parking P&L ownership, technology budget authority, guest experience mandate.`;
       } else {
-        content = `${FLASH_CONTEXT}
-
-Account: ${account.name} (${domain}) — a fleet/multi-site parking operator in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}. Focus: ${account.focusArea}.
-
-Search within organization domain "${domain}".
-
-Flash sells operators: unified cloud PARCS across all locations, real-time revenue dashboards, mobile-first consumer experience, LPR & touchless lanes, EV charging network, and white-label booking.
-
-Target these operator-specific titles (in priority order):
-1. VP/SVP of Operations
-2. Chief Operating Officer / Chief Technology Officer
-3. VP of Technology / IT Director
-4. VP of Revenue Management / Commercial Strategy
-5. Regional VP / Director of Operations
-
-Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: multi-site technology decisions, operations P&L ownership, digital transformation initiatives.`;
+        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a fleet/multi-site parking operator in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}. Focus: ${account.focusArea}.\n\nSearch within organization domain "${domain}".\n\nFlash sells operators: unified cloud PARCS across all locations, real-time revenue dashboards, mobile-first consumer experience, LPR & touchless lanes, EV charging network, and white-label booking.\n\nTarget these operator-specific titles (in priority order):\n1. VP/SVP of Operations\n2. Chief Operating Officer / Chief Technology Officer\n3. VP of Technology / IT Director\n4. VP of Revenue Management / Commercial Strategy\n5. Regional VP / Director of Operations\n\nReturn the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: multi-site technology decisions, operations P&L ownership, digital transformation initiatives.`;
       }
+
+      await new Promise((r) => setTimeout(r, 800));
+      addLog(`Defining buyer persona for ${account.accountType === "airport" ? "airport authority" : account.accountType === "large_venue" ? "venue operator" : "fleet operator"}`);
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
+
+      await new Promise((r) => setTimeout(r, 600));
+      addLog(`Querying contact database for ${domain}`);
 
       const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
         method: "POST",
@@ -490,25 +465,29 @@ Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "
       const reader = resp.body?.getReader();
       if (!reader) throw new Error("No response body");
 
+      addLog("Matching seniority filters: Director, VP, C-Suite");
+
       const collectedLeads: any[] = [];
-      let personaText = "";
+      let gotLeads = false;
       await parseSSEStream(reader, {
-        onTextDelta: (chunk) => {
-          personaText += chunk;
-          setAccountLeads((prev) => ({ ...prev, [account.id]: { persona: personaText, leads: [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5) } }));
-        },
+        onTextDelta: () => {},
         onLeads: (leads) => {
+          if (!gotLeads) {
+            addLog(`Scoring ${leads.length} candidates by fit`);
+            gotLeads = true;
+          }
           collectedLeads.push(...leads);
           const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
-          setAccountLeads((prev) => ({ ...prev, [account.id]: { persona: personaText, leads: sorted } }));
+          setAccountLeads((prev) => ({ ...prev, [account.id]: { leads: sorted } }));
         },
         onDone: () => {
           const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
-          setAccountLeads((prev) => ({ ...prev, [account.id]: { persona: personaText, leads: sorted } }));
+          setAccountLeads((prev) => ({ ...prev, [account.id]: { leads: sorted } }));
         },
       });
     } catch (e) {
       console.error("Find contacts failed:", e);
+      addLog("Search failed — try again");
     } finally {
       setLoadingLeads((prev) => { const n = new Set(prev); n.delete(account.id); return n; });
     }
@@ -633,7 +612,7 @@ Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "
 
           {/* Detail slide-in panel */}
           <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail}
-            accountLeads={accountLeads} loadingLeads={loadingLeads} onFindContacts={handleFindContacts} />
+            accountLeads={accountLeads} loadingLeads={loadingLeads} activityLog={activityLog} onFindContacts={handleFindContacts} />
 
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
