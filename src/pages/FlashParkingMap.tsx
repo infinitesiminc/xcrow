@@ -184,14 +184,26 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
 }) {
   const isOpen = !!(account || site);
   return (
-    <div className={`absolute top-0 right-0 z-[1000] w-80 h-full transition-transform duration-300 ease-out ${
+    <div className={`absolute top-0 right-0 z-[1000] w-96 h-full transition-transform duration-300 ease-out ${
       isOpen ? "translate-x-0" : "translate-x-full"
     }`}>
       <div className="h-full bg-background/80 backdrop-blur-xl border-l border-border shadow-2xl overflow-y-auto">
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
-          <h3 className="font-semibold text-sm truncate pr-2">
-            {account ? `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}` : site?.name || "Details"}
-          </h3>
+          {(() => {
+            const displayName = account
+              ? `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}`
+              : site?.name || "Details";
+            const codeMatch = displayName.match(/\(([A-Z]{3})\)/);
+            const airportCode = codeMatch ? codeMatch[1] : null;
+            return (
+              <div className="min-w-0 pr-2">
+                <h3 className="font-bold text-base leading-tight">{displayName}</h3>
+                {airportCode && (
+                  <span className="text-xs font-mono text-muted-foreground">IATA: {airportCode}</span>
+                )}
+              </div>
+            );
+          })()}
           <button onClick={onClose}
             className="w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors shrink-0">
             <X className="w-4 h-4 text-muted-foreground" />
