@@ -101,12 +101,13 @@ interface AccountLeadData {
 const photoCache: Record<string, string | null> = {};
 
 function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number }) {
-  const [url, setUrl] = useState<string | null>(photoCache.get(`${lat},${lng}`) ?? null);
-  const [tried, setTried] = useState(photoCache.has(`${lat},${lng}`));
+  const key = `${lat},${lng}`;
+  const [url, setUrl] = useState<string | null>(photoCache[key] ?? null);
+  const [tried, setTried] = useState(key in photoCache);
 
   useEffect(() => {
-    const key = `${lat},${lng}`;
-    if (photoCache.has(key)) { setUrl(photoCache.get(key) ?? null); setTried(true); return; }
+    const k = `${lat},${lng}`;
+    if (k in photoCache) { setUrl(photoCache[k] ?? null); setTried(true); return; }
     let cancelled = false;
     (async () => {
       try {
@@ -130,13 +131,13 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
         const photoRef = data?.places?.[0]?.photos?.[0]?.name;
         if (photoRef && !cancelled) {
           const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
-          photoCache.set(key, photoUrl);
+          photoCache[k] = photoUrl;
           setUrl(photoUrl);
         } else {
-          photoCache.set(key, null);
+          photoCache[k] = null;
         }
       } catch {
-        photoCache.set(`${lat},${lng}`, null);
+        photoCache[`${lat},${lng}`] = null;
       }
       if (!cancelled) setTried(true);
     })();
