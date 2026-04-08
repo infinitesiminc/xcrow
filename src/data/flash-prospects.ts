@@ -476,7 +476,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -117.1611,
     website: "https://aceparking.com",
     differentiator: "Strong in hospitality & airport verticals",
-  },
+    currentVendor: "T2 Systems",
   {
     id: "acct-parking-spot",
     name: "The Parking Spot",
