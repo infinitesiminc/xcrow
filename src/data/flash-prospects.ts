@@ -1,5 +1,5 @@
 export type AccountType = "large_venue" | "fleet_operator" | "airport";
-export type AccountStage = "active" | "target" | "whitespace" | "competitor";
+export type AccountStage = "active" | "target" | "whitespace" | "competitor" | "hq";
 
 export interface FlashAccount {
   id: string;
@@ -43,6 +43,12 @@ export const STAGE_CONFIG: Record<AccountStage, { label: string; color: string; 
     markerColor: "#ef4444",
     description: "Direct competitor to Flash in parking technology",
   },
+  hq: {
+    label: "Flash HQ",
+    color: "hsl(262, 83%, 58%)",
+    markerColor: "#7c3aed",
+    description: "Flash Parking headquarters",
+  },
 };
 
 export const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; icon: string }> = {
@@ -68,8 +74,8 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-flash-hq",
     name: "Flash (HQ)",
-    accountType: "fleet_operator",
-    stage: "active",
+    accountType: "large_venue",
+    stage: "hq",
     estimatedSpaces: "N/A",
     facilityCount: "16,000+ locations",
     focusArea: "Cloud-based PARCS & EV Charging platform",

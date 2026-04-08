@@ -321,6 +321,7 @@ export default function FlashParkingMap() {
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return ALL_ACCOUNTS.filter((a) => {
+      if (a.stage === "hq") return true; // always show Flash HQ
       if (!stageFilter.has(a.stage)) return false;
       if (!typeFilter.has(a.accountType)) return false;
       if (q) {
