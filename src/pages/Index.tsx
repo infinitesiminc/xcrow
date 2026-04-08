@@ -443,23 +443,23 @@ export default function Index() {
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 sm:py-24 text-center">
             <motion.div {...fadeInView()}>
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                Ready?
+                Still reading?
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase mb-5">
-                Your First Leads Are
+                Your Competitor Is Still
                 <br />
-                <span className="text-primary">One URL Away</span>
+                <span className="text-primary">Building Apollo Filters.</span>
               </h2>
               <p className="text-muted-foreground mb-10 max-w-md mx-auto text-lg">
-                Stop guessing who to sell to. Let AI do the research.
+                You could have leads by now. Paste a URL and find out.
               </p>
               <Button
                 size="lg"
                 className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl"
                 onClick={scrollToInput}
               >
-                <ArrowRight className="w-5 h-5" />
-                Start Hunting — It's Free
+                <img src={logoCrow} alt="" className="w-6 h-6 object-contain brightness-0 invert" />
+                Hunt Leads — It's Free
               </Button>
             </motion.div>
           </div>
