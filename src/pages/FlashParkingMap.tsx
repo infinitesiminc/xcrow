@@ -255,6 +255,9 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
         <span className="text-muted-foreground"><span className="font-medium text-foreground">{account.estimatedSpaces}</span> spaces</span>
         <span className="text-muted-foreground">{account.facilityCount}</span>
       </div>
+      {account.currentVendor && (
+        <p className="text-[10px] text-destructive mt-0.5">⚔ {account.currentVendor}</p>
+      )}
       <p className="text-[10px] text-muted-foreground mt-0.5">{account.differentiator}</p>
     </button>
   );
