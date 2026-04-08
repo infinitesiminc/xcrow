@@ -101,13 +101,13 @@ interface AccountLeadData {
 interface PlaceData { photoUrl: string | null; address: string | null }
 const placeCache: Record<string, PlaceData> = {};
 
-async function searchPlacePhoto(query: string, lat: number, lng: number): Promise<string | null> {
+async function searchPlace(query: string, lat: number, lng: number): Promise<{ photoUrl: string | null; address: string | null }> {
   const resp = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": API_KEY,
-      "X-Goog-FieldMask": "places.photos",
+      "X-Goog-FieldMask": "places.photos,places.formattedAddress",
     },
     body: JSON.stringify({
       textQuery: query,
@@ -116,21 +116,21 @@ async function searchPlacePhoto(query: string, lat: number, lng: number): Promis
     }),
   });
   const data = await resp.json();
-  const photoRef = data?.places?.[0]?.photos?.[0]?.name;
-  if (photoRef) {
-    return `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
-  }
-  return null;
+  const place = data?.places?.[0];
+  const photoRef = place?.photos?.[0]?.name;
+  const photoUrl = photoRef ? `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}` : null;
+  const address = place?.formattedAddress ?? null;
+  return { photoUrl, address };
 }
 
-function PlacePhoto({ name, lat, lng, hqCity }: { name: string; lat: number; lng: number; hqCity?: string }) {
+function PlaceInfo({ name, lat, lng, hqCity, children }: { name: string; lat: number; lng: number; hqCity?: string; children: (data: PlaceData) => React.ReactNode }) {
   const key = `${lat},${lng}`;
-  const [url, setUrl] = useState<string | null>(photoCache[key] ?? null);
-  const [tried, setTried] = useState(key in photoCache);
+  const [data, setData] = useState<PlaceData>(placeCache[key] ?? { photoUrl: null, address: null });
+  const [tried, setTried] = useState(key in placeCache);
 
   useEffect(() => {
     const k = `${lat},${lng}`;
-    if (k in photoCache) { setUrl(photoCache[k] ?? null); setTried(true); return; }
+    if (k in placeCache) { setData(placeCache[k]); setTried(true); return; }
     let cancelled = false;
 
     const cleanName = name
@@ -143,30 +143,29 @@ function PlacePhoto({ name, lat, lng, hqCity }: { name: string; lat: number; lng
 
     (async () => {
       try {
-        // Try exact name first
-        let photoUrl = await searchPlacePhoto(cleanName, lat, lng);
+        let result = await searchPlace(cleanName, lat, lng);
 
-        // Fallback: try with "parking" appended
-        if (!photoUrl && !cancelled) {
-          photoUrl = await searchPlacePhoto(`${cleanName} parking`, lat, lng);
+        if (!result.photoUrl && !cancelled) {
+          const r2 = await searchPlace(`${cleanName} parking`, lat, lng);
+          result = { photoUrl: r2.photoUrl, address: result.address || r2.address };
         }
 
-        // Fallback: try city name + "parking"
-        if (!photoUrl && !cancelled && hqCity) {
-          photoUrl = await searchPlacePhoto(`${hqCity} parking`, lat, lng);
+        if (!result.photoUrl && !cancelled && hqCity) {
+          const r3 = await searchPlace(`${hqCity} parking`, lat, lng);
+          result = { photoUrl: r3.photoUrl, address: result.address || r3.address };
         }
 
-        // Fallback: try just the location landmark
-        if (!photoUrl && !cancelled && hqCity) {
-          photoUrl = await searchPlacePhoto(hqCity, lat, lng);
+        if (!result.photoUrl && !cancelled && hqCity) {
+          const r4 = await searchPlace(hqCity, lat, lng);
+          result = { photoUrl: r4.photoUrl, address: result.address || r4.address };
         }
 
         if (!cancelled) {
-          photoCache[k] = photoUrl;
-          setUrl(photoUrl);
+          placeCache[k] = result;
+          setData(result);
         }
       } catch {
-        photoCache[`${lat},${lng}`] = null;
+        placeCache[`${lat},${lng}`] = { photoUrl: null, address: null };
       }
       if (!cancelled) setTried(true);
     })();
@@ -174,12 +173,7 @@ function PlacePhoto({ name, lat, lng, hqCity }: { name: string; lat: number; lng
   }, [name, lat, lng, hqCity]);
 
   if (!tried) return <div className="w-full h-32 rounded-lg bg-muted animate-pulse" />;
-  if (!url) return null;
-  return (
-    <div className="w-full h-32 rounded-lg overflow-hidden">
-      <img src={url} alt={name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-    </div>
-  );
+  return <>{children(data)}</>;
 }
 
 function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
