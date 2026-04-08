@@ -21,6 +21,7 @@ const COMPARE = [
   { label: "vs Apollo", to: "/vs/apollo" },
   { label: "vs Clay", to: "/vs/clay" },
   { label: "vs ZoomInfo", to: "/vs/zoominfo" },
+  { label: "vs LinkedIn", to: "/vs/linkedin" },
 ];
 
 const LEGAL = [
