@@ -406,15 +406,32 @@ export default function FlashParkingMap() {
     try {
       const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
       const content = `You are prospecting ${account.name} (${domain}), a ${account.accountType === "airport" ? "commercial airport" : account.focusArea} account with ${account.estimatedSpaces} parking spaces. ${account.currentVendor ? `They currently use ${account.currentVendor}.` : ""} First define the ideal buyer persona for selling parking management technology to this account. Then find the top 5 decision-makers matching that persona. Return leads ranked by fit score (0-100) with a "reason" field and a "score" field.`;
-      const { data, error } = await supabase.functions.invoke("leadgen-chat", {
-        body: { website: domain, messages: [{ role: "user", content }] },
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+          "apikey": supabaseKey,
+        },
+        body: JSON.stringify({ website: domain, messages: [{ role: "user", content }] }),
       });
-      if (error) throw error;
-      const stream = data as ReadableStream;
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const reader = resp.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
       const collectedLeads: any[] = [];
       let personaText = "";
-      await parseSSEStream(stream.getReader(), {
-        onTextDelta: (chunk) => { personaText += chunk; },
+      await parseSSEStream(reader, {
+        onTextDelta: (chunk) => {
+          personaText += chunk;
+          setAccountLeads((prev) => ({ ...prev, [account.id]: { persona: personaText, leads: [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5) } }));
+        },
         onLeads: (leads) => {
           collectedLeads.push(...leads);
           const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
