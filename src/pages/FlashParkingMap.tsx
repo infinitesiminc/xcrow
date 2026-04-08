@@ -382,36 +382,19 @@ export default function FlashParkingMap() {
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
-          <StatsBanner />
-
-          {/* Stage filters */}
+          <StatsRow />
           <div className="px-3 pb-1.5">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Stage</p>
             <div className="flex flex-wrap gap-1">
               {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
                 <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} />
               ))}
             </div>
           </div>
-
-          {/* Type filters */}
-          <div className="px-3 pb-2">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Type</p>
-            <div className="flex gap-1">
+          <div className="px-3 pb-1.5">
+            <div className="flex flex-wrap gap-1">
               {(["large_venue", "fleet_operator", "airport"] as AccountType[]).map((t) => (
                 <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} />
               ))}
-            </div>
-          </div>
-
-          {/* Deployed layer toggle */}
-          <div className="px-3 pb-2">
-            <div className="flex items-center justify-between py-1.5 px-2 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-[11px] text-muted-foreground">Show deployed sites ({FLASH_LOCATIONS.length})</span>
-              </div>
-              <Switch checked={showDeployed} onCheckedChange={setShowDeployed} className="scale-75" />
             </div>
           </div>
         </CollapsibleContent>
