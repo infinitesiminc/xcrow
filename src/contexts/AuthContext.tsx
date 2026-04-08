@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import AuthModal from "@/components/AuthModal";
@@ -63,6 +64,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -239,6 +241,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setPlan("free");
     setSubscriptionEnd(null);
     setSchoolName(null);
+    navigate("/", { replace: true });
   };
 
   const openAuthModal = useCallback(() => {
