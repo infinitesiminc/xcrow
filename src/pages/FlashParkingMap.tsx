@@ -197,33 +197,24 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
 }
 
 /* ── Map content ── */
-function MapContent({ accounts, selectedAccountId, onSelectAccount, onCloseAccount,
-  showDeployed, deployedLocations, selectedSiteId, onSelectSite, onCloseSite }: {
-  accounts: FlashAccount[]; selectedAccountId: string | null;
-  onSelectAccount: (a: FlashAccount) => void; onCloseAccount: () => void;
+function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite }: {
+  accounts: FlashAccount[];
+  onSelectAccount: (a: FlashAccount) => void;
   showDeployed: boolean; deployedLocations: FlashLocation[];
-  selectedSiteId: string | null; onSelectSite: (l: FlashLocation) => void; onCloseSite: () => void;
+  onSelectSite: (l: FlashLocation) => void;
 }) {
-  const selectedAccount = accounts.find((a) => a.id === selectedAccountId);
-  const selectedSite = deployedLocations.find((l) => l.id === selectedSiteId);
-
   return (
     <>
-      {/* Deployed sites layer */}
       {showDeployed && deployedLocations.map((loc) => (
         <AdvancedMarker key={loc.id} position={{ lat: loc.lat, lng: loc.lng }} onClick={() => onSelectSite(loc)}>
           <DeployedSitePin />
         </AdvancedMarker>
       ))}
-      {selectedSite && <DeployedSiteInfoWindow location={selectedSite} onClose={onCloseSite} />}
-
-      {/* Account HQ pins */}
       {accounts.map((acct) => (
         <AdvancedMarker key={acct.id} position={{ lat: acct.hqLat, lng: acct.hqLng }} onClick={() => onSelectAccount(acct)}>
           <AccountPin stage={acct.stage} accountType={acct.accountType} />
         </AdvancedMarker>
       ))}
-      {selectedAccount && <AccountInfoWindow account={selectedAccount} onClose={onCloseAccount} />}
     </>
   );
 }
