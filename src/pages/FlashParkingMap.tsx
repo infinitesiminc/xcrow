@@ -59,13 +59,7 @@ function AccountPin({ account }: { account: FlashAccount }) {
         className="w-9 h-9 rounded-full border-[3px] border-white shadow-lg transition-all group-hover:scale-125 flex items-center justify-center"
         style={{ backgroundColor: cfg.markerColor }}
       >
-        {account.stage === "competitor" ? (
-          <Swords className="w-4 h-4 text-white" />
-        ) : account.accountType === "large_venue" ? (
-          <Building2 className="w-4 h-4 text-white" />
-        ) : (
-          <Grid3X3 className="w-4 h-4 text-white" />
-        )}
+        <AccountIcon account={account} className="w-4 h-4 text-white" />
       </div>
     </div>
   );
