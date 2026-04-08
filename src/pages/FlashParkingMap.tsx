@@ -97,6 +97,61 @@ interface AccountLeadData {
   leads: AccountLead[];
 }
 
+/* ── Place photo component ── */
+const photoCache = new Map<string, string | null>();
+
+function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number }) {
+  const [url, setUrl] = useState<string | null>(photoCache.get(`${lat},${lng}`) ?? null);
+  const [tried, setTried] = useState(photoCache.has(`${lat},${lng}`));
+
+  useEffect(() => {
+    const key = `${lat},${lng}`;
+    if (photoCache.has(key)) { setUrl(photoCache.get(key) ?? null); setTried(true); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const resp = await fetch(
+          `https://places.googleapis.com/v1/places:searchText`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Goog-Api-Key": API_KEY,
+              "X-Goog-FieldMask": "places.photos",
+            },
+            body: JSON.stringify({
+              textQuery: name,
+              locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 2000 } },
+              maxResultCount: 1,
+            }),
+          }
+        );
+        const data = await resp.json();
+        const photoRef = data?.places?.[0]?.photos?.[0]?.name;
+        if (photoRef && !cancelled) {
+          const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
+          photoCache.set(key, photoUrl);
+          setUrl(photoUrl);
+        } else {
+          photoCache.set(key, null);
+        }
+      } catch {
+        photoCache.set(`${lat},${lng}`, null);
+      }
+      if (!cancelled) setTried(true);
+    })();
+    return () => { cancelled = true; };
+  }, [name, lat, lng]);
+
+  if (!tried) return <div className="w-full h-32 rounded-lg bg-muted animate-pulse" />;
+  if (!url) return null;
+  return (
+    <div className="w-full h-32 rounded-lg overflow-hidden">
+      <img src={url} alt={name} className="w-full h-full object-cover" />
+    </div>
+  );
+}
+
 function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
   accountLeads: Record<string, AccountLeadData>; loadingLeads: Set<string>;
