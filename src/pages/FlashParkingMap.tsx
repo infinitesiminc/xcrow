@@ -22,6 +22,9 @@ import {
   type AccountStage,
   type AccountType,
 } from "@/data/flash-prospects";
+import { FLASH_AIRPORT_ACCOUNTS } from "@/data/flash-airports";
+
+const ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKesJxuvh-sKL1z_gCj371z0";
 const MAP_ID = "flash-parking-map";
@@ -166,10 +169,10 @@ function DetailPanel({ account, site, onClose }: {
 }
 /* ── Stats Banner ── */
 function StatsBanner() {
-  const activeCount = FLASH_ACCOUNTS.filter((a) => a.stage === "active").length;
-  const targetCount = FLASH_ACCOUNTS.filter((a) => a.stage === "target").length;
-  const whitespaceCount = FLASH_ACCOUNTS.filter((a) => a.stage === "whitespace").length;
-  const competitorCount = FLASH_ACCOUNTS.filter((a) => a.stage === "competitor").length;
+  const activeCount = ALL_ACCOUNTS.filter((a) => a.stage === "active").length;
+  const targetCount = ALL_ACCOUNTS.filter((a) => a.stage === "target").length;
+  const whitespaceCount = ALL_ACCOUNTS.filter((a) => a.stage === "whitespace").length;
+  const competitorCount = ALL_ACCOUNTS.filter((a) => a.stage === "competitor").length;
   return (
     <div className="px-3 py-2 space-y-2">
       <div className="grid grid-cols-3 gap-1.5">
@@ -182,7 +185,7 @@ function StatsBanner() {
           <p className="text-[9px] text-muted-foreground leading-tight">Network</p>
         </div>
         <div className="bg-muted/50 rounded-lg p-2 text-center">
-          <p className="text-base font-bold text-foreground">{FLASH_ACCOUNTS.length}</p>
+          <p className="text-base font-bold text-foreground">{ALL_ACCOUNTS.length}</p>
           <p className="text-[9px] text-muted-foreground leading-tight">Accounts</p>
         </div>
       </div>
@@ -199,7 +202,7 @@ function StatsBanner() {
 /* ── Stage filter toggle ── */
 function StageToggle({ stage, active, onClick }: { stage: AccountStage; active: boolean; onClick: () => void }) {
   const cfg = STAGE_CONFIG[stage];
-  const count = FLASH_ACCOUNTS.filter((a) => a.stage === stage).length;
+  const count = ALL_ACCOUNTS.filter((a) => a.stage === stage).length;
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
@@ -214,7 +217,7 @@ function StageToggle({ stage, active, onClick }: { stage: AccountStage; active: 
 
 /* ── Account type filter ── */
 function TypeToggle({ type, active, onClick }: { type: AccountType; active: boolean; onClick: () => void }) {
-  const count = FLASH_ACCOUNTS.filter((a) => a.accountType === type).length;
+  const count = ALL_ACCOUNTS.filter((a) => a.accountType === type).length;
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
@@ -308,7 +311,7 @@ export default function FlashParkingMap() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return FLASH_ACCOUNTS.filter((a) => {
+    return ALL_ACCOUNTS.filter((a) => {
       if (!stageFilter.has(a.stage)) return false;
       if (!typeFilter.has(a.accountType)) return false;
       if (q) {
@@ -334,7 +337,7 @@ export default function FlashParkingMap() {
     setSelectedSiteId(null);
   }, []);
 
-  const selectedAccount = useMemo(() => FLASH_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
+  const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
 
   if (!API_KEY) {
