@@ -15,8 +15,8 @@ import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import apolloComplexUi from "@/assets/apollo-complex-ui.png";
 import {
-  Globe, Sparkles, ArrowRight,
-  Search, Brain, ListChecks, Send,
+  Globe, ArrowRight,
+  Brain, ListChecks, Send,
   CheckCircle2, XCircle, Zap, Shield, BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,33 +30,22 @@ const MARQUEE_ROWS = [
 ];
 
 const STEPS = [
-  { icon: Globe, title: "Paste a website", desc: "Drop any company URL. Our AI scrapes and analyzes the business in seconds." },
-  { icon: Brain, title: "AI maps your prospects", desc: "Verticals, personas, and decision-makers — an entire targeting tree, automatically." },
-  { icon: ListChecks, title: "Get scored leads", desc: "Real people with verified LinkedIn profiles, fit scores, and recommendation reasons." },
-  { icon: Send, title: "Send outreach", desc: "Personalized emails drafted per lead. Track opens, replies, and manage your pipeline." },
+  { icon: Globe, title: "Paste a website", desc: "Any company URL. That's literally all you do." },
+  { icon: Brain, title: "AI does the thinking", desc: "Markets, personas, decision-makers — mapped in seconds, not days." },
+  { icon: ListChecks, title: "Get real leads", desc: "Verified people with emails, LinkedIn profiles, and fit scores. Not a data dump." },
+  { icon: Send, title: "Hit send", desc: "AI-drafted outreach per lead. Copy, paste, close." },
 ];
 
 const STATS = [
-  { value: "60s", label: "From URL to leads" },
-  { value: "0", label: "GTM expertise needed" },
-  { value: "100%", label: "Verified profiles" },
-];
-
-const COMPARISONS = [
-  { feature: "Zero GTM knowledge needed", xcrow: true, others: false },
-  { feature: "One URL → full prospect map", xcrow: true, others: false },
-  { feature: "AI-analyzed company DNA", xcrow: true, others: false },
-  { feature: "Verified LinkedIn profiles", xcrow: true, others: true },
-  { feature: "Per-lead fit score + reason", xcrow: true, others: false },
-  { feature: "Built-in outreach drafts", xcrow: true, others: false },
-  { feature: "Massive contact database", xcrow: false, others: true },
-  { feature: "Complex workflow builder", xcrow: false, others: true },
+  { value: "$49", label: "vs. $120+ on LinkedIn" },
+  { value: "500", label: "Leads with emails" },
+  { value: "10s", label: "To your first lead" },
 ];
 
 const VALUE_PROPS = [
-  { icon: Zap, title: "Instant pipeline", desc: "No manual research. AI builds your entire prospect list from a single URL." },
-  { icon: Shield, title: "Verified data only", desc: "Every lead comes from Apollo with real LinkedIn profiles — zero hallucinated contacts." },
-  { icon: BarChart3, title: "Smart scoring", desc: "AI scores each lead on fit, seniority, and buying signals so you focus on the best." },
+  { icon: Zap, title: "No SDR needed", desc: "Apollo needs a trained operator. LinkedIn needs a Sales Navigator license. Xcrow needs a URL." },
+  { icon: Shield, title: "Real contacts only", desc: "Every lead has a verified email and LinkedIn profile. Zero fakes. Zero guessing." },
+  { icon: BarChart3, title: "AI does the filtering", desc: "Other tools give you 10,000 contacts and say 'good luck.' We give you the 5 that matter." },
 ];
 
 /* ── animation helpers ── */
@@ -106,8 +95,8 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — FASTEST LEAD GEN MACHINE"
-        description="Enter one website. Get a full prospect map, qualified decision-makers, and outreach-ready leads — in seconds. No GTM expertise required."
+        title="Xcrow — The $49 Sales Team"
+        description="Paste a URL. Get 5 ready-to-email decision-makers in 10 seconds. Apollo charges $99 for complexity. LinkedIn charges $120 for 50 InMails. We charge $49 for 500 leads with emails."
         path="/"
       />
 
@@ -133,17 +122,17 @@ export default function Index() {
                 {...fadeUp(0)}
                 className="text-primary text-sm font-semibold tracking-[0.2em] uppercase mb-6"
               >
-                FASTEST LEAD GEN MACHINE
+                THE $49 SALES TEAM
               </motion.p>
 
-              {/* Headline — Gong style: big uppercase with accent color */}
+              {/* Headline */}
               <motion.h1
                 {...fadeUp(0.1)}
                 className="text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] font-extrabold text-foreground leading-[1.05] tracking-[-0.02em] uppercase mb-6"
               >
-                One Website.
+                Paste a URL.
                 <br />
-                <span className="text-primary">Perfect Leads.</span>
+                <span className="text-primary">Skip the SDR.</span>
               </motion.h1>
 
               {/* Subheadline */}
@@ -151,7 +140,9 @@ export default function Index() {
                 {...fadeUp(0.2)}
                 className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
               >
-                Get accurate B2B leads that fit your Ideal Customer Profile in 10 seconds.
+                Other tools give you a database and say <span className="text-foreground font-semibold">"figure it out."</span>
+                <br />
+                We give you <span className="text-primary font-semibold">5 ready-to-email decision-makers in 10 seconds.</span>
               </motion.p>
 
               {/* CTA Input */}
@@ -186,7 +177,7 @@ export default function Index() {
               </motion.form>
 
               <motion.p {...fadeUp(0.4)} className="text-sm text-muted-foreground/50 mt-5">
-                Free to start · No credit card · Results in 60 seconds
+                Free to start · No credit card · No sales expertise needed
               </motion.p>
             </div>
 
@@ -229,10 +220,10 @@ export default function Index() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <motion.div {...fadeInView()} className="text-center mb-16">
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                Why Xcrow
+                Why Xcrow wins
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Outbound Without the Overhead
+                Your Competitors Use Apollo.<br /><span className="text-primary">You Use Xcrow.</span>
               </h2>
             </motion.div>
 
@@ -261,13 +252,13 @@ export default function Index() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <motion.div {...fadeInView()} className="text-center mb-16">
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                How it works
+                Dead simple
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                From URL to Pipeline in 4 Steps
+                Your SDR Takes a Week.<br /><span className="text-primary">Xcrow Takes 10 Seconds.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                No spreadsheets. No guesswork. No GTM expertise required.
+                No spreadsheets. No filters. No training. No hiring.
               </p>
             </motion.div>
 
@@ -302,11 +293,11 @@ export default function Index() {
                 Xcrow vs. Apollo
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Skip the Complexity
+                240 Million Contacts.<br /><span className="text-primary">Good Luck Finding 5 That Matter.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                Apollo gives you 240 million contacts and expects you to figure it out.
-                We give you the <span className="text-foreground font-semibold">right 10</span>.
+                Apollo gives you a database the size of a phonebook and charges you $99/mo to search it yourself.
+                We give you the <span className="text-foreground font-semibold">right people, ready to email, in 10 seconds</span>.
               </p>
             </motion.div>
 
@@ -329,10 +320,11 @@ export default function Index() {
                     <p className="text-xs text-muted-foreground mt-1">You need GTM expertise just to get started.</p>
                   </div>
                 </div>
-                <ul className="space-y-2 text-sm text-muted-foreground pl-1">
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Requires GTM expertise to build searches</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Manual filter configuration for every search</li>
+                 <ul className="space-y-2 text-sm text-muted-foreground pl-1">
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> $99/mo and you still do all the work</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> 15+ filters you need GTM training to use</li>
                   <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No fit scoring — just raw contact dumps</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Need an SDR just to operate the tool</li>
                 </ul>
               </div>
 
@@ -354,9 +346,10 @@ export default function Index() {
                   </div>
                 </div>
                 <ul className="space-y-2 text-sm text-foreground pl-1">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Zero GTM knowledge needed</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI builds your targeting automatically</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Every lead scored with fit reason</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Paste a URL. That's the whole process.</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI finds your market, you don't</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Every lead scored + email drafted</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> $49/mo. No SDR salary required.</li>
                 </ul>
               </div>
             </motion.div>
@@ -371,11 +364,11 @@ export default function Index() {
                 Xcrow vs. LinkedIn Sales Navigator
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Stop Overpaying for InMail
+                $120/mo for 50 InMails.<br /><span className="text-primary">$49/mo for 500 Leads With Emails.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                LinkedIn gives you <span className="text-foreground font-semibold">50 InMails/month</span> for $120+/mo.
-                We give you <span className="text-primary font-semibold">500 leads with direct emails</span> for $49/mo.
+                LinkedIn charges you <span className="text-foreground font-semibold">$2.40 per InMail</span> that might get ignored.
+                We give you <span className="text-primary font-semibold">direct email addresses</span> you own forever.
               </p>
             </motion.div>
 
@@ -402,12 +395,12 @@ export default function Index() {
                 </div>
                 <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 text-center">
                   <p className="text-3xl font-extrabold text-destructive">50</p>
-                  <p className="text-sm text-muted-foreground mt-1">InMails per month — <span className="text-destructive font-medium">that's it</span></p>
+                  <p className="text-sm text-muted-foreground mt-1">InMails per month — <span className="text-destructive font-medium">and they expire</span></p>
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> 50 InMails/mo — burns through fast</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No direct email addresses</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Starts at $120/mo per seat</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> $2.40 per message that might get ignored</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No email addresses — ever</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> You don't own the data. LinkedIn does.</li>
                 </ul>
               </div>
 
@@ -419,27 +412,28 @@ export default function Index() {
                 <div className="flex items-center justify-between border-b border-border/50 pb-4">
                   <div>
                     <p className="text-sm font-semibold text-foreground">Pro Plan</p>
-                    <p className="text-xs text-muted-foreground">Everything you need</p>
+                    <p className="text-xs text-muted-foreground">Everything. No limits on outreach.</p>
                   </div>
                   <p className="text-2xl font-extrabold text-primary">$49<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
                 </div>
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
                   <p className="text-3xl font-extrabold text-primary">500</p>
-                  <p className="text-sm text-muted-foreground mt-1">Leads with <span className="text-primary font-medium">direct email addresses</span></p>
+                  <p className="text-sm text-muted-foreground mt-1">Leads with <span className="text-primary font-medium">direct email addresses you keep</span></p>
                 </div>
                 <ul className="space-y-2 text-sm text-foreground">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 500 verified leads with emails</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI-drafted outreach per lead</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 10x more contacts, 60% cheaper</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 10× more contacts than LinkedIn</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Real email addresses, not InMails</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI writes the outreach for you</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> 60% cheaper. 10× the reach.</li>
                 </ul>
               </div>
             </motion.div>
 
-            {/* Bottom callout */}
             <motion.div {...fadeInView(0.2)} className="mt-10 text-center">
-              <p className="text-muted-foreground text-sm">
-                That's <span className="text-primary font-bold">10× the reach</span> at <span className="text-primary font-bold">60% less cost</span>. No LinkedIn subscription needed.
+              <p className="text-foreground font-bold text-lg">
+                LinkedIn: <span className="text-destructive">$120/mo → 50 messages</span> · Xcrow: <span className="text-primary">$49/mo → 500 leads with emails</span>
               </p>
+              <p className="text-muted-foreground text-sm mt-2">Do the math. Then paste a URL.</p>
             </motion.div>
           </div>
         </section>
@@ -449,23 +443,23 @@ export default function Index() {
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 sm:py-24 text-center">
             <motion.div {...fadeInView()}>
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                Ready?
+                Still reading?
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase mb-5">
-                Your First Leads Are
+                Your Competitor Is Still
                 <br />
-                <span className="text-primary">One URL Away</span>
+                <span className="text-primary">Building Apollo Filters.</span>
               </h2>
               <p className="text-muted-foreground mb-10 max-w-md mx-auto text-lg">
-                Stop guessing who to sell to. Let AI do the research.
+                You could have leads by now. Paste a URL and find out.
               </p>
               <Button
                 size="lg"
                 className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl"
                 onClick={scrollToInput}
               >
-                <ArrowRight className="w-5 h-5" />
-                Start Hunting — It's Free
+                <img src={logoCrow} alt="" className="w-6 h-6 object-contain brightness-0 invert" />
+                Hunt Leads — It's Free
               </Button>
             </motion.div>
           </div>
