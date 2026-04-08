@@ -133,6 +133,11 @@ const TOOLS = [
             items: { type: "string" },
             description: "Target industries to search within",
           },
+          organization_domains: {
+            type: "array",
+            items: { type: "string" },
+            description: "Specific company domains to search within (e.g. ['flyportland.com']). Use when prospecting a specific organization.",
+          },
           employee_ranges: {
             type: "array",
             items: { type: "string" },
