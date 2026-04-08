@@ -382,7 +382,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 
 /* ── Main page ── */
 export default function FlashParkingMap() {
-  const { isSuperAdmin, loading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
