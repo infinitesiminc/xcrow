@@ -442,8 +442,7 @@ export default function FlashParkingMap() {
 
   return (
     <>
-      <Navbar />
-      <div className="flex h-[calc(100vh-64px)] w-full">
+      <div className="flex h-screen w-full">
         {!isMobile && (
           <div className="w-80 border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
             {sidebar}
