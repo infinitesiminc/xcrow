@@ -178,15 +178,21 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
                   </Button>
                 )}
                 {loadingLeads.has(account.id) && (
-                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Finding contacts…
+                  <div className="space-y-1.5 py-2">
+                    {(activityLog[account.id] || []).map((msg, i) => (
+                      <div key={i} className={`flex items-start gap-2 text-[11px] ${i === (activityLog[account.id]?.length ?? 1) - 1 ? "text-foreground" : "text-muted-foreground"}`}>
+                        {i === (activityLog[account.id]?.length ?? 1) - 1 ? (
+                          <Loader2 className="w-3 h-3 animate-spin shrink-0 mt-0.5" />
+                        ) : (
+                          <span className="w-3 h-3 shrink-0 mt-0.5 text-center text-[9px]">✓</span>
+                        )}
+                        <span>{msg}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 {accountLeads[account.id] && (
                   <div className="space-y-2">
-                    {accountLeads[account.id].persona && (
-                      <p className="text-[10px] text-muted-foreground italic">{accountLeads[account.id].persona}</p>
-                    )}
                     {accountLeads[account.id].leads.map((lead, i) => (
                       <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/40">
                         <span className="text-[10px] font-bold text-muted-foreground mt-0.5 shrink-0 w-4">{i + 1}</span>
