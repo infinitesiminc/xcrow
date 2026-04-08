@@ -368,6 +368,7 @@ export default function FlashParkingMap() {
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
+  const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
 
 
   const toggleStage = useCallback((s: AccountStage) => {
