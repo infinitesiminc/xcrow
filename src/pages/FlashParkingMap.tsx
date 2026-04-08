@@ -97,8 +97,9 @@ interface AccountLeadData {
   leads: AccountLead[];
 }
 
-/* ── Place photo component ── */
-const photoCache: Record<string, string | null> = {};
+/* ── Place photo & address component ── */
+interface PlaceData { photoUrl: string | null; address: string | null }
+const placeCache: Record<string, PlaceData> = {};
 
 async function searchPlacePhoto(query: string, lat: number, lng: number): Promise<string | null> {
   const resp = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
