@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -53,58 +53,60 @@ function DeployedSitePin() {
   );
 }
 
-/* ── Slide-in Detail Panel ── */
+/* ── Full-height Slide-in Detail Panel ── */
 function DetailPanel({ account, site, onClose }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
 }) {
   const isOpen = !!(account || site);
   return (
-    <div className={`absolute top-3 right-3 z-[1000] w-80 max-h-[calc(100%-24px)] transition-all duration-300 ease-out ${
-      isOpen ? "translate-x-0 opacity-100" : "translate-x-[110%] opacity-0 pointer-events-none"
+    <div className={`absolute top-0 right-0 z-[1000] w-80 h-full transition-transform duration-300 ease-out ${
+      isOpen ? "translate-x-0" : "translate-x-full"
     }`}>
-      <div className="bg-background/95 backdrop-blur-lg border border-border rounded-xl shadow-2xl overflow-hidden">
-        <button onClick={onClose}
-          className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors">
-          <X className="w-4 h-4 text-muted-foreground" />
-        </button>
+      <div className="h-full bg-background border-l border-border shadow-2xl overflow-y-auto">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
+          <h3 className="font-semibold text-sm truncate pr-2">
+            {account?.name || site?.name || "Details"}
+          </h3>
+          <button onClick={onClose}
+            className="w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors shrink-0">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
         {account && (
-          <div className="p-4 space-y-3">
-            <div className="pr-8">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                  {account.accountType === "large_venue" ? <Building2 className="w-4 h-4 text-white" /> : <Grid3X3 className="w-4 h-4 text-white" />}
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm leading-tight">{account.name}</h3>
-                  <p className="text-[11px] text-muted-foreground">{account.hqCity}</p>
-                </div>
+          <div className="p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+                {account.accountType === "large_venue" ? <Building2 className="w-5 h-5 text-white" /> : <Grid3X3 className="w-5 h-5 text-white" />}
               </div>
-              <span className="inline-block text-[10px] px-2 py-0.5 rounded-full font-medium text-white mt-1"
-                style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                {STAGE_CONFIG[account.stage].label}
-              </span>
+              <div>
+                <p className="text-xs text-muted-foreground">{account.hqCity}</p>
+                <span className="inline-block text-[10px] px-2 py-0.5 rounded-full font-medium text-white mt-1"
+                  style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+                  {STAGE_CONFIG[account.stage].label}
+                </span>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-muted/40 rounded-lg p-2.5">
+              <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Est. Spaces</p>
-                <p className="font-bold text-lg leading-tight mt-0.5">{account.estimatedSpaces}</p>
+                <p className="font-bold text-xl leading-tight mt-1">{account.estimatedSpaces}</p>
               </div>
-              <div className="bg-muted/40 rounded-lg p-2.5">
+              <div className="bg-muted/40 rounded-lg p-3">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Facilities</p>
-                <p className="font-bold text-lg leading-tight mt-0.5">{account.facilityCount}</p>
+                <p className="font-bold text-xl leading-tight mt-1">{account.facilityCount}</p>
               </div>
             </div>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3">
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Focus Area</p>
-                <p className="text-foreground text-xs">{account.focusArea}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Focus Area</p>
+                <p className="text-foreground text-sm">{account.focusArea}</p>
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Differentiator</p>
-                <p className="text-muted-foreground text-xs">{account.differentiator}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Differentiator</p>
+                <p className="text-muted-foreground text-sm">{account.differentiator}</p>
               </div>
             </div>
-            <div className="flex gap-2 pt-1 border-t border-border">
+            <div className="flex gap-3 pt-2 border-t border-border">
               {account.caseStudyUrl && (
                 <a href={account.caseStudyUrl} target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
@@ -119,15 +121,12 @@ function DetailPanel({ account, site, onClose }: {
           </div>
         )}
         {site && (
-          <div className="p-4 space-y-2">
-            <div className="pr-8">
-              <h3 className="font-bold text-sm leading-tight">{site.name}</h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{site.address}</p>
-            </div>
-            <div className="space-y-1 text-xs">
+          <div className="p-4 space-y-3">
+            <p className="text-[11px] text-muted-foreground">{site.address}</p>
+            <div className="space-y-1.5 text-sm">
               <p><span className="font-medium">Operator:</span> {site.operator}</p>
               <p className="text-muted-foreground">{site.scope}</p>
-              {site.notes && <p className="text-muted-foreground text-[11px]">{site.notes}</p>}
+              {site.notes && <p className="text-muted-foreground text-xs">{site.notes}</p>}
             </div>
             {site.sourceUrl && (
               <a href={site.sourceUrl} target="_blank" rel="noopener noreferrer"
@@ -141,7 +140,6 @@ function DetailPanel({ account, site, onClose }: {
     </div>
   );
 }
-
 /* ── Stats Banner ── */
 function StatsBanner() {
   const activeCount = FLASH_ACCOUNTS.filter((a) => a.stage === "active").length;
@@ -259,12 +257,6 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
   );
 }
 
-/* ── Pan helper ── */
-function PanTo({ lat, lng }: { lat: number | null; lng: number | null }) {
-  const map = useMap();
-  if (map && lat != null && lng != null) { map.panTo({ lat, lng }); map.setZoom(10); }
-  return null;
-}
 
 /* ── Main page ── */
 export default function FlashParkingMap() {
@@ -275,7 +267,7 @@ export default function FlashParkingMap() {
   const [showDeployed, setShowDeployed] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
-  const [panTarget, setPanTarget] = useState<{ lat: number; lng: number } | null>(null);
+  
 
   const toggleStage = useCallback((s: AccountStage) => {
     setStageFilter((prev) => { const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n; });
@@ -301,13 +293,11 @@ export default function FlashParkingMap() {
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
     setSelectedSiteId(null);
-    setPanTarget({ lat: a.hqLat, lng: a.hqLng });
   }, []);
 
   const handleSelectSite = useCallback((l: FlashLocation) => {
     setSelectedSiteId(l.id);
     setSelectedAccountId(null);
-    setPanTarget({ lat: l.lat, lng: l.lng });
   }, []);
 
   const handleCloseDetail = useCallback(() => {
@@ -468,7 +458,7 @@ export default function FlashParkingMap() {
                 deployedLocations={FLASH_LOCATIONS}
                 onSelectSite={handleSelectSite}
               />
-              <PanTo lat={panTarget?.lat ?? null} lng={panTarget?.lng ?? null} />
+              
             </Map>
           </APIProvider>
         </div>
