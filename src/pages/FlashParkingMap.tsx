@@ -223,7 +223,11 @@ function SidebarPanel({
                 .replace("Parkway Corporation", "Parkway Corp")
                 .replace("Ticketech (acquired by Flash)", "Ticketech/NYC")
                 .replace("ParkMobile / Flash", "ParkMobile")
-                .replace("Flash / Mavi.io", "Flash/Mavi");
+                .replace("Flash / Mavi.io", "Flash/Mavi")
+                .replace("Texas Medical Center / LAZ Parking", "TMC/LAZ")
+                .replace("Cohesion / Flash", "Cohesion")
+                .replace("ParkIt (acquired by Flash)", "ParkIt")
+                .replace("Flash / Waze", "Flash/Waze");
               return (
                 <PartnerChip
                   key={op}
