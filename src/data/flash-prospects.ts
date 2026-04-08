@@ -464,6 +464,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     website: "https://propark.com",
     differentiator: "Rapid growth via acquisitions; tech-forward operator",
     currentVendor: "Passport",
+  },
   {
     id: "acct-ace",
     name: "Ace Parking",
