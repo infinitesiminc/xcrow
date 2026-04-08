@@ -168,6 +168,7 @@ function StatsBanner() {
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.active.markerColor }} />{activeCount} Active</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.target.markerColor }} />{targetCount} Target</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.whitespace.markerColor }} />{whitespaceCount} Whitespace</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.competitor.markerColor }} />{competitorCount} Competitor</span>
       </div>
     </div>
   );
