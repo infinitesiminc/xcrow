@@ -78,12 +78,19 @@ function DeployedSitePin() {
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
+interface AccountLeadResult {
+  persona?: string;
+  leads: any[];
+}
+
 function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
-  accountLeads: Record<string, any[]>; loadingLeads: Set<string>; onFindContacts: (a: FlashAccount) => void;
+  accountLeads: Record<string, AccountLeadResult>; loadingLeads: Set<string>; onFindContacts: (a: FlashAccount) => void;
 }) {
   const isOpen = !!(account || site);
-  const leads = account ? accountLeads[account.id] : undefined;
+  const result = account ? accountLeads[account.id] : undefined;
+  const leads = result?.leads;
+  const persona = result?.persona;
   const isLoading = account ? loadingLeads.has(account.id) : false;
 
   return (
