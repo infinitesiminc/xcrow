@@ -347,6 +347,8 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
               </div>
             )}
           </div>
+            )}
+          </PlaceInfo>
         )}
         {site && (
           <div className="p-4 space-y-3">
