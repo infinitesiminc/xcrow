@@ -78,10 +78,14 @@ function DeployedSitePin() {
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
-function DetailPanel({ account, site, onClose }: {
+function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
+  accountLeads: Record<string, any[]>; loadingLeads: Set<string>; onFindContacts: (a: FlashAccount) => void;
 }) {
   const isOpen = !!(account || site);
+  const leads = account ? accountLeads[account.id] : undefined;
+  const isLoading = account ? loadingLeads.has(account.id) : false;
+
   return (
     <div className={`absolute top-0 right-0 z-[1000] w-80 h-full transition-transform duration-300 ease-out ${
       isOpen ? "translate-x-0" : "translate-x-full"
@@ -151,6 +155,53 @@ function DetailPanel({ account, site, onClose }: {
                 Website <ExternalLink className="w-3 h-3" />
               </a>
             </div>
+
+            {/* ── Find Contacts ── */}
+            {account.id !== "acct-flash-hq" && (
+              <div className="border-t border-border pt-3 space-y-2">
+                {!leads && !isLoading && (
+                  <Button variant="outline" size="sm" className="w-full gap-2 text-xs" onClick={() => onFindContacts(account)}>
+                    <Users className="w-3.5 h-3.5" />
+                    Find Decision-Makers
+                  </Button>
+                )}
+                {isLoading && (
+                  <div className="flex items-center gap-2 justify-center py-3 text-xs text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Searching contacts…
+                  </div>
+                )}
+                {leads && leads.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                      Decision-Makers ({leads.length})
+                    </p>
+                    {leads.map((lead: any, i: number) => (
+                      <div key={i} className="bg-muted/40 rounded-lg p-2.5 space-y-1">
+                        <p className="text-xs font-semibold text-foreground">{lead.name}</p>
+                        {lead.title && <p className="text-[11px] text-muted-foreground">{lead.title}</p>}
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {lead.email && (
+                            <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+                              <Mail className="w-3 h-3" /> {lead.email}
+                            </a>
+                          )}
+                          {lead.linkedin && (
+                            <a href={lead.linkedin} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+                              <Linkedin className="w-3 h-3" /> LinkedIn
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {leads && leads.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">No contacts found</p>
+                )}
+              </div>
+            )}
           </div>
         )}
         {site && (
@@ -173,38 +224,6 @@ function DetailPanel({ account, site, onClose }: {
     </div>
   );
 }
-/* ── Stats Banner ── */
-function StatsBanner() {
-  const activeCount = ALL_ACCOUNTS.filter((a) => a.stage === "active").length;
-  const targetCount = ALL_ACCOUNTS.filter((a) => a.stage === "target").length;
-  const whitespaceCount = ALL_ACCOUNTS.filter((a) => a.stage === "whitespace").length;
-  const competitorCount = ALL_ACCOUNTS.filter((a) => a.stage === "competitor").length;
-  return (
-    <div className="px-3 py-2 space-y-2">
-      <div className="grid grid-cols-3 gap-1.5">
-        <div className="bg-muted/50 rounded-lg p-2 text-center">
-          <p className="text-base font-bold text-foreground">{FLASH_PLATFORM_STATS.totalLocations}</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">Locations</p>
-        </div>
-        <div className="bg-muted/50 rounded-lg p-2 text-center">
-          <p className="text-base font-bold text-foreground">{FLASH_PLATFORM_STATS.networkLocations}</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">Network</p>
-        </div>
-        <div className="bg-muted/50 rounded-lg p-2 text-center">
-          <p className="text-base font-bold text-foreground">{ALL_ACCOUNTS.length}</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">Accounts</p>
-        </div>
-      </div>
-      <div className="flex gap-1.5 text-[10px]">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.active.markerColor }} />{activeCount} Active</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.target.markerColor }} />{targetCount} Target</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.whitespace.markerColor }} />{whitespaceCount} Whitespace</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.competitor.markerColor }} />{competitorCount} Competitor</span>
-      </div>
-    </div>
-  );
-}
-
 /* ── Stage filter toggle ── */
 function StageToggle({ stage, active, onClick }: { stage: AccountStage; active: boolean; onClick: () => void }) {
   const cfg = STAGE_CONFIG[stage];
