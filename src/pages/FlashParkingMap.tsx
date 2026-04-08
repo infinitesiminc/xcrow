@@ -267,7 +267,7 @@ export default function FlashParkingMap() {
   const [showDeployed, setShowDeployed] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
-  const [panTarget, setPanTarget] = useState<{ lat: number; lng: number } | null>(null);
+  
 
   const toggleStage = useCallback((s: AccountStage) => {
     setStageFilter((prev) => { const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n; });
