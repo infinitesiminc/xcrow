@@ -1,4 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { parseSSEStream } from "@/lib/sse-parser";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -9,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
@@ -76,10 +78,14 @@ function DeployedSitePin() {
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
-function DetailPanel({ account, site, onClose }: {
+function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
+  accountLeads: Record<string, any[]>; loadingLeads: Set<string>; onFindContacts: (a: FlashAccount) => void;
 }) {
   const isOpen = !!(account || site);
+  const leads = account ? accountLeads[account.id] : undefined;
+  const isLoading = account ? loadingLeads.has(account.id) : false;
+
   return (
     <div className={`absolute top-0 right-0 z-[1000] w-80 h-full transition-transform duration-300 ease-out ${
       isOpen ? "translate-x-0" : "translate-x-full"
@@ -149,6 +155,53 @@ function DetailPanel({ account, site, onClose }: {
                 Website <ExternalLink className="w-3 h-3" />
               </a>
             </div>
+
+            {/* ── Find Contacts ── */}
+            {account.id !== "acct-flash-hq" && (
+              <div className="border-t border-border pt-3 space-y-2">
+                {!leads && !isLoading && (
+                  <Button variant="outline" size="sm" className="w-full gap-2 text-xs" onClick={() => onFindContacts(account)}>
+                    <Users className="w-3.5 h-3.5" />
+                    Find Decision-Makers
+                  </Button>
+                )}
+                {isLoading && (
+                  <div className="flex items-center gap-2 justify-center py-3 text-xs text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Searching contacts…
+                  </div>
+                )}
+                {leads && leads.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                      Decision-Makers ({leads.length})
+                    </p>
+                    {leads.map((lead: any, i: number) => (
+                      <div key={i} className="bg-muted/40 rounded-lg p-2.5 space-y-1">
+                        <p className="text-xs font-semibold text-foreground">{lead.name}</p>
+                        {lead.title && <p className="text-[11px] text-muted-foreground">{lead.title}</p>}
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {lead.email && (
+                            <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+                              <Mail className="w-3 h-3" /> {lead.email}
+                            </a>
+                          )}
+                          {lead.linkedin && (
+                            <a href={lead.linkedin} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+                              <Linkedin className="w-3 h-3" /> LinkedIn
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {leads && leads.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">No contacts found</p>
+                )}
+              </div>
+            )}
           </div>
         )}
         {site && (
@@ -308,7 +361,8 @@ export default function FlashParkingMap() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-
+  const [accountLeads, setAccountLeads] = useState<Record<string, any[]>>({});
+  const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
 
   const toggleStage = useCallback((s: AccountStage) => {
     setStageFilter((prev) => { const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n; });
@@ -346,6 +400,43 @@ export default function FlashParkingMap() {
     setSelectedAccountId(null);
     setSelectedSiteId(null);
   }, []);
+
+  const handleFindContacts = useCallback(async (account: FlashAccount) => {
+    if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
+    setLoadingLeads(prev => new Set(prev).add(account.id));
+    try {
+      const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const { data, error } = await supabase.functions.invoke("leadgen-chat", {
+        body: {
+          website: account.website,
+          messages: [{
+            role: "user",
+            content: `Find 5 decision-makers at ${account.name} (${domain}) who would buy parking management software. Focus on ${account.focusArea}. Use run_lead_search immediately.`
+          }]
+        },
+      });
+      if (error) throw error;
+      const reader = (data as ReadableStream<Uint8Array>).getReader();
+      const collectedLeads: any[] = [];
+      await parseSSEStream(reader, {
+        onLeads: (leads) => {
+          collectedLeads.push(...leads);
+          setAccountLeads(prev => ({ ...prev, [account.id]: [...collectedLeads] }));
+        },
+        onDone: () => {
+          setAccountLeads(prev => ({ ...prev, [account.id]: collectedLeads.length > 0 ? collectedLeads : [] }));
+        }
+      });
+      if (collectedLeads.length === 0) {
+        setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+      }
+    } catch (err) {
+      console.error("Find contacts error:", err);
+      setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+    } finally {
+      setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
+    }
+  }, [loadingLeads, accountLeads]);
 
   const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
@@ -472,7 +563,7 @@ export default function FlashParkingMap() {
           )}
 
           {/* Detail slide-in panel */}
-          <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail} />
+          <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail} accountLeads={accountLeads} loadingLeads={loadingLeads} onFindContacts={handleFindContacts} />
 
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
