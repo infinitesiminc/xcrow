@@ -13,8 +13,7 @@ import Footer from "@/components/Footer";
 import apolloComplexUi from "@/assets/apollo-complex-ui.png";
 import {
   Globe, ArrowRight,
-  Brain, ListChecks, Send,
-  CheckCircle2, XCircle, Zap, Shield, BarChart3,
+  CheckCircle2, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import CompanyMarquee from "@/components/CompanyMarquee";
@@ -26,23 +25,10 @@ const MARQUEE_ROWS = [
   ["Datadog", "Notion", "Shopify", "HubSpot", "Snowflake", "Cloudflare", "Twilio", "Zoom"],
 ];
 
-const STEPS = [
-  { icon: Globe, title: "Paste a website", desc: "Any company URL. That's literally all you do." },
-  { icon: Brain, title: "AI does the thinking", desc: "Markets, personas, decision-makers — mapped in seconds, not days." },
-  { icon: ListChecks, title: "Get real leads", desc: "Verified people with emails, LinkedIn profiles, and fit scores. Not a data dump." },
-  { icon: Send, title: "Hit send", desc: "AI-drafted outreach per lead. Copy, paste, close." },
-];
-
 const STATS = [
   { value: "$49", label: "vs. $120+ on LinkedIn" },
   { value: "500", label: "Leads with emails" },
   { value: "10s", label: "To your first lead" },
-];
-
-const VALUE_PROPS = [
-  { icon: Zap, title: "No SDR needed", desc: "Apollo needs a trained operator. LinkedIn needs a Sales Navigator license. Xcrow needs a URL." },
-  { icon: Shield, title: "Real contacts only", desc: "Every lead has a verified email and LinkedIn profile. Zero fakes. Zero guessing." },
-  { icon: BarChart3, title: "AI does the filtering", desc: "Other tools give you 10,000 contacts and say 'good luck.' We give you the 5 that matter." },
 ];
 
 /* ── animation helpers ── */
