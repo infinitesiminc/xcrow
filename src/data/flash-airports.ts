@@ -79,6 +79,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -86.750712,
     website: "http://www.flybirmingham.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-boi",
@@ -93,6 +94,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -116.223,
     website: "http://www.cityofboise.org/departments/airport/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-bos",
@@ -227,6 +229,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -104.700996,
     website: "https://flycos.coloradosprings.gov/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-cle",
@@ -241,6 +244,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -81.8498,
     website: "http://www.clevelandairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-dfw",
@@ -330,6 +334,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -106.375607,
     website: "https://elpasointernationalairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-koa",
@@ -344,6 +349,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -156.045603,
     website: "https://airports.hawaii.gov/koa/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-oma",
@@ -403,6 +409,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -119.718018,
     website: "https://flyfresno.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-mke",
@@ -462,6 +469,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -115.151817,
     website: "https://www.harryreidairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-atl",
@@ -491,6 +499,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -118.35805,
     website: "https://www.hollywoodburbankairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-ind",
@@ -580,6 +589,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -156.431837,
     website: "https://airports.hawaii.gov/ogg/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-mci",
@@ -624,6 +634,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -159.337146,
     website: "https://airports.hawaii.gov/lih",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-lgb",
@@ -638,6 +649,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -118.149891,
     website: "http://www.lgb.org/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-msy",
@@ -667,6 +679,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -85.735076,
     website: "http://www.flylouisville.com",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-tys",
@@ -681,6 +694,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -83.994003,
     website: "https://flyknowxville.com",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-mem",
@@ -740,6 +754,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -78.928299,
     website: "https://www.flymyrtlebeach.com",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-bna",
@@ -784,6 +799,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -76.201,
     website: "https://www.norfolkairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-sjc",
@@ -843,6 +859,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -81.234626,
     website: "https://flysfb.com",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-pbi",
@@ -872,6 +889,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -116.507004,
     website: "http://www.palmspringsca.gov/index.aspx?page=270",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-pns",
@@ -886,6 +904,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -87.186639,
     website: "http://www.flypensacola.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-phl",
@@ -930,6 +949,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -79.937262,
     website: "https://flyfrompti.com",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-pit",
@@ -974,6 +994,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -70.309303,
     website: "https://portlandjetport.org/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-rdu",
@@ -1047,6 +1068,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -77.037697,
     website: "http://www.flyreagan.com/dca/reagan-national-airport",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-smf",
@@ -1076,6 +1098,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -111.979866,
     website: "https://slcairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-sat",
@@ -1105,6 +1128,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -117.236596,
     website: "http://sbdairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-san",
@@ -1209,6 +1233,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -117.533997,
     website: "https://spokaneairports.net/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-stl",
@@ -1238,6 +1263,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -82.687401,
     website: "https://www.google.com/search?q=PIE+airport",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-syr",
@@ -1297,6 +1323,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -110.938053,
     website: "https://www.flytucson.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-tul",
