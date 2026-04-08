@@ -3,9 +3,6 @@
  */
 import { useState, useRef } from "react";
 import logoCrow from "@/assets/logo-crow.png";
-import WebsiteToLeadsVisual from "@/components/home/WebsiteToLeadsVisual";
-import TargetingControlsVisual from "@/components/home/TargetingControlsVisual";
-import AcceleratorTestimonials from "@/components/home/AcceleratorTestimonials";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
@@ -16,8 +13,7 @@ import Footer from "@/components/Footer";
 import apolloComplexUi from "@/assets/apollo-complex-ui.png";
 import {
   Globe, ArrowRight,
-  Brain, ListChecks, Send,
-  CheckCircle2, XCircle, Zap, Shield, BarChart3,
+  CheckCircle2, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import CompanyMarquee from "@/components/CompanyMarquee";
@@ -29,23 +25,10 @@ const MARQUEE_ROWS = [
   ["Datadog", "Notion", "Shopify", "HubSpot", "Snowflake", "Cloudflare", "Twilio", "Zoom"],
 ];
 
-const STEPS = [
-  { icon: Globe, title: "Paste a website", desc: "Any company URL. That's literally all you do." },
-  { icon: Brain, title: "AI does the thinking", desc: "Markets, personas, decision-makers — mapped in seconds, not days." },
-  { icon: ListChecks, title: "Get real leads", desc: "Verified people with emails, LinkedIn profiles, and fit scores. Not a data dump." },
-  { icon: Send, title: "Hit send", desc: "AI-drafted outreach per lead. Copy, paste, close." },
-];
-
 const STATS = [
   { value: "$49", label: "vs. $120+ on LinkedIn" },
   { value: "500", label: "Leads with emails" },
   { value: "10s", label: "To your first lead" },
-];
-
-const VALUE_PROPS = [
-  { icon: Zap, title: "No SDR needed", desc: "Apollo needs a trained operator. LinkedIn needs a Sales Navigator license. Xcrow needs a URL." },
-  { icon: Shield, title: "Real contacts only", desc: "Every lead has a verified email and LinkedIn profile. Zero fakes. Zero guessing." },
-  { icon: BarChart3, title: "AI does the filtering", desc: "Other tools give you 10,000 contacts and say 'good luck.' We give you the 5 that matter." },
 ];
 
 /* ── animation helpers ── */
@@ -209,83 +192,6 @@ export default function Index() {
         </section>
 
 
-        {/* ═══ Visual 2: Targeting controls ═══ */}
-        <TargetingControlsVisual />
-
-        {/* ═══ Accelerator testimonials ═══ */}
-        <AcceleratorTestimonials />
-
-        {/* ═══ Value props — 3 columns ═══ */}
-        <section className="py-20 sm:py-28">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6">
-            <motion.div {...fadeInView()} className="text-center mb-16">
-              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                Why Xcrow wins
-              </p>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Your Competitors Use Apollo.<br /><span className="text-primary">You Use Xcrow.</span>
-              </h2>
-            </motion.div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {VALUE_PROPS.map((vp, i) => (
-                <motion.div
-                  key={i}
-                  {...fadeInView(i * 0.1)}
-                  className="text-center px-4"
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                    <vp.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2 tracking-tight">
-                    {vp.title}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">{vp.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ How it works — numbered steps ═══ */}
-        <section className="bg-muted/30 py-20 sm:py-28">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6">
-            <motion.div {...fadeInView()} className="text-center mb-16">
-              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                Dead simple
-              </p>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Your SDR Takes a Week.<br /><span className="text-primary">Xcrow Takes 10 Seconds.</span>
-              </h2>
-              <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                No spreadsheets. No filters. No training. No hiring.
-              </p>
-            </motion.div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {STEPS.map((step, i) => (
-                <motion.div
-                  key={i}
-                  {...fadeInView(i * 0.1)}
-                  className="relative bg-card border border-border rounded-2xl p-6 hover:shadow-lg hover:border-primary/20 transition-all duration-300 group"
-                >
-                  {/* Step number */}
-                  <span className="absolute top-5 right-5 text-4xl font-black text-primary/[0.07] select-none leading-none">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 transition-colors">
-                    <step.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="font-bold text-foreground mb-2 tracking-tight">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ Apollo comparison callout ═══ */}
         <section className="py-20 sm:py-28">
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <motion.div {...fadeInView()} className="text-center mb-14">
