@@ -524,6 +524,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     website: "https://townepark.com",
     differentiator: "Largest US hospitality valet provider",
     currentVendor: "T2 Systems",
+  },
   {
     id: "acct-interpark",
     name: "InterPark",
