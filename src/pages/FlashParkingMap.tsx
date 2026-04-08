@@ -111,7 +111,7 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
       <div className="h-full bg-background/80 backdrop-blur-xl border-l border-border shadow-2xl overflow-y-auto">
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
           <h3 className="font-semibold text-sm truncate pr-2">
-            {account?.name || site?.name || "Details"}
+            {account ? `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}` : site?.name || "Details"}
           </h3>
           <button onClick={onClose}
             className="w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors shrink-0">
