@@ -424,16 +424,6 @@ export default function FlashParkingMap() {
             </div>
           </div>
 
-          {/* Deployed layer toggle */}
-          <div className="px-3 pb-2">
-            <div className="flex items-center justify-between py-1.5 px-2 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-[11px] text-muted-foreground">Show deployed sites ({FLASH_LOCATIONS.length})</span>
-              </div>
-              <Switch checked={showDeployed} onCheckedChange={setShowDeployed} className="scale-75" />
-            </div>
-          </div>
         </CollapsibleContent>
       </Collapsible>
 
