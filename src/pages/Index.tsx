@@ -320,10 +320,11 @@ export default function Index() {
                     <p className="text-xs text-muted-foreground mt-1">You need GTM expertise just to get started.</p>
                   </div>
                 </div>
-                <ul className="space-y-2 text-sm text-muted-foreground pl-1">
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Requires GTM expertise to build searches</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Manual filter configuration for every search</li>
+                 <ul className="space-y-2 text-sm text-muted-foreground pl-1">
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> $99/mo and you still do all the work</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> 15+ filters you need GTM training to use</li>
                   <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No fit scoring — just raw contact dumps</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Need an SDR just to operate the tool</li>
                 </ul>
               </div>
 
