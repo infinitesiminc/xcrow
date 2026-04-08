@@ -571,6 +571,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -84.4277,
     website: "https://pnf.com",
     differentiator: "Pioneer in off-airport parking; premium brand",
+    currentVendor: "T2 Systems",
   },
   {
     id: "acct-colonial",
