@@ -257,12 +257,6 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
   );
 }
 
-/* ── Pan helper ── */
-function PanTo({ lat, lng }: { lat: number | null; lng: number | null }) {
-  const map = useMap();
-  if (map && lat != null && lng != null) { map.panTo({ lat, lng }); map.setZoom(10); }
-  return null;
-}
 
 /* ── Main page ── */
 export default function FlashParkingMap() {
