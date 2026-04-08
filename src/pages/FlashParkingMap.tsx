@@ -305,7 +305,7 @@ function TypeToggle({ type, active, onClick }: { type: AccountType; active: bool
        active ? "border-foreground/20 bg-foreground/5" : "border-transparent bg-muted/30 text-muted-foreground opacity-50"
       }`}>
       {type === "airport" ? <Plane className="w-3 h-3" /> : type === "large_venue" ? <Building2 className="w-3 h-3" /> : <Grid3X3 className="w-3 h-3" />}
-      {type === "airport" ? "Airport" : type === "large_venue" ? "Large Venue" : "Fleet Operator"}
+      {type === "airport" ? "Airport" : type === "large_venue" ? "Large Venue" : "Parking Operator"}
       <span className="text-muted-foreground text-[10px]">{count}</span>
     </button>
   );
