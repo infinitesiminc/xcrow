@@ -225,10 +225,10 @@ function TypeToggle({ type, active, onClick }: { type: AccountType; active: bool
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
-        active ? "border-foreground/20 bg-foreground/5" : "border-transparent bg-muted/30 text-muted-foreground opacity-50"
+       active ? "border-foreground/20 bg-foreground/5" : "border-transparent bg-muted/30 text-muted-foreground opacity-50"
       }`}>
-      {type === "large_venue" ? <Building2 className="w-3 h-3" /> : <Grid3X3 className="w-3 h-3" />}
-      {type === "large_venue" ? "Large Venue" : "Fleet Operator"}
+      {type === "airport" ? <Plane className="w-3 h-3" /> : type === "large_venue" ? <Building2 className="w-3 h-3" /> : <Grid3X3 className="w-3 h-3" />}
+      {type === "airport" ? "Airport" : type === "large_venue" ? "Large Venue" : "Fleet Operator"}
       <span className="text-muted-foreground text-[10px]">{count}</span>
     </button>
   );
