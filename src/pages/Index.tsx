@@ -53,18 +53,30 @@ export default function Index() {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // After login, check for a pending URL and navigate
+  useEffect(() => {
+    if (user) {
+      const pending = sessionStorage.getItem("xcrow_pending_url");
+      if (pending) {
+        sessionStorage.removeItem("xcrow_pending_url");
+        navigate(`/leadhunter?website=${encodeURIComponent(pending)}`);
+      }
+    }
+  }, [user, navigate]);
+
   const handleDiscover = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal();
-      return;
-    }
     const url = websiteUrl.trim();
     if (!url) return;
     const domain = url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
     const domainPattern = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
     if (!domainPattern.test(domain)) {
       toast.error("Enter a valid website URL (e.g. company.com)");
+      return;
+    }
+    if (!user) {
+      sessionStorage.setItem("xcrow_pending_url", url);
+      openAuthModal();
       return;
     }
     navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
