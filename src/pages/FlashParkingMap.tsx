@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 import { Badge } from "@/components/ui/badge";
@@ -306,7 +307,8 @@ export default function FlashParkingMap() {
   const [showDeployed, setShowDeployed] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
-  
+  const [filtersOpen, setFiltersOpen] = useState(true);
+
 
   const toggleStage = useCallback((s: AccountStage) => {
     setStageFilter((prev) => { const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n; });
@@ -374,8 +376,6 @@ export default function FlashParkingMap() {
         </div>
       </div>
 
-      <StatsBanner />
-
       {/* Search */}
       <div className="px-3 pb-2">
         <div className="relative">
@@ -390,36 +390,51 @@ export default function FlashParkingMap() {
         </div>
       </div>
 
-      {/* Stage filters */}
-      <div className="px-3 pb-1.5">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Stage</p>
-        <div className="flex flex-wrap gap-1">
-          {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
-            <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} />
-          ))}
+      <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <div className="px-3 pb-1">
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 px-2 rounded-lg hover:bg-muted/50 transition-colors text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className="flex items-center gap-1.5">
+              <Filter className="w-3 h-3" />
+              Filters & Stats
+            </span>
+            <span className={`transition-transform ${filtersOpen ? "rotate-180" : ""}`}>▾</span>
+          </CollapsibleTrigger>
         </div>
-      </div>
+        <CollapsibleContent>
+          <StatsBanner />
 
-      {/* Type filters */}
-      <div className="px-3 pb-2">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Type</p>
-        <div className="flex gap-1">
-          {(["large_venue", "fleet_operator"] as AccountType[]).map((t) => (
-            <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} />
-          ))}
-        </div>
-      </div>
-
-      {/* Deployed layer toggle */}
-      <div className="px-3 pb-2">
-        <div className="flex items-center justify-between py-1.5 px-2 bg-muted/30 rounded-lg">
-          <div className="flex items-center gap-1.5">
-            <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-[11px] text-muted-foreground">Show deployed sites ({FLASH_LOCATIONS.length})</span>
+          {/* Stage filters */}
+          <div className="px-3 pb-1.5">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Stage</p>
+            <div className="flex flex-wrap gap-1">
+              {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
+                <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} />
+              ))}
+            </div>
           </div>
-          <Switch checked={showDeployed} onCheckedChange={setShowDeployed} className="scale-75" />
-        </div>
-      </div>
+
+          {/* Type filters */}
+          <div className="px-3 pb-2">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Type</p>
+            <div className="flex gap-1">
+              {(["large_venue", "fleet_operator"] as AccountType[]).map((t) => (
+                <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} />
+              ))}
+            </div>
+          </div>
+
+          {/* Deployed layer toggle */}
+          <div className="px-3 pb-2">
+            <div className="flex items-center justify-between py-1.5 px-2 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-[11px] text-muted-foreground">Show deployed sites ({FLASH_LOCATIONS.length})</span>
+              </div>
+              <Switch checked={showDeployed} onCheckedChange={setShowDeployed} className="scale-75" />
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       <div className="h-px bg-border mx-3" />
 
