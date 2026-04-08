@@ -494,6 +494,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     website: "https://theparkingspot.com",
     differentiator: "Largest near-airport parking company in US",
     currentVendor: "Proprietary",
+  },
   {
     id: "acct-icon",
     name: "Icon Parking",
