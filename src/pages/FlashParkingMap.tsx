@@ -109,6 +109,14 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
     const k = `${lat},${lng}`;
     if (k in photoCache) { setUrl(photoCache[k] ?? null); setTried(true); return; }
     let cancelled = false;
+
+    // Clean name for better Google Places search results
+    const cleanName = name
+      .replace(/\s*\(HQ\)\s*/gi, "")
+      .replace(/\s*\([A-Z]{3}\)\s*/gi, (m) => ` ${m.trim()}`) // keep airport codes
+      .replace(/\s*HQ\s*$/i, "")
+      .trim();
+
     (async () => {
       try {
         const resp = await fetch(
@@ -121,8 +129,8 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
               "X-Goog-FieldMask": "places.photos",
             },
             body: JSON.stringify({
-              textQuery: name,
-              locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 2000 } },
+              textQuery: cleanName,
+              locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 5000 } },
               maxResultCount: 1,
             }),
           }
@@ -130,18 +138,9 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
         const data = await resp.json();
         const photoRef = data?.places?.[0]?.photos?.[0]?.name;
         if (photoRef && !cancelled) {
-          // Fetch the actual photo URL via the media endpoint
-          const mediaResp = await fetch(
-            `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&skipHttpRedirect=true&key=${API_KEY}`
-          );
-          const mediaData = await mediaResp.json();
-          const photoUrl = mediaData?.photoUri;
-          if (photoUrl) {
-            photoCache[k] = photoUrl;
-            setUrl(photoUrl);
-          } else {
-            photoCache[k] = null;
-          }
+          const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxWidthPx=400&key=${API_KEY}`;
+          photoCache[k] = photoUrl;
+          setUrl(photoUrl);
         } else {
           photoCache[k] = null;
         }
@@ -157,7 +156,7 @@ function PlacePhoto({ name, lat, lng }: { name: string; lat: number; lng: number
   if (!url) return null;
   return (
     <div className="w-full h-32 rounded-lg overflow-hidden">
-      <img src={url} alt={name} className="w-full h-full object-cover" />
+      <img src={url} alt={name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
     </div>
   );
 }
