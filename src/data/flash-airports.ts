@@ -9,7 +9,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-alb",
     name: "Albany International Airport (ALB)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -24,7 +24,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-abq",
     name: "Albuquerque International Sunport (ABQ)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -39,7 +39,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-aus",
     name: "Austin Bergstrom International Airport (AUS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -54,7 +54,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-bwi",
     name: "Baltimore/Washington International Thurgood Marshall Airport (BWI)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -69,7 +69,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-bhm",
     name: "Birmingham-Shuttlesworth International Airport (BHM)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -84,7 +84,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-boi",
     name: "Boise Air Terminal/Gowen Field Airport (BOI)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -99,7 +99,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-bos",
     name: "Boston Logan International Airport (BOS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -114,7 +114,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-bdl",
     name: "Bradley International Airport (BDL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -129,7 +129,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-buf",
     name: "Buffalo Niagara International Airport (BUF)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -144,7 +144,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-chs",
     name: "Charleston International Airport (CHS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -159,7 +159,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-clt",
     name: "Charlotte Douglas International Airport (CLT)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -174,7 +174,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-mdw",
     name: "Chicago Midway International Airport (MDW)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -189,7 +189,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-ord",
     name: "Chicago O'Hare International Airport (ORD)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -204,7 +204,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-cvg",
     name: "Cincinnati Northern Kentucky International Airport (CVG)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -219,7 +219,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-cos",
     name: "City of Colorado Springs Municipal Airport (COS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -234,7 +234,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-cle",
     name: "Cleveland Hopkins International Airport (CLE)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -249,7 +249,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-dfw",
     name: "Dallas Fort Worth International Airport (DFW)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -264,7 +264,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-dal",
     name: "Dallas Love Field Airport (DAL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -279,7 +279,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-hnl",
     name: "Daniel K. Inouye International Airport (HNL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -294,7 +294,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-dsm",
     name: "Des Moines International Airport (DSM)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -309,7 +309,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-dtw",
     name: "Detroit Metropolitan Wayne County Airport (DTW)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -324,7 +324,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-elp",
     name: "El Paso International Airport (ELP)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -339,7 +339,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-koa",
     name: "Ellison Onizuka Kona International Airport at Keāhole (KOA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -354,7 +354,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-oma",
     name: "Eppley Airfield Airport (OMA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -369,7 +369,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-fll",
     name: "Fort Lauderdale Hollywood International Airport (FLL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -384,7 +384,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-roc",
     name: "Frederick Douglass Greater Rochester International Airport (ROC)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -399,7 +399,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-fat",
     name: "Fresno Yosemite International Airport (FAT)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -414,7 +414,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-mke",
     name: "General Mitchell International Airport (MKE)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -429,7 +429,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-iah",
     name: "George Bush Intercontinental Airport (IAH)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -444,7 +444,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-grr",
     name: "Gerald R. Ford International Airport (GRR)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -459,7 +459,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-las",
     name: "Harry Reid International Airport (LAS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -474,7 +474,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-atl",
     name: "Hartsfield Jackson Atlanta International Airport (ATL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -489,7 +489,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-bur",
     name: "Hollywood Burbank/Bob Hope Airport (BUR)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -504,7 +504,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-ind",
     name: "Indianapolis International Airport (IND)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -519,7 +519,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-jax",
     name: "Jacksonville International Airport (JAX)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -534,7 +534,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-jfk",
     name: "John F. Kennedy International Airport (JFK)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -549,7 +549,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-cmh",
     name: "John Glenn Columbus International Airport (CMH)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -564,7 +564,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sna",
     name: "John Wayne Orange County International Airport (SNA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -579,7 +579,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-ogg",
     name: "Kahului International Airport (OGG)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -594,7 +594,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-mci",
     name: "Kansas City International Airport (MCI)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -609,7 +609,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-lga",
     name: "LaGuardia Airport (LGA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -624,7 +624,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-lih",
     name: "Lihue Airport (LIH)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -639,7 +639,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-lgb",
     name: "Long Beach International Airport (LGB)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -654,7 +654,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-msy",
     name: "Louis Armstrong New Orleans International Airport (MSY)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -669,7 +669,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sdf",
     name: "Louisville Muhammad Ali International Airport (SDF)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -684,7 +684,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-tys",
     name: "McGhee Tyson Airport (TYS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -699,7 +699,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-mem",
     name: "Memphis International Airport (MEM)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -714,7 +714,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-mia",
     name: "Miami International Airport (MIA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -729,7 +729,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-msp",
     name: "Minneapolis–Saint Paul International Airport / Wold–Chamberlain Field (MSP)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -744,7 +744,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-myr",
     name: "Myrtle Beach International Airport (MYR)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -759,7 +759,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-bna",
     name: "Nashville International Airport (BNA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -774,7 +774,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-ewr",
     name: "Newark Liberty International Airport (EWR)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -789,7 +789,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-orf",
     name: "Norfolk International Airport (ORF)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -804,7 +804,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sjc",
     name: "Norman Y. Mineta San Jose International Airport (SJC)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -819,7 +819,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-okc",
     name: "OKC Will Rogers World Airport (OKC)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -834,7 +834,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-ont",
     name: "Ontario International Airport (ONT)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -849,7 +849,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sfb",
     name: "Orlando Sanford International Airport (SFB)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -864,7 +864,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-pbi",
     name: "Palm Beach International Airport (PBI)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -879,7 +879,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-psp",
     name: "Palm Springs International Airport (PSP)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -894,7 +894,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-pns",
     name: "Pensacola International Airport (PNS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -909,7 +909,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-phl",
     name: "Philadelphia International Airport (PHL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -924,7 +924,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-phx",
     name: "Phoenix Sky Harbor International Airport (PHX)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -939,7 +939,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-gso",
     name: "Piedmont Triad International Airport (GSO)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -954,7 +954,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-pit",
     name: "Pittsburgh International Airport (PIT)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -969,7 +969,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-pdx",
     name: "Portland International Airport (PDX)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -984,7 +984,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-pwm",
     name: "Portland International Jetport (PWM)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -999,7 +999,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-rdu",
     name: "Raleigh-Durham International Airport (RDU)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1014,7 +1014,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-rno",
     name: "Reno Tahoe International Airport (RNO)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1029,7 +1029,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-pvd",
     name: "Rhode Island T. F. Green International Airport (PVD)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1044,7 +1044,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-ric",
     name: "Richmond International Airport (RIC)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1059,7 +1059,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-dca",
     name: "Ronald Reagan Washington National Airport (DCA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1074,7 +1074,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-smf",
     name: "Sacramento International Airport (SMF)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1089,7 +1089,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-slc",
     name: "Salt Lake City International Airport (SLC)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1104,7 +1104,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sat",
     name: "San Antonio International Airport (SAT)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1119,7 +1119,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sbd",
     name: "San Bernardino International Airport (SBD)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1134,7 +1134,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-san",
     name: "San Diego International Airport (SAN)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1149,7 +1149,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-oak",
     name: "San Francisco Bay Oakland International Airport (OAK)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1164,7 +1164,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-srq",
     name: "Sarasota Bradenton International Airport (SRQ)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1179,7 +1179,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sav",
     name: "Savannah Hilton Head International Airport (SAV)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1194,7 +1194,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-sea",
     name: "Seattle–Tacoma International Airport (SEA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1209,7 +1209,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-rsw",
     name: "Southwest Florida International Airport (RSW)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1224,7 +1224,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-geg",
     name: "Spokane International Airport (GEG)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1239,7 +1239,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-stl",
     name: "St. Louis Lambert International Airport (STL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1254,7 +1254,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-pie",
     name: "St. Petersburg Clearwater International Airport (PIE)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1269,7 +1269,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-syr",
     name: "Syracuse Hancock International Airport (SYR)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1284,7 +1284,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-tpa",
     name: "Tampa International Airport (TPA)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1299,7 +1299,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-anc",
     name: "Ted Stevens Anchorage International Airport (ANC)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1314,7 +1314,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-tus",
     name: "Tucson International Airport (TUS)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1329,7 +1329,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-tul",
     name: "Tulsa International Airport (TUL)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1344,7 +1344,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-iad",
     name: "Washington Dulles International Airport (IAD)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
@@ -1359,7 +1359,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
   {
     id: "acct-airport-hou",
     name: "William P. Hobby Airport (HOU)",
-    accountType: "large_venue",
+    accountType: "airport",
     stage: "whitespace",
     estimatedSpaces: "5,000+",
     facilityCount: "Multiple lots & garages",
