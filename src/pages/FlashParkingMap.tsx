@@ -97,7 +97,7 @@ function DetailPanel({ account, site, onClose }: {
           <div className="p-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                {account.accountType === "large_venue" ? <Building2 className="w-5 h-5 text-white" /> : <Grid3X3 className="w-5 h-5 text-white" />}
+                <AccountIcon account={account} className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{account.hqCity}</p>
