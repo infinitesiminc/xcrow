@@ -1,4 +1,4 @@
-export type AccountType = "large_venue" | "fleet_operator";
+export type AccountType = "large_venue" | "fleet_operator" | "airport";
 export type AccountStage = "active" | "target" | "whitespace" | "competitor";
 
 export interface FlashAccount {
@@ -48,6 +48,7 @@ export const STAGE_CONFIG: Record<AccountStage, { label: string; color: string; 
 export const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; icon: string }> = {
   large_venue: { label: "Large Venue", icon: "building" },
   fleet_operator: { label: "Fleet Operator", icon: "grid" },
+  airport: { label: "Airport", icon: "plane" },
 };
 
 /* ── Flash Platform Stats ── */

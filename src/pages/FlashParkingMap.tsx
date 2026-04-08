@@ -34,7 +34,7 @@ const MAP_ID = "flash-parking-map";
 const isAirport = (id: string) => id.startsWith("acct-airport-");
 
 function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
-  if (isAirport(account.id)) return <Plane className={className} />;
+  if (account.accountType === "airport") return <Plane className={className} />;
   if (account.stage === "competitor") return <Swords className={className} />;
   if (account.accountType === "large_venue") return <Building2 className={className} />;
   return <Grid3X3 className={className} />;
@@ -225,10 +225,10 @@ function TypeToggle({ type, active, onClick }: { type: AccountType; active: bool
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
-        active ? "border-foreground/20 bg-foreground/5" : "border-transparent bg-muted/30 text-muted-foreground opacity-50"
+       active ? "border-foreground/20 bg-foreground/5" : "border-transparent bg-muted/30 text-muted-foreground opacity-50"
       }`}>
-      {type === "large_venue" ? <Building2 className="w-3 h-3" /> : <Grid3X3 className="w-3 h-3" />}
-      {type === "large_venue" ? "Large Venue" : "Fleet Operator"}
+      {type === "airport" ? <Plane className="w-3 h-3" /> : type === "large_venue" ? <Building2 className="w-3 h-3" /> : <Grid3X3 className="w-3 h-3" />}
+      {type === "airport" ? "Airport" : type === "large_venue" ? "Large Venue" : "Fleet Operator"}
       <span className="text-muted-foreground text-[10px]">{count}</span>
     </button>
   );
@@ -303,7 +303,7 @@ export default function FlashParkingMap() {
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
-  const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator"]));
+  const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator", "airport"]));
   const [showDeployed, setShowDeployed] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
@@ -417,7 +417,7 @@ export default function FlashParkingMap() {
           <div className="px-3 pb-2">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Type</p>
             <div className="flex gap-1">
-              {(["large_venue", "fleet_operator"] as AccountType[]).map((t) => (
+              {(["large_venue", "fleet_operator", "airport"] as AccountType[]).map((t) => (
                 <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} />
               ))}
             </div>
