@@ -1546,9 +1546,12 @@ function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange 
     );
   };
 
+  // Show empty state when no real data exists, even if websiteUrl is set
+  const hasRealData = hasDiscovered && (currentLocalNiches.length > 0 || savedNiches.length > 0 || savedLeads.length > 0 || !!gtmTreeData);
+
   const mainContent = (
     <div className="flex flex-col h-full min-h-0">
-      {!hasWebsiteContext && !hasDiscovered ? <EmptyState /> : showSkeleton ? discoveryLoading : (
+      {!hasRealData && !showSkeleton ? <EmptyState /> : showSkeleton ? discoveryLoading : (
         <div className="flex flex-col flex-1 min-h-0 w-full">
           {/* Consolidated header strip: URL + location + summary */}
           <div className="border-b border-border/40 bg-card/30 px-3 py-2 shrink-0">
