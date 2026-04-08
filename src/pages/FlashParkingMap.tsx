@@ -22,6 +22,9 @@ import {
   type AccountStage,
   type AccountType,
 } from "@/data/flash-prospects";
+import { FLASH_AIRPORT_ACCOUNTS } from "@/data/flash-airports";
+
+const ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKesJxuvh-sKL1z_gCj371z0";
 const MAP_ID = "flash-parking-map";
