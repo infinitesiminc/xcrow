@@ -413,33 +413,54 @@ export default function FlashParkingMap() {
     setLoadingLeads(prev => new Set(prev).add(account.id));
     try {
       const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const vendorContext = account.currentVendor ? ` They currently use ${account.currentVendor} for parking.` : "";
+      const typeContext = account.accountType === "airport" ? "airport parking operations" : account.accountType === "large_venue" ? "large venue parking management" : "fleet/parking operations";
+
       const { data, error } = await supabase.functions.invoke("leadgen-chat", {
         body: {
           website: account.website,
           messages: [{
             role: "user",
-            content: `Find 5 decision-makers at ${account.name} (${domain}) who would buy parking management software. Focus on ${account.focusArea}. Use run_lead_search immediately.`
+            content: `You are prospecting ${account.name} (${domain}), a ${typeContext} company in ${account.hqCity} with ~${account.estimatedSpaces} parking spaces across ${account.facilityCount} facilities.${vendorContext} Focus area: ${account.focusArea}.
+
+First, define the ideal buyer persona for selling Flash parking management software to this account. Consider their industry, size, and current vendor.
+
+Then find the top 5 decision-makers matching that persona. For each lead, assign a fit score 0-100 based on:
+- Title/seniority alignment with parking technology purchasing
+- Company relevance to Flash's parking solutions
+- Decision-making authority
+
+Return leads ranked by score (highest first). Include a "score" field (0-100) and a "reason" field explaining why they're a good prospect.
+
+Use run_lead_search immediately.`
           }]
         },
       });
       if (error) throw error;
       const reader = (data as ReadableStream<Uint8Array>).getReader();
       const collectedLeads: any[] = [];
+      let personaText = "";
       await parseSSEStream(reader, {
         onLeads: (leads) => {
           collectedLeads.push(...leads);
-          setAccountLeads(prev => ({ ...prev, [account.id]: [...collectedLeads] }));
+          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
+          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText, leads: sorted } }));
+        },
+        onTextDelta: (chunk) => {
+          personaText += chunk;
+          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText, leads: [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5) } }));
         },
         onDone: () => {
-          setAccountLeads(prev => ({ ...prev, [account.id]: collectedLeads.length > 0 ? collectedLeads : [] }));
+          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
+          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText || undefined, leads: sorted } }));
         }
       });
       if (collectedLeads.length === 0) {
-        setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+        setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText || undefined, leads: [] } }));
       }
     } catch (err) {
       console.error("Find contacts error:", err);
-      setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+      setAccountLeads(prev => ({ ...prev, [account.id]: { leads: [] } }));
     } finally {
       setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
     }
