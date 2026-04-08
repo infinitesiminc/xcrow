@@ -423,6 +423,7 @@ async function searchApollopeople(
     });
   }
   if (args.target_industries?.length) fullBody.q_organization_keyword_tags = args.target_industries;
+  if (args.organization_domains?.length) fullBody.q_organization_domains = args.organization_domains.join("\n");
   attempts.push({ body: { ...fullBody }, label: "full-filters" });
 
   // Attempt 2: Drop industry keywords (most restrictive filter)
