@@ -112,6 +112,40 @@ export const COMPETITORS: Record<string, CompetitorData> = {
       { q: "Is there a contract?", a: "No. Xcrow is free to start with no commitments. ZoomInfo typically requires annual contracts starting at $30K+." },
     ],
   },
+  linkedin: {
+    slug: "linkedin",
+    name: "LinkedIn Sales Navigator",
+    tagline: "LinkedIn charges $120/mo for 50 InMails. Xcrow gives you 500 leads with emails for $49.",
+    description:
+      "LinkedIn Sales Navigator is the go-to tool for social selling — advanced search, InMail credits, and lead recommendations within the LinkedIn ecosystem. But you're locked inside LinkedIn's walled garden: no email addresses, capped InMails, and pricing that scales fast. Xcrow gives you direct email access to decision-makers at a fraction of the cost.",
+    seoTitle: "Xcrow vs LinkedIn Sales Navigator — 10× the Leads, 60% Less Cost",
+    seoDescription:
+      "Compare Xcrow and LinkedIn Sales Navigator. Get 500 leads with direct emails for $49/mo instead of 50 InMails for $120/mo. No LinkedIn subscription needed.",
+    heroHeadline: "50 InMails.",
+    heroAccent: "Or 500 Leads With Emails.",
+    painPoints: [
+      { title: "$120/mo for 50 messages", desc: "Sales Navigator Core costs $119.99/mo and gives you just 50 InMail credits. That's $2.40 per message — and most get ignored." },
+      { title: "No email addresses — ever", desc: "LinkedIn never gives you direct email addresses. You're stuck inside their platform, sending messages that compete with spam and recruiter noise." },
+      { title: "You don't own the data", desc: "Cancel your subscription and your saved leads, notes, and lists disappear. With Xcrow, you get real email addresses you keep forever." },
+      { title: "Enterprise pricing scales fast", desc: "Advanced is $179.99/mo. Advanced Plus starts at ~$1,600/seat/year. For a 5-person team, that's $60K+/year on LinkedIn alone." },
+    ],
+    comparison: [
+      { feature: "Direct email addresses", xcrow: true, competitor: false },
+      { feature: "500+ leads per month", xcrow: true, competitor: "50 InMails" },
+      { feature: "AI-drafted outreach per lead", xcrow: true, competitor: false },
+      { feature: "Per-lead fit scoring", xcrow: true, competitor: false },
+      { feature: "One URL → full prospect map", xcrow: true, competitor: false },
+      { feature: "Free to start", xcrow: true, competitor: false },
+      { feature: "InMail messaging", xcrow: false, competitor: true },
+      { feature: "LinkedIn network insights", xcrow: false, competitor: true },
+    ],
+    faq: [
+      { q: "Does Xcrow replace LinkedIn Sales Navigator?", a: "For outbound prospecting, yes. Sales Navigator is great for social selling within LinkedIn, but if you need direct email addresses and high-volume outreach, Xcrow delivers 10× more contacts at 60% less cost." },
+      { q: "How does pricing compare?", a: "LinkedIn Sales Navigator Core is $119.99/mo for 50 InMails. Xcrow Pro is $49/mo for 500 leads with verified email addresses. You do the math." },
+      { q: "Can I use both?", a: "Yes — many users use Xcrow for lead discovery and email outreach, and LinkedIn for relationship warming and social proof. They complement each other." },
+      { q: "Do I get LinkedIn profile links?", a: "Yes. Every Xcrow lead includes a verified LinkedIn profile URL alongside their direct email address." },
+    ],
+  },
 };
 
 export const COMPETITOR_SLUGS = Object.keys(COMPETITORS);
