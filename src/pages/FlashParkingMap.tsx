@@ -34,7 +34,7 @@ const MAP_ID = "flash-parking-map";
 const isAirport = (id: string) => id.startsWith("acct-airport-");
 
 function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
-  if (isAirport(account.id)) return <Plane className={className} />;
+  if (account.accountType === "airport") return <Plane className={className} />;
   if (account.stage === "competitor") return <Swords className={className} />;
   if (account.accountType === "large_venue") return <Building2 className={className} />;
   return <Grid3X3 className={className} />;
