@@ -1514,33 +1514,42 @@ function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange 
   const showSkeleton = hasWebsiteContext && (isDiscovering || isGtmLoading);
 
   const EmptyState = () => {
-    const [emptyInput, setEmptyInput] = useState("");
+    const [emptyInput, setEmptyInput] = useState(websiteUrl || "");
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Globe className="w-7 h-7 text-primary" />
           </div>
-          <h2 className="text-lg font-semibold text-foreground mb-2">Enter a website to start</h2>
-          <p className="text-sm text-muted-foreground mb-6">Drop any company URL to discover their products, map buyer personas, and generate qualified leads.</p>
+          <h2 className="text-lg font-semibold text-foreground mb-2">Paste a website to hunt leads</h2>
+          <p className="text-sm text-muted-foreground mb-6">Drop any company URL — AI maps the business, finds decision-makers, and delivers leads with emails.</p>
           <form
             className="flex gap-2 max-w-sm mx-auto"
-            onSubmit={(e) => { e.preventDefault(); const url = emptyInput.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              const url = emptyInput.trim();
+              if (url) {
+                setWebsiteUrl(url);
+                navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
+              }
+            }}
           >
             <div className="relative flex-1">
               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
+                autoFocus
                 value={emptyInput}
                 onChange={(e) => setEmptyInput(e.target.value)}
                 placeholder="company.com"
-                className="pl-9 h-10"
+                className="pl-9 h-12 text-base border-primary/30 focus:border-primary shadow-sm"
               />
             </div>
-            <Button type="submit" className="gap-1.5" disabled={!emptyInput.trim()}>
+            <Button type="submit" size="lg" className="gap-1.5 h-12 px-5" disabled={!emptyInput.trim()}>
               <Sparkles className="w-4 h-4" />
               Analyze
             </Button>
           </form>
+          <p className="text-xs text-muted-foreground/50 mt-4">Free to start · No credit card required</p>
         </div>
       </div>
     );
