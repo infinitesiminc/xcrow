@@ -34,7 +34,9 @@ function AccountPin({ stage, accountType }: { stage: AccountStage; accountType: 
         className="w-9 h-9 rounded-full border-[3px] border-white shadow-lg transition-all group-hover:scale-125 flex items-center justify-center"
         style={{ backgroundColor: cfg.markerColor }}
       >
-        {accountType === "large_venue" ? (
+        {stage === "competitor" ? (
+          <Swords className="w-4 h-4 text-white" />
+        ) : accountType === "large_venue" ? (
           <Building2 className="w-4 h-4 text-white" />
         ) : (
           <Grid3X3 className="w-4 h-4 text-white" />
