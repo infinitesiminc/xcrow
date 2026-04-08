@@ -89,6 +89,7 @@ const App = () => (
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/admin" element={<AuthGate><Navbar /><Admin /><Footer /></AuthGate>} />
+              <Route path="/flashparkingmap" element={<FlashParkingMap />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
