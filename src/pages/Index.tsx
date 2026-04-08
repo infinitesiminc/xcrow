@@ -252,13 +252,13 @@ export default function Index() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <motion.div {...fadeInView()} className="text-center mb-16">
               <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
-                How it works
+                Dead simple
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                From URL to Pipeline in 4 Steps
+                Your SDR Takes a Week.<br /><span className="text-primary">Xcrow Takes 10 Seconds.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                No spreadsheets. No guesswork. No GTM expertise required.
+                No spreadsheets. No filters. No training. No hiring.
               </p>
             </motion.div>
 
