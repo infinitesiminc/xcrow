@@ -27,17 +27,29 @@ const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKes
 const MAP_ID = "flash-parking-map";
 
 /* ── Account HQ Pin ── */
-function AccountPin({ stage, accountType }: { stage: AccountStage; accountType: AccountType }) {
-  const cfg = STAGE_CONFIG[stage];
+function AccountPin({ account }: { account: FlashAccount }) {
+  const cfg = STAGE_CONFIG[account.stage];
+  const isFlashHQ = account.id === "acct-flash-hq";
+
+  if (isFlashHQ) {
+    return (
+      <div className="relative cursor-pointer group">
+        <div className="w-11 h-11 rounded-full border-[3px] border-primary shadow-lg transition-all group-hover:scale-125 flex items-center justify-center bg-white">
+          <img src={flashLogo} alt="Flash HQ" className="w-7 h-7 object-contain" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative cursor-pointer group">
       <div
         className="w-9 h-9 rounded-full border-[3px] border-white shadow-lg transition-all group-hover:scale-125 flex items-center justify-center"
         style={{ backgroundColor: cfg.markerColor }}
       >
-        {stage === "competitor" ? (
+        {account.stage === "competitor" ? (
           <Swords className="w-4 h-4 text-white" />
-        ) : accountType === "large_venue" ? (
+        ) : account.accountType === "large_venue" ? (
           <Building2 className="w-4 h-4 text-white" />
         ) : (
           <Grid3X3 className="w-4 h-4 text-white" />

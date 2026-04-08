@@ -61,6 +61,24 @@ export const FLASH_PLATFORM_STATS = {
 /* ── All accounts ── */
 export const FLASH_ACCOUNTS: FlashAccount[] = [
   // ══════════════════════════════════════════
+  // FLASH HQ
+  // ══════════════════════════════════════════
+  {
+    id: "acct-flash-hq",
+    name: "Flash (HQ)",
+    accountType: "fleet_operator",
+    stage: "active",
+    estimatedSpaces: "N/A",
+    facilityCount: "16,000+ locations",
+    focusArea: "Cloud-based PARCS & EV Charging platform",
+    hqCity: "Austin, TX",
+    hqLat: 30.2672,
+    hqLng: -97.7431,
+    website: "https://flashparking.com",
+    differentiator: "Platform powering 16,000+ locations, 30,000+ network, 50M+ mobile users",
+  },
+
+  // ══════════════════════════════════════════
   // ACTIVE PARTNERS
   // ══════════════════════════════════════════
   {
