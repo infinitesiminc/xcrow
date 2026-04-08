@@ -192,36 +192,42 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
                   </div>
                 )}
                 {accountLeads[account.id] && (
-                  <div className="space-y-2">
-                    {accountLeads[account.id].leads.map((lead, i) => (
-                      <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/40">
-                        <span className="text-[10px] font-bold text-muted-foreground mt-0.5 shrink-0 w-4">{i + 1}</span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-1">
-                            <p className="text-xs font-semibold truncate">{lead.name}</p>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{accountLeads[account.id].leads.length} Decision-Makers</p>
+                    {accountLeads[account.id].leads.map((lead, i) => {
+                      const initials = lead.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+                      return (
+                        <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-muted/30 border border-border/50 hover:border-border transition-colors">
+                          <div className="relative shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                              {initials}
+                            </div>
                             {lead.score != null && (
-                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
-                                lead.score >= 80 ? "bg-green-100 text-green-700" : lead.score >= 60 ? "bg-yellow-100 text-yellow-700" : "bg-muted text-muted-foreground"
+                              <span className={`absolute -bottom-1 -right-1 text-[9px] font-bold px-1 py-px rounded-full border border-background ${
+                                lead.score >= 80 ? "bg-green-500 text-white" : lead.score >= 60 ? "bg-yellow-500 text-white" : "bg-muted text-muted-foreground"
                               }`}>{lead.score}</span>
                             )}
                           </div>
-                          {lead.title && <p className="text-[11px] text-muted-foreground">{lead.title}</p>}
-                          {lead.reason && <p className="text-[10px] text-muted-foreground mt-0.5">💡 {lead.reason}</p>}
-                          <div className="flex gap-2 mt-1">
-                            {lead.email && (
-                              <a href={`mailto:${lead.email}`} className="text-primary hover:underline text-[10px] inline-flex items-center gap-0.5">
-                                <Mail className="w-3 h-3" /> Email
-                              </a>
-                            )}
-                            {lead.linkedin && (
-                              <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-[10px] inline-flex items-center gap-0.5">
-                                <Linkedin className="w-3 h-3" /> LinkedIn
-                              </a>
-                            )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold leading-tight truncate">{lead.name}</p>
+                            {lead.title && <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{lead.title}</p>}
+                            {lead.reason && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug">{lead.reason}</p>}
+                            <div className="flex gap-3 mt-1.5">
+                              {lead.email && (
+                                <a href={`mailto:${lead.email}`} className="text-primary hover:text-primary/80 text-[10px] inline-flex items-center gap-1 font-medium">
+                                  <Mail className="w-3 h-3" /> Email
+                                </a>
+                              )}
+                              {lead.linkedin && (
+                                <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 text-[10px] inline-flex items-center gap-1 font-medium">
+                                  <Linkedin className="w-3 h-3" /> LinkedIn
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
