@@ -1363,14 +1363,39 @@ function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange 
   }, [setSearchParams]);
 
   // Auto-load most recent workspace for logged-in users with no context
+  // Only auto-load workspaces that have saved leads or niches (skip empty ones)
   const autoLoadedRef = useRef(false);
   useEffect(() => {
     if (autoLoadedRef.current) return;
     if (!user || hasDiscovered || isDiscovering || searchParams.get("website") || sessionStorage.getItem("pendingWebsite") || websiteUrl) return;
     if (workspaces.length > 0) {
       autoLoadedRef.current = true;
-      const most = workspaces[0]; // already sorted by last_accessed_at DESC
-      handleSwitchWorkspace(most.website_key);
+      // Try to find a workspace with actual data by checking cache
+      (async () => {
+        for (const ws of workspaces) {
+          const { data: cached } = await supabase
+            .from("leadhunter_cache")
+            .select("id")
+            .eq("website_key", ws.website_key)
+            .gt("expires_at", new Date().toISOString())
+            .maybeSingle();
+          if (cached) {
+            handleSwitchWorkspace(ws.website_key);
+            return;
+          }
+          // Also check if there are saved leads
+          const { count } = await supabase
+            .from("saved_leads")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("workspace_key", ws.website_key);
+          if (count && count > 0) {
+            handleSwitchWorkspace(ws.website_key);
+            return;
+          }
+        }
+        // No workspace with data found — show empty state
+      })();
     }
   }, [user, workspaces, hasDiscovered, isDiscovering, searchParams, websiteUrl, handleSwitchWorkspace]);
 
