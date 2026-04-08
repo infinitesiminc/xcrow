@@ -58,8 +58,8 @@ export default function EnterpriseSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/enterprise"
+                    <NavLink
+                    to="/admin"
                     end
                     className={({ isActive }) =>
                       `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
@@ -83,12 +83,12 @@ export default function EnterpriseSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {ENTERPRISE_ACCOUNTS.map((account) => {
-                const isActive = location.pathname === `/enterprise/${account.slug}`;
+                const isActive = location.pathname === `/admin/${account.slug}`;
                 return (
                   <SidebarMenuItem key={account.id}>
                     <SidebarMenuButton asChild>
                       <NavLink
-                        to={`/enterprise/${account.slug}`}
+                        to={`/admin/${account.slug}`}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
                           isActive
                             ? "bg-accent text-accent-foreground font-medium"
