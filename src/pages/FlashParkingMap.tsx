@@ -168,6 +168,58 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
                 Website <ExternalLink className="w-3 h-3" />
               </a>
             </div>
+
+            {/* Leadgen: Find Decision-Makers */}
+            {account.id !== "acct-flash-hq" && (
+              <div className="pt-2 border-t border-border space-y-3">
+                {!accountLeads[account.id] && !loadingLeads.has(account.id) && (
+                  <Button size="sm" variant="outline" className="w-full" onClick={() => onFindContacts(account)}>
+                    <Users className="w-4 h-4 mr-1.5" /> Find Decision-Makers
+                  </Button>
+                )}
+                {loadingLeads.has(account.id) && (
+                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Finding contacts…
+                  </div>
+                )}
+                {accountLeads[account.id] && (
+                  <div className="space-y-2">
+                    {accountLeads[account.id].persona && (
+                      <p className="text-[10px] text-muted-foreground italic">{accountLeads[account.id].persona}</p>
+                    )}
+                    {accountLeads[account.id].leads.map((lead, i) => (
+                      <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/40">
+                        <span className="text-[10px] font-bold text-muted-foreground mt-0.5 shrink-0 w-4">{i + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <p className="text-xs font-semibold truncate">{lead.name}</p>
+                            {lead.score != null && (
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                                lead.score >= 80 ? "bg-green-100 text-green-700" : lead.score >= 60 ? "bg-yellow-100 text-yellow-700" : "bg-muted text-muted-foreground"
+                              }`}>{lead.score}</span>
+                            )}
+                          </div>
+                          {lead.title && <p className="text-[11px] text-muted-foreground">{lead.title}</p>}
+                          {lead.reason && <p className="text-[10px] text-muted-foreground mt-0.5">💡 {lead.reason}</p>}
+                          <div className="flex gap-2 mt-1">
+                            {lead.email && (
+                              <a href={`mailto:${lead.email}`} className="text-primary hover:underline text-[10px] inline-flex items-center gap-0.5">
+                                <Mail className="w-3 h-3" /> Email
+                              </a>
+                            )}
+                            {lead.linkedin && (
+                              <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-[10px] inline-flex items-center gap-0.5">
+                                <Linkedin className="w-3 h-3" /> LinkedIn
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
         {site && (
