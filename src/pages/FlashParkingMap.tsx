@@ -383,7 +383,6 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 /* ── Main page ── */
 export default function FlashParkingMap() {
   const isMobile = useIsMobile();
-  const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
   const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator", "airport"]));
