@@ -30,6 +30,15 @@ const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKes
 const MAP_ID = "flash-parking-map";
 
 /* ── Account HQ Pin ── */
+const isAirport = (id: string) => id.startsWith("acct-airport-");
+
+function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
+  if (isAirport(account.id)) return <Plane className={className} />;
+  if (account.stage === "competitor") return <Swords className={className} />;
+  if (account.accountType === "large_venue") return <Building2 className={className} />;
+  return <Grid3X3 className={className} />;
+}
+
 function AccountPin({ account }: { account: FlashAccount }) {
   const cfg = STAGE_CONFIG[account.stage];
   const isFlashHQ = account.id === "acct-flash-hq";
