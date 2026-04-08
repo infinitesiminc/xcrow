@@ -1024,6 +1024,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -119.767998,
     website: "https://www.renoairport.com/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-pvd",
@@ -1353,6 +1354,7 @@ export const FLASH_AIRPORT_ACCOUNTS: FlashAccount[] = [
     hqLng: -77.455803,
     website: "http://www.mwaa.com/dulles/",
     differentiator: "Major US commercial airport; high-volume parking modernization opportunity",
+    currentVendor: "Unknown",
   },
   {
     id: "acct-airport-hou",
