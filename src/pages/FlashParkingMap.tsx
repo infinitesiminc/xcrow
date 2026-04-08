@@ -267,7 +267,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
       ))}
       {accounts.map((acct) => (
         <AdvancedMarker key={acct.id} position={{ lat: acct.hqLat, lng: acct.hqLng }} onClick={() => onSelectAccount(acct)}>
-          <AccountPin stage={acct.stage} accountType={acct.accountType} />
+          <AccountPin account={acct} />
         </AdvancedMarker>
       ))}
     </>
