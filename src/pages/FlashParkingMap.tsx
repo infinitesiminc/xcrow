@@ -305,7 +305,7 @@ function TypeToggle({ type, active, onClick }: { type: AccountType; active: bool
        active ? "border-foreground/20 bg-foreground/5" : "border-transparent bg-muted/30 text-muted-foreground opacity-50"
       }`}>
       {type === "airport" ? <Plane className="w-3 h-3" /> : type === "large_venue" ? <Building2 className="w-3 h-3" /> : <Grid3X3 className="w-3 h-3" />}
-      {type === "airport" ? "Airport" : type === "large_venue" ? "Large Venue" : "Fleet Operator"}
+      {type === "airport" ? "Airport" : type === "large_venue" ? "Large Venue" : "Parking Operator"}
       <span className="text-muted-foreground text-[10px]">{count}</span>
     </button>
   );
@@ -461,7 +461,7 @@ export default function FlashParkingMap() {
       }
 
       await new Promise((r) => setTimeout(r, 800));
-      addLog(`Defining buyer persona for ${account.accountType === "airport" ? "airport authority" : account.accountType === "large_venue" ? "venue operator" : "fleet operator"}`);
+      addLog(`Defining buyer persona for ${account.accountType === "airport" ? "airport authority" : account.accountType === "large_venue" ? "venue operator" : "parking operator"}`);
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
