@@ -114,59 +114,45 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
           </button>
         </div>
         {account && (
-          <div className="p-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                <AccountIcon account={account} className="w-5 h-5 text-white" />
+          <div className="p-3 space-y-2">
+            {/* Compact header row */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+                <AccountIcon account={account} className="w-4 h-4 text-white" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{account.hqCity}</p>
-                <span className="inline-block text-[10px] px-2 py-0.5 rounded-full font-medium text-white mt-1"
-                  style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                  {STAGE_CONFIG[account.stage].label}
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-muted/40 rounded-lg p-3">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Est. Spaces</p>
-                <p className="font-bold text-xl leading-tight mt-1">{account.estimatedSpaces}</p>
-              </div>
-              <div className="bg-muted/40 rounded-lg p-3">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Facilities</p>
-                <p className="font-bold text-xl leading-tight mt-1">{account.facilityCount}</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Focus Area</p>
-                <p className="text-foreground text-sm">{account.focusArea}</p>
-              </div>
-              {account.currentVendor && (
-                <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Current Vendor</p>
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive">
-                    <Swords className="w-3.5 h-3.5" />
-                    {account.currentVendor}
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] text-muted-foreground leading-tight">{account.hqCity}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[9px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+                    {STAGE_CONFIG[account.stage].label}
                   </span>
+                  <span className="text-[10px] text-muted-foreground">{account.estimatedSpaces} spaces · {account.facilityCount}</span>
                 </div>
-              )}
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Differentiator</p>
-                <p className="text-muted-foreground text-sm">{account.differentiator}</p>
               </div>
             </div>
-            <div className="flex gap-3 pt-2 border-t border-border">
+
+            {/* Inline metadata chips */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+              {account.currentVendor && (
+                <span className="inline-flex items-center gap-1 text-destructive font-medium">
+                  <Swords className="w-3 h-3" /> {account.currentVendor}
+                </span>
+              )}
+              <span className="text-muted-foreground">{account.focusArea}</span>
+            </div>
+
+            {/* Links row */}
+            <div className="flex items-center gap-3 text-[11px]">
+              <a href={account.website} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline font-medium">
+                Website <ExternalLink className="w-3 h-3" />
+              </a>
               {account.caseStudyUrl && (
                 <a href={account.caseStudyUrl} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                  className="inline-flex items-center gap-1 text-primary hover:underline font-medium">
                   Case study <ExternalLink className="w-3 h-3" />
                 </a>
               )}
-              <a href={account.website} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
-                Website <ExternalLink className="w-3 h-3" />
-              </a>
             </div>
 
             {/* Leadgen: Find Decision-Makers */}
