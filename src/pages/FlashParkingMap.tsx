@@ -1,6 +1,4 @@
 import { useState, useMemo, useCallback } from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -384,7 +382,6 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 
 /* ── Main page ── */
 export default function FlashParkingMap() {
-  const { isSuperAdmin, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
@@ -526,8 +523,7 @@ export default function FlashParkingMap() {
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
 
 
-  if (authLoading) return null;
-  if (!isSuperAdmin) return <Navigate to="/" replace />;
+
 
   if (!API_KEY) {
     return (

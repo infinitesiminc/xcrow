@@ -40,6 +40,7 @@ const Demo = lazy(() => import("./pages/Demo.tsx"));
 const Texas = lazy(() => import("./pages/Texas.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const FlashParkingMap = lazy(() => import("./pages/FlashParkingMap.tsx"));
+const EnterpriseLayout = lazy(() => import("./pages/EnterpriseLayout.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -89,8 +90,11 @@ const App = () => (
               <Route path="/leadhunter" element={<Leadgen />} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
               <Route path="/admin" element={<AuthGate><Navbar /><Admin /><Footer /></AuthGate>} />
-              <Route path="/flashparkingmap" element={<AuthGate><FlashParkingMap /></AuthGate>} />
-
+              <Route path="/flashparkingmap" element={<Navigate to="/enterprise/flash" replace />} />
+              <Route path="/enterprise" element={<EnterpriseLayout />}>
+                <Route index element={<Admin />} />
+                <Route path="flash" element={<FlashParkingMap />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
