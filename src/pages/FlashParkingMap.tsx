@@ -217,7 +217,7 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
             ) : (
               <Grid3X3 className="w-3 h-3 text-muted-foreground shrink-0" />
             )}
-            <p className="text-xs font-semibold leading-tight truncate">{account.name}</p>
+            <p className="text-xs font-semibold leading-tight">{account.name}</p>
           </div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{account.hqCity}</p>
         </div>
@@ -229,7 +229,7 @@ function AccountCard({ account, isSelected, onClick }: { account: FlashAccount; 
         <span className="text-muted-foreground"><span className="font-medium text-foreground">{account.estimatedSpaces}</span> spaces</span>
         <span className="text-muted-foreground">{account.facilityCount}</span>
       </div>
-      <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{account.differentiator}</p>
+      <p className="text-[10px] text-muted-foreground mt-0.5">{account.differentiator}</p>
     </button>
   );
 }
