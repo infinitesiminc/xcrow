@@ -199,7 +199,7 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
                               </span>
                               <p className="text-xs font-semibold text-foreground truncate">{lead.name}</p>
                             </div>
-                            {lead.title && <p className="text-[11px] text-muted-foreground ml-6.5">{lead.title}</p>}
+                            {lead.title && <p className="text-[11px] text-muted-foreground ml-7">{lead.title}</p>}
                           </div>
                           {lead.score != null && (
                             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
@@ -212,9 +212,9 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
                           )}
                         </div>
                         {lead.reason && (
-                          <p className="text-[10px] text-primary/70 ml-6.5">💡 {lead.reason}</p>
+                          <p className="text-[10px] text-primary/70 ml-7">💡 {lead.reason}</p>
                         )}
-                        <div className="flex items-center gap-3 flex-wrap ml-6.5">
+                        <div className="flex items-center gap-3 flex-wrap ml-7">
                           {lead.email && (
                             <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
                               <Mail className="w-3 h-3" /> {lead.email}
