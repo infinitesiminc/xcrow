@@ -867,8 +867,8 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqCity: "Nashville, TN",
     hqLat: 36.1627,
     hqLng: -86.7816,
-    website: "https://citizensparking.com",
-    differentiator: "Growing SE operator; healthcare and hospitality focus",
+    website: "https://www.lanierparking.com",
+    differentiator: "Growing SE operator (now Lanier Parking); healthcare and hospitality focus",
   },
   {
     id: "acct-central",
