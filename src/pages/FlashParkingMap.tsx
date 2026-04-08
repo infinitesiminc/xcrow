@@ -78,12 +78,19 @@ function DeployedSitePin() {
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
+interface AccountLeadResult {
+  persona?: string;
+  leads: any[];
+}
+
 function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
-  accountLeads: Record<string, any[]>; loadingLeads: Set<string>; onFindContacts: (a: FlashAccount) => void;
+  accountLeads: Record<string, AccountLeadResult>; loadingLeads: Set<string>; onFindContacts: (a: FlashAccount) => void;
 }) {
   const isOpen = !!(account || site);
-  const leads = account ? accountLeads[account.id] : undefined;
+  const result = account ? accountLeads[account.id] : undefined;
+  const leads = result?.leads;
+  const persona = result?.persona;
   const isLoading = account ? loadingLeads.has(account.id) : false;
 
   return (
@@ -168,19 +175,46 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
                 {isLoading && (
                   <div className="flex items-center gap-2 justify-center py-3 text-xs text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Searching contacts…
+                    Analyzing persona & searching…
+                  </div>
+                )}
+                {persona && (
+                  <div className="bg-primary/5 border border-primary/10 rounded-lg p-2.5">
+                    <p className="text-[10px] text-primary/70 uppercase tracking-wider font-semibold mb-1">🎯 AI-Defined Persona</p>
+                    <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-4">{persona}</p>
                   </div>
                 )}
                 {leads && leads.length > 0 && (
                   <div className="space-y-1.5">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                      Decision-Makers ({leads.length})
+                      Top {leads.length} Ranked Leads
                     </p>
                     {leads.map((lead: any, i: number) => (
                       <div key={i} className="bg-muted/40 rounded-lg p-2.5 space-y-1">
-                        <p className="text-xs font-semibold text-foreground">{lead.name}</p>
-                        {lead.title && <p className="text-[11px] text-muted-foreground">{lead.title}</p>}
-                        <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-primary bg-primary/10 w-5 h-5 rounded-full flex items-center justify-center shrink-0">
+                                {i + 1}
+                              </span>
+                              <p className="text-xs font-semibold text-foreground truncate">{lead.name}</p>
+                            </div>
+                            {lead.title && <p className="text-[11px] text-muted-foreground ml-7">{lead.title}</p>}
+                          </div>
+                          {lead.score != null && (
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                              lead.score >= 80 ? "bg-green-500/10 text-green-600" :
+                              lead.score >= 60 ? "bg-yellow-500/10 text-yellow-600" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {lead.score}
+                            </span>
+                          )}
+                        </div>
+                        {lead.reason && (
+                          <p className="text-[10px] text-primary/70 ml-7">💡 {lead.reason}</p>
+                        )}
+                        <div className="flex items-center gap-3 flex-wrap ml-7">
                           {lead.email && (
                             <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
                               <Mail className="w-3 h-3" /> {lead.email}
@@ -197,7 +231,7 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
                     ))}
                   </div>
                 )}
-                {leads && leads.length === 0 && (
+                {leads && leads.length === 0 && !isLoading && (
                   <p className="text-xs text-muted-foreground text-center py-2">No contacts found</p>
                 )}
               </div>
@@ -361,7 +395,7 @@ export default function FlashParkingMap() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [accountLeads, setAccountLeads] = useState<Record<string, any[]>>({});
+  const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadResult>>({});
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
 
   const toggleStage = useCallback((s: AccountStage) => {
@@ -406,33 +440,54 @@ export default function FlashParkingMap() {
     setLoadingLeads(prev => new Set(prev).add(account.id));
     try {
       const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const vendorContext = account.currentVendor ? ` They currently use ${account.currentVendor} for parking.` : "";
+      const typeContext = account.accountType === "airport" ? "airport parking operations" : account.accountType === "large_venue" ? "large venue parking management" : "fleet/parking operations";
+
       const { data, error } = await supabase.functions.invoke("leadgen-chat", {
         body: {
           website: account.website,
           messages: [{
             role: "user",
-            content: `Find 5 decision-makers at ${account.name} (${domain}) who would buy parking management software. Focus on ${account.focusArea}. Use run_lead_search immediately.`
+            content: `You are prospecting ${account.name} (${domain}), a ${typeContext} company in ${account.hqCity} with ~${account.estimatedSpaces} parking spaces across ${account.facilityCount} facilities.${vendorContext} Focus area: ${account.focusArea}.
+
+First, define the ideal buyer persona for selling Flash parking management software to this account. Consider their industry, size, and current vendor.
+
+Then find the top 5 decision-makers matching that persona. For each lead, assign a fit score 0-100 based on:
+- Title/seniority alignment with parking technology purchasing
+- Company relevance to Flash's parking solutions
+- Decision-making authority
+
+Return leads ranked by score (highest first). Include a "score" field (0-100) and a "reason" field explaining why they're a good prospect.
+
+Use run_lead_search immediately.`
           }]
         },
       });
       if (error) throw error;
       const reader = (data as ReadableStream<Uint8Array>).getReader();
       const collectedLeads: any[] = [];
+      let personaText = "";
       await parseSSEStream(reader, {
         onLeads: (leads) => {
           collectedLeads.push(...leads);
-          setAccountLeads(prev => ({ ...prev, [account.id]: [...collectedLeads] }));
+          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
+          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText, leads: sorted } }));
+        },
+        onTextDelta: (chunk) => {
+          personaText += chunk;
+          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText, leads: [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5) } }));
         },
         onDone: () => {
-          setAccountLeads(prev => ({ ...prev, [account.id]: collectedLeads.length > 0 ? collectedLeads : [] }));
+          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
+          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText || undefined, leads: sorted } }));
         }
       });
       if (collectedLeads.length === 0) {
-        setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+        setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText || undefined, leads: [] } }));
       }
     } catch (err) {
       console.error("Find contacts error:", err);
-      setAccountLeads(prev => ({ ...prev, [account.id]: [] }));
+      setAccountLeads(prev => ({ ...prev, [account.id]: { leads: [] } }));
     } finally {
       setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
     }
