@@ -1555,7 +1555,21 @@ function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange 
             {/* Row 1: URL + Analyze */}
             <form
               className="flex items-center gap-1.5"
-              onSubmit={(e) => { e.preventDefault(); const url = websiteUrl.trim(); if (url) navigate(`/leadhunter?website=${encodeURIComponent(url)}`); }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const url = websiteUrl.trim();
+                if (!url) return;
+                const newKey = normalizeWorkspaceKey(url);
+                // If the URL changed from current workspace, create a new workspace
+                if (hasDiscovered && newKey !== activeWorkspaceKey) {
+                  handleNewWorkspace();
+                  setTimeout(() => {
+                    navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
+                  }, 0);
+                } else {
+                  navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
+                }
+              }}
             >
               <div className="relative flex-1 min-w-0">
                 <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
@@ -1565,9 +1579,15 @@ function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange 
                   placeholder="yourcompany.com"
                   className="pl-7 h-8 sm:h-7 text-xs"
                   disabled={isDiscovering}
+                  readOnly={hasDiscovered}
+                  onClick={() => {
+                    if (hasDiscovered) {
+                      toast.info("Use the workspace menu to switch or create a new workspace");
+                    }
+                  }}
                 />
               </div>
-              <Button type="submit" variant="outline" size="sm" className="h-8 sm:h-7 text-xs gap-1 px-2 shrink-0" disabled={!websiteUrl.trim() || isDiscovering}>
+              <Button type="submit" variant="outline" size="sm" className="h-8 sm:h-7 text-xs gap-1 px-2 shrink-0" disabled={!websiteUrl.trim() || isDiscovering || hasDiscovered}>
                 {isDiscovering ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                 Analyze
               </Button>
