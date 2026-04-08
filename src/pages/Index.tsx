@@ -177,7 +177,7 @@ export default function Index() {
               </motion.form>
 
               <motion.p {...fadeUp(0.4)} className="text-sm text-muted-foreground/50 mt-5">
-                Free to start · No credit card · Results in 60 seconds
+                Free to start · No credit card · No sales expertise needed
               </motion.p>
             </div>
 
