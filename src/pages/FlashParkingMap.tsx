@@ -397,8 +397,7 @@ export default function FlashParkingMap() {
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
   const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
 
-  if (authLoading) return null;
-  if (!isSuperAdmin) return <Navigate to="/" replace />;
+
 
 
   const toggleStage = useCallback((s: AccountStage) => {
