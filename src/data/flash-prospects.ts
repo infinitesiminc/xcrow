@@ -556,6 +556,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -90.0715,
     website: "https://premiumparking.com",
     differentiator: "Tech-native operator; app-first model",
+    currentVendor: "Proprietary",
   },
   {
     id: "acct-park-n-fly",
