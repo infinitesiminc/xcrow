@@ -532,7 +532,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     hqLng: -87.6278,
     website: "https://interparking.com",
     differentiator: "Major urban market operator in Chicago, LA, NYC",
-  },
+    currentVendor: "Metropolis",
 
   // ══════════════════════════════════════════
   // WHITESPACE
