@@ -89,7 +89,6 @@ interface AccountLead {
 }
 
 interface AccountLeadData {
-  persona?: string;
   leads: AccountLead[];
 }
 
