@@ -730,6 +730,11 @@ function DraftEmailFields({ email, subject, body, onSubjectChange, onBodyChange 
       handleAutoSeed(niches);
     } catch (e: any) {
       toast.error(e.message || "Failed to analyze website");
+      // Reset to empty state so user isn't stuck on a broken workspace
+      setHasDiscovered(false);
+      setWebsiteUrl("");
+      setLocalNiches([]);
+      setLocalWorkspaceKey("");
     } finally {
       setIsDiscovering(false);
       setDiscoveryPhase("");
