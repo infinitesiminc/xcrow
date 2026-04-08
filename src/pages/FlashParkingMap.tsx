@@ -7,11 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, ChevronRight } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
-  CONFIDENCE_CONFIG,
   type FlashLocation,
 } from "@/data/flash-parking-locations";
 import {
@@ -54,51 +53,92 @@ function DeployedSitePin() {
   );
 }
 
-/* ── Account InfoWindow ── */
-function AccountInfoWindow({ account, onClose }: { account: FlashAccount; onClose: () => void }) {
-  const cfg = STAGE_CONFIG[account.stage];
+/* ── Slide-in Detail Panel ── */
+function DetailPanel({ account, site, onClose }: {
+  account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
+}) {
+  const isOpen = !!(account || site);
   return (
-    <InfoWindow position={{ lat: account.hqLat, lng: account.hqLng }} onCloseClick={onClose} maxWidth={360}>
-      <div className="p-1 space-y-2 text-sm">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-base leading-tight">{account.name}</h3>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium text-white" style={{ backgroundColor: cfg.markerColor }}>
-            {cfg.label}
-          </span>
-        </div>
-        <p className="text-gray-500 text-xs">{account.hqCity}</p>
-        <div className="grid grid-cols-2 gap-2 py-1">
-          <div><p className="text-[10px] text-gray-400 uppercase">Est. Spaces</p><p className="font-semibold text-sm">{account.estimatedSpaces}</p></div>
-          <div><p className="text-[10px] text-gray-400 uppercase">Facilities</p><p className="font-semibold text-sm">{account.facilityCount}</p></div>
-        </div>
-        <p><span className="font-medium">Focus:</span> {account.focusArea}</p>
-        <p className="text-gray-500 text-xs">{account.differentiator}</p>
-        <div className="flex gap-3 pt-1">
-          {account.caseStudyUrl && (
-            <a href={account.caseStudyUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
-              Case study <ExternalLink className="w-3 h-3" />
-            </a>
-          )}
-          <a href={account.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
-            Website <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
+    <div className={`absolute top-3 right-3 z-20 w-80 max-h-[calc(100%-24px)] transition-all duration-300 ease-out ${
+      isOpen ? "translate-x-0 opacity-100" : "translate-x-[110%] opacity-0 pointer-events-none"
+    }`}>
+      <div className="bg-background/95 backdrop-blur-lg border border-border rounded-xl shadow-2xl overflow-hidden">
+        <button onClick={onClose}
+          className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors">
+          <X className="w-4 h-4 text-muted-foreground" />
+        </button>
+        {account && (
+          <div className="p-4 space-y-3">
+            <div className="pr-8">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+                  {account.accountType === "large_venue" ? <Building2 className="w-4 h-4 text-white" /> : <Grid3X3 className="w-4 h-4 text-white" />}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm leading-tight">{account.name}</h3>
+                  <p className="text-[11px] text-muted-foreground">{account.hqCity}</p>
+                </div>
+              </div>
+              <span className="inline-block text-[10px] px-2 py-0.5 rounded-full font-medium text-white mt-1"
+                style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+                {STAGE_CONFIG[account.stage].label}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-muted/40 rounded-lg p-2.5">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Est. Spaces</p>
+                <p className="font-bold text-lg leading-tight mt-0.5">{account.estimatedSpaces}</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg p-2.5">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Facilities</p>
+                <p className="font-bold text-lg leading-tight mt-0.5">{account.facilityCount}</p>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Focus Area</p>
+                <p className="text-foreground text-xs">{account.focusArea}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Differentiator</p>
+                <p className="text-muted-foreground text-xs">{account.differentiator}</p>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1 border-t border-border">
+              {account.caseStudyUrl && (
+                <a href={account.caseStudyUrl} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                  Case study <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+              <a href={account.website} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                Website <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        )}
+        {site && (
+          <div className="p-4 space-y-2">
+            <div className="pr-8">
+              <h3 className="font-bold text-sm leading-tight">{site.name}</h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{site.address}</p>
+            </div>
+            <div className="space-y-1 text-xs">
+              <p><span className="font-medium">Operator:</span> {site.operator}</p>
+              <p className="text-muted-foreground">{site.scope}</p>
+              {site.notes && <p className="text-muted-foreground text-[11px]">{site.notes}</p>}
+            </div>
+            {site.sourceUrl && (
+              <a href={site.sourceUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                Source <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        )}
       </div>
-    </InfoWindow>
-  );
-}
-
-/* ── Deployed site InfoWindow ── */
-function DeployedSiteInfoWindow({ location, onClose }: { location: FlashLocation; onClose: () => void }) {
-  return (
-    <InfoWindow position={{ lat: location.lat, lng: location.lng }} onCloseClick={onClose} maxWidth={300}>
-      <div className="p-1 space-y-1 text-sm">
-        <h3 className="font-semibold text-sm leading-tight">{location.name}</h3>
-        <p className="text-gray-500 text-xs">{location.address}</p>
-        <p className="text-xs"><span className="font-medium">Operator:</span> {location.operator}</p>
-        <p className="text-xs text-gray-500">{location.scope}</p>
-      </div>
-    </InfoWindow>
+    </div>
   );
 }
 
@@ -270,6 +310,14 @@ export default function FlashParkingMap() {
     setPanTarget({ lat: l.lat, lng: l.lng });
   }, []);
 
+  const handleCloseDetail = useCallback(() => {
+    setSelectedAccountId(null);
+    setSelectedSiteId(null);
+  }, []);
+
+  const selectedAccount = useMemo(() => FLASH_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
+  const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
+
   if (!API_KEY) {
     return (
       <>
@@ -391,6 +439,9 @@ export default function FlashParkingMap() {
             </Sheet>
           )}
 
+          {/* Detail slide-in panel */}
+          <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail} />
+
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
             {(["active", "target", "whitespace"] as AccountStage[]).map((s) => (
@@ -412,14 +463,10 @@ export default function FlashParkingMap() {
               gestureHandling="greedy" disableDefaultUI={false} style={{ width: "100%", height: "100%" }}>
               <MapContent
                 accounts={filtered}
-                selectedAccountId={selectedAccountId}
                 onSelectAccount={handleSelectAccount}
-                onCloseAccount={() => setSelectedAccountId(null)}
                 showDeployed={showDeployed}
                 deployedLocations={FLASH_LOCATIONS}
-                selectedSiteId={selectedSiteId}
                 onSelectSite={handleSelectSite}
-                onCloseSite={() => setSelectedSiteId(null)}
               />
               <PanTo lat={panTarget?.lat ?? null} lng={panTarget?.lng ?? null} />
             </Map>
