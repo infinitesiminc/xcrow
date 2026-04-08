@@ -461,7 +461,7 @@ export default function FlashParkingMap() {
       }
 
       await new Promise((r) => setTimeout(r, 800));
-      addLog(`Defining buyer persona for ${account.accountType === "airport" ? "airport authority" : account.accountType === "large_venue" ? "venue operator" : "fleet operator"}`);
+      addLog(`Defining buyer persona for ${account.accountType === "airport" ? "airport authority" : account.accountType === "large_venue" ? "venue operator" : "parking operator"}`);
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
