@@ -132,19 +132,24 @@ Deno.serve(async (req) => {
 
     // --- Step 1: Scrape homepage and discover internal links ---
     console.log("Step 1: Scraping homepage...");
-    const homeRes = await fetch(formattedUrl, {
-      headers: { "User-Agent": BROWSER_UA, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
-      redirect: "follow",
-    });
-
     let homeHtml = "";
     let homepageText = "";
-    if (homeRes.ok) {
-      homeHtml = await homeRes.text();
-      homepageText = htmlToText(homeHtml).slice(0, 5000);
-    } else {
-      console.warn(`Homepage returned ${homeRes.status}, proceeding with domain name only`);
-      await homeRes.text(); // consume body
+    try {
+      const homeRes = await fetch(formattedUrl, {
+        headers: { "User-Agent": BROWSER_UA, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+        redirect: "follow",
+      });
+
+      if (homeRes.ok) {
+        homeHtml = await homeRes.text();
+        homepageText = htmlToText(homeHtml).slice(0, 5000);
+      } else {
+        console.warn(`Homepage returned ${homeRes.status}, proceeding with domain name only`);
+        await homeRes.text(); // consume body
+      }
+    } catch (fetchErr) {
+      console.warn("Homepage fetch failed (DNS or network error):", fetchErr);
+      // Domain may not exist or is unreachable — continue with domain-name-only context
     }
 
     const homeTitle = homeHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || "";
