@@ -405,10 +405,72 @@ export default function FlashParkingMap() {
     setLoadingLeads((prev) => new Set(prev).add(account.id));
     try {
       const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-      const isAirportAccount = account.accountType === "airport";
-      const content = isAirportAccount
-        ? `Find 5 decision-makers at ${account.name} who control parking operations, ground transportation, or landside infrastructure. CRITICAL: search ONLY within the airport authority or airport corporation that operates this airport — domain "${domain}". Do NOT search by city location. Target titles: Director of Parking, VP of Landside Operations, Chief Commercial Officer, Director of Ground Transportation, Airport Director. Return leads ranked by fit score (0-100) with a "reason" and "score" field explaining why they'd buy parking management technology. ${account.currentVendor && account.currentVendor !== "Unknown" ? `Current vendor: ${account.currentVendor}.` : ""}`
-        : `You are prospecting ${account.name} (${domain}), a ${account.focusArea} account with ${account.estimatedSpaces} parking spaces. ${account.currentVendor ? `They currently use ${account.currentVendor}.` : ""} First define the ideal buyer persona for selling parking management technology to this account. Then find the top 5 decision-makers matching that persona. Return leads ranked by fit score (0-100) with a "reason" field and a "score" field.`;
+      const vendorNote = account.currentVendor && account.currentVendor !== "Unknown"
+        ? `Current parking technology vendor: ${account.currentVendor}. Frame the outreach as a competitive displacement opportunity.`
+        : "No known incumbent vendor — this is a greenfield opportunity.";
+      const stageNote = account.stage === "active"
+        ? "This is an EXISTING Flash customer — find contacts for upsell/expansion conversations (EV charging, mobile payments, analytics)."
+        : account.stage === "competitor"
+        ? "This account uses a competitor's platform — find contacts for competitive displacement outreach."
+        : account.stage === "target"
+        ? "This is a priority target account — find the right entry points for initial outreach."
+        : "This is a whitespace opportunity — find contacts to open a net-new relationship.";
+
+      const FLASH_CONTEXT = `You are prospecting on behalf of Flash, a cloud-based parking technology platform (PARCS, EV charging, mobile payments, analytics) powering 16,000+ locations. ${stageNote} ${vendorNote}`;
+
+      let content: string;
+      if (account.accountType === "airport") {
+        content = `${FLASH_CONTEXT}
+
+Account: ${account.name} (${domain}) — a commercial airport with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.
+
+CRITICAL: Search ONLY within the airport authority/corporation that operates this airport — use domain "${domain}". Do NOT search broadly by city.
+
+Flash sells airports: cloud PARCS to replace legacy gate hardware, real-time occupancy & wayfinding, mobile pre-booking, EV charging infrastructure, and revenue analytics dashboards.
+
+Target these airport-specific titles (in priority order):
+1. Director/VP of Parking & Ground Transportation
+2. Chief Commercial/Revenue Officer
+3. Director of Landside Operations
+4. Airport Director/CEO (for smaller airports)
+5. VP of Facilities & Infrastructure
+
+Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: direct parking oversight, revenue responsibility, technology modernization mandate.`;
+      } else if (account.accountType === "large_venue") {
+        content = `${FLASH_CONTEXT}
+
+Account: ${account.name} (${domain}) — a large venue operator in ${account.hqCity} with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}. Focus: ${account.focusArea}.
+
+Search within organization domain "${domain}" first, then broaden to the parent organization if needed.
+
+Flash sells venues: frictionless entry/exit (LPR, touchless), dynamic pricing, event-day surge management, mobile pre-booking, EV charging, and real-time occupancy dashboards.
+
+Target these venue-specific titles (in priority order):
+1. VP/Director of Parking Operations
+2. VP/Director of Facilities & Operations
+3. Chief Operating Officer
+4. VP of Guest Experience / Fan Experience
+5. Director of Revenue Operations / Commercial Strategy
+
+Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: parking P&L ownership, technology budget authority, guest experience mandate.`;
+      } else {
+        content = `${FLASH_CONTEXT}
+
+Account: ${account.name} (${domain}) — a fleet/multi-site parking operator in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}. Focus: ${account.focusArea}.
+
+Search within organization domain "${domain}".
+
+Flash sells operators: unified cloud PARCS across all locations, real-time revenue dashboards, mobile-first consumer experience, LPR & touchless lanes, EV charging network, and white-label booking.
+
+Target these operator-specific titles (in priority order):
+1. VP/SVP of Operations
+2. Chief Operating Officer / Chief Technology Officer
+3. VP of Technology / IT Director
+4. VP of Revenue Management / Commercial Strategy
+5. Regional VP / Director of Operations
+
+Return the top 5 decision-makers ranked by fit score (0-100). Include "score", "reason" (why they'd buy Flash), and "title" fields. Score higher for: multi-site technology decisions, operations P&L ownership, digital transformation initiatives.`;
+      }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
