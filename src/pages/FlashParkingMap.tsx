@@ -1,6 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { parseSSEStream } from "@/lib/sse-parser";
+import { useState, useMemo, useCallback } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -11,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
@@ -78,21 +76,10 @@ function DeployedSitePin() {
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
-interface AccountLeadResult {
-  persona?: string;
-  leads: any[];
-}
-
-function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFindContacts }: {
+function DetailPanel({ account, site, onClose }: {
   account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
-  accountLeads: Record<string, AccountLeadResult>; loadingLeads: Set<string>; onFindContacts: (a: FlashAccount) => void;
 }) {
   const isOpen = !!(account || site);
-  const result = account ? accountLeads[account.id] : undefined;
-  const leads = result?.leads;
-  const persona = result?.persona;
-  const isLoading = account ? loadingLeads.has(account.id) : false;
-
   return (
     <div className={`absolute top-0 right-0 z-[1000] w-80 h-full transition-transform duration-300 ease-out ${
       isOpen ? "translate-x-0" : "translate-x-full"
@@ -162,80 +149,6 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
                 Website <ExternalLink className="w-3 h-3" />
               </a>
             </div>
-
-            {/* ── Find Contacts ── */}
-            {account.id !== "acct-flash-hq" && (
-              <div className="border-t border-border pt-3 space-y-2">
-                {!leads && !isLoading && (
-                  <Button variant="outline" size="sm" className="w-full gap-2 text-xs" onClick={() => onFindContacts(account)}>
-                    <Users className="w-3.5 h-3.5" />
-                    Find Decision-Makers
-                  </Button>
-                )}
-                {isLoading && (
-                  <div className="flex items-center gap-2 justify-center py-3 text-xs text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Analyzing persona & searching…
-                  </div>
-                )}
-                {persona && (
-                  <div className="bg-primary/5 border border-primary/10 rounded-lg p-2.5">
-                    <p className="text-[10px] text-primary/70 uppercase tracking-wider font-semibold mb-1">🎯 AI-Defined Persona</p>
-                    <p className="text-[11px] text-foreground/80 leading-relaxed line-clamp-4">{persona}</p>
-                  </div>
-                )}
-                {leads && leads.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                      Top {leads.length} Ranked Leads
-                    </p>
-                    {leads.map((lead: any, i: number) => (
-                      <div key={i} className="bg-muted/40 rounded-lg p-2.5 space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-bold text-primary bg-primary/10 w-5 h-5 rounded-full flex items-center justify-center shrink-0">
-                                {i + 1}
-                              </span>
-                              <p className="text-xs font-semibold text-foreground truncate">{lead.name}</p>
-                            </div>
-                            {lead.title && <p className="text-[11px] text-muted-foreground ml-7">{lead.title}</p>}
-                          </div>
-                          {lead.score != null && (
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
-                              lead.score >= 80 ? "bg-green-500/10 text-green-600" :
-                              lead.score >= 60 ? "bg-yellow-500/10 text-yellow-600" :
-                              "bg-muted text-muted-foreground"
-                            }`}>
-                              {lead.score}
-                            </span>
-                          )}
-                        </div>
-                        {lead.reason && (
-                          <p className="text-[10px] text-primary/70 ml-7">💡 {lead.reason}</p>
-                        )}
-                        <div className="flex items-center gap-3 flex-wrap ml-7">
-                          {lead.email && (
-                            <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
-                              <Mail className="w-3 h-3" /> {lead.email}
-                            </a>
-                          )}
-                          {lead.linkedin && (
-                            <a href={lead.linkedin} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
-                              <Linkedin className="w-3 h-3" /> LinkedIn
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {leads && leads.length === 0 && !isLoading && (
-                  <p className="text-xs text-muted-foreground text-center py-2">No contacts found</p>
-                )}
-              </div>
-            )}
           </div>
         )}
         {site && (
@@ -258,34 +171,15 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, onFin
     </div>
   );
 }
-/* ── Stats Banner ── */
-function StatsBanner() {
-  const activeCount = ALL_ACCOUNTS.filter((a) => a.stage === "active").length;
-  const targetCount = ALL_ACCOUNTS.filter((a) => a.stage === "target").length;
-  const whitespaceCount = ALL_ACCOUNTS.filter((a) => a.stage === "whitespace").length;
-  const competitorCount = ALL_ACCOUNTS.filter((a) => a.stage === "competitor").length;
+/* ── Compact Stats Row ── */
+function StatsRow() {
   return (
-    <div className="px-3 py-2 space-y-2">
-      <div className="grid grid-cols-3 gap-1.5">
-        <div className="bg-muted/50 rounded-lg p-2 text-center">
-          <p className="text-base font-bold text-foreground">{FLASH_PLATFORM_STATS.totalLocations}</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">Locations</p>
-        </div>
-        <div className="bg-muted/50 rounded-lg p-2 text-center">
-          <p className="text-base font-bold text-foreground">{FLASH_PLATFORM_STATS.networkLocations}</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">Network</p>
-        </div>
-        <div className="bg-muted/50 rounded-lg p-2 text-center">
-          <p className="text-base font-bold text-foreground">{ALL_ACCOUNTS.length}</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">Accounts</p>
-        </div>
-      </div>
-      <div className="flex gap-1.5 text-[10px]">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.active.markerColor }} />{activeCount} Active</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.target.markerColor }} />{targetCount} Target</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.whitespace.markerColor }} />{whitespaceCount} Whitespace</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_CONFIG.competitor.markerColor }} />{competitorCount} Competitor</span>
-      </div>
+    <div className="flex items-center gap-2 px-3 py-1">
+      <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{FLASH_PLATFORM_STATS.totalLocations}</span> loc</span>
+      <span className="text-muted-foreground/30">·</span>
+      <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{FLASH_PLATFORM_STATS.networkLocations}</span> net</span>
+      <span className="text-muted-foreground/30">·</span>
+      <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{ALL_ACCOUNTS.length}</span> accts</span>
     </div>
   );
 }
@@ -394,9 +288,8 @@ export default function FlashParkingMap() {
   const [showDeployed, setShowDeployed] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadResult>>({});
-  const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
+  const [filtersOpen, setFiltersOpen] = useState(true);
+
 
   const toggleStage = useCallback((s: AccountStage) => {
     setStageFilter((prev) => { const n = new Set(prev); n.has(s) ? n.delete(s) : n.add(s); return n; });
@@ -409,7 +302,6 @@ export default function FlashParkingMap() {
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return ALL_ACCOUNTS.filter((a) => {
-      if (a.stage === "hq") return true; // always show Flash HQ
       if (!stageFilter.has(a.stage)) return false;
       if (!typeFilter.has(a.accountType)) return false;
       if (q) {
@@ -434,64 +326,6 @@ export default function FlashParkingMap() {
     setSelectedAccountId(null);
     setSelectedSiteId(null);
   }, []);
-
-  const handleFindContacts = useCallback(async (account: FlashAccount) => {
-    if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
-    setLoadingLeads(prev => new Set(prev).add(account.id));
-    try {
-      const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-      const vendorContext = account.currentVendor ? ` They currently use ${account.currentVendor} for parking.` : "";
-      const typeContext = account.accountType === "airport" ? "airport parking operations" : account.accountType === "large_venue" ? "large venue parking management" : "fleet/parking operations";
-
-      const { data, error } = await supabase.functions.invoke("leadgen-chat", {
-        body: {
-          website: account.website,
-          messages: [{
-            role: "user",
-            content: `You are prospecting ${account.name} (${domain}), a ${typeContext} company in ${account.hqCity} with ~${account.estimatedSpaces} parking spaces across ${account.facilityCount} facilities.${vendorContext} Focus area: ${account.focusArea}.
-
-First, define the ideal buyer persona for selling Flash parking management software to this account. Consider their industry, size, and current vendor.
-
-Then find the top 5 decision-makers matching that persona. For each lead, assign a fit score 0-100 based on:
-- Title/seniority alignment with parking technology purchasing
-- Company relevance to Flash's parking solutions
-- Decision-making authority
-
-Return leads ranked by score (highest first). Include a "score" field (0-100) and a "reason" field explaining why they're a good prospect.
-
-Use run_lead_search immediately.`
-          }]
-        },
-      });
-      if (error) throw error;
-      const reader = (data as ReadableStream<Uint8Array>).getReader();
-      const collectedLeads: any[] = [];
-      let personaText = "";
-      await parseSSEStream(reader, {
-        onLeads: (leads) => {
-          collectedLeads.push(...leads);
-          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
-          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText, leads: sorted } }));
-        },
-        onTextDelta: (chunk) => {
-          personaText += chunk;
-          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText, leads: [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5) } }));
-        },
-        onDone: () => {
-          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
-          setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText || undefined, leads: sorted } }));
-        }
-      });
-      if (collectedLeads.length === 0) {
-        setAccountLeads(prev => ({ ...prev, [account.id]: { persona: personaText || undefined, leads: [] } }));
-      }
-    } catch (err) {
-      console.error("Find contacts error:", err);
-      setAccountLeads(prev => ({ ...prev, [account.id]: { leads: [] } }));
-    } finally {
-      setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
-    }
-  }, [loadingLeads, accountLeads]);
 
   const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
@@ -548,28 +382,21 @@ Use run_lead_search immediately.`
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
-          <StatsBanner />
-
-          {/* Stage filters */}
+          <StatsRow />
           <div className="px-3 pb-1.5">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Stage</p>
             <div className="flex flex-wrap gap-1">
               {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
                 <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} />
               ))}
             </div>
           </div>
-
-          {/* Type filters */}
-          <div className="px-3 pb-2">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Type</p>
-            <div className="flex gap-1">
+          <div className="px-3 pb-1.5">
+            <div className="flex flex-wrap gap-1">
               {(["large_venue", "fleet_operator", "airport"] as AccountType[]).map((t) => (
                 <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} />
               ))}
             </div>
           </div>
-
         </CollapsibleContent>
       </Collapsible>
 
@@ -618,7 +445,7 @@ Use run_lead_search immediately.`
           )}
 
           {/* Detail slide-in panel */}
-          <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail} accountLeads={accountLeads} loadingLeads={loadingLeads} onFindContacts={handleFindContacts} />
+          <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail} />
 
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
