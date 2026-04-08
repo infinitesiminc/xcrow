@@ -293,11 +293,11 @@ export default function Index() {
                 Xcrow vs. Apollo
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                Skip the Complexity
+                240 Million Contacts.<br /><span className="text-primary">Good Luck Finding 5 That Matter.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                Apollo gives you 240 million contacts and expects you to figure it out.
-                We give you the <span className="text-foreground font-semibold">right 10</span>.
+                Apollo gives you a database the size of a phonebook and charges you $99/mo to search it yourself.
+                We give you the <span className="text-foreground font-semibold">right people, ready to email, in 10 seconds</span>.
               </p>
             </motion.div>
 
