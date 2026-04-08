@@ -1,45 +1,48 @@
-## Account-Based Map Redesign
 
-### New Category System (2 dimensions)
 
-**Account Type** (visual icon):
-- 🏢 **Large Venue** — airports, stadiums, medical centers, convention centers
-- 🔲 **Fleet Operator** — multi-location parking companies
+## Add Flash Competitors to the Map
 
-**Relationship Stage** (marker color):
-- 🟢 **Active Partner** — confirmed Flash customer with deployed technology
-- 🟡 **Target Account** — identified prospect, not yet a customer
-- ⚪ **Whitespace** — large operator with no known Flash relationship
+### What
 
-### Map Changes
+Add a new **"Competitor"** category to the account-based map, showing Flash's direct competitors as red pins at their HQ locations. This turns the tool into a full competitive landscape view alongside the existing partner/prospect/whitespace layers.
 
-1. **Default view**: One pin per operator at HQ location
-   - Green circle = Active Partner
-   - Yellow circle = Target Account  
-   - Gray circle = Whitespace
-   - Icon overlay distinguishes venue vs fleet
+### Data Changes — `src/data/flash-prospects.ts`
 
-2. **Toggle**: "Show deployed sites" checkbox reveals the 168+ facility-level pins as a subtle gray background layer
+1. Add a new `AccountStage` value: `"competitor"`
+2. Add `STAGE_CONFIG` entry for competitor: red marker color (`#ef4444`), label "Competitor"
+3. Add 5 competitor entries to `FLASH_ACCOUNTS`:
 
-3. **Remove** confidence filter (confirmed/likely/possible) entirely from UI
+| Name | HQ | Type | Core Focus |
+|------|-----|------|------------|
+| T2 Systems | Indianapolis, IN | fleet_operator | Integrated parking & mobility tech |
+| Metropolis Technologies | Santa Monica, CA | large_venue | AI & computer vision PARCS |
+| ParkHub | Dallas, TX | large_venue | Event & asset management |
+| SpotHero | Chicago, IL | fleet_operator | Digital parking reservations |
+| Passport | Charlotte, NC | fleet_operator | Mobile payments & curb management |
 
-4. **Sidebar**: 
-   - Filter by stage: Active / Target / Whitespace
-   - Filter by type: Large Venue / Fleet Operator
-   - Each card shows: name, HQ, est. spaces, facilities, stage badge
-   - Remove the old operator partner chip filters
+### UI Changes — `src/pages/FlashParkingMap.tsx`
 
-5. **Legend** updates to show the new color/icon system
+1. Add "Competitor" to the stage filter toggle row (red button)
+2. Red circle pins with a distinct icon (e.g., `Swords` or `Shield` from lucide) on the map
+3. Competitor cards in the sidebar list, styled with red accent
+4. Detail panel shows competitor-specific info (core focus, funding context in differentiator)
+5. Legend updated with the red competitor marker
+6. Stats banner adds a "Competitors" count
 
-### Data Changes
+### Visual Summary
 
-- Merge `flash-prospects.ts` partner/prospect data into a single unified list with a `stage` field
-- Add `stage: "active" | "target" | "whitespace"` to each entry
-- Deployed locations data file stays untouched, just rendered conditionally
+```text
+Pin Colors:
+  🟢 Active Partner     — green
+  🟡 Target Account     — yellow  
+  ⚪ Whitespace          — gray
+  🔴 Competitor          — red (NEW)
+```
 
 ### Files Modified
 
 | File | Change |
 |------|--------|
-| `src/data/flash-prospects.ts` | Add `stage` field, reclassify entries |
-| `src/pages/FlashParkingMap.tsx` | Remove confidence system, add stage/type filters, HQ-only default, toggle for deployed layer |
+| `src/data/flash-prospects.ts` | Add `"competitor"` stage, config, and 5 entries |
+| `src/pages/FlashParkingMap.tsx` | Red filter toggle, red pins, legend update |
+
