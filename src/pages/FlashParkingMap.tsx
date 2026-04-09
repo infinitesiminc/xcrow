@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import Navbar from "@/components/Navbar";
