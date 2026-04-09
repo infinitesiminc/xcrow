@@ -220,7 +220,7 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
           {(() => {
             const displayName = account
               ? `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}`
-              : site?.name || "Details";
+              : garage?.name || site?.name || "Details";
             const codeMatch = displayName.match(/\(([A-Z]{3})\)/);
             const airportCode = codeMatch ? codeMatch[1] : null;
             return (
