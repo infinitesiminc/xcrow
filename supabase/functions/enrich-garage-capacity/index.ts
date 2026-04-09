@@ -102,6 +102,7 @@ Deno.serve(async (req) => {
         if (searchResp.ok) {
           const searchData = await searchResp.json();
           const searchResults = searchData.data || [];
+          console.log(`Got ${searchResults.length} results for ${garageName}`);
 
           if (debug) {
             debugInfo = searchResults.map((r: any) => ({
