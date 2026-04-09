@@ -763,7 +763,7 @@ export default function FlashParkingMap() {
   const [activeTab, setActiveTab] = useState<"pipeline" | "market" | "detail">("pipeline");
   const [geoContext, setGeoContext] = useState<GeoContext>({ country: null, state: null, city: null });
   const [viewportHint, setViewportHint] = useState<ViewportHint | null>(null);
-  const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
+  const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number; garagesFound?: number; scanStatus?: string }[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
 
   // Load corridors from DB
@@ -818,7 +818,7 @@ export default function FlashParkingMap() {
             "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
             "apikey": supabaseKey,
           },
-          body: JSON.stringify({ batchSize: 5 }),
+          body: JSON.stringify({ batchSize: 2 }),
         });
         const result = await resp.json();
         if (!resp.ok) { setEnrichProgress(`Error: ${result.error}`); break; }
@@ -1156,7 +1156,9 @@ export default function FlashParkingMap() {
               disabled={scanning}
             >
               {cityCorridors.map((c) => (
-                <option key={c.key} value={c.key}>{c.label} ({c.zones} zones)</option>
+                <option key={c.key} value={c.key}>
+                  {c.scanStatus === "not_started" ? "○" : "✓"} {c.label} ({c.zones} zones{c.garagesFound ? ` · ${c.garagesFound} found` : ""})
+                </option>
               ))}
             </select>
           </div>
