@@ -82,6 +82,34 @@ function DeployedSitePin() {
   );
 }
 
+/* ── Discovered garage pin ── */
+function GaragePin() {
+  return (
+    <div className="cursor-pointer group">
+      <div className="w-4 h-4 rounded-sm bg-amber-500/80 border border-white/80 shadow-sm transition-all group-hover:scale-150 flex items-center justify-center">
+        <Warehouse className="w-2.5 h-2.5 text-white" />
+      </div>
+    </div>
+  );
+}
+
+interface DiscoveredGarage {
+  id: string;
+  place_id: string;
+  name: string;
+  address: string | null;
+  lat: number;
+  lng: number;
+  rating: number | null;
+  reviews_count: number;
+  photo_reference: string | null;
+  types: string[];
+  operator_guess: string | null;
+  scan_zone: string | null;
+  website: string | null;
+  phone: string | null;
+}
+
 /* ── Full-height Slide-in Detail Panel ── */
 /* ── Contact lead type ── */
 interface AccountLead {
