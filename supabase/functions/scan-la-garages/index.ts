@@ -5,23 +5,81 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Downtown LA grid: ~34.03-34.06 lat, ~-118.28 to -118.23 lng
-// We tile it into small zones for comprehensive coverage
-const DTLA_ZONES = (() => {
+interface CorridorDef {
+  label: string;
+  latStart: number;
+  latEnd: number;
+  lngStart: number;
+  lngEnd: number;
+  step: number;
+  city: string;
+}
+
+const LA_CORRIDORS: Record<string, CorridorDef> = {
+  dtla: {
+    label: "Downtown LA",
+    latStart: 34.025, latEnd: 34.065,
+    lngStart: -118.285, lngEnd: -118.225,
+    step: 0.008, city: "Los Angeles",
+  },
+  hollywood: {
+    label: "Hollywood / Koreatown / Mid-Wilshire",
+    latStart: 34.055, latEnd: 34.105,
+    lngStart: -118.365, lngEnd: -118.285,
+    step: 0.008, city: "Los Angeles",
+  },
+  westside: {
+    label: "Westside (Beverly Hills, Century City, Westwood)",
+    latStart: 34.035, latEnd: 34.085,
+    lngStart: -118.435, lngEnd: -118.365,
+    step: 0.008, city: "Los Angeles",
+  },
+  santa_monica: {
+    label: "Santa Monica / Venice / Marina del Rey",
+    latStart: 33.975, latEnd: 34.035,
+    lngStart: -118.510, lngEnd: -118.435,
+    step: 0.008, city: "Los Angeles",
+  },
+  lax: {
+    label: "LAX / El Segundo / Inglewood",
+    latStart: 33.925, latEnd: 33.975,
+    lngStart: -118.430, lngEnd: -118.350,
+    step: 0.008, city: "Los Angeles",
+  },
+  pasadena: {
+    label: "Pasadena / Glendale / Burbank",
+    latStart: 34.120, latEnd: 34.200,
+    lngStart: -118.310, lngEnd: -118.130,
+    step: 0.010, city: "Los Angeles",
+  },
+  valley: {
+    label: "San Fernando Valley (Sherman Oaks, Encino, Van Nuys)",
+    latStart: 34.140, latEnd: 34.210,
+    lngStart: -118.500, lngEnd: -118.380,
+    step: 0.010, city: "Los Angeles",
+  },
+  south_la: {
+    label: "South LA / USC / Exposition Park",
+    latStart: 33.980, latEnd: 34.025,
+    lngStart: -118.310, lngEnd: -118.240,
+    step: 0.008, city: "Los Angeles",
+  },
+};
+
+function buildZones(corridor: CorridorDef): { lat: number; lng: number; label: string }[] {
   const zones: { lat: number; lng: number; label: string }[] = [];
-  const latStart = 34.025;
-  const latEnd = 34.065;
-  const lngStart = -118.285;
-  const lngEnd = -118.225;
-  const step = 0.008; // ~0.5 miles per zone
   let idx = 0;
-  for (let lat = latStart; lat <= latEnd; lat += step) {
-    for (let lng = lngStart; lng <= lngEnd; lng += step) {
-      zones.push({ lat: Math.round(lat * 1e6) / 1e6, lng: Math.round(lng * 1e6) / 1e6, label: `dtla-${idx++}` });
+  for (let lat = corridor.latStart; lat <= corridor.latEnd; lat += corridor.step) {
+    for (let lng = corridor.lngStart; lng <= corridor.lngEnd; lng += corridor.step) {
+      zones.push({
+        lat: Math.round(lat * 1e6) / 1e6,
+        lng: Math.round(lng * 1e6) / 1e6,
+        label: `zone-${idx++}`,
+      });
     }
   }
   return zones;
-})();
+}
 
 interface PlaceResult {
   id: string;
@@ -79,15 +137,37 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+    const corridorKey = body.corridor ?? "dtla";
     const zoneIndex = body.zoneIndex ?? 0;
-    const batchSize = body.batchSize ?? 3; // scan N zones at a time
+    const batchSize = body.batchSize ?? 3;
 
-    const zoneBatch = DTLA_ZONES.slice(zoneIndex, zoneIndex + batchSize);
+    // Support "list" action to return available corridors
+    if (body.action === "list") {
+      const corridorList = Object.entries(LA_CORRIDORS).map(([key, c]) => ({
+        key,
+        label: c.label,
+        zones: buildZones(c).length,
+      }));
+      return new Response(JSON.stringify({ corridors: corridorList }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const corridor = LA_CORRIDORS[corridorKey];
+    if (!corridor) {
+      return new Response(JSON.stringify({ error: `Unknown corridor: ${corridorKey}`, available: Object.keys(LA_CORRIDORS) }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const zones = buildZones(corridor);
+    const zoneBatch = zones.slice(zoneIndex, zoneIndex + batchSize);
     if (zoneBatch.length === 0) {
       return new Response(JSON.stringify({ 
         done: true, 
-        totalZones: DTLA_ZONES.length,
-        message: "All zones scanned" 
+        corridor: corridorKey,
+        totalZones: zones.length,
+        message: `All ${corridor.label} zones scanned` 
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -98,7 +178,7 @@ Deno.serve(async (req) => {
     const scannedZones: string[] = [];
 
     for (const zone of zoneBatch) {
-      console.log(`Scanning zone ${zone.label} at ${zone.lat},${zone.lng}`);
+      console.log(`Scanning ${corridor.label} zone ${zone.label} at ${zone.lat},${zone.lng}`);
       
       const queries = ["parking garage", "parking structure", "parking lot"];
       const allPlaces: PlaceResult[] = [];
@@ -143,11 +223,9 @@ Deno.serve(async (req) => {
           console.error(`Error scanning "${query}" at zone ${zone.label}:`, err);
         }
 
-        // Rate limit: small delay between queries
         await new Promise(r => setTimeout(r, 200));
       }
 
-      // Insert into DB
       for (const place of allPlaces) {
         if (!place.location) continue;
 
@@ -161,8 +239,8 @@ Deno.serve(async (req) => {
           reviews_count: place.userRatingCount || 0,
           photo_reference: place.photos?.[0]?.name || null,
           types: place.types || [],
-          city: "Los Angeles",
-          scan_zone: zone.label,
+          city: corridor.city,
+          scan_zone: `${corridorKey}-${zone.label}`,
           price_level: place.priceLevel ? parseInt(place.priceLevel.replace("PRICE_LEVEL_", "")) || null : null,
           business_status: place.businessStatus || null,
           website: place.websiteUri || null,
@@ -186,22 +264,24 @@ Deno.serve(async (req) => {
     }
 
     const nextZoneIndex = zoneIndex + batchSize;
-    const hasMore = nextZoneIndex < DTLA_ZONES.length;
+    const hasMore = nextZoneIndex < zones.length;
 
     return new Response(JSON.stringify({
       done: !hasMore,
+      corridor: corridorKey,
+      corridorLabel: corridor.label,
       inserted: totalInserted,
       skipped: totalSkipped,
       scannedZones,
       nextZoneIndex: hasMore ? nextZoneIndex : null,
-      totalZones: DTLA_ZONES.length,
-      progress: `${Math.min(nextZoneIndex, DTLA_ZONES.length)}/${DTLA_ZONES.length} zones`,
+      totalZones: zones.length,
+      progress: `${Math.min(nextZoneIndex, zones.length)}/${zones.length} zones`,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("scan-la-garages error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
