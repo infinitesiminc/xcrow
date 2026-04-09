@@ -153,15 +153,28 @@ export default function LAMarketDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
-            Los Angeles Parking Market
+            {selectedCity} Parking Market
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Comprehensive garage-level intelligence across DTLA and greater LA
+            Comprehensive garage-level intelligence
           </p>
         </div>
-        <Badge variant="outline" className="text-xs">
-          {stats?.zones_scanned} zones scanned
-        </Badge>
+        <div className="flex items-center gap-2">
+          {availableCities.length > 1 && (
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="text-xs bg-muted border border-border rounded px-2 py-1.5 font-medium"
+            >
+              {availableCities.map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          )}
+          <Badge variant="outline" className="text-xs">
+            {stats?.zones_scanned} zones scanned
+          </Badge>
+        </div>
       </div>
 
       {/* KPI Row */}
