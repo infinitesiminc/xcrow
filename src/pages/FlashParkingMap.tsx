@@ -893,7 +893,7 @@ export default function FlashParkingMap() {
           )}
 
           {/* Detail slide-in panel */}
-          <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail}
+          <DetailPanel account={selectedAccount} site={selectedSite} garage={selectedGarage} onClose={handleCloseDetail}
             accountLeads={accountLeads} loadingLeads={loadingLeads} activityLog={activityLog} onFindContacts={handleFindContacts} />
 
           {/* Legend */}
