@@ -1,6 +1,6 @@
 import { X, BarChart3, MapPin } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import MarketPanel, { type GeoContext } from "./MarketPanel";
+import MarketPanel, { type GeoContext, type ViewportHint } from "./MarketPanel";
 
 export type PanelMode = "market" | "detail" | "hidden";
 
@@ -9,10 +9,11 @@ interface ContextPanelProps {
   onModeChange: (mode: PanelMode) => void;
   geo: GeoContext;
   onGeoChange: (geo: GeoContext) => void;
+  onViewportHint?: (hint: ViewportHint) => void;
   detailContent: React.ReactNode;
 }
 
-export default function ContextPanel({ mode, onModeChange, geo, onGeoChange, detailContent }: ContextPanelProps) {
+export default function ContextPanel({ mode, onModeChange, geo, onGeoChange, onViewportHint, detailContent }: ContextPanelProps) {
   if (mode === "hidden") return null;
 
   return (
@@ -52,7 +53,7 @@ export default function ContextPanel({ mode, onModeChange, geo, onGeoChange, det
         <ScrollArea className="flex-1">
           <div className="p-3">
             {mode === "market" && (
-              <MarketPanel geo={geo} onGeoChange={onGeoChange} />
+              <MarketPanel geo={geo} onGeoChange={onGeoChange} onViewportHint={onViewportHint} />
             )}
             {mode === "detail" && detailContent}
           </div>
