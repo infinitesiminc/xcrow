@@ -712,6 +712,8 @@ export default function FlashParkingMap() {
   const [enrichProgress, setEnrichProgress] = useState("");
   const [scanCorridor, setScanCorridor] = useState("dtla");
   const [selectedCity, setSelectedCity] = useState("Los Angeles");
+  const [panelMode, setPanelMode] = useState<PanelMode>("hidden");
+  const [geoContext, setGeoContext] = useState<GeoContext>({ country: null, state: null, city: null });
   const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
 
