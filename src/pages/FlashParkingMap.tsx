@@ -933,6 +933,14 @@ export default function FlashParkingMap() {
                 <span>Deployed site</span>
               </div>
             )}
+            {showGarages && (
+              <div className="flex items-center gap-1.5 border-l border-border pl-4">
+                <span className="w-3.5 h-3.5 rounded-sm bg-amber-500/80 flex items-center justify-center">
+                  <Warehouse className="w-2 h-2 text-white" />
+                </span>
+                <span>LA Garage</span>
+              </div>
+            )}
           </div>
 
           <APIProvider apiKey={API_KEY}>
