@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const batchSize = body.batchSize ?? 5;
     const offset = body.offset ?? 0;
+    const debug = body.debug ?? false;
 
     // Get garages with operators but no capacity data
     const { data: garages, error: fetchErr } = await supabase
@@ -70,79 +71,63 @@ Deno.serve(async (req) => {
 
     let enriched = 0;
     let skipped = 0;
-    const results: { name: string; capacity: number | null; source: string | null }[] = [];
+    const results: any[] = [];
 
     for (const garage of garages) {
       try {
-        // Try multiple search strategies
-        const searchQueries = [
-          `"${garage.name}" site:parkme.com OR site:bestparking.com OR site:spothero.com capacity spaces`,
-          `"${garage.name}" parking "${garage.address || "Los Angeles"}" total spaces capacity stalls`,
-          `"${garage.name}" parking garage spaces levels floors Los Angeles`,
-        ];
+        const garageName = garage.name.replace(/\s*-\s*\w+$/, ""); // strip operator suffix
+        const addr = garage.address || "Los Angeles CA";
+        
+        // Strategy 1: Search for the garage on parking aggregators
+        const searchQuery = `${garageName} parking ${addr} spaces capacity`;
+        console.log(`Searching: ${garageName}`);
+
+        const searchResp = await fetch("https://api.firecrawl.dev/v1/search", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: searchQuery,
+            limit: 5,
+            scrapeOptions: { formats: ["markdown"] },
+          }),
+        });
 
         let capacity: number | null = null;
         let source: string | null = null;
+        let debugInfo: any = null;
 
-        for (const searchQuery of searchQueries) {
-          if (capacity) break;
-          console.log(`Searching: ${searchQuery.substring(0, 80)}...`);
-
-          const searchResp = await fetch("https://api.firecrawl.dev/v1/search", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              query: searchQuery,
-              limit: 5,
-              scrapeOptions: { formats: ["markdown"] },
-            }),
-          });
-
-          if (!searchResp.ok) {
-            console.error(`Firecrawl search failed: ${searchResp.status}`);
-            await new Promise(r => setTimeout(r, 300));
-            continue;
-          }
-
+        if (searchResp.ok) {
           const searchData = await searchResp.json();
           const searchResults = searchData.data || [];
 
-          for (const result of searchResults) {
-            const text = (result.markdown || result.description || result.title || "").toLowerCase();
-            
-            // Extended patterns for capacity extraction
-            const patterns = [
-              /(\d{1,5})\s*(?:parking\s+)?(?:spaces?|stalls?|spots?|cars?)\s*(?:available|total)?/i,
-              /capacity\s*(?:of|:|\-)?\s*(\d{1,5})/i,
-              /(\d{1,5})\s*(?:car|vehicle)\s*(?:capacity|garage|parking)/i,
-              /(?:total|max|maximum)\s*(?:capacity|spaces?|spots?|stalls?)\s*(?::|of|=|-)?\s*(\d{1,5})/i,
-              /(\d{2,5})[\s-](?:space|stall|spot|car)\s/i,
-              /(?:accommodat|hold|park|fit)(?:e?s?|ing)\s+(?:up\s+to\s+)?(\d{1,5})\s*(?:vehicle|car|space)/i,
-              /(\d{1,5})\s*(?:level|floor|stor(?:y|ies)).*?(\d{1,5})\s*space/i,
-              /garage.*?(\d{2,5})\s*space/i,
-              /space.*?(\d{2,5})/i,
-              /(\d{2,5}).*?(?:spaces?|stalls?|spots?)/i,
-            ];
-
-            for (const pattern of patterns) {
-              const match = text.match(pattern);
-              if (match) {
-                // Take the last captured group (some patterns have multiple groups)
-                const num = parseInt(match[match.length > 2 ? 2 : 1] || match[1]);
-                if (num >= 20 && num <= 15000) {
-                  capacity = num;
-                  source = result.url || "firecrawl-search";
-                  break;
-                }
-              }
-            }
-            if (capacity) break;
+          if (debug) {
+            debugInfo = searchResults.map((r: any) => ({
+              url: r.url,
+              title: r.title,
+              snippet: (r.markdown || r.description || "").substring(0, 200),
+            }));
           }
 
-          await new Promise(r => setTimeout(r, 400));
+          for (const result of searchResults) {
+            const text = [
+              result.markdown || "",
+              result.description || "",
+              result.title || "",
+            ].join(" ");
+            
+            // Extract all numbers near capacity-related words
+            const capacityResult = extractCapacity(text, garageName);
+            if (capacityResult) {
+              capacity = capacityResult.capacity;
+              source = result.url || "firecrawl-search";
+              break;
+            }
+          }
+        } else {
+          console.error(`Search failed: ${searchResp.status}`);
         }
 
         if (capacity) {
@@ -160,7 +145,14 @@ Deno.serve(async (req) => {
           console.log(`✗ ${garage.name}: no capacity found`);
         }
 
-        results.push({ name: garage.name, capacity, source });
+        results.push({ 
+          name: garage.name, 
+          capacity, 
+          source,
+          ...(debug ? { debug: debugInfo } : {}),
+        });
+
+        await new Promise(r => setTimeout(r, 500));
       } catch (err) {
         console.error(`Error enriching ${garage.name}:`, err);
         skipped++;
@@ -191,3 +183,46 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+function extractCapacity(text: string, garageName: string): { capacity: number } | null {
+  // Normalize text
+  const t = text.toLowerCase().replace(/,/g, "");
+
+  // Very broad patterns - find ANY number near parking-related words
+  const patterns = [
+    /(\d{2,5})\s*(?:parking\s+)?(?:spaces?|stalls?|spots?|cars?)/gi,
+    /(?:capacity|accommodat\w*|hold\w*|park\w*|fit\w*)\s*(?:of|:|-|up\s+to)?\s*(\d{2,5})/gi,
+    /(\d{2,5})\s*(?:car|vehicle)\s*(?:capacity|garage|parking|lot)/gi,
+    /(?:total|max|full)\s*(?:capacity|spaces?|spots?)\s*(?::|of|=|-)?\s*(\d{2,5})/gi,
+    /(\d{2,5})[\s-](?:space|stall|spot|car)\b/gi,
+    /(?:garage|structure|lot|facility)\s+(?:\w+\s+){0,3}(\d{2,5})\s*space/gi,
+    /(\d{3,5})\s*(?:space|stall|spot)/gi,
+  ];
+
+  const candidates: number[] = [];
+
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(t)) !== null) {
+      const numStr = match[1] || match[2];
+      if (numStr) {
+        const num = parseInt(numStr);
+        if (num >= 50 && num <= 15000) {
+          candidates.push(num);
+        }
+      }
+    }
+  }
+
+  if (candidates.length > 0) {
+    // Return the most common number, or the first one
+    const freq = new Map<number, number>();
+    for (const c of candidates) {
+      freq.set(c, (freq.get(c) || 0) + 1);
+    }
+    const sorted = [...freq.entries()].sort((a, b) => b[1] - a[1]);
+    return { capacity: sorted[0][0] };
+  }
+
+  return null;
+}
