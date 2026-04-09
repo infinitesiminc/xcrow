@@ -963,14 +963,23 @@ export default function FlashParkingMap() {
             )}
           </label>
           {showGarages && (
-            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleScanLA} disabled={scanning}>
-              {scanning ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
-              {scanning ? "Scanning..." : "Scan DTLA"}
-            </Button>
+            <div className="flex gap-1">
+              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleScanLA} disabled={scanning}>
+                {scanning ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+                {scanning ? "Scanning..." : "Scan"}
+              </Button>
+              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleEnrichCapacity} disabled={enriching}>
+                {enriching ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
+                {enriching ? "Enriching..." : "Capacity"}
+              </Button>
+            </div>
           )}
         </div>
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
+        )}
+        {enrichProgress && showGarages && (
+          <p className="text-[10px] text-muted-foreground">{enrichProgress}</p>
         )}
         {showGarages && laGarages.length > 0 && <GarageOperatorStats garages={laGarages} showOnlyOperators={showOnlyOperators} onToggleFilter={() => setShowOnlyOperators((p) => !p)} />}
       </div>
