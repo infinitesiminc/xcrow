@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
