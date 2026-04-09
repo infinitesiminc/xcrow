@@ -607,14 +607,14 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
 }
 
 /* ── Compact Stats Row ── */
-function StatsRow() {
+function StatsRow({ accountCount }: { accountCount: number }) {
   return (
     <div className="flex items-center gap-2 px-3 py-1">
       <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{FLASH_PLATFORM_STATS.totalLocations}</span> loc</span>
       <span className="text-muted-foreground/30">·</span>
       <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{FLASH_PLATFORM_STATS.networkLocations}</span> net</span>
       <span className="text-muted-foreground/30">·</span>
-      <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{ALL_ACCOUNTS.length}</span> accts</span>
+      <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{accountCount}</span> accts</span>
     </div>
   );
 }
