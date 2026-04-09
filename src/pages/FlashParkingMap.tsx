@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw, BarChart3 } from "lucide-react";
+import AccountDetailPanel from "@/components/enterprise/AccountDetailPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import ContextPanel, { type PanelMode } from "@/components/enterprise/ContextPanel";
