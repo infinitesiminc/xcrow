@@ -551,7 +551,10 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
       <div className="space-y-0.5 max-h-36 overflow-y-auto">
         {stats.map((s) => (
           <div key={s.name} className="flex items-center justify-between text-[11px] px-1.5 py-1 rounded hover:bg-muted/50">
-            <span className="font-medium truncate">{s.name}</span>
+            <span className="flex items-center gap-1.5 font-medium truncate">
+              <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: getOperatorColor(s.name) }} />
+              {s.name}
+            </span>
             <div className="flex items-center gap-2 shrink-0">
               {s.totalCapacity && <span className="text-muted-foreground text-[10px]">{s.totalCapacity.toLocaleString()} 🅿️</span>}
               {s.avgRating && <span className="text-muted-foreground text-[10px]">★ {s.avgRating}</span>}
