@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import Navbar from "@/components/Navbar";
@@ -457,6 +457,58 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
     </div>
   );
 }
+/* ── Garage Operator Stats ── */
+function GarageOperatorStats({ garages }: { garages: DiscoveredGarage[] }) {
+  const stats = useMemo(() => {
+    const operatorMap: Record<string, { count: number; avgRating: number; totalRatings: number; ratedCount: number }> = {};
+    garages.forEach((g) => {
+      const op = g.operator_guess || "Independent / Unknown";
+      if (!operatorMap[op]) operatorMap[op] = { count: 0, avgRating: 0, totalRatings: 0, ratedCount: 0 };
+      operatorMap[op].count++;
+      if (g.rating) {
+        operatorMap[op].totalRatings += g.rating;
+        operatorMap[op].ratedCount++;
+      }
+    });
+    return Object.entries(operatorMap)
+      .map(([name, d]) => ({
+        name,
+        count: d.count,
+        avgRating: d.ratedCount > 0 ? +(d.totalRatings / d.ratedCount).toFixed(1) : null,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [garages]);
+
+  const identified = garages.filter((g) => g.operator_guess).length;
+  const avgRating = garages.filter((g) => g.rating).length > 0
+    ? +(garages.filter((g) => g.rating).reduce((s, g) => s + (g.rating || 0), 0) / garages.filter((g) => g.rating).length).toFixed(1)
+    : null;
+
+  return (
+    <div className="space-y-1.5 pt-1">
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <BarChart3 className="w-3 h-3" /> Operator Breakdown
+      </div>
+      <div className="flex gap-3 text-[10px] text-muted-foreground">
+        <span><span className="font-bold text-foreground">{identified}</span> identified</span>
+        <span><span className="font-bold text-foreground">{garages.length - identified}</span> unknown</span>
+        {avgRating && <span>Avg ★ <span className="font-bold text-foreground">{avgRating}</span></span>}
+      </div>
+      <div className="space-y-0.5 max-h-32 overflow-y-auto">
+        {stats.filter(s => s.name !== "Independent / Unknown").map((s) => (
+          <div key={s.name} className="flex items-center justify-between text-[11px] px-1.5 py-1 rounded hover:bg-muted/50">
+            <span className="font-medium truncate">{s.name}</span>
+            <div className="flex items-center gap-2 shrink-0">
+              {s.avgRating && <span className="text-muted-foreground text-[10px]">★ {s.avgRating}</span>}
+              <span className="text-[10px] font-bold bg-muted/80 px-1.5 py-0.5 rounded">{s.count}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── Compact Stats Row ── */
 function StatsRow() {
   return (
@@ -869,6 +921,7 @@ export default function FlashParkingMap() {
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
         )}
+        {showGarages && laGarages.length > 0 && <GarageOperatorStats garages={laGarages} />}
       </div>
 
       <div className="h-px bg-border mx-3" />
