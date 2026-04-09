@@ -1076,7 +1076,7 @@ export default function FlashParkingMap() {
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
-          <StatsRow />
+          <StatsRow accountCount={allAccounts.length} />
           <div className="px-3 pb-1.5">
             <div className="flex flex-wrap gap-1">
               {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
