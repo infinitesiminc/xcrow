@@ -712,6 +712,7 @@ export default function FlashParkingMap() {
   const [selectedCity, setSelectedCity] = useState("Los Angeles");
   const [panelMode, setPanelMode] = useState<PanelMode>("hidden");
   const [geoContext, setGeoContext] = useState<GeoContext>({ country: null, state: null, city: null });
+  const [viewportHint, setViewportHint] = useState<ViewportHint | null>(null);
   const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
 
