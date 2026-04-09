@@ -1042,6 +1042,18 @@ export default function FlashParkingMap() {
             </div>
           )}
         </div>
+        {showGarages && (
+          <select
+            value={scanCorridor}
+            onChange={(e) => setScanCorridor(e.target.value)}
+            className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1"
+            disabled={scanning}
+          >
+            {CORRIDOR_OPTIONS.map((c) => (
+              <option key={c.key} value={c.key}>{c.label}</option>
+            ))}
+          </select>
+        )}
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
         )}
