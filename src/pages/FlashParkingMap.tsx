@@ -670,16 +670,19 @@ export default function FlashParkingMap() {
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
     setSelectedSiteId(null);
+    setSelectedGarageId(null);
   }, []);
 
   const handleSelectSite = useCallback((l: FlashLocation) => {
     setSelectedSiteId(l.id);
     setSelectedAccountId(null);
+    setSelectedGarageId(null);
   }, []);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedAccountId(null);
     setSelectedSiteId(null);
+    setSelectedGarageId(null);
   }, []);
 
   const handleFindContacts = useCallback(async (account: FlashAccount) => {
