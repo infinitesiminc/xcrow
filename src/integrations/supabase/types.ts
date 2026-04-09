@@ -903,6 +903,98 @@ export type Database = {
         }
         Relationships: []
       }
+      scan_corridors: {
+        Row: {
+          city: string
+          created_at: string
+          enabled: boolean
+          id: string
+          label: string
+          lat_end: number
+          lat_start: number
+          lng_end: number
+          lng_start: number
+          priority: number
+          region_key: string
+          step: number
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label: string
+          lat_end: number
+          lat_start: number
+          lng_end: number
+          lng_start: number
+          priority?: number
+          region_key: string
+          step?: number
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string
+          lat_end?: number
+          lat_start?: number
+          lng_end?: number
+          lng_start?: number
+          priority?: number
+          region_key?: string
+          step?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scan_progress: {
+        Row: {
+          completed_at: string | null
+          corridor_id: string
+          garages_found: number
+          id: string
+          last_zone_index: number
+          started_at: string | null
+          status: string
+          total_zones: number
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          corridor_id: string
+          garages_found?: number
+          id?: string
+          last_zone_index?: number
+          started_at?: string | null
+          status?: string
+          total_zones?: number
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          corridor_id?: string
+          garages_found?: number
+          id?: string
+          last_zone_index?: number
+          started_at?: string | null
+          status?: string
+          total_zones?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_progress_corridor_id_fkey"
+            columns: ["corridor_id"]
+            isOneToOne: true
+            referencedRelation: "scan_corridors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_courses: {
         Row: {
           ai_content_flag: boolean | null
