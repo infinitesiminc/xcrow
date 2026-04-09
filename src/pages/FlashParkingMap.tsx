@@ -108,6 +108,8 @@ interface DiscoveredGarage {
   scan_zone: string | null;
   website: string | null;
   phone: string | null;
+  capacity: number | null;
+  capacity_source: string | null;
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
@@ -420,10 +422,20 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] text-muted-foreground leading-tight">Discovered Garage</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  {garage.operator_guess && (
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-primary/10 text-primary">
+                      {garage.operator_guess}
+                    </span>
+                  )}
                   {garage.rating && (
                     <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-amber-100 text-amber-800">
                       ⭐ {garage.rating} ({garage.reviews_count})
+                    </span>
+                  )}
+                  {garage.capacity && (
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-muted text-foreground">
+                      🅿️ {garage.capacity.toLocaleString()} spaces
                     </span>
                   )}
                 </div>
@@ -461,14 +473,18 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
 function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { garages: DiscoveredGarage[]; showOnlyOperators: boolean; onToggleFilter: () => void }) {
   const operatorGarages = useMemo(() => garages.filter((g) => g.operator_guess), [garages]);
   const stats = useMemo(() => {
-    const operatorMap: Record<string, { count: number; totalRatings: number; ratedCount: number }> = {};
+    const operatorMap: Record<string, { count: number; totalRatings: number; ratedCount: number; totalCapacity: number; capacityCount: number }> = {};
     operatorGarages.forEach((g) => {
       const op = g.operator_guess!;
-      if (!operatorMap[op]) operatorMap[op] = { count: 0, totalRatings: 0, ratedCount: 0 };
+      if (!operatorMap[op]) operatorMap[op] = { count: 0, totalRatings: 0, ratedCount: 0, totalCapacity: 0, capacityCount: 0 };
       operatorMap[op].count++;
       if (g.rating) {
         operatorMap[op].totalRatings += g.rating;
         operatorMap[op].ratedCount++;
+      }
+      if (g.capacity) {
+        operatorMap[op].totalCapacity += g.capacity;
+        operatorMap[op].capacityCount++;
       }
     });
     return Object.entries(operatorMap)
@@ -476,9 +492,12 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
         name,
         count: d.count,
         avgRating: d.ratedCount > 0 ? +(d.totalRatings / d.ratedCount).toFixed(1) : null,
+        totalCapacity: d.totalCapacity || null,
       }))
       .sort((a, b) => b.count - a.count);
   }, [operatorGarages]);
+
+  const totalCapacity = operatorGarages.reduce((s, g) => s + (g.capacity || 0), 0);
 
   return (
     <div className="space-y-1.5 pt-1">
@@ -490,11 +509,15 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
           {showOnlyOperators ? "Named only" : "Show all"}
         </button>
       </div>
+      {totalCapacity > 0 && (
+        <p className="text-[10px] text-muted-foreground">Total capacity: <span className="font-bold text-foreground">{totalCapacity.toLocaleString()}</span> spaces</p>
+      )}
       <div className="space-y-0.5 max-h-36 overflow-y-auto">
         {stats.map((s) => (
           <div key={s.name} className="flex items-center justify-between text-[11px] px-1.5 py-1 rounded hover:bg-muted/50">
             <span className="font-medium truncate">{s.name}</span>
             <div className="flex items-center gap-2 shrink-0">
+              {s.totalCapacity && <span className="text-muted-foreground text-[10px]">{s.totalCapacity.toLocaleString()} 🅿️</span>}
               {s.avgRating && <span className="text-muted-foreground text-[10px]">★ {s.avgRating}</span>}
               <span className="text-[10px] font-bold bg-muted/80 px-1.5 py-0.5 rounded">{s.count}</span>
             </div>
@@ -640,10 +663,48 @@ export default function FlashParkingMap() {
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState("");
   const [showOnlyOperators, setShowOnlyOperators] = useState(true);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState("");
 
   const displayedGarages = useMemo(() => 
     showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
   , [laGarages, showOnlyOperators]);
+
+  const handleEnrichCapacity = useCallback(async () => {
+    if (enriching) return;
+    setEnriching(true);
+    setEnrichProgress("Starting capacity enrichment...");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      let totalEnriched = 0;
+
+      while (true) {
+        const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-garage-capacity`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+            "apikey": supabaseKey,
+          },
+          body: JSON.stringify({ batchSize: 5 }),
+        });
+        const result = await resp.json();
+        if (!resp.ok) { setEnrichProgress(`Error: ${result.error}`); break; }
+        totalEnriched += result.enriched;
+        setEnrichProgress(`${totalEnriched} enriched, ${result.remaining} remaining`);
+        if (result.done) { setEnrichProgress(`Done! ${totalEnriched} garages enriched.`); break; }
+      }
+      // Reload garages
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
+    } catch (e: any) {
+      setEnrichProgress(`Error: ${e.message}`);
+    } finally {
+      setEnriching(false);
+    }
+  }, [enriching]);
 
   // Load garages from DB
   useEffect(() => {
@@ -913,14 +974,23 @@ export default function FlashParkingMap() {
             )}
           </label>
           {showGarages && (
-            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleScanLA} disabled={scanning}>
-              {scanning ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
-              {scanning ? "Scanning..." : "Scan DTLA"}
-            </Button>
+            <div className="flex gap-1">
+              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleScanLA} disabled={scanning}>
+                {scanning ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+                {scanning ? "Scanning..." : "Scan"}
+              </Button>
+              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleEnrichCapacity} disabled={enriching}>
+                {enriching ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
+                {enriching ? "Enriching..." : "Capacity"}
+              </Button>
+            </div>
           )}
         </div>
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
+        )}
+        {enrichProgress && showGarages && (
+          <p className="text-[10px] text-muted-foreground">{enrichProgress}</p>
         )}
         {showGarages && laGarages.length > 0 && <GarageOperatorStats garages={laGarages} showOnlyOperators={showOnlyOperators} onToggleFilter={() => setShowOnlyOperators((p) => !p)} />}
       </div>
