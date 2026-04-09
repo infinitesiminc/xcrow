@@ -204,13 +204,13 @@ function PlaceInfo({ name, lat, lng, hqCity, children }: { name: string; lat: nu
   return <>{children(data)}</>;
 }
 
-function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
-  account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
+function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
+  account: FlashAccount | null; site: FlashLocation | null; garage: DiscoveredGarage | null; onClose: () => void;
   accountLeads: Record<string, AccountLeadData>; loadingLeads: Set<string>;
   activityLog: Record<string, string[]>;
   onFindContacts: (account: FlashAccount) => void;
 }) {
-  const isOpen = !!(account || site);
+  const isOpen = !!(account || site || garage);
   return (
     <div className={`absolute top-0 right-0 z-[1000] w-96 h-full transition-transform duration-300 ease-out ${
       isOpen ? "translate-x-0" : "translate-x-full"
