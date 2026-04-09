@@ -1005,15 +1005,15 @@ export default function FlashParkingMap() {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* LA Garages layer */}
+      {/* City garage layer */}
       <div className="px-3 py-2 space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 text-[11px] font-medium cursor-pointer">
             <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
-            <Warehouse className="w-3.5 h-3.5 text-amber-500" />
-            LA Garages
+            <Warehouse className="w-3.5 h-3.5" style={{ color: getOperatorColor(null) }} />
+            Los Angeles
             {showGarages && displayedGarages.length > 0 && (
-              <span className="text-muted-foreground">({displayedGarages.length})</span>
+              <Badge variant="secondary" className="text-[9px] px-1 py-0">{displayedGarages.length}</Badge>
             )}
           </label>
           {showGarages && (
