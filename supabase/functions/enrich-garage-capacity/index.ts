@@ -186,12 +186,12 @@ Deno.serve(async (req) => {
 });
 
 function extractCapacity(text: string, garageName: string): { capacity: number } | null {
-  // Normalize text
-  const t = text.toLowerCase().replace(/,/g, "");
+  // Normalize text - remove addresses like "557 S. Hope" to avoid false positives
+  const t = text.toLowerCase().replace(/,/g, "").replace(/\d+\s+[nsew]\.?\s+\w+\s+(st|street|ave|avenue|blvd|boulevard|dr|drive|rd|road|way|pl|place)/gi, "");
 
-  // Very broad patterns - find ANY number near parking-related words
+  // Patterns - require capacity-related context
   const patterns = [
-    /(\d{2,5})\s*(?:parking\s+)?(?:spaces?|stalls?|spots?|cars?)/gi,
+    /(\d{2,5})\s*(?:parking\s+)?(?:spaces?|stalls?|spots?)\b/gi,
     /(?:capacity|accommodat\w*|hold\w*|park\w*|fit\w*)\s*(?:of|:|-|up\s+to)?\s*(\d{2,5})/gi,
     /(\d{2,5})\s*(?:car|vehicle)\s*(?:capacity|garage|parking|lot)/gi,
     /(?:total|max|full)\s*(?:capacity|spaces?|spots?)\s*(?::|of|=|-)?\s*(\d{2,5})/gi,
