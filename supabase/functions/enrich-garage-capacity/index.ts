@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const batchSize = body.batchSize ?? 5;
     const offset = body.offset ?? 0;
+    const debug = body.debug ?? false;
 
     // Get garages with operators but no capacity data
     const { data: garages, error: fetchErr } = await supabase
@@ -70,14 +71,17 @@ Deno.serve(async (req) => {
 
     let enriched = 0;
     let skipped = 0;
-    const results: { name: string; capacity: number | null; source: string | null }[] = [];
+    const results: any[] = [];
 
     for (const garage of garages) {
       try {
-        const searchQuery = `"${garage.name}" parking capacity spaces ${garage.address || "Los Angeles"}`;
-        console.log(`Searching capacity for: ${garage.name}`);
+        const garageName = garage.name.replace(/\s*-\s*\w+$/, ""); // strip operator suffix
+        const addr = garage.address || "Los Angeles CA";
+        
+        // Strategy 1: Search for the garage on parking aggregators
+        const searchQuery = `${garageName} parking ${addr} spaces capacity`;
+        console.log(`Searching: ${garageName}`);
 
-        // Use Firecrawl search to find capacity info
         const searchResp = await fetch("https://api.firecrawl.dev/v1/search", {
           method: "POST",
           headers: {
@@ -86,52 +90,45 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             query: searchQuery,
-            limit: 3,
+            limit: 5,
             scrapeOptions: { formats: ["markdown"] },
           }),
         });
 
-        if (!searchResp.ok) {
-          console.error(`Firecrawl search failed for ${garage.name}: ${searchResp.status}`);
-          const errText = await searchResp.text();
-          console.error(errText);
-          skipped++;
-          results.push({ name: garage.name, capacity: null, source: null });
-          continue;
-        }
-
-        const searchData = await searchResp.json();
-        const searchResults = searchData.data || [];
-
-        // Extract capacity from search results
         let capacity: number | null = null;
         let source: string | null = null;
+        let debugInfo: any = null;
 
-        for (const result of searchResults) {
-          const text = (result.markdown || result.description || "").toLowerCase();
-          
-          // Pattern matching for capacity numbers
-          const patterns = [
-            /(\d{1,5})\s*(?:parking\s+)?(?:spaces?|stalls?|spots?)/i,
-            /capacity\s*(?:of|:)?\s*(\d{1,5})/i,
-            /(\d{1,5})\s*(?:car|vehicle)\s*(?:capacity|spaces?)/i,
-            /(?:spaces?|stalls?|spots?)\s*(?:available|total)?\s*[:=]?\s*(\d{1,5})/i,
-            /(\d{2,5})-(?:space|stall|spot)/i,
-          ];
+        if (searchResp.ok) {
+          const searchData = await searchResp.json();
+          const searchResults = searchData.data || [];
+          console.log(`Got ${searchResults.length} results for ${garageName}`);
 
-          for (const pattern of patterns) {
-            const match = text.match(pattern);
-            if (match) {
-              const num = parseInt(match[1]);
-              // Sanity check: parking garages typically have 50-10000 spaces
-              if (num >= 20 && num <= 15000) {
-                capacity = num;
-                source = result.url || "firecrawl-search";
-                break;
-              }
+          if (debug) {
+            debugInfo = searchResults.map((r: any) => ({
+              url: r.url,
+              title: r.title,
+              snippet: (r.markdown || r.description || "").substring(0, 200),
+            }));
+          }
+
+          for (const result of searchResults) {
+            const text = [
+              result.markdown || "",
+              result.description || "",
+              result.title || "",
+            ].join(" ");
+            
+            // Extract all numbers near capacity-related words
+            const capacityResult = extractCapacity(text, garageName);
+            if (capacityResult) {
+              capacity = capacityResult.capacity;
+              source = result.url || "firecrawl-search";
+              break;
             }
           }
-          if (capacity) break;
+        } else {
+          console.error(`Search failed: ${searchResp.status}`);
         }
 
         if (capacity) {
@@ -143,17 +140,24 @@ Deno.serve(async (req) => {
           if (!updateErr) {
             enriched++;
             console.log(`✓ ${garage.name}: ${capacity} spaces (${source})`);
-          } else {
-            console.error(`Update failed for ${garage.name}:`, updateErr.message);
           }
         } else {
+          // Mark as 0 capacity so we skip it next time
+          await supabase
+            .from("discovered_garages")
+            .update({ capacity: 0, capacity_source: "not_found" })
+            .eq("id", garage.id);
           skipped++;
           console.log(`✗ ${garage.name}: no capacity found`);
         }
 
-        results.push({ name: garage.name, capacity, source });
+        results.push({ 
+          name: garage.name, 
+          capacity, 
+          source,
+          ...(debug ? { debug: debugInfo } : {}),
+        });
 
-        // Rate limit
         await new Promise(r => setTimeout(r, 500));
       } catch (err) {
         console.error(`Error enriching ${garage.name}:`, err);
@@ -185,3 +189,46 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+function extractCapacity(text: string, garageName: string): { capacity: number } | null {
+  // Normalize text - remove addresses like "557 S. Hope" to avoid false positives
+  const t = text.toLowerCase().replace(/,/g, "").replace(/\d+\s+[nsew]\.?\s+\w+\s+(st|street|ave|avenue|blvd|boulevard|dr|drive|rd|road|way|pl|place)/gi, "");
+
+  // Patterns - require capacity-related context
+  const patterns = [
+    /(\d{2,5})\s*(?:parking\s+)?(?:spaces?|stalls?|spots?)\b/gi,
+    /(?:capacity|accommodat\w*|hold\w*|park\w*|fit\w*)\s*(?:of|:|-|up\s+to)?\s*(\d{2,5})/gi,
+    /(\d{2,5})\s*(?:car|vehicle)\s*(?:capacity|garage|parking|lot)/gi,
+    /(?:total|max|full)\s*(?:capacity|spaces?|spots?)\s*(?::|of|=|-)?\s*(\d{2,5})/gi,
+    /(\d{2,5})[\s-](?:space|stall|spot|car)\b/gi,
+    /(?:garage|structure|lot|facility)\s+(?:\w+\s+){0,3}(\d{2,5})\s*space/gi,
+    /(\d{3,5})\s*(?:space|stall|spot)/gi,
+  ];
+
+  const candidates: number[] = [];
+
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(t)) !== null) {
+      const numStr = match[1] || match[2];
+      if (numStr) {
+        const num = parseInt(numStr);
+        if (num >= 50 && num <= 15000) {
+          candidates.push(num);
+        }
+      }
+    }
+  }
+
+  if (candidates.length > 0) {
+    // Return the most common number, or the first one
+    const freq = new Map<number, number>();
+    for (const c of candidates) {
+      freq.set(c, (freq.get(c) || 0) + 1);
+    }
+    const sorted = [...freq.entries()].sort((a, b) => b[1] - a[1]);
+    return { capacity: sorted[0][0] };
+  }
+
+  return null;
+}
