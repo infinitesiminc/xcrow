@@ -1157,9 +1157,38 @@ export default function FlashParkingMap() {
             </Sheet>
           )}
 
-          {/* Detail slide-in panel */}
-          <DetailPanel account={selectedAccount} site={selectedSite} garage={selectedGarage} onClose={handleCloseDetail}
-            accountLeads={accountLeads} loadingLeads={loadingLeads} activityLog={activityLog} onFindContacts={handleFindContacts} />
+          {/* Context Panel (Market Stats + Detail) */}
+          <ContextPanel
+            mode={panelMode}
+            onModeChange={(m) => {
+              setPanelMode(m);
+              if (m === "hidden") handleCloseDetail();
+            }}
+            geo={geoContext}
+            onGeoChange={setGeoContext}
+            detailContent={
+              <DetailPanelContent
+                account={selectedAccount}
+                site={selectedSite}
+                garage={selectedGarage}
+                accountLeads={accountLeads}
+                loadingLeads={loadingLeads}
+                activityLog={activityLog}
+                onFindContacts={handleFindContacts}
+              />
+            }
+          />
+
+          {/* Floating Market Stats toggle */}
+          {panelMode === "hidden" && (
+            <button
+              onClick={() => setPanelMode("market")}
+              className="absolute top-3 right-3 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-3 py-2 shadow-md flex items-center gap-1.5 text-xs font-medium hover:bg-muted transition-colors"
+            >
+              <BarChart3 className="h-3.5 w-3.5 text-primary" />
+              Market Stats
+            </button>
+          )}
 
           {/* Legend */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
