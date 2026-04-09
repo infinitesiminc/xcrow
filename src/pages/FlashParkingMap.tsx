@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw, BarChart3 } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw, BarChart3, TrendingUp } from "lucide-react";
 import AccountDetailPanel from "@/components/enterprise/AccountDetailPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
-import ContextPanel, { type PanelMode } from "@/components/enterprise/ContextPanel";
-import { type GeoContext, type ViewportHint } from "@/components/enterprise/MarketPanel";
+import MarketPanel, { type GeoContext, type ViewportHint } from "@/components/enterprise/MarketPanel";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
@@ -760,7 +760,7 @@ export default function FlashParkingMap() {
   const [enrichProgress, setEnrichProgress] = useState("");
   const [scanCorridor, setScanCorridor] = useState("dtla");
   const [selectedCity, setSelectedCity] = useState("Los Angeles");
-  const [panelMode, setPanelMode] = useState<PanelMode>("hidden");
+  const [activeTab, setActiveTab] = useState<"pipeline" | "market" | "detail">("pipeline");
   const [geoContext, setGeoContext] = useState<GeoContext>({ country: null, state: null, city: null });
   const [viewportHint, setViewportHint] = useState<ViewportHint | null>(null);
   const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
@@ -885,7 +885,7 @@ export default function FlashParkingMap() {
     setSelectedGarageId(g.id);
     setSelectedAccountId(null);
     setSelectedSiteId(null);
-    setPanelMode("detail");
+    setActiveTab("detail");
   }, []);
 
 
@@ -916,14 +916,14 @@ export default function FlashParkingMap() {
     setSelectedAccountId(a.id);
     setSelectedSiteId(null);
     setSelectedGarageId(null);
-    setPanelMode("detail");
+    setActiveTab("detail");
   }, []);
 
   const handleSelectSite = useCallback((l: FlashLocation) => {
     setSelectedSiteId(l.id);
     setSelectedAccountId(null);
     setSelectedGarageId(null);
-    setPanelMode("detail");
+    setActiveTab("detail");
   }, []);
 
   const handleCloseDetail = useCallback(() => {
@@ -1039,19 +1039,29 @@ export default function FlashParkingMap() {
     );
   }
 
-  const sidebar = (
-    <div className="flex flex-col h-full bg-background">
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3">
-          <img src={flashLogo} alt="Flash" className="w-8 h-8 object-contain" />
-          <div>
-            <h2 className="text-lg font-bold leading-tight">Flash Account Map</h2>
-            <p className="text-xs text-muted-foreground">Partnership intelligence & pipeline</p>
-          </div>
-        </div>
-      </div>
+  const detailContent = selectedAccount ? (
+    <AccountDetailPanel
+      account={selectedAccount}
+      onFindContacts={handleFindContacts}
+      loadingLeads={loadingLeads.has(selectedAccount.id)}
+      activityLog={activityLog[selectedAccount.id] || []}
+      streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
+      onStageChange={(id, stage) => {}}
+    />
+  ) : (
+    <DetailPanelContent
+      account={null}
+      site={selectedSite}
+      garage={selectedGarage}
+      accountLeads={accountLeads}
+      loadingLeads={loadingLeads}
+      activityLog={activityLog}
+      onFindContacts={handleFindContacts}
+    />
+  );
 
+  const pipelineContent = (
+    <>
       {/* Search */}
       <div className="px-3 pb-2">
         <div className="relative">
@@ -1121,7 +1131,6 @@ export default function FlashParkingMap() {
         </div>
         {showGarages && (
           <div className="space-y-1">
-            {/* City selector */}
             {availableCities.length > 1 && (
               <select
                 value={selectedCity}
@@ -1140,7 +1149,6 @@ export default function FlashParkingMap() {
             {availableCities.length <= 1 && (
               <p className="text-[10px] font-medium text-muted-foreground">{selectedCity}</p>
             )}
-            {/* Corridor selector */}
             <select
               value={scanCorridor}
               onChange={(e) => setScanCorridor(e.target.value)}
@@ -1178,6 +1186,66 @@ export default function FlashParkingMap() {
           ))}
         </div>
       </ScrollArea>
+    </>
+  );
+
+  const sidebar = (
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-2">
+        <div className="flex items-center gap-3">
+          <img src={flashLogo} alt="Flash" className="w-8 h-8 object-contain" />
+          <div>
+            <h2 className="text-lg font-bold leading-tight">Flash Account Map</h2>
+            <p className="text-xs text-muted-foreground">Partnership intelligence & pipeline</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "pipeline" | "market" | "detail")} className="flex flex-col flex-1 min-h-0">
+        <TabsList className="mx-3 mb-2 grid grid-cols-3 h-8">
+          <TabsTrigger value="pipeline" className="text-[11px] gap-1 px-1">
+            <Filter className="w-3 h-3" /> Pipeline
+          </TabsTrigger>
+          <TabsTrigger value="market" className="text-[11px] gap-1 px-1">
+            <TrendingUp className="w-3 h-3" /> Market
+          </TabsTrigger>
+          <TabsTrigger value="detail" className="text-[11px] gap-1 px-1">
+            <MapPin className="w-3 h-3" /> Detail
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pipeline" className="flex-1 flex flex-col min-h-0 mt-0">
+          {pipelineContent}
+        </TabsContent>
+
+        <TabsContent value="market" className="flex-1 min-h-0 mt-0">
+          <ScrollArea className="h-full">
+            <div className="p-3">
+              <MarketPanel
+                geo={geoContext}
+                onGeoChange={(newGeo) => {
+                  setGeoContext(newGeo);
+                  if (newGeo.city && newGeo.city !== selectedCity) {
+                    setSelectedCity(newGeo.city);
+                    setShowGarages(true);
+                  }
+                }}
+                onViewportHint={setViewportHint}
+              />
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="detail" className="flex-1 min-h-0 mt-0">
+          <ScrollArea className="h-full">
+            <div className="p-3">
+              {detailContent}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 
@@ -1185,7 +1253,7 @@ export default function FlashParkingMap() {
     <>
       <div className="flex h-screen w-full">
         {!isMobile && (
-          <div className="w-80 border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
+          <div className="w-96 border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
             {sidebar}
           </div>
         )}
@@ -1199,65 +1267,11 @@ export default function FlashParkingMap() {
                   <Badge variant="secondary" className="ml-1.5 text-xs">{filtered.length}</Badge>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-80 p-0">
+              <SheetContent side="left" className="w-96 p-0">
                 <SheetTitle className="sr-only">Account Filters</SheetTitle>
                 {sidebar}
               </SheetContent>
             </Sheet>
-          )}
-
-          {/* Context Panel (Market Stats + Detail) */}
-          <ContextPanel
-            mode={panelMode}
-            onModeChange={(m) => {
-              setPanelMode(m);
-              if (m === "hidden") handleCloseDetail();
-            }}
-            geo={geoContext}
-            onGeoChange={(newGeo) => {
-              setGeoContext(newGeo);
-              // Sync garage city selector when drilling to a city
-              if (newGeo.city && newGeo.city !== selectedCity) {
-                setSelectedCity(newGeo.city);
-                setShowGarages(true);
-              }
-            }}
-            onViewportHint={setViewportHint}
-            detailContent={
-              selectedAccount ? (
-                <AccountDetailPanel
-                  account={selectedAccount}
-                  onFindContacts={handleFindContacts}
-                  loadingLeads={loadingLeads.has(selectedAccount.id)}
-                  activityLog={activityLog[selectedAccount.id] || []}
-                  streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
-                  onStageChange={(id, stage) => {
-                    // Trigger re-fetch of accounts from DB
-                  }}
-                />
-              ) : (
-                <DetailPanelContent
-                  account={null}
-                  site={selectedSite}
-                  garage={selectedGarage}
-                  accountLeads={accountLeads}
-                  loadingLeads={loadingLeads}
-                  activityLog={activityLog}
-                  onFindContacts={handleFindContacts}
-                />
-              )
-            }
-          />
-
-          {/* Floating Market Stats toggle */}
-          {panelMode === "hidden" && (
-            <button
-              onClick={() => setPanelMode("market")}
-              className="absolute top-3 right-3 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-3 py-2 shadow-md flex items-center gap-1.5 text-xs font-medium hover:bg-muted transition-colors"
-            >
-              <BarChart3 className="h-3.5 w-3.5 text-primary" />
-              Market Stats
-            </button>
           )}
 
           {/* Legend */}
@@ -1270,7 +1284,7 @@ export default function FlashParkingMap() {
             ))}
             {showDeployed && (
               <div className="flex items-center gap-1.5 border-l border-border pl-4">
-                <span className="w-3 h-3 rounded-full bg-gray-400/50 border border-gray-300" />
+                <span className="w-3 h-3 rounded-full bg-muted border border-border" />
                 <span>Deployed site</span>
               </div>
             )}
