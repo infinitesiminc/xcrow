@@ -639,6 +639,11 @@ export default function FlashParkingMap() {
   const [selectedGarageId, setSelectedGarageId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState("");
+  const [showOnlyOperators, setShowOnlyOperators] = useState(true);
+
+  const displayedGarages = useMemo(() => 
+    showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
+  , [laGarages, showOnlyOperators]);
 
   // Load garages from DB
   useEffect(() => {
