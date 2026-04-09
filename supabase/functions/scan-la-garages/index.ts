@@ -116,7 +116,9 @@ Deno.serve(async (req) => {
     // Verify superadmin or service role key
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "") ?? "";
-    const isServiceRole = token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const srkEnv = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    console.log("Auth debug:", { hasAuth: !!authHeader, tokenLen: token.length, srkLen: srkEnv.length, match: token === srkEnv, tokenStart: token.substring(0, 20), srkStart: srkEnv.substring(0, 20) });
+    const isServiceRole = token === srkEnv;
     
     if (!isServiceRole) {
       if (!authHeader) {
