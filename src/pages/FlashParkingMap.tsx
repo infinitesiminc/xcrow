@@ -473,14 +473,18 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
 function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { garages: DiscoveredGarage[]; showOnlyOperators: boolean; onToggleFilter: () => void }) {
   const operatorGarages = useMemo(() => garages.filter((g) => g.operator_guess), [garages]);
   const stats = useMemo(() => {
-    const operatorMap: Record<string, { count: number; totalRatings: number; ratedCount: number }> = {};
+    const operatorMap: Record<string, { count: number; totalRatings: number; ratedCount: number; totalCapacity: number; capacityCount: number }> = {};
     operatorGarages.forEach((g) => {
       const op = g.operator_guess!;
-      if (!operatorMap[op]) operatorMap[op] = { count: 0, totalRatings: 0, ratedCount: 0 };
+      if (!operatorMap[op]) operatorMap[op] = { count: 0, totalRatings: 0, ratedCount: 0, totalCapacity: 0, capacityCount: 0 };
       operatorMap[op].count++;
       if (g.rating) {
         operatorMap[op].totalRatings += g.rating;
         operatorMap[op].ratedCount++;
+      }
+      if (g.capacity) {
+        operatorMap[op].totalCapacity += g.capacity;
+        operatorMap[op].capacityCount++;
       }
     });
     return Object.entries(operatorMap)
@@ -488,9 +492,12 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
         name,
         count: d.count,
         avgRating: d.ratedCount > 0 ? +(d.totalRatings / d.ratedCount).toFixed(1) : null,
+        totalCapacity: d.totalCapacity || null,
       }))
       .sort((a, b) => b.count - a.count);
   }, [operatorGarages]);
+
+  const totalCapacity = operatorGarages.reduce((s, g) => s + (g.capacity || 0), 0);
 
   return (
     <div className="space-y-1.5 pt-1">
@@ -502,11 +509,15 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
           {showOnlyOperators ? "Named only" : "Show all"}
         </button>
       </div>
+      {totalCapacity > 0 && (
+        <p className="text-[10px] text-muted-foreground">Total capacity: <span className="font-bold text-foreground">{totalCapacity.toLocaleString()}</span> spaces</p>
+      )}
       <div className="space-y-0.5 max-h-36 overflow-y-auto">
         {stats.map((s) => (
           <div key={s.name} className="flex items-center justify-between text-[11px] px-1.5 py-1 rounded hover:bg-muted/50">
             <span className="font-medium truncate">{s.name}</span>
             <div className="flex items-center gap-2 shrink-0">
+              {s.totalCapacity && <span className="text-muted-foreground text-[10px]">{s.totalCapacity.toLocaleString()} 🅿️</span>}
               {s.avgRating && <span className="text-muted-foreground text-[10px]">★ {s.avgRating}</span>}
               <span className="text-[10px] font-bold bg-muted/80 px-1.5 py-0.5 rounded">{s.count}</span>
             </div>
