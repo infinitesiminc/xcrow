@@ -108,6 +108,8 @@ interface DiscoveredGarage {
   scan_zone: string | null;
   website: string | null;
   phone: string | null;
+  capacity: number | null;
+  capacity_source: string | null;
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
