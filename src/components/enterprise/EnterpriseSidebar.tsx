@@ -74,6 +74,23 @@ export default function EnterpriseSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                    <NavLink
+                    to="/admin/la-market"
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                        isActive
+                          ? "bg-accent text-accent-foreground font-medium"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`
+                    }
+                  >
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span>LA Market</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
