@@ -818,7 +818,7 @@ export default function FlashParkingMap() {
             "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
             "apikey": supabaseKey,
           },
-          body: JSON.stringify({ batchSize: 5 }),
+          body: JSON.stringify({ batchSize: 2 }),
         });
         const result = await resp.json();
         if (!resp.ok) { setEnrichProgress(`Error: ${result.error}`); break; }
