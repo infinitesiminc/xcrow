@@ -708,6 +708,7 @@ export default function FlashParkingMap() {
   const [showOnlyOperators, setShowOnlyOperators] = useState(true);
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState("");
+  const [scanCorridor, setScanCorridor] = useState("dtla");
 
   const displayedGarages = useMemo(() => 
     showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
