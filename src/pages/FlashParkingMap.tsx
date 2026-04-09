@@ -790,7 +790,7 @@ export default function FlashParkingMap() {
   const handleScanLA = useCallback(async () => {
     if (scanning) return;
     setScanning(true);
-    const corridorLabel = CORRIDOR_OPTIONS.find(c => c.key === scanCorridor)?.label ?? scanCorridor;
+    const corridorLabel = cityCorridors.find(c => c.key === scanCorridor)?.label ?? scanCorridor;
     setScanProgress(`Starting ${corridorLabel} scan...`);
     let zoneIndex = 0;
     try {
