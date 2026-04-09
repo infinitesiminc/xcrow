@@ -763,7 +763,7 @@ export default function FlashParkingMap() {
   const [activeTab, setActiveTab] = useState<"pipeline" | "market" | "detail">("pipeline");
   const [geoContext, setGeoContext] = useState<GeoContext>({ country: null, state: null, city: null });
   const [viewportHint, setViewportHint] = useState<ViewportHint | null>(null);
-  const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
+  const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number; garagesFound?: number; scanStatus?: string }[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
 
   // Load corridors from DB
