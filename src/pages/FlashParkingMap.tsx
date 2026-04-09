@@ -869,6 +869,7 @@ export default function FlashParkingMap() {
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
         )}
+        {showGarages && laGarages.length > 0 && <GarageOperatorStats garages={laGarages} />}
       </div>
 
       <div className="h-px bg-border mx-3" />
