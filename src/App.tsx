@@ -92,7 +92,6 @@ const App = () => (
               <Route path="/admin" element={<EnterpriseLayout />}>
                 <Route index element={<Admin />} />
                 <Route path="flash" element={<FlashParkingMap />} />
-                <Route path="la-market" element={<LAMarketDashboard />} />
               </Route>
               <Route path="/flashparkingmap" element={<Navigate to="/admin/flash" replace />} />
               <Route path="/enterprise/*" element={<Navigate to="/admin" replace />} />
