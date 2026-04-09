@@ -142,6 +142,11 @@ Deno.serve(async (req) => {
             console.log(`✓ ${garage.name}: ${capacity} spaces (${source})`);
           }
         } else {
+          // Mark as 0 capacity so we skip it next time
+          await supabase
+            .from("discovered_garages")
+            .update({ capacity: 0, capacity_source: "not_found" })
+            .eq("id", garage.id);
           skipped++;
           console.log(`✗ ${garage.name}: no capacity found`);
         }
