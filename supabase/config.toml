@@ -73,3 +73,5 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.draft-outreach]
     verify_jwt = false
+  [functions.scan-la-garages]
+    verify_jwt = false
