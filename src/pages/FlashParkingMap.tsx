@@ -1054,29 +1054,6 @@ export default function FlashParkingMap() {
 
   return (
     <>
-      {/* View toggle tabs */}
-      <div className="absolute top-3 right-3 z-20 flex bg-background/90 backdrop-blur border border-border rounded-lg shadow-md overflow-hidden">
-        <button
-          onClick={() => setViewMode("map")}
-          className={`px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          <MapPin className="w-3.5 h-3.5 inline mr-1" />Account Map
-        </button>
-        <button
-          onClick={() => setViewMode("la-market")}
-          className={`px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "la-market" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          <BarChart3 className="w-3.5 h-3.5 inline mr-1" />LA Market
-        </button>
-      </div>
-
-      {viewMode === "la-market" ? (
-        <div className="h-screen w-full overflow-auto">
-          <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-            <LAMarketDashboard />
-          </Suspense>
-        </div>
-      ) : (
       <div className="flex h-screen w-full">
         {!isMobile && (
           <div className="w-80 border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
@@ -1120,10 +1097,9 @@ export default function FlashParkingMap() {
             )}
             {showGarages && (
               <div className="flex items-center gap-1.5 border-l border-border pl-4">
-                <span className="w-3.5 h-3.5 rounded-sm bg-amber-500/80 flex items-center justify-center">
-                  <Warehouse className="w-2 h-2 text-white" />
-                </span>
-                <span>LA Garage</span>
+                <Warehouse className="w-3 h-3 text-muted-foreground" />
+                <span>Garages</span>
+                <span className="text-muted-foreground">({displayedGarages.length})</span>
               </div>
             )}
           </div>
@@ -1146,7 +1122,6 @@ export default function FlashParkingMap() {
           </APIProvider>
         </div>
       </div>
-      )}
     </>
   );
 }
