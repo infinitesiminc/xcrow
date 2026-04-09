@@ -1203,8 +1203,8 @@ export default function FlashParkingMap() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "pipeline" | "market" | "detail")} className="flex flex-col flex-1 min-h-0">
-        <TabsList className="mx-3 mb-2 grid grid-cols-3 h-8">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "pipeline" | "market" | "detail")} className="flex flex-col flex-1 overflow-hidden">
+        <TabsList className="mx-3 mb-2 grid grid-cols-3 h-8 shrink-0">
           <TabsTrigger value="pipeline" className="text-[11px] gap-1 px-1">
             <Filter className="w-3 h-3" /> Pipeline
           </TabsTrigger>
@@ -1216,34 +1216,30 @@ export default function FlashParkingMap() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pipeline" className="flex-1 flex flex-col min-h-0 mt-0">
+        <TabsContent value="pipeline" className="flex-1 flex flex-col overflow-hidden mt-0 data-[state=inactive]:hidden">
           {pipelineContent}
         </TabsContent>
 
-        <TabsContent value="market" className="flex-1 min-h-0 mt-0">
-          <ScrollArea className="h-full">
-            <div className="p-3">
-              <MarketPanel
-                geo={geoContext}
-                onGeoChange={(newGeo) => {
-                  setGeoContext(newGeo);
-                  if (newGeo.city && newGeo.city !== selectedCity) {
-                    setSelectedCity(newGeo.city);
-                    setShowGarages(true);
-                  }
-                }}
-                onViewportHint={setViewportHint}
-              />
-            </div>
-          </ScrollArea>
+        <TabsContent value="market" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden">
+          <div className="p-3">
+            <MarketPanel
+              geo={geoContext}
+              onGeoChange={(newGeo) => {
+                setGeoContext(newGeo);
+                if (newGeo.city && newGeo.city !== selectedCity) {
+                  setSelectedCity(newGeo.city);
+                  setShowGarages(true);
+                }
+              }}
+              onViewportHint={setViewportHint}
+            />
+          </div>
         </TabsContent>
 
-        <TabsContent value="detail" className="flex-1 min-h-0 mt-0">
-          <ScrollArea className="h-full">
-            <div className="p-3">
-              {detailContent}
-            </div>
-          </ScrollArea>
+        <TabsContent value="detail" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden">
+          <div className="p-3">
+            {detailContent}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
