@@ -13,7 +13,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Building2, Plus } from "lucide-react";
+import { LayoutDashboard, Building2, Plus, BarChart3 } from "lucide-react";
 import flashLogo from "@/assets/flash-logo.png";
 
 export interface EnterpriseAccount {
