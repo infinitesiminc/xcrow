@@ -78,30 +78,6 @@ export default function EnterpriseSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Intelligence</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/admin/flash/market"
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                        isActive
-                          ? "bg-accent text-accent-foreground font-medium"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`
-                    }
-                  >
-                    <BarChart3 className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span>Market Dashboard</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel>Accounts</SidebarGroupLabel>
