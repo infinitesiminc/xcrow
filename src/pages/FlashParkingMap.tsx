@@ -1233,7 +1233,7 @@ export default function FlashParkingMap() {
                 showGarages={showGarages}
                 onSelectGarage={handleSelectGarage}
               />
-              
+              <MapViewportSync hint={viewportHint} />
             </Map>
           </APIProvider>
         </div>
