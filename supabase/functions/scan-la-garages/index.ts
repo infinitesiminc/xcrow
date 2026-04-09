@@ -212,13 +212,38 @@ Deno.serve(async (req) => {
         ? (corridors as CorridorRow[]).filter((c) => c.city === cityFilter)
         : (corridors as CorridorRow[]);
 
-      const corridorList = filtered.map((c) => ({
-        key: c.region_key,
-        label: c.label,
-        city: c.city,
-        zones: buildZones(c).length,
-        id: c.id,
-      }));
+      // Get garage counts per corridor scan_zone prefix
+      const { data: garageCounts } = await supabase.rpc("get_corridor_garage_counts");
+      const countMap = new Map<string, number>();
+      for (const row of (garageCounts || []) as { region_key: string; garage_count: number }[]) {
+        countMap.set(row.region_key, row.garage_count);
+      }
+
+      // Get scan progress per corridor
+      const corridorIds = filtered.map((c) => c.id);
+      const { data: progressRows } = await supabase
+        .from("scan_progress")
+        .select("corridor_id, status, last_zone_index, total_zones")
+        .in("corridor_id", corridorIds);
+      const progressMap = new Map<string, { status: string; last_zone_index: number; total_zones: number }>();
+      for (const row of (progressRows || []) as any[]) {
+        progressMap.set(row.corridor_id, row);
+      }
+
+      const corridorList = filtered.map((c) => {
+        const totalZones = buildZones(c).length;
+        const garagesFound = countMap.get(c.region_key) || 0;
+        const progress = progressMap.get(c.id);
+        return {
+          key: c.region_key,
+          label: c.label,
+          city: c.city,
+          zones: totalZones,
+          id: c.id,
+          garagesFound,
+          scanStatus: garagesFound > 0 ? (progress?.status || "completed") : "not_started",
+        };
+      });
 
       // Group by city
       const cities = [...new Set(filtered.map((c) => c.city))];
