@@ -691,6 +691,7 @@ export type Database = {
           account_type: string
           annual_revenue: string | null
           case_study_url: string | null
+          contract_model: string | null
           created_at: string
           current_vendor: string | null
           differentiator: string | null
@@ -706,6 +707,7 @@ export type Database = {
           name: string
           notes: string | null
           owner_id: string | null
+          ownership_type: string | null
           priority_score: number
           stage: string
           updated_at: string
@@ -715,6 +717,7 @@ export type Database = {
           account_type?: string
           annual_revenue?: string | null
           case_study_url?: string | null
+          contract_model?: string | null
           created_at?: string
           current_vendor?: string | null
           differentiator?: string | null
@@ -730,6 +733,7 @@ export type Database = {
           name: string
           notes?: string | null
           owner_id?: string | null
+          ownership_type?: string | null
           priority_score?: number
           stage?: string
           updated_at?: string
@@ -739,6 +743,7 @@ export type Database = {
           account_type?: string
           annual_revenue?: string | null
           case_study_url?: string | null
+          contract_model?: string | null
           created_at?: string
           current_vendor?: string | null
           differentiator?: string | null
@@ -754,6 +759,7 @@ export type Database = {
           name?: string
           notes?: string | null
           owner_id?: string | null
+          ownership_type?: string | null
           priority_score?: number
           stage?: string
           updated_at?: string
