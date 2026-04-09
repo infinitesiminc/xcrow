@@ -652,10 +652,48 @@ export default function FlashParkingMap() {
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState("");
   const [showOnlyOperators, setShowOnlyOperators] = useState(true);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState("");
 
   const displayedGarages = useMemo(() => 
     showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
   , [laGarages, showOnlyOperators]);
+
+  const handleEnrichCapacity = useCallback(async () => {
+    if (enriching) return;
+    setEnriching(true);
+    setEnrichProgress("Starting capacity enrichment...");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      let totalEnriched = 0;
+
+      while (true) {
+        const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-garage-capacity`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+            "apikey": supabaseKey,
+          },
+          body: JSON.stringify({ batchSize: 5 }),
+        });
+        const result = await resp.json();
+        if (!resp.ok) { setEnrichProgress(`Error: ${result.error}`); break; }
+        totalEnriched += result.enriched;
+        setEnrichProgress(`${totalEnriched} enriched, ${result.remaining} remaining`);
+        if (result.done) { setEnrichProgress(`Done! ${totalEnriched} garages enriched.`); break; }
+      }
+      // Reload garages
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
+    } catch (e: any) {
+      setEnrichProgress(`Error: ${e.message}`);
+    } finally {
+      setEnriching(false);
+    }
+  }, [enriching]);
 
   // Load garages from DB
   useEffect(() => {
