@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -645,8 +645,13 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 
 
 /* ── Main page ── */
+const LAMarketDashboard = lazy(() => import("./LAMarketDashboard"));
+
+type FlashView = "map" | "la-market";
+
 export default function FlashParkingMap() {
   const isMobile = useIsMobile();
+  const [viewMode, setViewMode] = useState<FlashView>("map");
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
   const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator", "airport"]));
@@ -1016,6 +1021,29 @@ export default function FlashParkingMap() {
 
   return (
     <>
+      {/* View toggle tabs */}
+      <div className="absolute top-3 right-3 z-20 flex bg-background/90 backdrop-blur border border-border rounded-lg shadow-md overflow-hidden">
+        <button
+          onClick={() => setViewMode("map")}
+          className={`px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          <MapPin className="w-3.5 h-3.5 inline mr-1" />Account Map
+        </button>
+        <button
+          onClick={() => setViewMode("la-market")}
+          className={`px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "la-market" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          <BarChart3 className="w-3.5 h-3.5 inline mr-1" />LA Market
+        </button>
+      </div>
+
+      {viewMode === "la-market" ? (
+        <div className="h-screen w-full overflow-auto">
+          <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+            <LAMarketDashboard />
+          </Suspense>
+        </div>
+      ) : (
       <div className="flex h-screen w-full">
         {!isMobile && (
           <div className="w-80 border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
@@ -1085,6 +1113,7 @@ export default function FlashParkingMap() {
           </APIProvider>
         </div>
       </div>
+      )}
     </>
   );
 }
