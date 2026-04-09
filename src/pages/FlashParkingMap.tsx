@@ -717,11 +717,16 @@ export default function FlashParkingMap() {
   useEffect(() => {
     (async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const resp = await fetch(`${supabaseUrl}/functions/v1/scan-la-garages`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "apikey": supabaseKey },
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+          },
           body: JSON.stringify({ action: "list" }),
         });
         if (resp.ok) {
