@@ -113,12 +113,16 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify superadmin or service role key
+    // Auth: check if service_role JWT or superadmin user
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "") ?? "";
-    const srkEnv = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    console.log("Auth debug:", { hasAuth: !!authHeader, tokenLen: token.length, srkLen: srkEnv.length, match: token === srkEnv, tokenStart: token.substring(0, 20), srkStart: srkEnv.substring(0, 20) });
-    const isServiceRole = token === srkEnv;
+    
+    // Decode JWT payload to check role
+    let isServiceRole = false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      isServiceRole = payload.role === "service_role";
+    } catch {}
     
     if (!isServiceRole) {
       if (!authHeader) {
