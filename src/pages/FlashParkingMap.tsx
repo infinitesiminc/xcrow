@@ -909,7 +909,7 @@ export default function FlashParkingMap() {
       }
       return true;
     });
-  }, [stageFilter, typeFilter, searchQuery]);
+  }, [stageFilter, typeFilter, searchQuery, allAccounts]);
 
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
