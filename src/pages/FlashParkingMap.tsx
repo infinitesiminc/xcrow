@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -82,13 +82,49 @@ function DeployedSitePin() {
   );
 }
 
-/* ── Discovered garage pin ── */
-function GaragePin() {
+/* ── Operator color palette ── */
+const OPERATOR_COLORS: Record<string, string> = {
+  "Joe's Auto Parks": "#e65100",
+  "LAZ Parking": "#1565c0",
+  "SP Plus": "#2e7d32",
+  "ParkABM": "#6a1b9a",
+  "ABM": "#6a1b9a",
+  "City Center Parking": "#c62828",
+  "Perfect Parking": "#00838f",
+  "Parking Concepts": "#ef6c00",
+  "Athena Parking": "#283593",
+  "Shamrock Parking": "#1b5e20",
+  "ProPark": "#4e342e",
+  "Paragon Parking": "#37474f",
+  "Venue-Operated": "#5d4037",
+  "University": "#1a237e",
+  "City/Public": "#455a64",
+  "The Bloc": "#880e4f",
+};
+const DEFAULT_OPERATOR_COLOR = "#78909c";
+
+function getOperatorColor(operator: string | null): string {
+  if (!operator) return "#b0bec5";
+  return OPERATOR_COLORS[operator] ?? DEFAULT_OPERATOR_COLOR;
+}
+
+/* ── Discovered garage pin with operator label ── */
+function GaragePin({ operator, capacity }: { operator?: string | null; capacity?: number | null }) {
+  const color = getOperatorColor(operator);
+  const label = operator && operator !== "Unknown" && operator !== "Independent" ? operator : null;
   return (
-    <div className="cursor-pointer group">
-      <div className="w-4 h-4 rounded-sm bg-amber-500/80 border border-white/80 shadow-sm transition-all group-hover:scale-150 flex items-center justify-center">
+    <div className="cursor-pointer group flex flex-col items-center">
+      <div
+        className="w-4 h-4 rounded-sm border border-white/80 shadow-sm transition-all group-hover:scale-150 flex items-center justify-center"
+        style={{ backgroundColor: color }}
+      >
         <Warehouse className="w-2.5 h-2.5 text-white" />
       </div>
+      {label && (
+        <span className="mt-0.5 text-[7px] font-bold uppercase tracking-wider text-foreground bg-background/80 px-1 rounded shadow-sm whitespace-nowrap max-w-[80px] truncate">
+          {label}
+        </span>
+      )}
     </div>
   );
 }
@@ -417,14 +453,16 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
               </div>
             )}
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
                 <Warehouse className="w-4 h-4 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] text-muted-foreground leading-tight">Discovered Garage</p>
+                <p className="text-[11px] text-muted-foreground leading-tight">
+                  {garage.scan_zone ? `${garage.scan_zone} · Garage` : "Discovered Garage"}
+                </p>
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   {garage.operator_guess && (
-                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-primary/10 text-primary">
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
                       {garage.operator_guess}
                     </span>
                   )}
@@ -515,7 +553,10 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
       <div className="space-y-0.5 max-h-36 overflow-y-auto">
         {stats.map((s) => (
           <div key={s.name} className="flex items-center justify-between text-[11px] px-1.5 py-1 rounded hover:bg-muted/50">
-            <span className="font-medium truncate">{s.name}</span>
+            <span className="flex items-center gap-1.5 font-medium truncate">
+              <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: getOperatorColor(s.name) }} />
+              {s.name}
+            </span>
             <div className="flex items-center gap-2 shrink-0">
               {s.totalCapacity && <span className="text-muted-foreground text-[10px]">{s.totalCapacity.toLocaleString()} 🅿️</span>}
               {s.avgRating && <span className="text-muted-foreground text-[10px]">★ {s.avgRating}</span>}
@@ -631,7 +672,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
       ))}
       {showGarages && garages.map((g) => (
         <AdvancedMarker key={g.id} position={{ lat: g.lat, lng: g.lng }} zIndex={0} onClick={() => onSelectGarage(g)}>
-          <GaragePin />
+          <GaragePin operator={g.operator_guess} capacity={g.capacity} />
         </AdvancedMarker>
       ))}
       {accounts.map((acct) => (
@@ -645,13 +686,10 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 
 
 /* ── Main page ── */
-const LAMarketDashboard = lazy(() => import("./LAMarketDashboard"));
 
-type FlashView = "map" | "la-market";
 
 export default function FlashParkingMap() {
   const isMobile = useIsMobile();
-  const [viewMode, setViewMode] = useState<FlashView>("map");
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
   const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator", "airport"]));
@@ -967,15 +1005,15 @@ export default function FlashParkingMap() {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* LA Garages layer */}
+      {/* City garage layer */}
       <div className="px-3 py-2 space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 text-[11px] font-medium cursor-pointer">
             <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
-            <Warehouse className="w-3.5 h-3.5 text-amber-500" />
-            LA Garages
+            <Warehouse className="w-3.5 h-3.5" style={{ color: getOperatorColor(null) }} />
+            Los Angeles
             {showGarages && displayedGarages.length > 0 && (
-              <span className="text-muted-foreground">({displayedGarages.length})</span>
+              <Badge variant="secondary" className="text-[9px] px-1 py-0">{displayedGarages.length}</Badge>
             )}
           </label>
           {showGarages && (
@@ -1021,29 +1059,6 @@ export default function FlashParkingMap() {
 
   return (
     <>
-      {/* View toggle tabs */}
-      <div className="absolute top-3 right-3 z-20 flex bg-background/90 backdrop-blur border border-border rounded-lg shadow-md overflow-hidden">
-        <button
-          onClick={() => setViewMode("map")}
-          className={`px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          <MapPin className="w-3.5 h-3.5 inline mr-1" />Account Map
-        </button>
-        <button
-          onClick={() => setViewMode("la-market")}
-          className={`px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "la-market" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          <BarChart3 className="w-3.5 h-3.5 inline mr-1" />LA Market
-        </button>
-      </div>
-
-      {viewMode === "la-market" ? (
-        <div className="h-screen w-full overflow-auto">
-          <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-            <LAMarketDashboard />
-          </Suspense>
-        </div>
-      ) : (
       <div className="flex h-screen w-full">
         {!isMobile && (
           <div className="w-80 border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
@@ -1087,10 +1102,9 @@ export default function FlashParkingMap() {
             )}
             {showGarages && (
               <div className="flex items-center gap-1.5 border-l border-border pl-4">
-                <span className="w-3.5 h-3.5 rounded-sm bg-amber-500/80 flex items-center justify-center">
-                  <Warehouse className="w-2 h-2 text-white" />
-                </span>
-                <span>LA Garage</span>
+                <Warehouse className="w-3 h-3 text-muted-foreground" />
+                <span>Garages</span>
+                <span className="text-muted-foreground">({displayedGarages.length})</span>
               </div>
             )}
           </div>
@@ -1113,7 +1127,6 @@ export default function FlashParkingMap() {
           </APIProvider>
         </div>
       </div>
-      )}
     </>
   );
 }
