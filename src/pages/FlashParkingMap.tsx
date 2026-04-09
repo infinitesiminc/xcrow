@@ -1006,7 +1006,7 @@ export default function FlashParkingMap() {
                 showDeployed={showDeployed}
                 deployedLocations={FLASH_LOCATIONS}
                 onSelectSite={handleSelectSite}
-                garages={laGarages}
+                garages={displayedGarages}
                 showGarages={showGarages}
                 onSelectGarage={handleSelectGarage}
               />
