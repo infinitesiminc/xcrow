@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw, BarChart3 } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw, BarChart3, TrendingUp } from "lucide-react";
 import AccountDetailPanel from "@/components/enterprise/AccountDetailPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
-import ContextPanel, { type PanelMode } from "@/components/enterprise/ContextPanel";
-import { type GeoContext, type ViewportHint } from "@/components/enterprise/MarketPanel";
+import MarketPanel, { type GeoContext, type ViewportHint } from "@/components/enterprise/MarketPanel";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
