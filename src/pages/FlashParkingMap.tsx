@@ -1156,7 +1156,9 @@ export default function FlashParkingMap() {
               disabled={scanning}
             >
               {cityCorridors.map((c) => (
-                <option key={c.key} value={c.key}>{c.label} ({c.zones} zones)</option>
+                <option key={c.key} value={c.key}>
+                  {c.scanStatus === "not_started" ? "○" : "✓"} {c.label} ({c.zones} zones{c.garagesFound ? ` · ${c.garagesFound} found` : ""})
+                </option>
               ))}
             </select>
           </div>
