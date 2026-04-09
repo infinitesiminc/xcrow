@@ -258,6 +258,75 @@ export type Database = {
         }
         Relationships: []
       }
+      discovered_garages: {
+        Row: {
+          address: string | null
+          business_status: string | null
+          city: string | null
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          operator_guess: string | null
+          phone: string | null
+          photo_reference: string | null
+          place_id: string
+          price_level: number | null
+          rating: number | null
+          reviews_count: number | null
+          scan_zone: string | null
+          total_ratings: number | null
+          types: string[] | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_status?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          operator_guess?: string | null
+          phone?: string | null
+          photo_reference?: string | null
+          place_id: string
+          price_level?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          scan_zone?: string | null
+          total_ratings?: number | null
+          types?: string[] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_status?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          operator_guess?: string | null
+          phone?: string | null
+          photo_reference?: string | null
+          place_id?: string
+          price_level?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          scan_zone?: string | null
+          total_ratings?: number | null
+          types?: string[] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       draft_emails: {
         Row: {
           body: string
