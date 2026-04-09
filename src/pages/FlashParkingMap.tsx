@@ -908,8 +908,8 @@ export default function FlashParkingMap() {
             <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
             <Warehouse className="w-3.5 h-3.5 text-amber-500" />
             LA Garages
-            {showGarages && laGarages.length > 0 && (
-              <span className="text-muted-foreground">({laGarages.length})</span>
+            {showGarages && displayedGarages.length > 0 && (
+              <span className="text-muted-foreground">({displayedGarages.length})</span>
             )}
           </label>
           {showGarages && (
