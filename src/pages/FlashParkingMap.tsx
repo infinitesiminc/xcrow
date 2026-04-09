@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
@@ -29,7 +29,55 @@ import {
 } from "@/data/flash-prospects";
 import { FLASH_AIRPORT_ACCOUNTS } from "@/data/flash-airports";
 
-const ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
+const STATIC_ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
+
+/* ── Hook: load accounts from DB with static fallback ── */
+function useDBAccounts(): { accounts: FlashAccount[]; loading: boolean } {
+  const [dbAccounts, setDbAccounts] = useState<FlashAccount[] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await (supabase.from("flash_accounts") as any).select("*").order("name");
+        if (error || !data || data.length === 0) {
+          setDbAccounts(null);
+          setLoading(false);
+          return;
+        }
+        const mapped: FlashAccount[] = data.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          accountType: r.account_type as AccountType,
+          stage: r.stage as AccountStage,
+          estimatedSpaces: r.estimated_spaces || "N/A",
+          facilityCount: r.facility_count || "N/A",
+          focusArea: r.focus_area || "",
+          hqCity: r.hq_city || "",
+          hqLat: r.hq_lat || 0,
+          hqLng: r.hq_lng || 0,
+          website: r.website || "",
+          differentiator: r.differentiator || "",
+          caseStudyUrl: r.case_study_url || undefined,
+          currentVendor: r.current_vendor || undefined,
+          annualRevenue: r.annual_revenue || undefined,
+          employeeCount: r.employee_count || undefined,
+          founded: r.founded || undefined,
+          // DB-only fields
+          priorityScore: r.priority_score || 0,
+          notes: r.notes || undefined,
+        }));
+        setDbAccounts(mapped);
+      } catch {
+        setDbAccounts(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  return { accounts: dbAccounts ?? STATIC_ALL_ACCOUNTS, loading };
+}
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKesJxuvh-sKL1z_gCj371z0";
 const MAP_ID = "flash-parking-map";
