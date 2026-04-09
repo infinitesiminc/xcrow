@@ -40,6 +40,7 @@ const Demo = lazy(() => import("./pages/Demo.tsx"));
 const Texas = lazy(() => import("./pages/Texas.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const FlashParkingMap = lazy(() => import("./pages/FlashParkingMap.tsx"));
+const MarketDashboard = lazy(() => import("./pages/MarketDashboard.tsx"));
 const EnterpriseLayout = lazy(() => import("./pages/EnterpriseLayout.tsx"));
 
 
