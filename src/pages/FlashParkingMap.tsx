@@ -667,7 +667,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
       ))}
       {showGarages && garages.map((g) => (
         <AdvancedMarker key={g.id} position={{ lat: g.lat, lng: g.lng }} zIndex={0} onClick={() => onSelectGarage(g)}>
-          <GaragePin />
+          <GaragePin operator={g.operator_guess} capacity={g.capacity} />
         </AdvancedMarker>
       ))}
       {accounts.map((acct) => (
