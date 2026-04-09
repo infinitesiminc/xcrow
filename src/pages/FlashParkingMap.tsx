@@ -82,13 +82,49 @@ function DeployedSitePin() {
   );
 }
 
-/* ── Discovered garage pin ── */
-function GaragePin() {
+/* ── Operator color palette ── */
+const OPERATOR_COLORS: Record<string, string> = {
+  "Joe's Auto Parks": "#e65100",
+  "LAZ Parking": "#1565c0",
+  "SP Plus": "#2e7d32",
+  "ParkABM": "#6a1b9a",
+  "ABM": "#6a1b9a",
+  "City Center Parking": "#c62828",
+  "Perfect Parking": "#00838f",
+  "Parking Concepts": "#ef6c00",
+  "Athena Parking": "#283593",
+  "Shamrock Parking": "#1b5e20",
+  "ProPark": "#4e342e",
+  "Paragon Parking": "#37474f",
+  "Venue-Operated": "#5d4037",
+  "University": "#1a237e",
+  "City/Public": "#455a64",
+  "The Bloc": "#880e4f",
+};
+const DEFAULT_OPERATOR_COLOR = "#78909c";
+
+function getOperatorColor(operator: string | null): string {
+  if (!operator) return "#b0bec5";
+  return OPERATOR_COLORS[operator] ?? DEFAULT_OPERATOR_COLOR;
+}
+
+/* ── Discovered garage pin with operator label ── */
+function GaragePin({ operator, capacity }: { operator?: string | null; capacity?: number | null }) {
+  const color = getOperatorColor(operator);
+  const label = operator && operator !== "Unknown" && operator !== "Independent" ? operator : null;
   return (
-    <div className="cursor-pointer group">
-      <div className="w-4 h-4 rounded-sm bg-amber-500/80 border border-white/80 shadow-sm transition-all group-hover:scale-150 flex items-center justify-center">
+    <div className="cursor-pointer group flex flex-col items-center">
+      <div
+        className="w-4 h-4 rounded-sm border border-white/80 shadow-sm transition-all group-hover:scale-150 flex items-center justify-center"
+        style={{ backgroundColor: color }}
+      >
         <Warehouse className="w-2.5 h-2.5 text-white" />
       </div>
+      {label && (
+        <span className="mt-0.5 text-[7px] font-bold uppercase tracking-wider text-foreground bg-background/80 px-1 rounded shadow-sm whitespace-nowrap max-w-[80px] truncate">
+          {label}
+        </span>
+      )}
     </div>
   );
 }
