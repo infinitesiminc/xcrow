@@ -1164,7 +1164,15 @@ export default function FlashParkingMap() {
               if (m === "hidden") handleCloseDetail();
             }}
             geo={geoContext}
-            onGeoChange={setGeoContext}
+            onGeoChange={(newGeo) => {
+              setGeoContext(newGeo);
+              // Sync garage city selector when drilling to a city
+              if (newGeo.city && newGeo.city !== selectedCity) {
+                setSelectedCity(newGeo.city);
+                setShowGarages(true);
+              }
+            }}
+            onViewportHint={setViewportHint}
             detailContent={
               <DetailPanelContent
                 account={selectedAccount}
