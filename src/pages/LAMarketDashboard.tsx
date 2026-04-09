@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -39,10 +39,31 @@ export default function LAMarketDashboard() {
   const [operators, setOperators] = useState<OperatorRow[]>([]);
   const [zones, setZones] = useState<ZoneRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCity, setSelectedCity] = useState("Los Angeles");
+  const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
+
+  // Load available cities
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const resp = await fetch(`${supabaseUrl}/functions/v1/scan-la-garages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": supabaseKey },
+          body: JSON.stringify({ action: "list" }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.cities?.length) setAvailableCities(data.cities);
+        }
+      } catch {}
+    })();
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedCity]);
 
   async function loadData() {
     setLoading(true);
