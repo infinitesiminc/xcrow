@@ -47,12 +47,19 @@ export interface GeoContext {
   city: string | null;
 }
 
+export interface ViewportHint {
+  lat: number;
+  lng: number;
+  zoom: number;
+}
+
 interface MarketPanelProps {
   geo: GeoContext;
   onGeoChange: (geo: GeoContext) => void;
+  onViewportHint?: (hint: ViewportHint) => void;
 }
 
-export default function MarketPanel({ geo, onGeoChange }: MarketPanelProps) {
+export default function MarketPanel({ geo, onGeoChange, onViewportHint }: MarketPanelProps) {
   const { country, state, city } = geo;
   const level = city ? "city" : state ? "state" : country ? "country" : "country";
 
@@ -74,7 +81,24 @@ export default function MarketPanel({ geo, onGeoChange }: MarketPanelProps) {
         else if (state) query = query.eq("state", state);
         else if (country) query = query.eq("country", country);
         const { data } = await query;
-        setGarages((data as GarageRow[]) ?? []);
+        const rows = (data as GarageRow[]) ?? [];
+        setGarages(rows);
+
+        // Emit viewport hint from centroid
+        if (rows.length > 0 && onViewportHint) {
+          const lats = rows.map(g => g.lat);
+          const lngs = rows.map(g => g.lng);
+          const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+          const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+          const centerLat = (minLat + maxLat) / 2;
+          const centerLng = (minLng + maxLng) / 2;
+          const latSpan = maxLat - minLat;
+          const lngSpan = maxLng - minLng;
+          const span = Math.max(latSpan, lngSpan);
+          // Approximate zoom from span
+          const zoom = span < 0.05 ? 14 : span < 0.2 ? 12 : span < 1 ? 10 : span < 5 ? 7 : span < 20 ? 5 : 3;
+          onViewportHint({ lat: centerLat, lng: centerLng, zoom });
+        }
       } finally {
         setLoading(false);
       }
