@@ -778,25 +778,14 @@ export default function FlashParkingMap() {
     }
   }, [enriching]);
 
-  // Load garages from DB
+  // Load garages from DB filtered by city
   useEffect(() => {
     if (!showGarages) return;
     (async () => {
-      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", selectedCity).limit(1000);
       if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
     })();
-  }, [showGarages]);
-
-  const CORRIDOR_OPTIONS = [
-    { key: "dtla", label: "Downtown LA" },
-    { key: "hollywood", label: "Hollywood / Koreatown" },
-    { key: "westside", label: "Beverly Hills / Century City" },
-    { key: "santa_monica", label: "Santa Monica / Venice" },
-    { key: "lax", label: "LAX / Inglewood" },
-    { key: "pasadena", label: "Pasadena / Glendale" },
-    { key: "valley", label: "San Fernando Valley" },
-    { key: "south_la", label: "South LA / USC" },
-  ];
+  }, [showGarages, selectedCity]);
 
   const handleScanLA = useCallback(async () => {
     if (scanning) return;
