@@ -116,7 +116,7 @@ Respond with ONLY a JSON array of objects, one per garage, in order:
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const aiResp = await fetch("https://ai-gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
