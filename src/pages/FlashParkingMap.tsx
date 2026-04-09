@@ -1021,7 +1021,6 @@ export default function FlashParkingMap() {
 
   return (
     <>
-    <>
       {/* View toggle tabs */}
       <div className="absolute top-3 right-3 z-20 flex bg-background/90 backdrop-blur border border-border rounded-lg shadow-md overflow-hidden">
         <button
