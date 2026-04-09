@@ -406,6 +406,53 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
             )}
           </div>
         )}
+        {garage && (
+          <div className="p-3 space-y-2">
+            {garage.photo_reference && (
+              <div className="w-full h-32 rounded-lg overflow-hidden">
+                <img src={`https://places.googleapis.com/v1/${garage.photo_reference}/media?maxWidthPx=400&key=${API_KEY}`}
+                  alt={garage.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+              </div>
+            )}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500">
+                <Warehouse className="w-4 h-4 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] text-muted-foreground leading-tight">Discovered Garage</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  {garage.rating && (
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-amber-100 text-amber-800">
+                      ⭐ {garage.rating} ({garage.reviews_count})
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {garage.address && (
+              <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+                <span>{garage.address}</span>
+              </div>
+            )}
+            {garage.phone && (
+              <p className="text-[11px] text-muted-foreground">📞 {garage.phone}</p>
+            )}
+            {garage.website && (
+              <a href={garage.website} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                Website <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+            {garage.types.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {garage.types.slice(0, 5).map(t => (
+                  <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t.replace(/_/g, ' ')}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
