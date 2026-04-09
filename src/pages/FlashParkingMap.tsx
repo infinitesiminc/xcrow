@@ -1087,7 +1087,7 @@ export default function FlashParkingMap() {
           <div className="px-3 pb-1.5">
             <div className="flex flex-wrap gap-1">
               {(["large_venue", "fleet_operator", "airport"] as AccountType[]).map((t) => (
-                <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} />
+                <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} accounts={allAccounts} />
               ))}
             </div>
           </div>
