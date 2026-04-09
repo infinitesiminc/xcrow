@@ -923,7 +923,7 @@ export default function FlashParkingMap() {
     setSelectedSiteId(l.id);
     setSelectedAccountId(null);
     setSelectedGarageId(null);
-    setPanelMode("detail");
+    setActiveTab("detail");
   }, []);
 
   const handleCloseDetail = useCallback(() => {
