@@ -244,268 +244,255 @@ function PlaceInfo({ name, lat, lng, hqCity, children }: { name: string; lat: nu
   return <>{children(data)}</>;
 }
 
-function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
-  account: FlashAccount | null; site: FlashLocation | null; garage: DiscoveredGarage | null; onClose: () => void;
+function DetailPanelContent({ account, site, garage, accountLeads, loadingLeads, activityLog, onFindContacts }: {
+  account: FlashAccount | null; site: FlashLocation | null; garage: DiscoveredGarage | null;
   accountLeads: Record<string, AccountLeadData>; loadingLeads: Set<string>;
   activityLog: Record<string, string[]>;
   onFindContacts: (account: FlashAccount) => void;
 }) {
-  const isOpen = !!(account || site || garage);
+  if (!account && !site && !garage) {
+    return (
+      <div className="text-center py-8 text-muted-foreground text-xs">
+        <MapPin className="w-8 h-8 mx-auto mb-2 opacity-30" />
+        Click a pin to view details
+      </div>
+    );
+  }
+
   return (
-    <div className={`absolute top-0 right-0 z-[1000] w-96 h-full transition-transform duration-300 ease-out ${
-      isOpen ? "translate-x-0" : "translate-x-full"
-    }`}>
-      <div className="h-full bg-background/80 backdrop-blur-xl border-l border-border shadow-2xl overflow-y-auto">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
-          {(() => {
-            const displayName = account
-              ? `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}`
-              : garage?.name || site?.name || "Details";
-            const codeMatch = displayName.match(/\(([A-Z]{3})\)/);
-            const airportCode = codeMatch ? codeMatch[1] : null;
-            return (
-              <div className="min-w-0 pr-2">
-                <h3 className="font-bold text-base leading-tight">{displayName}</h3>
-                {airportCode && (
-                  <span className="text-xs font-mono text-muted-foreground">IATA: {airportCode}</span>
-                )}
-              </div>
-            );
-          })()}
-          <button onClick={onClose}
-            className="w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors shrink-0">
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
-        {account && (
-          <PlaceInfo name={account.name} lat={account.hqLat} lng={account.hqLng} hqCity={account.hqCity}>
-            {(placeData) => (
-          <div className="p-3 space-y-2">
-            {/* Location photo */}
-            {placeData.photoUrl && (
-              <div className="w-full h-32 rounded-lg overflow-hidden">
-                <img src={placeData.photoUrl} alt={account.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-              </div>
+    <div className="space-y-2">
+      {/* Title */}
+      {(() => {
+        const displayName = account
+          ? `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}`
+          : garage?.name || site?.name || "Details";
+        const codeMatch = displayName.match(/\(([A-Z]{3})\)/);
+        const airportCode = codeMatch ? codeMatch[1] : null;
+        return (
+          <div>
+            <h3 className="font-bold text-sm leading-tight">{displayName}</h3>
+            {airportCode && (
+              <span className="text-[10px] font-mono text-muted-foreground">IATA: {airportCode}</span>
             )}
+          </div>
+        );
+      })()}
 
-            {/* Compact header row */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                <AccountIcon account={account} className="w-4 h-4 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] text-muted-foreground leading-tight">{account.accountType === "fleet_operator" ? `HQ: ${account.hqCity}` : account.hqCity}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[9px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
-                    {STAGE_CONFIG[account.stage].label}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">{account.estimatedSpaces} spaces · {account.facilityCount}</span>
-                </div>
-              </div>
+      {account && (
+        <PlaceInfo name={account.name} lat={account.hqLat} lng={account.hqLng} hqCity={account.hqCity}>
+          {(placeData) => (
+        <div className="space-y-2">
+          {placeData.photoUrl && (
+            <div className="w-full h-32 rounded-lg overflow-hidden">
+              <img src={placeData.photoUrl} alt={account.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
             </div>
-
-            {/* Address */}
-            {placeData.address && (
-              <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
-                <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
-                <span>{placeData.address}</span>
-              </div>
-            )}
-
-            {/* Stats grid */}
-            {(account.annualRevenue || account.employeeCount || account.founded) && (
-              <div className="grid grid-cols-3 gap-1.5">
-                {account.annualRevenue && (
-                  <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
-                    <DollarSign className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
-                    <p className="text-[10px] font-semibold">{account.annualRevenue}</p>
-                    <p className="text-[8px] text-muted-foreground">Revenue</p>
-                  </div>
-                )}
-                {account.employeeCount && (
-                  <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
-                    <UserCheck className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
-                    <p className="text-[10px] font-semibold">{account.employeeCount}</p>
-                    <p className="text-[8px] text-muted-foreground">Employees</p>
-                  </div>
-                )}
-                {account.founded && (
-                  <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
-                    <Calendar className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
-                    <p className="text-[10px] font-semibold">{account.founded}</p>
-                    <p className="text-[8px] text-muted-foreground">Founded</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Inline metadata chips */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
-              {account.currentVendor && (
-                <span className="inline-flex items-center gap-1 text-destructive font-medium">
-                  <Swords className="w-3 h-3" /> {account.currentVendor}
+          )}
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+              <AccountIcon account={account} className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] text-muted-foreground leading-tight">{account.accountType === "fleet_operator" ? `HQ: ${account.hqCity}` : account.hqCity}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[9px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: STAGE_CONFIG[account.stage].markerColor }}>
+                  {STAGE_CONFIG[account.stage].label}
                 </span>
-              )}
-              <span className="text-muted-foreground">{account.focusArea}</span>
+                <span className="text-[10px] text-muted-foreground">{account.estimatedSpaces} spaces · {account.facilityCount}</span>
+              </div>
             </div>
-
-            {/* Links row */}
-            <div className="flex items-center gap-3 text-[11px]">
-              <a href={account.website} target="_blank" rel="noopener noreferrer"
+          </div>
+          {placeData.address && (
+            <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+              <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+              <span>{placeData.address}</span>
+            </div>
+          )}
+          {(account.annualRevenue || account.employeeCount || account.founded) && (
+            <div className="grid grid-cols-3 gap-1.5">
+              {account.annualRevenue && (
+                <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
+                  <DollarSign className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
+                  <p className="text-[10px] font-semibold">{account.annualRevenue}</p>
+                  <p className="text-[8px] text-muted-foreground">Revenue</p>
+                </div>
+              )}
+              {account.employeeCount && (
+                <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
+                  <UserCheck className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
+                  <p className="text-[10px] font-semibold">{account.employeeCount}</p>
+                  <p className="text-[8px] text-muted-foreground">Employees</p>
+                </div>
+              )}
+              {account.founded && (
+                <div className="bg-muted/50 rounded-md px-2 py-1.5 text-center">
+                  <Calendar className="w-3 h-3 mx-auto text-muted-foreground mb-0.5" />
+                  <p className="text-[10px] font-semibold">{account.founded}</p>
+                  <p className="text-[8px] text-muted-foreground">Founded</p>
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+            {account.currentVendor && (
+              <span className="inline-flex items-center gap-1 text-destructive font-medium">
+                <Swords className="w-3 h-3" /> {account.currentVendor}
+              </span>
+            )}
+            <span className="text-muted-foreground">{account.focusArea}</span>
+          </div>
+          <div className="flex items-center gap-3 text-[11px]">
+            <a href={account.website} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary hover:underline font-medium">
+              Website <ExternalLink className="w-3 h-3" />
+            </a>
+            {account.caseStudyUrl && (
+              <a href={account.caseStudyUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary hover:underline font-medium">
-                Website <ExternalLink className="w-3 h-3" />
+                Case study <ExternalLink className="w-3 h-3" />
               </a>
-              {account.caseStudyUrl && (
-                <a href={account.caseStudyUrl} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline font-medium">
-                  Case study <ExternalLink className="w-3 h-3" />
-                </a>
+            )}
+          </div>
+          {account.id !== "acct-flash-hq" && (
+            <div className="pt-2 border-t border-border space-y-3">
+              {!accountLeads[account.id] && !loadingLeads.has(account.id) && (
+                <Button size="sm" variant="outline" className="w-full" onClick={() => onFindContacts(account)}>
+                  <Users className="w-4 h-4 mr-1.5" /> Find Decision-Makers
+                </Button>
               )}
-            </div>
-
-            {/* Leadgen: Find Decision-Makers */}
-            {account.id !== "acct-flash-hq" && (
-              <div className="pt-2 border-t border-border space-y-3">
-                {!accountLeads[account.id] && !loadingLeads.has(account.id) && (
-                  <Button size="sm" variant="outline" className="w-full" onClick={() => onFindContacts(account)}>
-                    <Users className="w-4 h-4 mr-1.5" /> Find Decision-Makers
-                  </Button>
-                )}
-                {loadingLeads.has(account.id) && (
-                  <div className="space-y-1.5 py-2">
-                    {(activityLog[account.id] || []).map((msg, i) => (
-                      <div key={i} className={`flex items-start gap-2 text-[11px] ${i === (activityLog[account.id]?.length ?? 1) - 1 ? "text-foreground" : "text-muted-foreground"}`}>
-                        {i === (activityLog[account.id]?.length ?? 1) - 1 ? (
-                          <Loader2 className="w-3 h-3 animate-spin shrink-0 mt-0.5" />
-                        ) : (
-                          <span className="w-3 h-3 shrink-0 mt-0.5 text-center text-[9px]">✓</span>
-                        )}
-                        <span>{msg}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {accountLeads[account.id] && (
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{accountLeads[account.id].leads.length} Decision-Makers</p>
-                    {accountLeads[account.id].leads.map((lead, i) => {
-                      const initials = lead.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-                      return (
-                        <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-muted/30 border border-border/50 hover:border-border transition-colors">
-                          <div className="relative shrink-0">
-                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
-                              {initials}
-                            </div>
-                            {lead.score != null && (
-                              <span className={`absolute -bottom-1 -right-1 text-[9px] font-bold px-1 py-px rounded-full border border-background ${
-                                lead.score >= 80 ? "bg-green-500 text-white" : lead.score >= 60 ? "bg-yellow-500 text-white" : "bg-muted text-muted-foreground"
-                              }`}>{lead.score}</span>
+              {loadingLeads.has(account.id) && (
+                <div className="space-y-1.5 py-2">
+                  {(activityLog[account.id] || []).map((msg, i) => (
+                    <div key={i} className={`flex items-start gap-2 text-[11px] ${i === (activityLog[account.id]?.length ?? 1) - 1 ? "text-foreground" : "text-muted-foreground"}`}>
+                      {i === (activityLog[account.id]?.length ?? 1) - 1 ? (
+                        <Loader2 className="w-3 h-3 animate-spin shrink-0 mt-0.5" />
+                      ) : (
+                        <span className="w-3 h-3 shrink-0 mt-0.5 text-center text-[9px]">✓</span>
+                      )}
+                      <span>{msg}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {accountLeads[account.id] && (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{accountLeads[account.id].leads.length} Decision-Makers</p>
+                  {accountLeads[account.id].leads.map((lead, i) => {
+                    const initials = lead.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+                    return (
+                      <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-muted/30 border border-border/50 hover:border-border transition-colors">
+                        <div className="relative shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                            {initials}
+                          </div>
+                          {lead.score != null && (
+                            <span className={`absolute -bottom-1 -right-1 text-[9px] font-bold px-1 py-px rounded-full border border-background ${
+                              lead.score >= 80 ? "bg-green-500 text-white" : lead.score >= 60 ? "bg-yellow-500 text-white" : "bg-muted text-muted-foreground"
+                            }`}>{lead.score}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold leading-tight truncate">{lead.name}</p>
+                          {lead.title && <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{lead.title}</p>}
+                          {lead.reason && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug">{lead.reason}</p>}
+                          <div className="flex gap-3 mt-1.5">
+                            {lead.email && (
+                              <a href={`mailto:${lead.email}`} className="text-primary hover:text-primary/80 text-[10px] inline-flex items-center gap-1 font-medium">
+                                <Mail className="w-3 h-3" /> Email
+                              </a>
+                            )}
+                            {lead.linkedin && (
+                              <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 text-[10px] inline-flex items-center gap-1 font-medium">
+                                <Linkedin className="w-3 h-3" /> LinkedIn
+                              </a>
                             )}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold leading-tight truncate">{lead.name}</p>
-                            {lead.title && <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{lead.title}</p>}
-                            {lead.reason && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug">{lead.reason}</p>}
-                            <div className="flex gap-3 mt-1.5">
-                              {lead.email && (
-                                <a href={`mailto:${lead.email}`} className="text-primary hover:text-primary/80 text-[10px] inline-flex items-center gap-1 font-medium">
-                                  <Mail className="w-3 h-3" /> Email
-                                </a>
-                              )}
-                              {lead.linkedin && (
-                                <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 text-[10px] inline-flex items-center gap-1 font-medium">
-                                  <Linkedin className="w-3 h-3" /> LinkedIn
-                                </a>
-                              )}
-                            </div>
-                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+          )}
+        </PlaceInfo>
+      )}
+      {site && (
+        <div className="space-y-3">
+          <p className="text-[11px] text-muted-foreground">{site.address}</p>
+          <div className="space-y-1.5 text-sm">
+            <p><span className="font-medium">Operator:</span> {site.operator}</p>
+            <p className="text-muted-foreground">{site.scope}</p>
+            {site.notes && <p className="text-muted-foreground text-xs">{site.notes}</p>}
+          </div>
+          {site.sourceUrl && (
+            <a href={site.sourceUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+              Source <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </div>
+      )}
+      {garage && (
+        <div className="space-y-2">
+          {garage.photo_reference && (
+            <div className="w-full h-32 rounded-lg overflow-hidden">
+              <img src={`https://places.googleapis.com/v1/${garage.photo_reference}/media?maxWidthPx=400&key=${API_KEY}`}
+                alt={garage.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+            </div>
+          )}
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
+              <Warehouse className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                {garage.scan_zone ? `${garage.scan_zone} · Garage` : "Discovered Garage"}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                {garage.operator_guess && (
+                  <span className="text-[10px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
+                    {garage.operator_guess}
+                  </span>
+                )}
+                {garage.rating && (
+                  <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-amber-100 text-amber-800">
+                    ⭐ {garage.rating} ({garage.reviews_count})
+                  </span>
+                )}
+                {garage.capacity && (
+                  <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-muted text-foreground">
+                    🅿️ {garage.capacity.toLocaleString()} spaces
+                  </span>
                 )}
               </div>
-            )}
-          </div>
-            )}
-          </PlaceInfo>
-        )}
-        {site && (
-          <div className="p-4 space-y-3">
-            <p className="text-[11px] text-muted-foreground">{site.address}</p>
-            <div className="space-y-1.5 text-sm">
-              <p><span className="font-medium">Operator:</span> {site.operator}</p>
-              <p className="text-muted-foreground">{site.scope}</p>
-              {site.notes && <p className="text-muted-foreground text-xs">{site.notes}</p>}
             </div>
-            {site.sourceUrl && (
-              <a href={site.sourceUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
-                Source <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
           </div>
-        )}
-        {garage && (
-          <div className="p-3 space-y-2">
-            {garage.photo_reference && (
-              <div className="w-full h-32 rounded-lg overflow-hidden">
-                <img src={`https://places.googleapis.com/v1/${garage.photo_reference}/media?maxWidthPx=400&key=${API_KEY}`}
-                  alt={garage.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-              </div>
-            )}
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
-                <Warehouse className="w-4 h-4 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] text-muted-foreground leading-tight">
-                  {garage.scan_zone ? `${garage.scan_zone} · Garage` : "Discovered Garage"}
-                </p>
-                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                  {garage.operator_guess && (
-                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
-                      {garage.operator_guess}
-                    </span>
-                  )}
-                  {garage.rating && (
-                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-amber-100 text-amber-800">
-                      ⭐ {garage.rating} ({garage.reviews_count})
-                    </span>
-                  )}
-                  {garage.capacity && (
-                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-muted text-foreground">
-                      🅿️ {garage.capacity.toLocaleString()} spaces
-                    </span>
-                  )}
-                </div>
-              </div>
+          {garage.address && (
+            <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+              <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+              <span>{garage.address}</span>
             </div>
-            {garage.address && (
-              <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
-                <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
-                <span>{garage.address}</span>
-              </div>
-            )}
-            {garage.phone && (
-              <p className="text-[11px] text-muted-foreground">📞 {garage.phone}</p>
-            )}
-            {garage.website && (
-              <a href={garage.website} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
-                Website <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-            {garage.types.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {garage.types.slice(0, 5).map(t => (
-                  <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t.replace(/_/g, ' ')}</span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+          {garage.phone && (
+            <p className="text-[11px] text-muted-foreground">📞 {garage.phone}</p>
+          )}
+          {garage.website && (
+            <a href={garage.website} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+              Website <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+          {garage.types.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {garage.types.slice(0, 5).map(t => (
+                <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t.replace(/_/g, ' ')}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
