@@ -72,6 +72,7 @@ export default function LAMarketDashboard() {
       const { data: garages } = await supabase
         .from("discovered_garages")
         .select("operator_guess, capacity, rating, scan_zone")
+        .eq("city", selectedCity)
         .limit(1000);
 
       if (!garages) return;
