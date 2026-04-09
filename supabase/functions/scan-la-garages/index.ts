@@ -5,72 +5,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface CorridorDef {
-  label: string;
-  latStart: number;
-  latEnd: number;
-  lngStart: number;
-  lngEnd: number;
-  step: number;
+interface CorridorRow {
+  id: string;
   city: string;
+  region_key: string;
+  label: string;
+  lat_start: number;
+  lat_end: number;
+  lng_start: number;
+  lng_end: number;
+  step: number;
+  priority: number;
+  enabled: boolean;
 }
 
-const LA_CORRIDORS: Record<string, CorridorDef> = {
-  dtla: {
-    label: "Downtown LA",
-    latStart: 34.025, latEnd: 34.065,
-    lngStart: -118.285, lngEnd: -118.225,
-    step: 0.008, city: "Los Angeles",
-  },
-  hollywood: {
-    label: "Hollywood / Koreatown / Mid-Wilshire",
-    latStart: 34.055, latEnd: 34.105,
-    lngStart: -118.365, lngEnd: -118.285,
-    step: 0.008, city: "Los Angeles",
-  },
-  westside: {
-    label: "Westside (Beverly Hills, Century City, Westwood)",
-    latStart: 34.035, latEnd: 34.085,
-    lngStart: -118.435, lngEnd: -118.365,
-    step: 0.008, city: "Los Angeles",
-  },
-  santa_monica: {
-    label: "Santa Monica / Venice / Marina del Rey",
-    latStart: 33.975, latEnd: 34.035,
-    lngStart: -118.510, lngEnd: -118.435,
-    step: 0.008, city: "Los Angeles",
-  },
-  lax: {
-    label: "LAX / El Segundo / Inglewood",
-    latStart: 33.925, latEnd: 33.975,
-    lngStart: -118.430, lngEnd: -118.350,
-    step: 0.008, city: "Los Angeles",
-  },
-  pasadena: {
-    label: "Pasadena / Glendale / Burbank",
-    latStart: 34.120, latEnd: 34.200,
-    lngStart: -118.310, lngEnd: -118.130,
-    step: 0.010, city: "Los Angeles",
-  },
-  valley: {
-    label: "San Fernando Valley (Sherman Oaks, Encino, Van Nuys)",
-    latStart: 34.140, latEnd: 34.210,
-    lngStart: -118.500, lngEnd: -118.380,
-    step: 0.010, city: "Los Angeles",
-  },
-  south_la: {
-    label: "South LA / USC / Exposition Park",
-    latStart: 33.980, latEnd: 34.025,
-    lngStart: -118.310, lngEnd: -118.240,
-    step: 0.008, city: "Los Angeles",
-  },
-};
-
-function buildZones(corridor: CorridorDef): { lat: number; lng: number; label: string }[] {
+function buildZones(c: CorridorRow): { lat: number; lng: number; label: string }[] {
   const zones: { lat: number; lng: number; label: string }[] = [];
   let idx = 0;
-  for (let lat = corridor.latStart; lat <= corridor.latEnd; lat += corridor.step) {
-    for (let lng = corridor.lngStart; lng <= corridor.lngEnd; lng += corridor.step) {
+  for (let lat = c.lat_start; lat <= c.lat_end; lat += c.step) {
+    for (let lng = c.lng_start; lng <= c.lng_end; lng += c.step) {
       zones.push({
         lat: Math.round(lat * 1e6) / 1e6,
         lng: Math.round(lng * 1e6) / 1e6,
@@ -96,6 +49,94 @@ interface PlaceResult {
   nationalPhoneNumber?: string;
 }
 
+async function scanZone(
+  zone: { lat: number; lng: number; label: string },
+  corridor: CorridorRow,
+  apiKey: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<{ inserted: number; skipped: number }> {
+  console.log(`Scanning ${corridor.label} zone ${zone.label} at ${zone.lat},${zone.lng}`);
+
+  const queries = ["parking garage", "parking structure", "parking lot"];
+  const allPlaces: PlaceResult[] = [];
+  const seenIds = new Set<string>();
+
+  for (const query of queries) {
+    try {
+      const resp = await fetch("https://places.googleapis.com/v1/places:searchText", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask":
+            "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.types,places.priceLevel,places.businessStatus,places.websiteUri,places.nationalPhoneNumber",
+        },
+        body: JSON.stringify({
+          textQuery: query,
+          locationBias: {
+            circle: { center: { latitude: zone.lat, longitude: zone.lng }, radius: 600 },
+          },
+          maxResultCount: 20,
+        }),
+      });
+
+      if (!resp.ok) {
+        console.error(`Places API error for "${query}" at zone ${zone.label}: ${resp.status}`);
+        continue;
+      }
+
+      const data = await resp.json();
+      for (const p of (data.places || []) as PlaceResult[]) {
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id);
+          allPlaces.push(p);
+        }
+      }
+    } catch (err) {
+      console.error(`Error scanning "${query}" at zone ${zone.label}:`, err);
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const place of allPlaces) {
+    if (!place.location) continue;
+
+    const row = {
+      place_id: place.id,
+      name: place.displayName?.text || "Unknown",
+      address: place.formattedAddress || null,
+      lat: place.location.latitude,
+      lng: place.location.longitude,
+      rating: place.rating || null,
+      reviews_count: place.userRatingCount || 0,
+      photo_reference: place.photos?.[0]?.name || null,
+      types: place.types || [],
+      city: corridor.city,
+      scan_zone: `${corridor.region_key}-${zone.label}`,
+      price_level: place.priceLevel
+        ? parseInt(place.priceLevel.replace("PRICE_LEVEL_", "")) || null
+        : null,
+      business_status: place.businessStatus || null,
+      website: place.websiteUri || null,
+      phone: place.nationalPhoneNumber || null,
+      total_ratings: place.userRatingCount || null,
+    };
+
+    const { error } = await supabase.from("discovered_garages").upsert(row, { onConflict: "place_id" });
+    if (error) {
+      console.error(`Insert error for ${place.id}:`, error.message);
+      skipped++;
+    } else {
+      inserted++;
+    }
+  }
+
+  return { inserted, skipped };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -105,7 +146,8 @@ Deno.serve(async (req) => {
     const GOOGLE_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
     if (!GOOGLE_API_KEY) {
       return new Response(JSON.stringify({ error: "Google Maps API key not configured" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -116,71 +158,127 @@ Deno.serve(async (req) => {
     // Auth: check if service_role JWT or superadmin user
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "") ?? "";
-    
-    // Decode JWT payload to check role
+
     let isServiceRole = false;
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       isServiceRole = payload.role === "service_role";
     } catch {}
-    
+
     if (!isServiceRole) {
       if (!authHeader) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       const { data: { user }, error: authError } = await supabase.auth.getUser(token);
       if (authError || !user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       const { data: isAdmin } = await supabase.rpc("is_superadmin", { _user_id: user.id });
       if (!isAdmin) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
 
     const body = await req.json().catch(() => ({}));
+
+    // --- LIST action: return corridors from DB ---
+    if (body.action === "list") {
+      const { data: corridors, error } = await supabase
+        .from("scan_corridors")
+        .select("*")
+        .eq("enabled", true)
+        .order("priority", { ascending: true });
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const cityFilter = body.city;
+      const filtered = cityFilter
+        ? (corridors as CorridorRow[]).filter((c) => c.city === cityFilter)
+        : (corridors as CorridorRow[]);
+
+      const corridorList = filtered.map((c) => ({
+        key: c.region_key,
+        label: c.label,
+        city: c.city,
+        zones: buildZones(c).length,
+        id: c.id,
+      }));
+
+      // Group by city
+      const cities = [...new Set(filtered.map((c) => c.city))];
+
+      return new Response(JSON.stringify({ corridors: corridorList, cities }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- SCAN action ---
     const corridorKey = body.corridor ?? "dtla";
     const zoneIndex = body.zoneIndex ?? 0;
     const batchSize = body.batchSize ?? 3;
 
-    // Support "list" action to return available corridors
-    if (body.action === "list") {
-      const corridorList = Object.entries(LA_CORRIDORS).map(([key, c]) => ({
-        key,
-        label: c.label,
-        zones: buildZones(c).length,
-      }));
-      return new Response(JSON.stringify({ corridors: corridorList }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Look up corridor from DB
+    const { data: corridorRows, error: corridorErr } = await supabase
+      .from("scan_corridors")
+      .select("*")
+      .eq("region_key", corridorKey)
+      .eq("enabled", true)
+      .limit(1);
+
+    if (corridorErr || !corridorRows?.length) {
+      return new Response(
+        JSON.stringify({
+          error: `Unknown or disabled corridor: ${corridorKey}`,
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    const corridor = LA_CORRIDORS[corridorKey];
-    if (!corridor) {
-      return new Response(JSON.stringify({ error: `Unknown corridor: ${corridorKey}`, available: Object.keys(LA_CORRIDORS) }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
+    const corridor = corridorRows[0] as CorridorRow;
     const zones = buildZones(corridor);
     const zoneBatch = zones.slice(zoneIndex, zoneIndex + batchSize);
+
     if (zoneBatch.length === 0) {
-      return new Response(JSON.stringify({ 
-        done: true, 
-        corridor: corridorKey,
-        totalZones: zones.length,
-        message: `All ${corridor.label} zones scanned` 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // Mark progress as completed
+      await supabase
+        .from("scan_progress")
+        .upsert(
+          {
+            corridor_id: corridor.id,
+            last_zone_index: zones.length,
+            total_zones: zones.length,
+            status: "completed",
+            completed_at: new Date().toISOString(),
+          },
+          { onConflict: "corridor_id" },
+        );
+
+      return new Response(
+        JSON.stringify({
+          done: true,
+          corridor: corridorKey,
+          city: corridor.city,
+          totalZones: zones.length,
+          message: `All ${corridor.label} zones scanned`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     let totalInserted = 0;
@@ -188,111 +286,51 @@ Deno.serve(async (req) => {
     const scannedZones: string[] = [];
 
     for (const zone of zoneBatch) {
-      console.log(`Scanning ${corridor.label} zone ${zone.label} at ${zone.lat},${zone.lng}`);
-      
-      const queries = ["parking garage", "parking structure", "parking lot"];
-      const allPlaces: PlaceResult[] = [];
-      const seenIds = new Set<string>();
-
-      for (const query of queries) {
-        try {
-          const resp = await fetch("https://places.googleapis.com/v1/places:searchText", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Goog-Api-Key": GOOGLE_API_KEY,
-              "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.types,places.priceLevel,places.businessStatus,places.websiteUri,places.nationalPhoneNumber",
-            },
-            body: JSON.stringify({
-              textQuery: query,
-              locationBias: {
-                circle: {
-                  center: { latitude: zone.lat, longitude: zone.lng },
-                  radius: 600,
-                },
-              },
-              maxResultCount: 20,
-            }),
-          });
-
-          if (!resp.ok) {
-            console.error(`Places API error for "${query}" at zone ${zone.label}: ${resp.status}`);
-            continue;
-          }
-
-          const data = await resp.json();
-          const places: PlaceResult[] = data.places || [];
-          
-          for (const p of places) {
-            if (!seenIds.has(p.id)) {
-              seenIds.add(p.id);
-              allPlaces.push(p);
-            }
-          }
-        } catch (err) {
-          console.error(`Error scanning "${query}" at zone ${zone.label}:`, err);
-        }
-
-        await new Promise(r => setTimeout(r, 200));
-      }
-
-      for (const place of allPlaces) {
-        if (!place.location) continue;
-
-        const row = {
-          place_id: place.id,
-          name: place.displayName?.text || "Unknown",
-          address: place.formattedAddress || null,
-          lat: place.location.latitude,
-          lng: place.location.longitude,
-          rating: place.rating || null,
-          reviews_count: place.userRatingCount || 0,
-          photo_reference: place.photos?.[0]?.name || null,
-          types: place.types || [],
-          city: corridor.city,
-          scan_zone: `${corridorKey}-${zone.label}`,
-          price_level: place.priceLevel ? parseInt(place.priceLevel.replace("PRICE_LEVEL_", "")) || null : null,
-          business_status: place.businessStatus || null,
-          website: place.websiteUri || null,
-          phone: place.nationalPhoneNumber || null,
-          total_ratings: place.userRatingCount || null,
-        };
-
-        const { error } = await supabase
-          .from("discovered_garages")
-          .upsert(row, { onConflict: "place_id" });
-
-        if (error) {
-          console.error(`Insert error for ${place.id}:`, error.message);
-          totalSkipped++;
-        } else {
-          totalInserted++;
-        }
-      }
-
+      const result = await scanZone(zone, corridor, GOOGLE_API_KEY, supabase);
+      totalInserted += result.inserted;
+      totalSkipped += result.skipped;
       scannedZones.push(zone.label);
     }
 
     const nextZoneIndex = zoneIndex + batchSize;
     const hasMore = nextZoneIndex < zones.length;
 
-    return new Response(JSON.stringify({
-      done: !hasMore,
-      corridor: corridorKey,
-      corridorLabel: corridor.label,
-      inserted: totalInserted,
-      skipped: totalSkipped,
-      scannedZones,
-      nextZoneIndex: hasMore ? nextZoneIndex : null,
-      totalZones: zones.length,
-      progress: `${Math.min(nextZoneIndex, zones.length)}/${zones.length} zones`,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Update scan progress
+    await supabase
+      .from("scan_progress")
+      .upsert(
+        {
+          corridor_id: corridor.id,
+          last_zone_index: Math.min(nextZoneIndex, zones.length),
+          total_zones: zones.length,
+          garages_found: totalInserted,
+          status: hasMore ? "scanning" : "completed",
+          started_at: zoneIndex === 0 ? new Date().toISOString() : undefined,
+          completed_at: hasMore ? undefined : new Date().toISOString(),
+        },
+        { onConflict: "corridor_id" },
+      );
+
+    return new Response(
+      JSON.stringify({
+        done: !hasMore,
+        corridor: corridorKey,
+        city: corridor.city,
+        corridorLabel: corridor.label,
+        inserted: totalInserted,
+        skipped: totalSkipped,
+        scannedZones,
+        nextZoneIndex: hasMore ? nextZoneIndex : null,
+        totalZones: zones.length,
+        progress: `${Math.min(nextZoneIndex, zones.length)}/${zones.length} zones`,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (err) {
     console.error("scan-la-garages error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
