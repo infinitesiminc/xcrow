@@ -709,6 +709,34 @@ export default function FlashParkingMap() {
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState("");
   const [scanCorridor, setScanCorridor] = useState("dtla");
+  const [selectedCity, setSelectedCity] = useState("Los Angeles");
+  const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
+  const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
+
+  // Load corridors from DB
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const resp = await fetch(`${supabaseUrl}/functions/v1/scan-la-garages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": supabaseKey },
+          body: JSON.stringify({ action: "list" }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          setCorridorOptions(data.corridors || []);
+          setAvailableCities(data.cities || ["Los Angeles"]);
+          if (data.corridors?.length) setScanCorridor(data.corridors[0].key);
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const cityCorridors = useMemo(() =>
+    corridorOptions.filter(c => c.city === selectedCity)
+  , [corridorOptions, selectedCity]);
 
   const displayedGarages = useMemo(() => 
     showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
