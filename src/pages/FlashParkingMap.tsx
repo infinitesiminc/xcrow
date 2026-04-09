@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, Swords, Plane, Users, Loader2, Linkedin, Mail, DollarSign, Calendar, UserCheck, Warehouse, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import Navbar from "@/components/Navbar";
@@ -80,6 +80,34 @@ function DeployedSitePin() {
       <div className="w-3 h-3 rounded-full bg-gray-400/50 border border-white/60" />
     </div>
   );
+}
+
+/* ── Discovered garage pin ── */
+function GaragePin() {
+  return (
+    <div className="cursor-pointer group">
+      <div className="w-4 h-4 rounded-sm bg-amber-500/80 border border-white/80 shadow-sm transition-all group-hover:scale-150 flex items-center justify-center">
+        <Warehouse className="w-2.5 h-2.5 text-white" />
+      </div>
+    </div>
+  );
+}
+
+interface DiscoveredGarage {
+  id: string;
+  place_id: string;
+  name: string;
+  address: string | null;
+  lat: number;
+  lng: number;
+  rating: number | null;
+  reviews_count: number;
+  photo_reference: string | null;
+  types: string[];
+  operator_guess: string | null;
+  scan_zone: string | null;
+  website: string | null;
+  phone: string | null;
 }
 
 /* ── Full-height Slide-in Detail Panel ── */
@@ -176,13 +204,13 @@ function PlaceInfo({ name, lat, lng, hqCity, children }: { name: string; lat: nu
   return <>{children(data)}</>;
 }
 
-function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
-  account: FlashAccount | null; site: FlashLocation | null; onClose: () => void;
+function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLeads, activityLog, onFindContacts }: {
+  account: FlashAccount | null; site: FlashLocation | null; garage: DiscoveredGarage | null; onClose: () => void;
   accountLeads: Record<string, AccountLeadData>; loadingLeads: Set<string>;
   activityLog: Record<string, string[]>;
   onFindContacts: (account: FlashAccount) => void;
 }) {
-  const isOpen = !!(account || site);
+  const isOpen = !!(account || site || garage);
   return (
     <div className={`absolute top-0 right-0 z-[1000] w-96 h-full transition-transform duration-300 ease-out ${
       isOpen ? "translate-x-0" : "translate-x-full"
@@ -192,7 +220,7 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
           {(() => {
             const displayName = account
               ? `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}`
-              : site?.name || "Details";
+              : garage?.name || site?.name || "Details";
             const codeMatch = displayName.match(/\(([A-Z]{3})\)/);
             const airportCode = codeMatch ? codeMatch[1] : null;
             return (
@@ -378,6 +406,53 @@ function DetailPanel({ account, site, onClose, accountLeads, loadingLeads, activ
             )}
           </div>
         )}
+        {garage && (
+          <div className="p-3 space-y-2">
+            {garage.photo_reference && (
+              <div className="w-full h-32 rounded-lg overflow-hidden">
+                <img src={`https://places.googleapis.com/v1/${garage.photo_reference}/media?maxWidthPx=400&key=${API_KEY}`}
+                  alt={garage.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+              </div>
+            )}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500">
+                <Warehouse className="w-4 h-4 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] text-muted-foreground leading-tight">Discovered Garage</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  {garage.rating && (
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-amber-100 text-amber-800">
+                      ⭐ {garage.rating} ({garage.reviews_count})
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {garage.address && (
+              <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+                <span>{garage.address}</span>
+              </div>
+            )}
+            {garage.phone && (
+              <p className="text-[11px] text-muted-foreground">📞 {garage.phone}</p>
+            )}
+            {garage.website && (
+              <a href={garage.website} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium">
+                Website <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+            {garage.types.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {garage.types.slice(0, 5).map(t => (
+                  <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t.replace(/_/g, ' ')}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -467,17 +542,25 @@ function getMarkerZ(account: FlashAccount) {
 }
 
 /* ── Map content ── */
-function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite }: {
+function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite, garages, showGarages, onSelectGarage }: {
   accounts: FlashAccount[];
   onSelectAccount: (a: FlashAccount) => void;
   showDeployed: boolean; deployedLocations: FlashLocation[];
   onSelectSite: (l: FlashLocation) => void;
+  garages: DiscoveredGarage[];
+  showGarages: boolean;
+  onSelectGarage: (g: DiscoveredGarage) => void;
 }) {
   return (
     <>
       {showDeployed && deployedLocations.map((loc) => (
         <AdvancedMarker key={loc.id} position={{ lat: loc.lat, lng: loc.lng }} zIndex={0} onClick={() => onSelectSite(loc)}>
           <DeployedSitePin />
+        </AdvancedMarker>
+      ))}
+      {showGarages && garages.map((g) => (
+        <AdvancedMarker key={g.id} position={{ lat: g.lat, lng: g.lng }} zIndex={0} onClick={() => onSelectGarage(g)}>
+          <GaragePin />
         </AdvancedMarker>
       ))}
       {accounts.map((acct) => (
@@ -503,6 +586,62 @@ export default function FlashParkingMap() {
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
   const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
+  const [showGarages, setShowGarages] = useState(false);
+  const [laGarages, setLaGarages] = useState<DiscoveredGarage[]>([]);
+  const [selectedGarageId, setSelectedGarageId] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState("");
+
+  // Load garages from DB
+  useEffect(() => {
+    if (!showGarages) return;
+    (async () => {
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
+    })();
+  }, [showGarages]);
+
+  const handleScanLA = useCallback(async () => {
+    if (scanning) return;
+    setScanning(true);
+    setScanProgress("Starting DTLA scan...");
+    let zoneIndex = 0;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      while (true) {
+        const resp = await fetch(`${supabaseUrl}/functions/v1/scan-la-garages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+            "apikey": supabaseKey,
+          },
+          body: JSON.stringify({ zoneIndex, batchSize: 3 }),
+        });
+        const result = await resp.json();
+        if (!resp.ok) { setScanProgress(`Error: ${result.error}`); break; }
+        setScanProgress(`${result.progress} — ${result.inserted} new garages`);
+        if (result.done) { setScanProgress(`Done! Scan complete.`); break; }
+        zoneIndex = result.nextZoneIndex;
+      }
+      // Reload garages
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
+    } catch (e: any) {
+      setScanProgress(`Error: ${e.message}`);
+    } finally {
+      setScanning(false);
+    }
+  }, [scanning]);
+
+  const handleSelectGarage = useCallback((g: DiscoveredGarage) => {
+    setSelectedGarageId(g.id);
+    setSelectedAccountId(null);
+    setSelectedSiteId(null);
+  }, []);
 
 
 
@@ -531,16 +670,19 @@ export default function FlashParkingMap() {
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
     setSelectedSiteId(null);
+    setSelectedGarageId(null);
   }, []);
 
   const handleSelectSite = useCallback((l: FlashLocation) => {
     setSelectedSiteId(l.id);
     setSelectedAccountId(null);
+    setSelectedGarageId(null);
   }, []);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedAccountId(null);
     setSelectedSiteId(null);
+    setSelectedGarageId(null);
   }, []);
 
   const handleFindContacts = useCallback(async (account: FlashAccount) => {
@@ -631,6 +773,7 @@ export default function FlashParkingMap() {
 
   const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
+  const selectedGarage = useMemo(() => laGarages.find((g) => g.id === selectedGarageId) ?? null, [selectedGarageId, laGarages]);
 
 
 
@@ -705,6 +848,29 @@ export default function FlashParkingMap() {
         </CollapsibleContent>
       </Collapsible>
 
+      {/* LA Garages layer */}
+      <div className="px-3 py-2 space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-[11px] font-medium cursor-pointer">
+            <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
+            <Warehouse className="w-3.5 h-3.5 text-amber-500" />
+            LA Garages
+            {showGarages && laGarages.length > 0 && (
+              <span className="text-muted-foreground">({laGarages.length})</span>
+            )}
+          </label>
+          {showGarages && (
+            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleScanLA} disabled={scanning}>
+              {scanning ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+              {scanning ? "Scanning..." : "Scan DTLA"}
+            </Button>
+          )}
+        </div>
+        {scanProgress && showGarages && (
+          <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
+        )}
+      </div>
+
       <div className="h-px bg-border mx-3" />
 
       {/* Account list */}
@@ -750,7 +916,7 @@ export default function FlashParkingMap() {
           )}
 
           {/* Detail slide-in panel */}
-          <DetailPanel account={selectedAccount} site={selectedSite} onClose={handleCloseDetail}
+          <DetailPanel account={selectedAccount} site={selectedSite} garage={selectedGarage} onClose={handleCloseDetail}
             accountLeads={accountLeads} loadingLeads={loadingLeads} activityLog={activityLog} onFindContacts={handleFindContacts} />
 
           {/* Legend */}
@@ -767,6 +933,14 @@ export default function FlashParkingMap() {
                 <span>Deployed site</span>
               </div>
             )}
+            {showGarages && (
+              <div className="flex items-center gap-1.5 border-l border-border pl-4">
+                <span className="w-3.5 h-3.5 rounded-sm bg-amber-500/80 flex items-center justify-center">
+                  <Warehouse className="w-2 h-2 text-white" />
+                </span>
+                <span>LA Garage</span>
+              </div>
+            )}
           </div>
 
           <APIProvider apiKey={API_KEY}>
@@ -778,6 +952,9 @@ export default function FlashParkingMap() {
                 showDeployed={showDeployed}
                 deployedLocations={FLASH_LOCATIONS}
                 onSelectSite={handleSelectSite}
+                garages={laGarages}
+                showGarages={showGarages}
+                onSelectGarage={handleSelectGarage}
               />
               
             </Map>
