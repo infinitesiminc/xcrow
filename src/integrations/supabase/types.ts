@@ -2218,6 +2218,13 @@ export type Database = {
           task_cluster_count: number
         }[]
       }
+      get_corridor_garage_counts: {
+        Args: never
+        Returns: {
+          garage_count: number
+          region_key: string
+        }[]
+      }
       get_credit_balance: { Args: { _user_id: string }; Returns: number }
       get_friend_activity: {
         Args: { _limit?: number; _user_id: string }
