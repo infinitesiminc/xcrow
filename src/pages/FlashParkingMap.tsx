@@ -422,10 +422,20 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] text-muted-foreground leading-tight">Discovered Garage</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  {garage.operator_guess && (
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-primary/10 text-primary">
+                      {garage.operator_guess}
+                    </span>
+                  )}
                   {garage.rating && (
                     <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-amber-100 text-amber-800">
                       ⭐ {garage.rating} ({garage.reviews_count})
+                    </span>
+                  )}
+                  {garage.capacity && (
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-muted text-foreground">
+                      🅿️ {garage.capacity.toLocaleString()} spaces
                     </span>
                   )}
                 </div>
