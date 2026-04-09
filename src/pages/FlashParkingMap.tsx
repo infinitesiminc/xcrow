@@ -13,7 +13,7 @@ import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, 
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import ContextPanel, { type PanelMode } from "@/components/enterprise/ContextPanel";
-import { type GeoContext } from "@/components/enterprise/MarketPanel";
+import { type GeoContext, type ViewportHint } from "@/components/enterprise/MarketPanel";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
