@@ -40,6 +40,7 @@ const Demo = lazy(() => import("./pages/Demo.tsx"));
 const Texas = lazy(() => import("./pages/Texas.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const FlashParkingMap = lazy(() => import("./pages/FlashParkingMap.tsx"));
+const MarketDashboard = lazy(() => import("./pages/MarketDashboard.tsx"));
 const EnterpriseLayout = lazy(() => import("./pages/EnterpriseLayout.tsx"));
 
 
@@ -92,6 +93,7 @@ const App = () => (
               <Route path="/admin" element={<EnterpriseLayout />}>
                 <Route index element={<Admin />} />
                 <Route path="flash" element={<FlashParkingMap />} />
+                <Route path="flash/market" element={<MarketDashboard />} />
               </Route>
               <Route path="/flashparkingmap" element={<Navigate to="/admin/flash" replace />} />
               <Route path="/enterprise/*" element={<Navigate to="/admin" replace />} />

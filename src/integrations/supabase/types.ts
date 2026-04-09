@@ -265,6 +265,7 @@ export type Database = {
           capacity: number | null
           capacity_source: string | null
           city: string | null
+          country: string | null
           created_at: string
           id: string
           lat: number
@@ -278,6 +279,7 @@ export type Database = {
           rating: number | null
           reviews_count: number | null
           scan_zone: string | null
+          state: string | null
           total_ratings: number | null
           types: string[] | null
           updated_at: string
@@ -289,6 +291,7 @@ export type Database = {
           capacity?: number | null
           capacity_source?: string | null
           city?: string | null
+          country?: string | null
           created_at?: string
           id?: string
           lat: number
@@ -302,6 +305,7 @@ export type Database = {
           rating?: number | null
           reviews_count?: number | null
           scan_zone?: string | null
+          state?: string | null
           total_ratings?: number | null
           types?: string[] | null
           updated_at?: string
@@ -313,6 +317,7 @@ export type Database = {
           capacity?: number | null
           capacity_source?: string | null
           city?: string | null
+          country?: string | null
           created_at?: string
           id?: string
           lat?: number
@@ -326,6 +331,7 @@ export type Database = {
           rating?: number | null
           reviews_count?: number | null
           scan_zone?: string | null
+          state?: string | null
           total_ratings?: number | null
           types?: string[] | null
           updated_at?: string
