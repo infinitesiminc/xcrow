@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
-import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { MapPin, Filter, ExternalLink, Search, X, Building2, Grid3X3, Zap, Eye, 
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import ContextPanel, { type PanelMode } from "@/components/enterprise/ContextPanel";
-import { type GeoContext } from "@/components/enterprise/MarketPanel";
+import { type GeoContext, type ViewportHint } from "@/components/enterprise/MarketPanel";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
@@ -674,6 +674,17 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 }
 
 
+/* ── Map viewport sync ── */
+function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!map || !hint) return;
+    map.panTo({ lat: hint.lat, lng: hint.lng });
+    map.setZoom(hint.zoom);
+  }, [map, hint]);
+  return null;
+}
+
 /* ── Main page ── */
 
 
@@ -701,6 +712,7 @@ export default function FlashParkingMap() {
   const [selectedCity, setSelectedCity] = useState("Los Angeles");
   const [panelMode, setPanelMode] = useState<PanelMode>("hidden");
   const [geoContext, setGeoContext] = useState<GeoContext>({ country: null, state: null, city: null });
+  const [viewportHint, setViewportHint] = useState<ViewportHint | null>(null);
   const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
 
@@ -1152,7 +1164,15 @@ export default function FlashParkingMap() {
               if (m === "hidden") handleCloseDetail();
             }}
             geo={geoContext}
-            onGeoChange={setGeoContext}
+            onGeoChange={(newGeo) => {
+              setGeoContext(newGeo);
+              // Sync garage city selector when drilling to a city
+              if (newGeo.city && newGeo.city !== selectedCity) {
+                setSelectedCity(newGeo.city);
+                setShowGarages(true);
+              }
+            }}
+            onViewportHint={setViewportHint}
             detailContent={
               <DetailPanelContent
                 account={selectedAccount}
@@ -1213,7 +1233,7 @@ export default function FlashParkingMap() {
                 showGarages={showGarages}
                 onSelectGarage={handleSelectGarage}
               />
-              
+              <MapViewportSync hint={viewportHint} />
             </Map>
           </APIProvider>
         </div>
