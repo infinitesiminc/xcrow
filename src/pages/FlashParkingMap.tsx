@@ -453,14 +453,16 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
               </div>
             )}
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
                 <Warehouse className="w-4 h-4 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] text-muted-foreground leading-tight">Discovered Garage</p>
+                <p className="text-[11px] text-muted-foreground leading-tight">
+                  {garage.scan_zone ? `${garage.scan_zone} · Garage` : "Discovered Garage"}
+                </p>
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   {garage.operator_guess && (
-                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium bg-primary/10 text-primary">
+                    <span className="text-[10px] px-1.5 py-px rounded-full font-medium text-white" style={{ backgroundColor: getOperatorColor(garage.operator_guess) }}>
                       {garage.operator_guess}
                     </span>
                   )}
