@@ -708,6 +708,7 @@ export default function FlashParkingMap() {
   const [showOnlyOperators, setShowOnlyOperators] = useState(true);
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState("");
+  const [scanCorridor, setScanCorridor] = useState("dtla");
 
   const displayedGarages = useMemo(() => 
     showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
@@ -758,10 +759,22 @@ export default function FlashParkingMap() {
     })();
   }, [showGarages]);
 
+  const CORRIDOR_OPTIONS = [
+    { key: "dtla", label: "Downtown LA" },
+    { key: "hollywood", label: "Hollywood / Koreatown" },
+    { key: "westside", label: "Beverly Hills / Century City" },
+    { key: "santa_monica", label: "Santa Monica / Venice" },
+    { key: "lax", label: "LAX / Inglewood" },
+    { key: "pasadena", label: "Pasadena / Glendale" },
+    { key: "valley", label: "San Fernando Valley" },
+    { key: "south_la", label: "South LA / USC" },
+  ];
+
   const handleScanLA = useCallback(async () => {
     if (scanning) return;
     setScanning(true);
-    setScanProgress("Starting DTLA scan...");
+    const corridorLabel = CORRIDOR_OPTIONS.find(c => c.key === scanCorridor)?.label ?? scanCorridor;
+    setScanProgress(`Starting ${corridorLabel} scan...`);
     let zoneIndex = 0;
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -776,12 +789,12 @@ export default function FlashParkingMap() {
             "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
             "apikey": supabaseKey,
           },
-          body: JSON.stringify({ zoneIndex, batchSize: 3 }),
+          body: JSON.stringify({ corridor: scanCorridor, zoneIndex, batchSize: 3 }),
         });
         const result = await resp.json();
         if (!resp.ok) { setScanProgress(`Error: ${result.error}`); break; }
-        setScanProgress(`${result.progress} — ${result.inserted} new garages`);
-        if (result.done) { setScanProgress(`Done! Scan complete.`); break; }
+        setScanProgress(`${corridorLabel}: ${result.progress} — ${result.inserted} new`);
+        if (result.done) { setScanProgress(`Done! ${corridorLabel} scan complete.`); break; }
         zoneIndex = result.nextZoneIndex;
       }
       // Reload garages
@@ -792,7 +805,7 @@ export default function FlashParkingMap() {
     } finally {
       setScanning(false);
     }
-  }, [scanning]);
+  }, [scanning, scanCorridor]);
 
   const handleSelectGarage = useCallback((g: DiscoveredGarage) => {
     setSelectedGarageId(g.id);
@@ -1029,6 +1042,18 @@ export default function FlashParkingMap() {
             </div>
           )}
         </div>
+        {showGarages && (
+          <select
+            value={scanCorridor}
+            onChange={(e) => setScanCorridor(e.target.value)}
+            className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1"
+            disabled={scanning}
+          >
+            {CORRIDOR_OPTIONS.map((c) => (
+              <option key={c.key} value={c.key}>{c.label}</option>
+            ))}
+          </select>
+        )}
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
         )}
