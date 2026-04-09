@@ -586,6 +586,62 @@ export default function FlashParkingMap() {
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
   const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
+  const [showGarages, setShowGarages] = useState(false);
+  const [laGarages, setLaGarages] = useState<DiscoveredGarage[]>([]);
+  const [selectedGarageId, setSelectedGarageId] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState("");
+
+  // Load garages from DB
+  useEffect(() => {
+    if (!showGarages) return;
+    (async () => {
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
+    })();
+  }, [showGarages]);
+
+  const handleScanLA = useCallback(async () => {
+    if (scanning) return;
+    setScanning(true);
+    setScanProgress("Starting DTLA scan...");
+    let zoneIndex = 0;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      while (true) {
+        const resp = await fetch(`${supabaseUrl}/functions/v1/scan-la-garages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+            "apikey": supabaseKey,
+          },
+          body: JSON.stringify({ zoneIndex, batchSize: 3 }),
+        });
+        const result = await resp.json();
+        if (!resp.ok) { setScanProgress(`Error: ${result.error}`); break; }
+        setScanProgress(`${result.progress} — ${result.inserted} new garages`);
+        if (result.done) { setScanProgress(`Done! Scan complete.`); break; }
+        zoneIndex = result.nextZoneIndex;
+      }
+      // Reload garages
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
+    } catch (e: any) {
+      setScanProgress(`Error: ${e.message}`);
+    } finally {
+      setScanning(false);
+    }
+  }, [scanning]);
+
+  const handleSelectGarage = useCallback((g: DiscoveredGarage) => {
+    setSelectedGarageId(g.id);
+    setSelectedAccountId(null);
+    setSelectedSiteId(null);
+  }, []);
 
 
 
