@@ -885,7 +885,7 @@ export default function FlashParkingMap() {
     setSelectedGarageId(g.id);
     setSelectedAccountId(null);
     setSelectedSiteId(null);
-    setPanelMode("detail");
+    setActiveTab("detail");
   }, []);
 
 
