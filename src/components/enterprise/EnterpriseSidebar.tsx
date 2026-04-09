@@ -103,7 +103,8 @@ export default function EnterpriseSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-
+        <SidebarGroup>
+          <SidebarGroupLabel>Accounts</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {ENTERPRISE_ACCOUNTS.map((account) => {
