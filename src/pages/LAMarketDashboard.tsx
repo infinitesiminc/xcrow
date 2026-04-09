@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -39,10 +39,31 @@ export default function LAMarketDashboard() {
   const [operators, setOperators] = useState<OperatorRow[]>([]);
   const [zones, setZones] = useState<ZoneRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCity, setSelectedCity] = useState("Los Angeles");
+  const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
+
+  // Load available cities
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const resp = await fetch(`${supabaseUrl}/functions/v1/scan-la-garages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": supabaseKey },
+          body: JSON.stringify({ action: "list" }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.cities?.length) setAvailableCities(data.cities);
+        }
+      } catch {}
+    })();
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedCity]);
 
   async function loadData() {
     setLoading(true);
@@ -51,6 +72,7 @@ export default function LAMarketDashboard() {
       const { data: garages } = await supabase
         .from("discovered_garages")
         .select("operator_guess, capacity, rating, scan_zone")
+        .eq("city", selectedCity)
         .limit(1000);
 
       if (!garages) return;
@@ -131,15 +153,28 @@ export default function LAMarketDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
-            Los Angeles Parking Market
+            {selectedCity} Parking Market
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Comprehensive garage-level intelligence across DTLA and greater LA
+            Comprehensive garage-level intelligence
           </p>
         </div>
-        <Badge variant="outline" className="text-xs">
-          {stats?.zones_scanned} zones scanned
-        </Badge>
+        <div className="flex items-center gap-2">
+          {availableCities.length > 1 && (
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="text-xs bg-muted border border-border rounded px-2 py-1.5 font-medium"
+            >
+              {availableCities.map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          )}
+          <Badge variant="outline" className="text-xs">
+            {stats?.zones_scanned} zones scanned
+          </Badge>
+        </div>
       </div>
 
       {/* KPI Row */}

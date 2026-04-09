@@ -709,6 +709,34 @@ export default function FlashParkingMap() {
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState("");
   const [scanCorridor, setScanCorridor] = useState("dtla");
+  const [selectedCity, setSelectedCity] = useState("Los Angeles");
+  const [corridorOptions, setCorridorOptions] = useState<{ key: string; label: string; city: string; zones: number }[]>([]);
+  const [availableCities, setAvailableCities] = useState<string[]>(["Los Angeles"]);
+
+  // Load corridors from DB
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const resp = await fetch(`${supabaseUrl}/functions/v1/scan-la-garages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": supabaseKey },
+          body: JSON.stringify({ action: "list" }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          setCorridorOptions(data.corridors || []);
+          setAvailableCities(data.cities || ["Los Angeles"]);
+          if (data.corridors?.length) setScanCorridor(data.corridors[0].key);
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const cityCorridors = useMemo(() =>
+    corridorOptions.filter(c => c.city === selectedCity)
+  , [corridorOptions, selectedCity]);
 
   const displayedGarages = useMemo(() => 
     showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
@@ -741,7 +769,7 @@ export default function FlashParkingMap() {
         if (result.done) { setEnrichProgress(`Done! ${totalEnriched} garages enriched.`); break; }
       }
       // Reload garages
-      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", selectedCity).limit(1000);
       if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
     } catch (e: any) {
       setEnrichProgress(`Error: ${e.message}`);
@@ -750,30 +778,19 @@ export default function FlashParkingMap() {
     }
   }, [enriching]);
 
-  // Load garages from DB
+  // Load garages from DB filtered by city
   useEffect(() => {
     if (!showGarages) return;
     (async () => {
-      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", selectedCity).limit(1000);
       if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
     })();
-  }, [showGarages]);
-
-  const CORRIDOR_OPTIONS = [
-    { key: "dtla", label: "Downtown LA" },
-    { key: "hollywood", label: "Hollywood / Koreatown" },
-    { key: "westside", label: "Beverly Hills / Century City" },
-    { key: "santa_monica", label: "Santa Monica / Venice" },
-    { key: "lax", label: "LAX / Inglewood" },
-    { key: "pasadena", label: "Pasadena / Glendale" },
-    { key: "valley", label: "San Fernando Valley" },
-    { key: "south_la", label: "South LA / USC" },
-  ];
+  }, [showGarages, selectedCity]);
 
   const handleScanLA = useCallback(async () => {
     if (scanning) return;
     setScanning(true);
-    const corridorLabel = CORRIDOR_OPTIONS.find(c => c.key === scanCorridor)?.label ?? scanCorridor;
+    const corridorLabel = cityCorridors.find(c => c.key === scanCorridor)?.label ?? scanCorridor;
     setScanProgress(`Starting ${corridorLabel} scan...`);
     let zoneIndex = 0;
     try {
@@ -797,8 +814,7 @@ export default function FlashParkingMap() {
         if (result.done) { setScanProgress(`Done! ${corridorLabel} scan complete.`); break; }
         zoneIndex = result.nextZoneIndex;
       }
-      // Reload garages
-      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", selectedCity).limit(1000);
       if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
     } catch (e: any) {
       setScanProgress(`Error: ${e.message}`);
@@ -1024,7 +1040,7 @@ export default function FlashParkingMap() {
           <label className="flex items-center gap-2 text-[11px] font-medium cursor-pointer">
             <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
             <Warehouse className="w-3.5 h-3.5" style={{ color: getOperatorColor(null) }} />
-            Los Angeles
+            Garage Discovery
             {showGarages && displayedGarages.length > 0 && (
               <Badge variant="secondary" className="text-[9px] px-1 py-0">{displayedGarages.length}</Badge>
             )}
@@ -1043,16 +1059,38 @@ export default function FlashParkingMap() {
           )}
         </div>
         {showGarages && (
-          <select
-            value={scanCorridor}
-            onChange={(e) => setScanCorridor(e.target.value)}
-            className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1"
-            disabled={scanning}
-          >
-            {CORRIDOR_OPTIONS.map((c) => (
-              <option key={c.key} value={c.key}>{c.label}</option>
-            ))}
-          </select>
+          <div className="space-y-1">
+            {/* City selector */}
+            {availableCities.length > 1 && (
+              <select
+                value={selectedCity}
+                onChange={(e) => {
+                  setSelectedCity(e.target.value);
+                  const firstCorridor = corridorOptions.find(c => c.city === e.target.value);
+                  if (firstCorridor) setScanCorridor(firstCorridor.key);
+                }}
+                className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1 font-medium"
+              >
+                {availableCities.map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            )}
+            {availableCities.length <= 1 && (
+              <p className="text-[10px] font-medium text-muted-foreground">{selectedCity}</p>
+            )}
+            {/* Corridor selector */}
+            <select
+              value={scanCorridor}
+              onChange={(e) => setScanCorridor(e.target.value)}
+              className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1"
+              disabled={scanning}
+            >
+              {cityCorridors.map((c) => (
+                <option key={c.key} value={c.key}>{c.label} ({c.zones} zones)</option>
+              ))}
+            </select>
+          </div>
         )}
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
