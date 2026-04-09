@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
@@ -29,7 +29,55 @@ import {
 } from "@/data/flash-prospects";
 import { FLASH_AIRPORT_ACCOUNTS } from "@/data/flash-airports";
 
-const ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
+const STATIC_ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
+
+/* ── Hook: load accounts from DB with static fallback ── */
+function useDBAccounts(): { accounts: FlashAccount[]; loading: boolean } {
+  const [dbAccounts, setDbAccounts] = useState<FlashAccount[] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await (supabase.from("flash_accounts") as any).select("*").order("name");
+        if (error || !data || data.length === 0) {
+          setDbAccounts(null);
+          setLoading(false);
+          return;
+        }
+        const mapped: FlashAccount[] = data.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          accountType: r.account_type as AccountType,
+          stage: r.stage as AccountStage,
+          estimatedSpaces: r.estimated_spaces || "N/A",
+          facilityCount: r.facility_count || "N/A",
+          focusArea: r.focus_area || "",
+          hqCity: r.hq_city || "",
+          hqLat: r.hq_lat || 0,
+          hqLng: r.hq_lng || 0,
+          website: r.website || "",
+          differentiator: r.differentiator || "",
+          caseStudyUrl: r.case_study_url || undefined,
+          currentVendor: r.current_vendor || undefined,
+          annualRevenue: r.annual_revenue || undefined,
+          employeeCount: r.employee_count || undefined,
+          founded: r.founded || undefined,
+          // DB-only fields
+          priorityScore: r.priority_score || 0,
+          notes: r.notes || undefined,
+        }));
+        setDbAccounts(mapped);
+      } catch {
+        setDbAccounts(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  return { accounts: dbAccounts ?? STATIC_ALL_ACCOUNTS, loading };
+}
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKesJxuvh-sKL1z_gCj371z0";
 const MAP_ID = "flash-parking-map";
@@ -559,22 +607,22 @@ function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { g
 }
 
 /* ── Compact Stats Row ── */
-function StatsRow() {
+function StatsRow({ accountCount }: { accountCount: number }) {
   return (
     <div className="flex items-center gap-2 px-3 py-1">
       <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{FLASH_PLATFORM_STATS.totalLocations}</span> loc</span>
       <span className="text-muted-foreground/30">·</span>
       <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{FLASH_PLATFORM_STATS.networkLocations}</span> net</span>
       <span className="text-muted-foreground/30">·</span>
-      <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{ALL_ACCOUNTS.length}</span> accts</span>
+      <span className="text-[10px] text-muted-foreground"><span className="font-bold text-foreground text-xs">{accountCount}</span> accts</span>
     </div>
   );
 }
 
 /* ── Stage filter toggle ── */
-function StageToggle({ stage, active, onClick }: { stage: AccountStage; active: boolean; onClick: () => void }) {
+function StageToggle({ stage, active, onClick, accounts }: { stage: AccountStage; active: boolean; onClick: () => void; accounts: FlashAccount[] }) {
   const cfg = STAGE_CONFIG[stage];
-  const count = ALL_ACCOUNTS.filter((a) => a.stage === stage).length;
+  const count = accounts.filter((a) => a.stage === stage).length;
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
@@ -588,8 +636,8 @@ function StageToggle({ stage, active, onClick }: { stage: AccountStage; active: 
 }
 
 /* ── Account type filter ── */
-function TypeToggle({ type, active, onClick }: { type: AccountType; active: boolean; onClick: () => void }) {
-  const count = ALL_ACCOUNTS.filter((a) => a.accountType === type).length;
+function TypeToggle({ type, active, onClick, accounts }: { type: AccountType; active: boolean; onClick: () => void; accounts: FlashAccount[] }) {
+  const count = accounts.filter((a) => a.accountType === type).length;
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
@@ -690,6 +738,7 @@ function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
 
 export default function FlashParkingMap() {
   const isMobile = useIsMobile();
+  const { accounts: allAccounts } = useDBAccounts();
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<Set<AccountStage>>(new Set(["active", "target", "whitespace", "competitor"]));
   const [typeFilter, setTypeFilter] = useState<Set<AccountType>>(new Set(["large_venue", "fleet_operator", "airport"]));
@@ -851,7 +900,7 @@ export default function FlashParkingMap() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return ALL_ACCOUNTS.filter((a) => {
+    return allAccounts.filter((a) => {
       if (!stageFilter.has(a.stage)) return false;
       if (!typeFilter.has(a.accountType)) return false;
       if (q) {
@@ -860,7 +909,7 @@ export default function FlashParkingMap() {
       }
       return true;
     });
-  }, [stageFilter, typeFilter, searchQuery]);
+  }, [stageFilter, typeFilter, searchQuery, allAccounts]);
 
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
@@ -968,7 +1017,7 @@ export default function FlashParkingMap() {
     }
   }, [loadingLeads, accountLeads]);
 
-  const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
+  const selectedAccount = useMemo(() => allAccounts.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId, allAccounts]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
   const selectedGarage = useMemo(() => laGarages.find((g) => g.id === selectedGarageId) ?? null, [selectedGarageId, laGarages]);
 
@@ -1027,18 +1076,18 @@ export default function FlashParkingMap() {
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
-          <StatsRow />
+          <StatsRow accountCount={allAccounts.length} />
           <div className="px-3 pb-1.5">
             <div className="flex flex-wrap gap-1">
               {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
-                <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} />
+                <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} accounts={allAccounts} />
               ))}
             </div>
           </div>
           <div className="px-3 pb-1.5">
             <div className="flex flex-wrap gap-1">
               {(["large_venue", "fleet_operator", "airport"] as AccountType[]).map((t) => (
-                <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} />
+                <TypeToggle key={t} type={t} active={typeFilter.has(t)} onClick={() => toggleType(t)} accounts={allAccounts} />
               ))}
             </div>
           </div>

@@ -260,6 +260,7 @@ export type Database = {
       }
       discovered_garages: {
         Row: {
+          account_id: string | null
           address: string | null
           business_status: string | null
           capacity: number | null
@@ -286,6 +287,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          account_id?: string | null
           address?: string | null
           business_status?: string | null
           capacity?: number | null
@@ -312,6 +314,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          account_id?: string | null
           address?: string | null
           business_status?: string | null
           capacity?: number | null
@@ -337,7 +340,15 @@ export type Database = {
           updated_at?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "discovered_garages_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "flash_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       draft_emails: {
         Row: {
@@ -584,6 +595,169 @@ export type Database = {
           unpaid_balance?: number | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      flash_account_activities: {
+        Row: {
+          account_id: string
+          activity_type: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json
+          user_id: string | null
+        }
+        Insert: {
+          account_id: string
+          activity_type: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string
+          activity_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_account_activities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "flash_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flash_account_contacts: {
+        Row: {
+          account_id: string
+          created_at: string
+          email: string | null
+          id: string
+          linkedin: string | null
+          name: string
+          outreach_status: string
+          phone: string | null
+          reason: string | null
+          score: number | null
+          title: string | null
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          linkedin?: string | null
+          name: string
+          outreach_status?: string
+          phone?: string | null
+          reason?: string | null
+          score?: number | null
+          title?: string | null
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          linkedin?: string | null
+          name?: string
+          outreach_status?: string
+          phone?: string | null
+          reason?: string | null
+          score?: number | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_account_contacts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "flash_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flash_accounts: {
+        Row: {
+          account_type: string
+          annual_revenue: string | null
+          case_study_url: string | null
+          created_at: string
+          current_vendor: string | null
+          differentiator: string | null
+          employee_count: string | null
+          estimated_spaces: string | null
+          facility_count: string | null
+          focus_area: string | null
+          founded: number | null
+          hq_city: string | null
+          hq_lat: number | null
+          hq_lng: number | null
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string | null
+          priority_score: number
+          stage: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          account_type?: string
+          annual_revenue?: string | null
+          case_study_url?: string | null
+          created_at?: string
+          current_vendor?: string | null
+          differentiator?: string | null
+          employee_count?: string | null
+          estimated_spaces?: string | null
+          facility_count?: string | null
+          focus_area?: string | null
+          founded?: number | null
+          hq_city?: string | null
+          hq_lat?: number | null
+          hq_lng?: number | null
+          id: string
+          name: string
+          notes?: string | null
+          owner_id?: string | null
+          priority_score?: number
+          stage?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          account_type?: string
+          annual_revenue?: string | null
+          case_study_url?: string | null
+          created_at?: string
+          current_vendor?: string | null
+          differentiator?: string | null
+          employee_count?: string | null
+          estimated_spaces?: string | null
+          facility_count?: string | null
+          focus_area?: string | null
+          founded?: number | null
+          hq_city?: string | null
+          hq_lat?: number | null
+          hq_lng?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string | null
+          priority_score?: number
+          stage?: string
+          updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -1988,6 +2162,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_account_priority: {
+        Args: { _account_id: string }
+        Returns: number
+      }
       check_usage_limit: {
         Args: { _type: string; _user_id: string }
         Returns: Json
@@ -2215,6 +2393,7 @@ export type Database = {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
+      link_garages_to_accounts: { Args: never; Returns: number }
       move_to_dlq: {
         Args: {
           dlq_name: string
