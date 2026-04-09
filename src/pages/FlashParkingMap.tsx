@@ -848,6 +848,29 @@ export default function FlashParkingMap() {
         </CollapsibleContent>
       </Collapsible>
 
+      {/* LA Garages layer */}
+      <div className="px-3 py-2 space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-[11px] font-medium cursor-pointer">
+            <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
+            <Warehouse className="w-3.5 h-3.5 text-amber-500" />
+            LA Garages
+            {showGarages && laGarages.length > 0 && (
+              <span className="text-muted-foreground">({laGarages.length})</span>
+            )}
+          </label>
+          {showGarages && (
+            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleScanLA} disabled={scanning}>
+              {scanning ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+              {scanning ? "Scanning..." : "Scan DTLA"}
+            </Button>
+          )}
+        </div>
+        {scanProgress && showGarages && (
+          <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
+        )}
+      </div>
+
       <div className="h-px bg-border mx-3" />
 
       {/* Account list */}
