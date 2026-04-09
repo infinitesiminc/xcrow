@@ -620,9 +620,9 @@ function StatsRow() {
 }
 
 /* ── Stage filter toggle ── */
-function StageToggle({ stage, active, onClick }: { stage: AccountStage; active: boolean; onClick: () => void }) {
+function StageToggle({ stage, active, onClick, accounts }: { stage: AccountStage; active: boolean; onClick: () => void; accounts: FlashAccount[] }) {
   const cfg = STAGE_CONFIG[stage];
-  const count = ALL_ACCOUNTS.filter((a) => a.stage === stage).length;
+  const count = accounts.filter((a) => a.stage === stage).length;
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
