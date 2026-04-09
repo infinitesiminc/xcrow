@@ -1040,7 +1040,7 @@ export default function FlashParkingMap() {
           <label className="flex items-center gap-2 text-[11px] font-medium cursor-pointer">
             <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
             <Warehouse className="w-3.5 h-3.5" style={{ color: getOperatorColor(null) }} />
-            Los Angeles
+            Garage Discovery
             {showGarages && displayedGarages.length > 0 && (
               <Badge variant="secondary" className="text-[9px] px-1 py-0">{displayedGarages.length}</Badge>
             )}
@@ -1059,16 +1059,38 @@ export default function FlashParkingMap() {
           )}
         </div>
         {showGarages && (
-          <select
-            value={scanCorridor}
-            onChange={(e) => setScanCorridor(e.target.value)}
-            className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1"
-            disabled={scanning}
-          >
-            {CORRIDOR_OPTIONS.map((c) => (
-              <option key={c.key} value={c.key}>{c.label}</option>
-            ))}
-          </select>
+          <div className="space-y-1">
+            {/* City selector */}
+            {availableCities.length > 1 && (
+              <select
+                value={selectedCity}
+                onChange={(e) => {
+                  setSelectedCity(e.target.value);
+                  const firstCorridor = corridorOptions.find(c => c.city === e.target.value);
+                  if (firstCorridor) setScanCorridor(firstCorridor.key);
+                }}
+                className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1 font-medium"
+              >
+                {availableCities.map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            )}
+            {availableCities.length <= 1 && (
+              <p className="text-[10px] font-medium text-muted-foreground">{selectedCity}</p>
+            )}
+            {/* Corridor selector */}
+            <select
+              value={scanCorridor}
+              onChange={(e) => setScanCorridor(e.target.value)}
+              className="w-full text-[10px] bg-muted border border-border rounded px-2 py-1"
+              disabled={scanning}
+            >
+              {cityCorridors.map((c) => (
+                <option key={c.key} value={c.key}>{c.label} ({c.zones} zones)</option>
+              ))}
+            </select>
+          </div>
         )}
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
