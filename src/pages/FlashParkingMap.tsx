@@ -636,8 +636,8 @@ function StageToggle({ stage, active, onClick, accounts }: { stage: AccountStage
 }
 
 /* ── Account type filter ── */
-function TypeToggle({ type, active, onClick }: { type: AccountType; active: boolean; onClick: () => void }) {
-  const count = ALL_ACCOUNTS.filter((a) => a.accountType === type).length;
+function TypeToggle({ type, active, onClick, accounts }: { type: AccountType; active: boolean; onClick: () => void; accounts: FlashAccount[] }) {
+  const count = accounts.filter((a) => a.accountType === type).length;
   return (
     <button onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
