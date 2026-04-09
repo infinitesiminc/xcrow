@@ -773,6 +773,7 @@ export default function FlashParkingMap() {
 
   const selectedAccount = useMemo(() => ALL_ACCOUNTS.find((a) => a.id === selectedAccountId) ?? null, [selectedAccountId]);
   const selectedSite = useMemo(() => FLASH_LOCATIONS.find((l) => l.id === selectedSiteId) ?? null, [selectedSiteId]);
+  const selectedGarage = useMemo(() => laGarages.find((g) => g.id === selectedGarageId) ?? null, [selectedGarageId, laGarages]);
 
 
 
