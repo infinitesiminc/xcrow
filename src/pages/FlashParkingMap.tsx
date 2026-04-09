@@ -674,6 +674,17 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 }
 
 
+/* ── Map viewport sync ── */
+function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!map || !hint) return;
+    map.panTo({ lat: hint.lat, lng: hint.lng });
+    map.setZoom(hint.zoom);
+  }, [map, hint]);
+  return null;
+}
+
 /* ── Main page ── */
 
 
