@@ -814,8 +814,7 @@ export default function FlashParkingMap() {
         if (result.done) { setScanProgress(`Done! ${corridorLabel} scan complete.`); break; }
         zoneIndex = result.nextZoneIndex;
       }
-      // Reload garages
-      const { data } = await supabase.from("discovered_garages").select("*").eq("city", "Los Angeles").limit(1000);
+      const { data } = await supabase.from("discovered_garages").select("*").eq("city", selectedCity).limit(1000);
       if (data) setLaGarages(data as unknown as DiscoveredGarage[]);
     } catch (e: any) {
       setScanProgress(`Error: ${e.message}`);
