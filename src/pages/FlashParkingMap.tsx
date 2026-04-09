@@ -1080,7 +1080,7 @@ export default function FlashParkingMap() {
           <div className="px-3 pb-1.5">
             <div className="flex flex-wrap gap-1">
               {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map((s) => (
-                <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} />
+                <StageToggle key={s} stage={s} active={stageFilter.has(s)} onClick={() => toggleStage(s)} accounts={allAccounts} />
               ))}
             </div>
           </div>
