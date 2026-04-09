@@ -867,12 +867,14 @@ export default function FlashParkingMap() {
     setSelectedAccountId(a.id);
     setSelectedSiteId(null);
     setSelectedGarageId(null);
+    setPanelMode("detail");
   }, []);
 
   const handleSelectSite = useCallback((l: FlashLocation) => {
     setSelectedSiteId(l.id);
     setSelectedAccountId(null);
     setSelectedGarageId(null);
+    setPanelMode("detail");
   }, []);
 
   const handleCloseDetail = useCallback(() => {
