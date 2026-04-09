@@ -458,12 +458,13 @@ function DetailPanel({ account, site, garage, onClose, accountLeads, loadingLead
   );
 }
 /* ── Garage Operator Stats ── */
-function GarageOperatorStats({ garages }: { garages: DiscoveredGarage[] }) {
+function GarageOperatorStats({ garages, showOnlyOperators, onToggleFilter }: { garages: DiscoveredGarage[]; showOnlyOperators: boolean; onToggleFilter: () => void }) {
+  const operatorGarages = useMemo(() => garages.filter((g) => g.operator_guess), [garages]);
   const stats = useMemo(() => {
-    const operatorMap: Record<string, { count: number; avgRating: number; totalRatings: number; ratedCount: number }> = {};
-    garages.forEach((g) => {
-      const op = g.operator_guess || "Independent / Unknown";
-      if (!operatorMap[op]) operatorMap[op] = { count: 0, avgRating: 0, totalRatings: 0, ratedCount: 0 };
+    const operatorMap: Record<string, { count: number; totalRatings: number; ratedCount: number }> = {};
+    operatorGarages.forEach((g) => {
+      const op = g.operator_guess!;
+      if (!operatorMap[op]) operatorMap[op] = { count: 0, totalRatings: 0, ratedCount: 0 };
       operatorMap[op].count++;
       if (g.rating) {
         operatorMap[op].totalRatings += g.rating;
@@ -477,25 +478,20 @@ function GarageOperatorStats({ garages }: { garages: DiscoveredGarage[] }) {
         avgRating: d.ratedCount > 0 ? +(d.totalRatings / d.ratedCount).toFixed(1) : null,
       }))
       .sort((a, b) => b.count - a.count);
-  }, [garages]);
-
-  const identified = garages.filter((g) => g.operator_guess).length;
-  const avgRating = garages.filter((g) => g.rating).length > 0
-    ? +(garages.filter((g) => g.rating).reduce((s, g) => s + (g.rating || 0), 0) / garages.filter((g) => g.rating).length).toFixed(1)
-    : null;
+  }, [operatorGarages]);
 
   return (
     <div className="space-y-1.5 pt-1">
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-        <BarChart3 className="w-3 h-3" /> Operator Breakdown
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          <BarChart3 className="w-3 h-3" /> Operators ({operatorGarages.length})
+        </div>
+        <button onClick={onToggleFilter} className={`text-[9px] px-1.5 py-0.5 rounded font-medium transition-colors ${showOnlyOperators ? "bg-amber-500/20 text-amber-700 dark:text-amber-400" : "bg-muted/60 text-muted-foreground hover:text-foreground"}`}>
+          {showOnlyOperators ? "Named only" : "Show all"}
+        </button>
       </div>
-      <div className="flex gap-3 text-[10px] text-muted-foreground">
-        <span><span className="font-bold text-foreground">{identified}</span> identified</span>
-        <span><span className="font-bold text-foreground">{garages.length - identified}</span> unknown</span>
-        {avgRating && <span>Avg ★ <span className="font-bold text-foreground">{avgRating}</span></span>}
-      </div>
-      <div className="space-y-0.5 max-h-32 overflow-y-auto">
-        {stats.filter(s => s.name !== "Independent / Unknown").map((s) => (
+      <div className="space-y-0.5 max-h-36 overflow-y-auto">
+        {stats.map((s) => (
           <div key={s.name} className="flex items-center justify-between text-[11px] px-1.5 py-1 rounded hover:bg-muted/50">
             <span className="font-medium truncate">{s.name}</span>
             <div className="flex items-center gap-2 shrink-0">
@@ -643,6 +639,11 @@ export default function FlashParkingMap() {
   const [selectedGarageId, setSelectedGarageId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState("");
+  const [showOnlyOperators, setShowOnlyOperators] = useState(true);
+
+  const displayedGarages = useMemo(() => 
+    showOnlyOperators ? laGarages.filter((g) => g.operator_guess) : laGarages
+  , [laGarages, showOnlyOperators]);
 
   // Load garages from DB
   useEffect(() => {
@@ -907,8 +908,8 @@ export default function FlashParkingMap() {
             <Switch checked={showGarages} onCheckedChange={setShowGarages} className="scale-75" />
             <Warehouse className="w-3.5 h-3.5 text-amber-500" />
             LA Garages
-            {showGarages && laGarages.length > 0 && (
-              <span className="text-muted-foreground">({laGarages.length})</span>
+            {showGarages && displayedGarages.length > 0 && (
+              <span className="text-muted-foreground">({displayedGarages.length})</span>
             )}
           </label>
           {showGarages && (
@@ -921,7 +922,7 @@ export default function FlashParkingMap() {
         {scanProgress && showGarages && (
           <p className="text-[10px] text-muted-foreground">{scanProgress}</p>
         )}
-        {showGarages && laGarages.length > 0 && <GarageOperatorStats garages={laGarages} />}
+        {showGarages && laGarages.length > 0 && <GarageOperatorStats garages={laGarages} showOnlyOperators={showOnlyOperators} onToggleFilter={() => setShowOnlyOperators((p) => !p)} />}
       </div>
 
       <div className="h-px bg-border mx-3" />
@@ -1005,7 +1006,7 @@ export default function FlashParkingMap() {
                 showDeployed={showDeployed}
                 deployedLocations={FLASH_LOCATIONS}
                 onSelectSite={handleSelectSite}
-                garages={laGarages}
+                garages={displayedGarages}
                 showGarages={showGarages}
                 onSelectGarage={handleSelectGarage}
               />
