@@ -59,6 +59,30 @@ function typeRank(a: FlashAccount): number {
   return TYPE_ORDER[a.accountType] ?? 3;
 }
 
+/** Derive country from hqCity string */
+function deriveCountry(hqCity: string | undefined): string {
+  if (!hqCity) return "US";
+  const c = hqCity.toLowerCase();
+  if (c.includes("australia") || c.endsWith(", au")) return "AU";
+  if (c.includes("uk") || c.includes("england") || c.includes("london")) return "UK";
+  if (c.includes("canada")) return "CA";
+  if (c.includes("spain")) return "ES";
+  if (c.includes("france") || c.includes("paris")) return "FR";
+  if (c.includes("germany") || c.includes("berlin") || c.includes("munich")) return "DE";
+  if (c.includes("brazil") || c.includes("são paulo")) return "BR";
+  if (c.includes("japan") || c.includes("tokyo")) return "JP";
+  if (c.includes("india") || c.includes("mumbai") || c.includes("delhi") || c.includes("bangalore")) return "IN";
+  if (c.includes("mexico")) return "MX";
+  if (c.includes("china") || c.includes("beijing") || c.includes("shanghai")) return "CN";
+  return "US";
+}
+
+const COUNTRY_LABELS: Record<string, string> = {
+  US: "🇺🇸 US", AU: "🇦🇺 AU", UK: "🇬🇧 UK", CA: "🇨🇦 CA", ES: "🇪🇸 ES",
+  FR: "🇫🇷 FR", DE: "🇩🇪 DE", BR: "🇧🇷 BR", JP: "🇯🇵 JP", IN: "🇮🇳 IN",
+  MX: "🇲🇽 MX", CN: "🇨🇳 CN",
+};
+
 type SortKey = "name" | "type" | "score";
 
 function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
@@ -84,6 +108,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [countryFilter, setCountryFilter] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let list = accounts;
