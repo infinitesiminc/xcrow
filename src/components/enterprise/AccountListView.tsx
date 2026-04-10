@@ -160,7 +160,10 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
             const isFlashHQ = acct.id === "acct-flash-hq";
             const isSelected = selectedAccountId === acct.id;
             const score = accountScore(acct);
-            const scoreColor = score >= 40 ? "text-green-600" : score >= 25 ? "text-yellow-600" : "text-muted-foreground";
+            const scorePct = Math.min(score, 100);
+            const scoreColor = score >= 40 ? "#22c55e" : score >= 25 ? "#eab308" : "#94a3b8";
+            const circumference = 2 * Math.PI * 10;
+            const dashOffset = circumference - (scorePct / 100) * circumference;
             return (
               <button
                 key={acct.id}
@@ -170,12 +173,20 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <AccountIcon account={acct} className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-xs font-semibold flex-1 min-w-0">
+                  {/* Score ring */}
+                  <div className="relative shrink-0 w-7 h-7">
+                    <svg viewBox="0 0 24 24" className="w-7 h-7 -rotate-90">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted/30" />
+                      <circle cx="12" cy="12" r="10" fill="none" stroke={scoreColor} strokeWidth="2.5"
+                        strokeDasharray={circumference} strokeDashoffset={dashOffset}
+                        strokeLinecap="round" />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold tabular-nums" style={{ color: scoreColor }}>
+                      {score}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold flex-1 min-w-0 truncate">
                     {isFlashHQ ? "Flash (You)" : acct.name}
-                  </span>
-                  <span className={`text-[9px] font-bold tabular-nums shrink-0 ${scoreColor}`}>
-                    {score}
                   </span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-muted text-muted-foreground">
                     {TYPE_LABELS[acct.accountType] || acct.accountType}
@@ -184,7 +195,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                     {cfg.label}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground pl-5">
+                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground pl-9">
                   <span>{acct.hqCity}</span>
                   {acct.annualRevenue && <><span className="text-muted-foreground/30">·</span><span>{acct.annualRevenue}</span></>}
                   {acct.estimatedSpaces && acct.estimatedSpaces !== "N/A" && <><span className="text-muted-foreground/30">·</span><span>{acct.estimatedSpaces} spaces</span></>}
