@@ -159,6 +159,8 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
             const cfg = STAGE_CONFIG[acct.stage];
             const isFlashHQ = acct.id === "acct-flash-hq";
             const isSelected = selectedAccountId === acct.id;
+            const score = accountScore(acct);
+            const scoreColor = score >= 40 ? "text-green-600" : score >= 25 ? "text-yellow-600" : "text-muted-foreground";
             return (
               <button
                 key={acct.id}
@@ -171,6 +173,9 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                   <AccountIcon account={acct} className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                   <span className="text-xs font-semibold flex-1 min-w-0">
                     {isFlashHQ ? "Flash (You)" : acct.name}
+                  </span>
+                  <span className={`text-[9px] font-bold tabular-nums shrink-0 ${scoreColor}`}>
+                    {score}
                   </span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-muted text-muted-foreground">
                     {TYPE_LABELS[acct.accountType] || acct.accountType}
