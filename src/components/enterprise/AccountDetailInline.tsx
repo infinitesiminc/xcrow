@@ -146,6 +146,11 @@ export default function AccountDetailInline({
           )}
         </div>
 
+        {/* M&A Strategy */}
+        {account.id !== "acct-flash-hq" && (
+          <MAStrategySection account={account} />
+        )}
+
         {/* Contacts section */}
         <div className="border-t border-border pt-3 space-y-2">
           <div className="flex items-center justify-between">
