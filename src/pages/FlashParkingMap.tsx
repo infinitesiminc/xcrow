@@ -15,6 +15,7 @@ import AccountDetailPanel from "@/components/enterprise/AccountDetailPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import MarketPanel, { type GeoContext, type ViewportHint } from "@/components/enterprise/MarketPanel";
+import MAStrategyPanel from "@/components/enterprise/MAStrategyPanel";
 import Navbar from "@/components/Navbar";
 import {
   FLASH_LOCATIONS,
