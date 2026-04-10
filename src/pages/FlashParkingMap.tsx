@@ -1217,13 +1217,16 @@ export default function FlashParkingMap() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "pipeline" | "market" | "detail")} className="flex flex-col flex-1 overflow-hidden">
-        <TabsList className="mx-3 mb-2 grid grid-cols-3 h-8 shrink-0">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "pipeline" | "market" | "detail" | "ma")} className="flex flex-col flex-1 overflow-hidden">
+        <TabsList className="mx-3 mb-2 grid grid-cols-4 h-8 shrink-0">
           <TabsTrigger value="pipeline" className="text-[11px] gap-1 px-1">
             <Filter className="w-3 h-3" /> Pipeline
           </TabsTrigger>
           <TabsTrigger value="market" className="text-[11px] gap-1 px-1">
             <TrendingUp className="w-3 h-3" /> Market
+          </TabsTrigger>
+          <TabsTrigger value="ma" className="text-[11px] gap-1 px-1">
+            <Target className="w-3 h-3" /> M&A
           </TabsTrigger>
           <TabsTrigger value="detail" className="text-[11px] gap-1 px-1">
             <MapPin className="w-3 h-3" /> Detail
@@ -1247,6 +1250,12 @@ export default function FlashParkingMap() {
               }}
               onViewportHint={setViewportHint}
             />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="ma" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden">
+          <div className="p-3">
+            <MAStrategyPanel />
           </div>
         </TabsContent>
 
