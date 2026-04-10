@@ -514,6 +514,7 @@ async function executeLeadSearch(
     target_industries?: string[];
     employee_ranges?: string[];
     scale?: boolean;
+    strict_domain?: boolean;
   },
   lovableKey: string,
   apolloKey: string | null,
@@ -524,7 +525,7 @@ async function executeLeadSearch(
   // 1. Search Apollo for people matching the ICP
   let apolloLeads: any[] = [];
   if (apolloKey) {
-    console.log("Searching Apollo for decision-makers...");
+    console.log("Searching Apollo for decision-makers...", args.strict_domain ? "(strict domain mode)" : "");
     apolloLeads = await searchApollopeople(apolloKey, args);
     console.log(`Apollo returned ${apolloLeads.length} verified people`);
   }
