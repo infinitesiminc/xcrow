@@ -1,13 +1,12 @@
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown } from "lucide-react";
-import type { FlashAccount, AccountStage } from "@/data/flash-prospects";
+import type { FlashAccount } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
 
 /** Parse revenue string to numeric for sorting */
-function parseRevenue(rev: string | undefined): number {
+export function parseRevenue(rev: string | undefined): number {
   if (!rev) return 0;
   const m = rev.replace(/[^0-9.BMK]/gi, "");
   const num = parseFloat(m);
@@ -40,7 +39,27 @@ export function scoreTarget(a: { currentVendor?: string; annualRevenue?: string;
   return Math.min(score, 100);
 }
 
-type SortKey = "name" | "score" | "revenue";
+/** Overall account score combining stage + data completeness */
+function accountScore(a: FlashAccount & Record<string, any>): number {
+  let score = (a.priorityScore ?? a.priority_score ?? 0) as number;
+  if (a.annualRevenue) score += 10;
+  if (a.employeeCount) score += 5;
+  if (a.currentVendor && a.currentVendor !== "Unknown") score += 5;
+  if (a.founded) score += 5;
+  if (a.stage === "active") score += 20;
+  else if (a.stage === "target") score += 15;
+  else if (a.stage === "competitor") score += 10;
+  return score;
+}
+
+const TYPE_ORDER: Record<string, number> = {
+  fleet_operator: 0, airport: 1, large_venue: 2,
+};
+function typeRank(a: FlashAccount): number {
+  return TYPE_ORDER[a.accountType] ?? 3;
+}
+
+type SortKey = "name" | "type" | "score";
 
 function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
   if (account.accountType === "airport") return <Plane className={className} />;
@@ -48,6 +67,12 @@ function AccountIcon({ account, className }: { account: FlashAccount; className?
   if (account.accountType === "large_venue") return <Building2 className={className} />;
   return <Grid3X3 className={className} />;
 }
+
+const TYPE_LABELS: Record<string, string> = {
+  fleet_operator: "Operator",
+  airport: "Airport",
+  large_venue: "Venue",
+};
 
 interface AccountListViewProps {
   accounts: FlashAccount[];
@@ -65,15 +90,15 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(a => {
-        const hay = `${a.name} ${a.hqCity} ${a.currentVendor || ""} ${a.annualRevenue || ""} ${a.focusArea}`.toLowerCase();
+        const hay = `${a.name} ${a.hqCity} ${a.currentVendor || ""} ${a.annualRevenue || ""} ${a.focusArea} ${a.accountType}`.toLowerCase();
         return q.split(/\s+/).every(w => hay.includes(w));
       });
     }
     list = [...list].sort((a, b) => {
       let av: number | string, bv: number | string;
       switch (sortKey) {
-        case "score": av = scoreTarget(a); bv = scoreTarget(b); break;
-        case "revenue": av = parseRevenue(a.annualRevenue); bv = parseRevenue(b.annualRevenue); break;
+        case "type": av = typeRank(a); bv = typeRank(b); break;
+        case "score": av = accountScore(a); bv = accountScore(b); break;
         default: av = a.name; bv = b.name; break;
       }
       if (typeof av === "string" && typeof bv === "string")
@@ -112,13 +137,13 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
       <div className="px-3 pb-1.5 flex items-center gap-2 text-[10px] text-muted-foreground">
         <span className="font-medium">{filtered.length} accounts</span>
         <span className="ml-auto" />
-        {(["name", "score", "revenue"] as SortKey[]).map(key => (
+        {(["name", "type", "score"] as SortKey[]).map(key => (
           <button
             key={key}
             onClick={() => handleSort(key)}
             className={`px-1.5 py-0.5 rounded font-medium transition-colors ${sortKey === key ? "bg-primary/10 text-primary" : "hover:text-foreground"}`}
           >
-            {key === "name" ? "Name" : key === "score" ? "M&A" : "Rev"}
+            {key === "name" ? "Name" : key === "type" ? "Type" : "Score"}
             {sortKey === key && <ArrowUpDown className="w-2.5 h-2.5 inline ml-0.5" />}
           </button>
         ))}
@@ -133,7 +158,6 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
           {filtered.map(acct => {
             const cfg = STAGE_CONFIG[acct.stage];
             const isFlashHQ = acct.id === "acct-flash-hq";
-            const maScore = isFlashHQ ? null : scoreTarget(acct);
             const isSelected = selectedAccountId === acct.id;
             return (
               <button
@@ -146,16 +170,11 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                 <div className="flex items-center gap-2">
                   <AccountIcon account={acct} className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                   <span className="text-xs font-semibold flex-1 min-w-0">
-                    {isFlashHQ ? "Flash (You)" : `${acct.name}${acct.accountType === "fleet_operator" ? " HQ" : ""}`}
+                    {isFlashHQ ? "Flash (You)" : acct.name}
                   </span>
-                  {maScore != null && (
-                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${
-                      maScore >= 75 ? "text-emerald-600 bg-emerald-50 border-emerald-200" :
-                      maScore >= 55 ? "text-blue-600 bg-blue-50 border-blue-200" :
-                      maScore >= 35 ? "text-amber-600 bg-amber-50 border-amber-200" :
-                      "text-muted-foreground bg-muted border-border"
-                    }`}>{maScore}</Badge>
-                  )}
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-muted text-muted-foreground">
+                    {TYPE_LABELS[acct.accountType] || acct.accountType}
+                  </span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium text-white shrink-0" style={{ backgroundColor: cfg.markerColor }}>
                     {cfg.label}
                   </span>
@@ -163,6 +182,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                 <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground pl-5">
                   <span>{acct.hqCity}</span>
                   {acct.annualRevenue && <><span className="text-muted-foreground/30">·</span><span>{acct.annualRevenue}</span></>}
+                  {acct.estimatedSpaces && acct.estimatedSpaces !== "N/A" && <><span className="text-muted-foreground/30">·</span><span>{acct.estimatedSpaces} spaces</span></>}
                 </div>
               </button>
             );
