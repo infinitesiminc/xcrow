@@ -411,6 +411,7 @@ async function searchApollopeople(
     organization_domains?: string[];
     employee_ranges?: string[];
     search_queries: string[];
+    strict_domain?: boolean;
   },
 ): Promise<any[]> {
   if (!args.target_titles?.length) return [];
@@ -453,29 +454,34 @@ async function searchApollopeople(
     attempts.push({ body: noLocation, label: "no-location" });
   }
 
-  // Attempt 4: Search by company NAME instead of domain (catches companies with thin domain coverage)
-  if (args.organization_domains?.length) {
-    const companyName = companyNameFromDomain(args.organization_domains[0]);
-    if (companyName && companyName.length >= 3) {
-      const byName: Record<string, unknown> = {
+  // In strict_domain mode, do NOT fall back to company-name or titles-only searches
+  if (!args.strict_domain) {
+    // Attempt 4: Search by company NAME instead of domain (catches companies with thin domain coverage)
+    if (args.organization_domains?.length) {
+      const companyName = companyNameFromDomain(args.organization_domains[0]);
+      if (companyName && companyName.length >= 3) {
+        const byName: Record<string, unknown> = {
+          person_titles: args.target_titles,
+          page: 1,
+          per_page: 10,
+          person_seniorities: ["director", "vp", "c_suite", "owner"],
+          q_organization_name: companyName,
+        };
+        attempts.push({ body: byName, label: "company-name" });
+      }
+    }
+
+    // Attempt 5: Titles only (broadest — no domain, no location)
+    if (attempts.length > 1) {
+      const broadest: Record<string, unknown> = {
         person_titles: args.target_titles,
         page: 1,
         per_page: 10,
-        person_seniorities: ["director", "vp", "c_suite", "owner"],
-        q_organization_name: companyName,
       };
-      attempts.push({ body: byName, label: "company-name" });
+      attempts.push({ body: broadest, label: "titles-only" });
     }
-  }
-
-  // Attempt 5: Titles only (broadest — no domain, no location)
-  if (attempts.length > 1) {
-    const broadest: Record<string, unknown> = {
-      person_titles: args.target_titles,
-      page: 1,
-      per_page: 10,
-    };
-    attempts.push({ body: broadest, label: "titles-only" });
+  } else {
+    console.log("Strict domain mode — skipping company-name and titles-only fallbacks");
   }
 
   // Try each attempt, stop when we get results
@@ -508,6 +514,7 @@ async function executeLeadSearch(
     target_industries?: string[];
     employee_ranges?: string[];
     scale?: boolean;
+    strict_domain?: boolean;
   },
   lovableKey: string,
   apolloKey: string | null,
@@ -518,7 +525,7 @@ async function executeLeadSearch(
   // 1. Search Apollo for people matching the ICP
   let apolloLeads: any[] = [];
   if (apolloKey) {
-    console.log("Searching Apollo for decision-makers...");
+    console.log("Searching Apollo for decision-makers...", args.strict_domain ? "(strict domain mode)" : "");
     apolloLeads = await searchApollopeople(apolloKey, args);
     console.log(`Apollo returned ${apolloLeads.length} verified people`);
   }
@@ -577,7 +584,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, strict_domain } = await req.json();
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages array required" }), {
         status: 400,
@@ -690,7 +697,7 @@ Deno.serve(async (req) => {
           try { nichesToEmit = JSON.parse(tc.args).niches || []; } catch {}
         }
         if (tc.name === "run_lead_search") {
-          try { leadSearchArgs = JSON.parse(tc.args); } catch {}
+          try { leadSearchArgs = JSON.parse(tc.args); if (strict_domain) leadSearchArgs.strict_domain = true; } catch {}
         }
         if (tc.name === "update_targeting") {
           try {
