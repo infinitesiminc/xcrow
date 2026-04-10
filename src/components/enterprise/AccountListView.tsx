@@ -132,7 +132,8 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
           )}
           {filtered.map(acct => {
             const cfg = STAGE_CONFIG[acct.stage];
-            const maScore = scoreTarget(acct);
+            const isFlashHQ = acct.id === "acct-flash-hq";
+            const maScore = isFlashHQ ? null : scoreTarget(acct);
             const isSelected = selectedAccountId === acct.id;
             return (
               <button
@@ -145,14 +146,16 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                 <div className="flex items-center gap-2">
                   <AccountIcon account={acct} className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                   <span className="text-xs font-semibold flex-1 min-w-0">
-                    {acct.name}{acct.accountType === "fleet_operator" ? " HQ" : ""}
+                    {isFlashHQ ? "Flash (You)" : `${acct.name}${acct.accountType === "fleet_operator" ? " HQ" : ""}`}
                   </span>
-                  <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${
-                    maScore >= 75 ? "text-emerald-600 bg-emerald-50 border-emerald-200" :
-                    maScore >= 55 ? "text-blue-600 bg-blue-50 border-blue-200" :
-                    maScore >= 35 ? "text-amber-600 bg-amber-50 border-amber-200" :
-                    "text-muted-foreground bg-muted border-border"
-                  }`}>{maScore}</Badge>
+                  {maScore != null && (
+                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${
+                      maScore >= 75 ? "text-emerald-600 bg-emerald-50 border-emerald-200" :
+                      maScore >= 55 ? "text-blue-600 bg-blue-50 border-blue-200" :
+                      maScore >= 35 ? "text-amber-600 bg-amber-50 border-amber-200" :
+                      "text-muted-foreground bg-muted border-border"
+                    }`}>{maScore}</Badge>
+                  )}
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium text-white shrink-0" style={{ backgroundColor: cfg.markerColor }}>
                     {cfg.label}
                   </span>
