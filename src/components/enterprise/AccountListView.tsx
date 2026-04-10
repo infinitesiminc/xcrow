@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown } from "lucide-react";
+import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown, Globe } from "lucide-react";
 import type { FlashAccount } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
 
