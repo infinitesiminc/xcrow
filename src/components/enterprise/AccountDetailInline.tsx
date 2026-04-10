@@ -62,8 +62,8 @@ export default function AccountDetailInline({
 
         {/* Header */}
         <div>
-          <h3 className="font-bold text-sm leading-tight">
-            {account.name}{account.accountType === "fleet_operator" ? " (HQ)" : ""}
+        <h3 className="font-bold text-sm leading-tight">
+            {account.id === "acct-flash-hq" ? "Flash (You)" : `${account.name}${account.accountType === "fleet_operator" ? " (HQ)" : ""}`}
           </h3>
           <p className="text-[11px] text-muted-foreground">{account.hqCity}</p>
         </div>
