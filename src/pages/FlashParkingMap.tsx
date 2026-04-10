@@ -727,8 +727,12 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
 /* ── Map viewport sync ── */
 function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
   const map = useMap();
+  const prevRef = useRef<string>("");
   useEffect(() => {
     if (!map || !hint) return;
+    const key = `${hint.lat},${hint.lng},${hint.zoom}`;
+    if (key === prevRef.current) return;
+    prevRef.current = key;
     map.panTo({ lat: hint.lat, lng: hint.lng });
     map.setZoom(hint.zoom);
   }, [map, hint]);
