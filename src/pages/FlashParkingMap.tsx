@@ -1276,7 +1276,7 @@ export default function FlashParkingMap() {
     <>
       <div className="flex h-screen w-full">
         {!isMobile && (
-          <div className="w-96 border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
+          <div className="w-[440px] border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
             {sidebar}
           </div>
         )}
@@ -1290,7 +1290,7 @@ export default function FlashParkingMap() {
                   <Badge variant="secondary" className="ml-1.5 text-xs">{filtered.length}</Badge>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-96 p-0">
+              <SheetContent side="left" className="w-[440px] p-0">
                 <SheetTitle className="sr-only">Account Filters</SheetTitle>
                 {sidebar}
               </SheetContent>
