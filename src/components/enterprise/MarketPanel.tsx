@@ -85,19 +85,23 @@ export default function MarketPanel({ geo, onGeoChange, onViewportHint }: Market
         setGarages(rows);
 
         // Emit viewport hint from centroid
-        if (rows.length > 0 && onViewportHint) {
-          const lats = rows.map(g => g.lat);
-          const lngs = rows.map(g => g.lng);
-          const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-          const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-          const centerLat = (minLat + maxLat) / 2;
-          const centerLng = (minLng + maxLng) / 2;
-          const latSpan = maxLat - minLat;
-          const lngSpan = maxLng - minLng;
-          const span = Math.max(latSpan, lngSpan);
-          // Approximate zoom from span
-          const zoom = span < 0.05 ? 14 : span < 0.2 ? 12 : span < 1 ? 10 : span < 5 ? 7 : span < 20 ? 5 : 3;
-          onViewportHint({ lat: centerLat, lng: centerLng, zoom });
+        if (onViewportHint) {
+          if (rows.length > 0) {
+            const lats = rows.map(g => g.lat);
+            const lngs = rows.map(g => g.lng);
+            const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+            const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+            const centerLat = (minLat + maxLat) / 2;
+            const centerLng = (minLng + maxLng) / 2;
+            const latSpan = maxLat - minLat;
+            const lngSpan = maxLng - minLng;
+            const span = Math.max(latSpan, lngSpan);
+            const zoom = span < 0.05 ? 14 : span < 0.2 ? 12 : span < 1 ? 10 : span < 5 ? 7 : span < 20 ? 5 : 3;
+            onViewportHint({ lat: centerLat, lng: centerLng, zoom });
+          } else if (!country && !state && !city) {
+            // All Markets — default to US-centered global view
+            onViewportHint({ lat: 39.8, lng: -98.5, zoom: 4 });
+          }
         }
       } finally {
         setLoading(false);
