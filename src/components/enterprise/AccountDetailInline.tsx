@@ -285,3 +285,53 @@ function ActivityIcon({ type }: { type: string }) {
     default: return <Clock className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />;
   }
 }
+
+function MAStrategySection({ account }: { account: FlashAccount }) {
+  const maScore = scoreTarget(account as any);
+  const ot = (account as any).ownership_type ?? (account as any).ownershipType ?? "Unknown";
+  const cm = (account as any).contract_model ?? (account as any).contractModel ?? "Unknown";
+  const vendor = account.currentVendor ?? (account as any).current_vendor;
+
+  const signals: { label: string; value: string; positive: boolean }[] = [];
+  if (ot && ot !== "Unknown") signals.push({ label: "Ownership", value: ot, positive: ot === "family" || ot === "pe-backed" });
+  if (cm && cm !== "Unknown") signals.push({ label: "Model", value: cm, positive: cm === "managed" });
+  if (vendor && vendor !== "Unknown" && vendor !== "None") {
+    signals.push({ label: "Incumbent", value: vendor, positive: vendor !== "Flash" });
+  } else {
+    signals.push({ label: "Incumbent", value: "None (greenfield)", positive: true });
+  }
+  if (account.founded) signals.push({ label: "Founded", value: String(account.founded), positive: account.founded < 2000 });
+
+  return (
+    <Collapsible>
+      <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-t border-border pt-3">
+        <span className="flex items-center gap-1.5">
+          <TrendingUp className="w-3.5 h-3.5" /> M&A Strategy
+          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${
+            maScore >= 75 ? "text-emerald-600 bg-emerald-50 border-emerald-200" :
+            maScore >= 55 ? "text-blue-600 bg-blue-50 border-blue-200" :
+            maScore >= 35 ? "text-amber-600 bg-amber-50 border-amber-200" :
+            "text-muted-foreground bg-muted border-border"
+          }`}>{maScore}/100</Badge>
+        </span>
+        <ChevronDown className="w-3 h-3" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-2 space-y-2">
+        <div className="grid grid-cols-2 gap-1.5">
+          {signals.map(s => (
+            <div key={s.label} className="bg-muted/40 rounded-md px-2 py-1.5">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wide">{s.label}</p>
+              <p className={`text-[11px] font-medium capitalize ${s.positive ? "text-emerald-600" : "text-foreground"}`}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          {maScore >= 75 ? "Strong acquisition candidate — favorable ownership, contract model, and market positioning for Flash platform integration." :
+           maScore >= 55 ? "Moderate acquisition potential — some favorable signals but may require deeper due diligence on valuation and integration complexity." :
+           maScore >= 35 ? "Lower priority for M&A — consider partnership or technology licensing as an alternative entry strategy." :
+           "Not a primary acquisition target — focus on competitive displacement or partnership opportunities."}
+        </p>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
