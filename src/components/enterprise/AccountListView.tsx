@@ -49,7 +49,7 @@ function accountScore(a: FlashAccount & Record<string, any>): number {
   if (a.stage === "active") score += 20;
   else if (a.stage === "target") score += 15;
   else if (a.stage === "competitor") score += 10;
-  return score;
+  return Math.min(score, 100);
 }
 
 const TYPE_ORDER: Record<string, number> = {
