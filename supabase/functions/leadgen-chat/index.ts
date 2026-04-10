@@ -697,7 +697,7 @@ Deno.serve(async (req) => {
           try { nichesToEmit = JSON.parse(tc.args).niches || []; } catch {}
         }
         if (tc.name === "run_lead_search") {
-          try { leadSearchArgs = JSON.parse(tc.args); } catch {}
+          try { leadSearchArgs = JSON.parse(tc.args); if (strict_domain) leadSearchArgs.strict_domain = true; } catch {}
         }
         if (tc.name === "update_targeting") {
           try {
