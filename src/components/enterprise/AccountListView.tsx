@@ -39,14 +39,13 @@ export function scoreTarget(a: { currentVendor?: string; annualRevenue?: string;
   return Math.min(score, 100);
 }
 
-/** Overall account score combining priority + data completeness */
-function accountScore(a: FlashAccount): number {
-  let score = a.priorityScore || 0;
+/** Overall account score combining stage + data completeness */
+function accountScore(a: FlashAccount & Record<string, any>): number {
+  let score = (a.priorityScore ?? a.priority_score ?? 0) as number;
   if (a.annualRevenue) score += 10;
   if (a.employeeCount) score += 5;
   if (a.currentVendor && a.currentVendor !== "Unknown") score += 5;
   if (a.founded) score += 5;
-  // Stage bonus
   if (a.stage === "active") score += 20;
   else if (a.stage === "target") score += 15;
   else if (a.stage === "competitor") score += 10;
