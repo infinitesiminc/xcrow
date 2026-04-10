@@ -994,9 +994,13 @@ export default function FlashParkingMap() {
 
       const collectedLeads: any[] = [];
       let gotLeads = false;
+      console.log("[FindContacts] Starting SSE parse for", account.name);
       await parseSSEStream(reader, {
-        onTextDelta: () => {},
+        onTextDelta: (chunk) => {
+          console.log("[FindContacts] text delta:", chunk.slice(0, 80));
+        },
         onLeads: (leads) => {
+          console.log("[FindContacts] onLeads fired:", leads.length, leads);
           if (!gotLeads) {
             addLog(`Scoring ${leads.length} candidates by fit`);
             gotLeads = true;
@@ -1006,10 +1010,17 @@ export default function FlashParkingMap() {
           setAccountLeads((prev) => ({ ...prev, [account.id]: { leads: sorted } }));
         },
         onDone: () => {
+          console.log("[FindContacts] onDone, total collected:", collectedLeads.length);
           const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
           setAccountLeads((prev) => ({ ...prev, [account.id]: { leads: sorted } }));
+          if (collectedLeads.length > 0) {
+            addLog(`Found ${Math.min(collectedLeads.length, 5)} decision-makers`);
+          } else {
+            addLog("No matching contacts found — try broadening criteria");
+          }
         },
       });
+      console.log("[FindContacts] SSE parse complete, collected:", collectedLeads.length);
     } catch (e) {
       console.error("Find contacts failed:", e);
       addLog("Search failed — try again");
