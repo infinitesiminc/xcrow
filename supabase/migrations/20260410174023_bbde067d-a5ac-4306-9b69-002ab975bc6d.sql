@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX flash_account_contacts_account_name_uniq ON public.flash_account_contacts (account_id, name);
