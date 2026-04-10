@@ -92,10 +92,11 @@ export function useFlashAccountData(accountId: string | null) {
       reason: l.reason || null,
       outreach_status: "new",
     }));
-    await (supabase.from("flash_account_contacts") as any).upsert(rows, {
+    const { error } = await (supabase.from("flash_account_contacts") as any).upsert(rows, {
       onConflict: "account_id,name",
       ignoreDuplicates: true,
     });
+    if (error) console.error("Failed to save contacts:", error.message);
     // Re-fetch
     const { data } = await (supabase.from("flash_account_contacts") as any)
       .select("*")
