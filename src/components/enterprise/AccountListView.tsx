@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown } from "lucide-react";
+import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown, Globe } from "lucide-react";
 import type { FlashAccount } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
 
@@ -59,6 +59,30 @@ function typeRank(a: FlashAccount): number {
   return TYPE_ORDER[a.accountType] ?? 3;
 }
 
+/** Derive country from hqCity string */
+function deriveCountry(hqCity: string | undefined): string {
+  if (!hqCity) return "US";
+  const c = hqCity.toLowerCase();
+  if (c.includes("australia") || c.endsWith(", au")) return "AU";
+  if (c.includes("uk") || c.includes("england") || c.includes("london")) return "UK";
+  if (c.includes("canada")) return "CA";
+  if (c.includes("spain")) return "ES";
+  if (c.includes("france") || c.includes("paris")) return "FR";
+  if (c.includes("germany") || c.includes("berlin") || c.includes("munich")) return "DE";
+  if (c.includes("brazil") || c.includes("são paulo")) return "BR";
+  if (c.includes("japan") || c.includes("tokyo")) return "JP";
+  if (c.includes("india") || c.includes("mumbai") || c.includes("delhi") || c.includes("bangalore")) return "IN";
+  if (c.includes("mexico")) return "MX";
+  if (c.includes("china") || c.includes("beijing") || c.includes("shanghai")) return "CN";
+  return "US";
+}
+
+const COUNTRY_LABELS: Record<string, string> = {
+  US: "🇺🇸 US", AU: "🇦🇺 AU", UK: "🇬🇧 UK", CA: "🇨🇦 CA", ES: "🇪🇸 ES",
+  FR: "🇫🇷 FR", DE: "🇩🇪 DE", BR: "🇧🇷 BR", JP: "🇯🇵 JP", IN: "🇮🇳 IN",
+  MX: "🇲🇽 MX", CN: "🇨🇳 CN",
+};
+
 type SortKey = "name" | "type" | "score";
 
 function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
@@ -84,9 +108,20 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [countryFilter, setCountryFilter] = useState<string | null>(null);
+
+  // Derive available countries from accounts
+  const countryOptions = useMemo(() => {
+    const counts: Record<string, number> = {};
+    accounts.forEach(a => { const c = deriveCountry(a.hqCity); counts[c] = (counts[c] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [accounts]);
 
   const filtered = useMemo(() => {
     let list = accounts;
+    if (countryFilter) {
+      list = list.filter(a => deriveCountry(a.hqCity) === countryFilter);
+    }
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(a => {
@@ -106,7 +141,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
       return sortDir === "asc" ? (av as number) - (bv as number) : (bv as number) - (av as number);
     });
     return list;
-  }, [accounts, search, sortKey, sortDir]);
+  }, [accounts, search, sortKey, sortDir, countryFilter]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -132,6 +167,32 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
           )}
         </div>
       </div>
+
+      {/* Country filters */}
+      {countryOptions.length > 1 && (
+        <div className="px-3 pb-2 flex items-center gap-1.5 flex-wrap">
+          <Globe className="w-3 h-3 text-muted-foreground shrink-0" />
+          <button
+            onClick={() => setCountryFilter(null)}
+            className={`text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors ${
+              !countryFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            All
+          </button>
+          {countryOptions.map(([code, count]) => (
+            <button
+              key={code}
+              onClick={() => setCountryFilter(countryFilter === code ? null : code)}
+              className={`text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors ${
+                countryFilter === code ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {COUNTRY_LABELS[code] || code} <span className="opacity-60">{count}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Sort bar */}
       <div className="px-3 pb-1.5 flex items-center gap-2 text-[10px] text-muted-foreground">
