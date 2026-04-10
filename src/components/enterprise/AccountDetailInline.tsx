@@ -6,9 +6,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   ArrowLeft, ExternalLink, Users, Mail, Linkedin, Loader2,
   DollarSign, Calendar, UserCheck, Swords, Warehouse, Clock, FileText,
-  ChevronDown, MapPin,
+  ChevronDown, MapPin, TrendingUp,
 } from "lucide-react";
 import { useFlashAccountData, type AccountContact } from "./useFlashAccountData";
+import { scoreTarget } from "./AccountListView";
 import type { FlashAccount, AccountStage } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
 
