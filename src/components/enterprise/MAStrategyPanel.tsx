@@ -252,10 +252,10 @@ export default function MAStrategyPanel() {
                             </div>
                             <div className="py-1.5 px-2 min-w-0" style={{width: '30%'}}>
                               <div className="flex items-center gap-1">
-                                <span className="font-medium text-foreground truncate">{a.name}</span>
+                                <span className="font-medium text-foreground">{a.name}</span>
                                 <ChevronRight className={`w-3 h-3 shrink-0 text-muted-foreground/50 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                               </div>
-                              <span className="text-[10px] text-muted-foreground truncate block">{a.hq_city || "—"}</span>
+                              <span className="text-[10px] text-muted-foreground block">{a.hq_city || "—"}</span>
                             </div>
                             <div className="py-1.5 px-2 text-right font-mono text-muted-foreground" style={{width: '20%'}}>
                               {a.annual_revenue || "—"}
@@ -267,7 +267,7 @@ export default function MAStrategyPanel() {
                               {a.ownership_type && (
                                 <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
                                   {OWNERSHIP_LABELS[a.ownership_type]?.icon}
-                                  <span className="truncate">{OWNERSHIP_LABELS[a.ownership_type]?.label || a.ownership_type}</span>
+                                  <span>{OWNERSHIP_LABELS[a.ownership_type]?.label || a.ownership_type}</span>
                                 </span>
                               )}
                             </div>
