@@ -889,7 +889,7 @@ export const FLASH_ACCOUNTS: FlashAccount[] = [
     id: "acct-central",
     name: "SP+ (fka Central Parking)",
     accountType: "fleet_operator",
-    stage: "target",
+    stage: "competitor",
     estimatedSpaces: "2,000,000+",
     facilityCount: "4,200+ locations",
     focusArea: "Nationwide (largest US operator)",
