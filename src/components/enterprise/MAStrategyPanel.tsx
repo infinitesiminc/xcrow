@@ -208,7 +208,7 @@ export default function MAStrategyPanel() {
       <Card>
         <CardContent className="p-0">
           <ScrollArea className="h-[calc(100vh-420px)]">
-            <table className="w-full text-[11px]">
+            <table className="w-full text-[11px] table-fixed min-w-[500px]">
               <thead className="sticky top-0 bg-card z-10">
                 <tr className="border-b border-border">
                   {([
@@ -245,29 +245,29 @@ export default function MAStrategyPanel() {
                           className="w-full text-left hover:bg-muted/30 transition-colors"
                         >
                           <div className="flex items-center">
-                            <div className="py-1.5 px-2 w-[60px]">
+                            <div className="py-1.5 px-2" style={{width: '15%'}}>
                               <Badge variant="outline" className={`text-[9px] px-1.5 py-0 font-semibold border ${tier.color}`}>
                                 {a.maScore}
                               </Badge>
                             </div>
-                            <div className="py-1.5 px-2 flex-1 min-w-0">
+                            <div className="py-1.5 px-2 min-w-0" style={{width: '30%'}}>
                               <div className="flex items-center gap-1">
                                 <span className="font-medium text-foreground truncate">{a.name}</span>
-                                <ChevronRight className={`w-3 h-3 text-muted-foreground/50 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                                <ChevronRight className={`w-3 h-3 shrink-0 text-muted-foreground/50 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                               </div>
-                              <span className="text-[10px] text-muted-foreground">{a.hq_city || "—"}</span>
+                              <span className="text-[10px] text-muted-foreground truncate block">{a.hq_city || "—"}</span>
                             </div>
-                            <div className="py-1.5 px-2 w-[70px] text-right font-mono text-muted-foreground">
+                            <div className="py-1.5 px-2 text-right font-mono text-muted-foreground" style={{width: '20%'}}>
                               {a.annual_revenue || "—"}
                             </div>
-                            <div className="py-1.5 px-2 w-[60px] text-right font-mono text-muted-foreground">
+                            <div className="py-1.5 px-2 text-right font-mono text-muted-foreground" style={{width: '15%'}}>
                               {a.facility_count || "—"}
                             </div>
-                            <div className="py-1.5 px-2 w-[80px]">
+                            <div className="py-1.5 px-2" style={{width: '20%'}}>
                               {a.ownership_type && (
                                 <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
                                   {OWNERSHIP_LABELS[a.ownership_type]?.icon}
-                                  {OWNERSHIP_LABELS[a.ownership_type]?.label || a.ownership_type}
+                                  <span className="truncate">{OWNERSHIP_LABELS[a.ownership_type]?.label || a.ownership_type}</span>
                                 </span>
                               )}
                             </div>
