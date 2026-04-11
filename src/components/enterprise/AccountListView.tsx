@@ -93,8 +93,9 @@ function AccountIcon({ account, className }: { account: FlashAccount; className?
   return <Grid3X3 className={className} />;
 }
 
-const TYPE_LABELS: Record<string, string> = {
+const FALLBACK_TYPE_LABELS: Record<string, string> = {
   fleet_operator: "Operator",
+  garage_operator: "Operator",
   airport: "Airport",
   large_venue: "Venue",
 };
