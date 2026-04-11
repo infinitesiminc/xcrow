@@ -582,8 +582,19 @@ export default function TenantAccountMap() {
 
     return (
       <div className="flex h-[calc(100vh-48px)] w-full">
-        {/* Chat panel */}
-        <div className="flex-1 border-r border-border flex flex-col min-w-0">
+        {/* Research stream panel */}
+        <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-y-auto bg-background">
+          <div className="max-w-4xl mx-auto w-full px-8 py-8">
+            <ICPResearchStream
+              targetDomain="cliq.com"
+              phases={DEMO_PHASES}
+              elapsedSeconds={14.8}
+            />
+          </div>
+        </div>
+
+        {/* Account list panel */}
+        <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Bot className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">{tenant.name} Pipeline Assistant</span>
@@ -593,11 +604,6 @@ export default function TenantAccountMap() {
             accountCount={allAccounts.length}
             onAccountsAdded={refetch}
           />
-        </div>
-
-        {/* Account list panel */}
-        <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
-          {accountPanel}
         </div>
       </div>
     );
