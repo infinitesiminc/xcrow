@@ -598,7 +598,7 @@ export default function TenantAccountMap() {
   const isMobile = useIsMobile();
   const { tenant } = useTenant();
   const { accounts: allAccounts, loading: accountsLoading, refetch } = useDBAccounts(tenant.slug);
-  const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, citations: researchCitations, targets: researchTargets, start: startResearch } = useLiveResearchStream();
+  const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, error: researchError, citations: researchCitations, targets: researchTargets, start: startResearch } = useLiveResearchStream();
   const [seedingTarget, setSeedingTarget] = useState<string | null>(null);
   const [seededTargets, setSeededTargets] = useState<Set<string>>(new Set());
   const [researchDomain, setResearchDomain] = useState("");
