@@ -495,6 +495,7 @@ function useLiveResearchStream() {
     setElapsed(0);
     setCitations([]);
     setTargets([]);
+    setError(null);
     setRunning(true);
     startRef.current = Date.now();
     timerRef.current = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
