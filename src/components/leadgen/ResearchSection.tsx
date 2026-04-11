@@ -343,7 +343,7 @@ export default function ResearchSection({ domain, onDomainChange, onStart, phase
           <p className="text-sm text-muted-foreground max-w-md font-mono text-center">
             Enter a company website above to run deep AI research — market position, buyer personas, competitors, and pipeline targets.
           </p>
-          <p className="text-xs text-muted-foreground/60 font-mono">Powered by Deep Research — takes ~90-120 seconds</p>
+          <p className="text-xs text-muted-foreground/60 font-mono">Powered by Deep Research — takes ~2-3 minutes</p>
         </div>
       )}
 
