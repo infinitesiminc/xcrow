@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   ArrowLeft, ExternalLink, Users, Mail, Linkedin, Loader2,
   DollarSign, Calendar, UserCheck, Swords, Warehouse, Clock, FileText,
-  ChevronDown, MapPin, TrendingUp,
+  ChevronDown, MapPin, TrendingUp, Target, Briefcase,
 } from "lucide-react";
 import { useFlashAccountData, type AccountContact } from "./useFlashAccountData";
-import { scoreTarget } from "./AccountListView";
+import { scoreTarget, accountScore } from "./AccountListView";
 import type { FlashAccount, AccountStage } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
 
