@@ -154,17 +154,20 @@ export default function AccountDetailInline({
 
         {/* Contacts section */}
         <div className="border-t border-border pt-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5" /> Contacts
-              {displayContacts.length > 0 && <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5">{displayContacts.length}</Badge>}
-            </h4>
-            {!displayContacts.length && !loadingLeads && (
-              <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => onFindContacts(account)}>
-                <Users className="w-3 h-3 mr-1" /> Find Decision-Makers
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5" /> Contacts
+            {displayContacts.length > 0 && <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5">{displayContacts.length}</Badge>}
+          </h4>
+          {!displayContacts.length && !loadingLeads && (
+            <div className="flex gap-1.5">
+              <Button size="sm" variant="outline" className="h-7 text-[10px] flex-1" onClick={() => onFindContacts(account, "solution")}>
+                <Target className="w-3 h-3 mr-1" /> Solution Buyers
               </Button>
-            )}
-          </div>
+              <Button size="sm" variant="outline" className="h-7 text-[10px] flex-1" onClick={() => onFindContacts(account, "ma")}>
+                <Briefcase className="w-3 h-3 mr-1" /> M&A Contacts
+              </Button>
+            </div>
+          )}
 
           {loadingLeads && (
             <div className="space-y-1.5 py-1">
