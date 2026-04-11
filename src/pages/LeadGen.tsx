@@ -1,264 +1,93 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { Button } from "@/components/ui/button";
-import { Building2, Zap, Send, Bot, User, Loader2 } from "lucide-react";
+import { Bot, User, Loader2, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { parseSSEStream } from "@/lib/sse-parser";
 import Navbar from "@/components/Navbar";
-import AccountListView from "@/components/enterprise/AccountListView";
-import AccountDetailInline from "@/components/enterprise/AccountDetailInline";
-import ICPResearchStream, { type ResearchPhase } from "@/components/enterprise/ICPResearchStream";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { LeadGenSidebar, type SidebarSection } from "@/components/leadgen/LeadGenSidebar";
+import ResearchSection, { useResearchStream, type ParsedPersona } from "@/components/leadgen/ResearchSection";
+import PersonasSection from "@/components/leadgen/PersonasSection";
+import LeadsTableSection from "@/components/leadgen/LeadsTableSection";
+import OutreachSection from "@/components/leadgen/OutreachSection";
+import { useLeadsCRUD, type SavedLead } from "@/components/leadgen/useLeadsCRUD";
+import { useWorkspaces } from "@/hooks/use-workspaces";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
-import {
-  STAGE_CONFIG,
-  type FlashAccount,
-  type AccountStage,
-  type AccountType,
-} from "@/types/accounts";
 
-/* ── Hook: load accounts from DB ── */
-function useDBAccounts(userId: string | undefined): { accounts: FlashAccount[]; loading: boolean; refetch: () => void } {
-  const [dbAccounts, setDbAccounts] = useState<FlashAccount[] | null>(null);
-  const [loading, setLoading] = useState(true);
+/* ── Chat ── */
+interface ChatMessage { role: "user" | "assistant"; content: string; }
 
-  const fetchAccounts = useCallback(async () => {
-    if (!userId) { setDbAccounts([]); setLoading(false); return; }
-    setLoading(true);
-    try {
-      const { data, error } = await (supabase.from("flash_accounts") as any)
-        .select("*")
-        .eq("owner_id", userId)
-        .order("name");
-      if (error || !data || data.length === 0) {
-        setDbAccounts([]);
-        setLoading(false);
-        return;
-      }
-      const mapped: FlashAccount[] = data.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        accountType: r.account_type as AccountType,
-        stage: r.stage as AccountStage,
-        estimatedSpaces: r.estimated_spaces || "N/A",
-        facilityCount: r.facility_count || "N/A",
-        focusArea: r.focus_area || "",
-        hqCity: r.hq_city || "",
-        hqLat: r.hq_lat || 0,
-        hqLng: r.hq_lng || 0,
-        website: r.website || "",
-        differentiator: r.differentiator || "",
-        caseStudyUrl: r.case_study_url || undefined,
-        currentVendor: r.current_vendor || undefined,
-        annualRevenue: r.annual_revenue || undefined,
-        employeeCount: r.employee_count || undefined,
-        founded: r.founded || undefined,
-        priorityScore: r.priority_score || 0,
-        notes: r.notes || undefined,
-        ownership_type: r.ownership_type,
-        contract_model: r.contract_model,
-      }));
-      setDbAccounts(mapped);
-    } catch {
-      setDbAccounts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
-
-  return { accounts: dbAccounts ?? [], loading, refetch: fetchAccounts };
-}
-
-/* ── Types for extracted targets ── */
-interface ResearchTarget {
-  name: string;
-  domain?: string;
-  description: string;
-  rationale: string;
-  revenue_hint?: string;
-  employee_hint?: string;
-  hq_hint?: string;
-  account_type?: string;
-}
-
-interface AccountLeadData {
-  leads: { name: string; title?: string; email?: string; linkedin?: string; score?: number; reason?: string }[];
-}
-
-const liveResearchRequestState = {
-  activeKey: null as string | null,
-  activeRequestId: 0,
-};
-
-function buildResearchRequestKey(domain: string, companyContext?: string) {
-  return JSON.stringify({
-    domain: domain.trim().toLowerCase(),
-    companyContext: companyContext?.trim() ?? "",
-  });
-}
-
-/* ══════════════════════════════════════════════════════════
-   Chat component
-   ══════════════════════════════════════════════════════════ */
-
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-
-function PipelineChat({ accountCount, onPillClick, externalMessages }: {
-  accountCount: number;
-  onPillClick?: (pill: string) => void;
-  externalMessages?: ChatMessage[];
-}) {
+function PipelineChat({ leadCount }: { leadCount: number }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const injectedCountRef = useRef(0);
 
   useEffect(() => {
     if (messages.length === 0) {
-      const welcome: ChatMessage = {
+      setMessages([{
         role: "assistant",
-        content: accountCount > 0
-          ? `Welcome back! You have **${accountCount} accounts** in your pipeline.\n\nI can help you:\n- 🔍 Research competitors and prospects\n- 👥 Find decision-makers at target accounts\n- 📊 Analyze market opportunities\n\nWhat would you like to do?`
-          : `Let's build your account pipeline from scratch.\n\nI'll research your company and industry to seed the pipeline with:\n- 🎯 Target accounts\n- ⚔️ Key competitors\n- 🏢 Strategic partners\n\nTo get started, just enter a company URL on the left or tell me about a specific company to research.`,
-      };
-      setMessages([welcome]);
+        content: leadCount > 0
+          ? `You have **${leadCount} leads**. I can help find more, draft outreach, or analyze your pipeline.`
+          : `Let's build your lead pipeline. Enter a company URL on the left to start ICP research.`,
+      }]);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (externalMessages && externalMessages.length > injectedCountRef.current) {
-      const newMsgs = externalMessages.slice(injectedCountRef.current);
-      injectedCountRef.current = externalMessages.length;
-      setMessages(prev => [...prev, ...newMsgs]);
-    }
-  }, [externalMessages]);
-
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const handleSend = async () => {
     const text = input.trim();
     if (!text || isStreaming) return;
-
-    const userMsg: ChatMessage = { role: "user", content: text };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages(prev => [...prev, { role: "user", content: text }]);
     setInput("");
     setIsStreaming(true);
-
-    let assistantSoFar = "";
-    const upsertAssistant = (chunk: string) => {
-      assistantSoFar += chunk;
+    let buf = "";
+    const upsert = (chunk: string) => {
+      buf += chunk;
       setMessages(prev => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && prev.length > 1 && prev[prev.length - 2]?.role === "user") {
-          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: buf } : m);
         }
-        return [...prev, { role: "assistant", content: assistantSoFar }];
+        return [...prev, { role: "assistant", content: buf }];
       });
     };
-
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
-
-      const systemPrompt = `You are the Xcrow Lead Gen Pipeline Assistant. Your job is to help build and manage the B2B account pipeline. You can:
-1. Research companies and suggest them as target accounts
-2. Identify competitors in the industry
-3. Provide market intelligence and analysis
-4. Help prioritize accounts by fit and opportunity size
-
-When suggesting accounts to add, format them clearly with name, type, estimated revenue, and why they're a good target.
-Keep responses focused and actionable. Use markdown formatting.`;
-
       const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
-          "apikey": supabaseKey,
-        },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
         body: JSON.stringify({
           website: "xcrow.com",
           messages: [
-            { role: "system", content: systemPrompt },
-            ...messages.filter(m => m.role !== "assistant" || messages.indexOf(m) > 0).map(m => ({ role: m.role, content: m.content })),
+            { role: "system", content: "You are the Xcrow Lead Gen assistant. Help find leads, draft outreach, analyze pipeline. Be concise." },
+            ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
             { role: "user", content: text },
           ],
         }),
       });
-
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const reader = resp.body?.getReader();
       if (!reader) throw new Error("No body");
-
-      await parseSSEStream(reader, {
-        onTextDelta: (chunk) => upsertAssistant(chunk),
-        onLeads: (leads) => {
-          upsertAssistant(`\n\n> 📋 Found ${leads.length} contacts.`);
-        },
-        onDone: () => {},
-      });
-    } catch (e) {
-      console.error("Chat error:", e);
-      upsertAssistant("\n\n⚠️ Something went wrong. Please try again.");
-    } finally {
-      setIsStreaming(false);
-      inputRef.current?.focus();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  };
-
-  const renderMessageContent = (content: string) => {
-    const parts = content.split(/(\[\[[^\]]+\]\])/g);
-    const elements: React.ReactNode[] = [];
-    let markdownBuf = "";
-
-    const flushMarkdown = () => {
-      if (markdownBuf) {
-        elements.push(
-          <div key={elements.length} className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
-            <ReactMarkdown>{markdownBuf}</ReactMarkdown>
-          </div>
-        );
-        markdownBuf = "";
-      }
-    };
-
-    for (const part of parts) {
-      const pillMatch = part.match(/^\[\[(.+)\]\]$/);
-      if (pillMatch) {
-        flushMarkdown();
-        elements.push(
-          <button key={elements.length} onClick={() => onPillClick?.(pillMatch[1])}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary hover:bg-primary/20 transition-colors cursor-pointer my-1 mr-1.5">
-            {pillMatch[1]}
-          </button>
-        );
-      } else {
-        markdownBuf += part;
-      }
-    }
-    flushMarkdown();
-    return elements;
+      await parseSSEStream(reader, { onTextDelta: upsert, onLeads: () => {}, onDone: () => {} });
+    } catch { upsert("\n\n⚠️ Something went wrong."); }
+    finally { setIsStreaming(false); inputRef.current?.focus(); }
   };
 
   return (
     <div className="flex flex-col h-full">
+      <div className="px-4 py-3 border-b border-border flex items-center gap-2 shrink-0">
+        <Bot className="w-4 h-4 text-primary" />
+        <span className="text-sm font-medium">Assistant</span>
+      </div>
       <ScrollArea className="flex-1 px-4 py-3">
         <div className="space-y-4">
           {messages.map((msg, i) => (
@@ -268,14 +97,10 @@ Keep responses focused and actionable. Use markdown formatting.`;
                   <Bot className="w-4 h-4 text-primary" />
                 </div>
               )}
-              <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${
-                msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted/60 text-foreground"
-              }`}>
+              <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted/60 text-foreground"}`}>
                 {msg.role === "assistant" ? (
-                  <div className="flex flex-col">{renderMessageContent(msg.content)}</div>
-                ) : (
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                )}
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                ) : <p className="whitespace-pre-wrap">{msg.content}</p>}
               </div>
               {msg.role === "user" && (
                 <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
@@ -286,22 +111,18 @@ Keep responses focused and actionable. Use markdown formatting.`;
           ))}
           {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
             <div className="flex gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Bot className="w-4 h-4 text-primary" />
-              </div>
-              <div className="bg-muted/60 rounded-lg px-3.5 py-2.5">
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              </div>
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><Bot className="w-4 h-4 text-primary" /></div>
+              <div className="bg-muted/60 rounded-lg px-3.5 py-2.5"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
             </div>
           )}
           <div ref={scrollRef} />
         </div>
       </ScrollArea>
-
-      <div className="border-t border-border p-3">
+      <div className="border-t border-border p-3 shrink-0">
         <div className="flex gap-2">
-          <Textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
-            placeholder="Ask about your market, research a company..." className="min-h-[42px] max-h-[120px] resize-none text-sm" rows={1} />
+          <Textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            placeholder="Ask anything..." className="min-h-[42px] max-h-[120px] resize-none text-sm" rows={1} />
           <Button size="icon" onClick={handleSend} disabled={!input.trim() || isStreaming} className="shrink-0 h-[42px] w-[42px]">
             <Send className="w-4 h-4" />
           </Button>
@@ -311,357 +132,133 @@ Keep responses focused and actionable. Use markdown formatting.`;
   );
 }
 
-/* ── Perplexity research via background job + polling ── */
-function useLiveResearchStream() {
-  const PHASE_ORDER = ["PHASE_01", "PHASE_02", "PHASE_03", "PHASE_04"];
-  const PHASE_LABELS = [
-    "Website DNA & Market Position",
-    "ICP & Buyer Personas",
-    "Competitive Landscape",
-    "Strategic Targets & Pipeline Seed",
-  ];
-
-  const INITIAL: ResearchPhase[] = PHASE_ORDER.map((id, i) => ({
-    id,
-    label: PHASE_LABELS[i],
-    status: "pending" as const,
-  }));
-
-  const [phases, setPhases] = useState<ResearchPhase[]>(INITIAL);
-  const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [citations] = useState<string[]>([]);
-  const [targets, setTargets] = useState<ResearchTarget[]>([]);
-  const [reportText, setReportText] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startRef = useRef(0);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const runningRef = useRef(false);
-
-  // Simulate phase progression based on elapsed time (since non-streaming won't give real-time updates)
-  const PHASE_TIMING = [15, 35, 55, 70]; // seconds when each phase "activates"
-  const phaseTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const updatePhasesFromElapsed = useCallback((elapsedSec: number, isComplete: boolean) => {
-    if (isComplete) {
-      setPhases(PHASE_ORDER.map((id, i) => ({ id, label: PHASE_LABELS[i], status: "complete" as const, progress: 100 })));
-      return;
-    }
-    let activeIdx = 0;
-    for (let i = PHASE_TIMING.length - 1; i >= 0; i--) {
-      if (elapsedSec >= PHASE_TIMING[i]) { activeIdx = i; break; }
-    }
-    const sublabels = [
-      "Analyzing website & value proposition",
-      "Mapping ICP segments & buyer personas",
-      "Scanning competitive landscape",
-      "Identifying strategic targets",
-    ];
-    setPhases(PHASE_ORDER.map((id, i) => ({
-      id,
-      label: PHASE_LABELS[i],
-      status: i < activeIdx ? "complete" as const : i === activeIdx ? "active" as const : "pending" as const,
-      progress: i < activeIdx ? 100 : i === activeIdx ? Math.min(90, Math.floor(((elapsedSec - PHASE_TIMING[activeIdx]) / (PHASE_TIMING[activeIdx + 1] || 90 - PHASE_TIMING[activeIdx])) * 80) + 10) : 0,
-      sublabel: i === activeIdx ? sublabels[i] : undefined,
-    })));
-  }, []);
-
-  const start = useCallback(async (domain: string, companyContext?: string) => {
-    if (runningRef.current) return;
-    runningRef.current = true;
-
-    setPhases([...INITIAL]);
-    setElapsed(0);
-    setTargets([]);
-    setReportText(null);
-    setError(null);
-    setRunning(true);
-    startRef.current = Date.now();
-    timerRef.current = setInterval(() => {
-      const el = (Date.now() - startRef.current) / 1000;
-      setElapsed(el);
-      updatePhasesFromElapsed(el, false);
-    }, 500);
-
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const { data: { session } } = await supabase.auth.getSession();
-
-      const resp = await fetch(`${supabaseUrl}/functions/v1/perplexity-research`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
-          "apikey": supabaseKey,
-        },
-        body: JSON.stringify({ domain: domain.trim().toLowerCase(), companyContext }),
-      });
-
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const { job_id } = await resp.json();
-      if (!job_id) throw new Error("No job_id returned");
-
-      // Poll for results
-      pollingRef.current = setInterval(async () => {
-        try {
-          const { data, error: fetchErr } = await (supabase.from("research_jobs") as any)
-            .select("status, progress, current_phase, report_text, error")
-            .eq("id", job_id)
-            .single();
-
-          if (fetchErr || !data) return;
-
-          if (data.status === "complete") {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-            if (timerRef.current) clearInterval(timerRef.current);
-            updatePhasesFromElapsed(0, true);
-            setReportText(data.report_text);
-            setRunning(false);
-            runningRef.current = false;
-          } else if (data.status === "failed") {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-            if (timerRef.current) clearInterval(timerRef.current);
-            setError(data.error || "Research failed");
-            setRunning(false);
-            runningRef.current = false;
-          }
-        } catch (pollErr) {
-          console.error("Poll error:", pollErr);
-        }
-      }, 3000);
-
-    } catch (e: any) {
-      console.error("Research start error:", e);
-      setError(e.message || "Failed to start research");
-      if (timerRef.current) clearInterval(timerRef.current);
-      setRunning(false);
-      runningRef.current = false;
-    }
-  }, [updatePhasesFromElapsed]);
-
-  // Parse targets from report text when complete
-  useEffect(() => {
-    if (!reportText) return;
-    // Extract targets from the "## Prospecting Targets" section
-    const targetsMatch = reportText.match(/## Prospecting Targets[\s\S]*$/i);
-    if (!targetsMatch) return;
-
-    const section = targetsMatch[0];
-    const targets: ResearchTarget[] = [];
-    // Match company entries: lines starting with "- **" or "### " or numbered
-    const companyBlocks = section.split(/(?=###?\s|\d+\.\s\*\*)/);
-    for (const block of companyBlocks) {
-      const nameMatch = block.match(/(?:###?\s+|\d+\.\s+\*\*)([\w\s.&'-]+)/);
-      if (!nameMatch) continue;
-      const name = nameMatch[1].trim().replace(/\*\*/g, "");
-      if (name.length < 2 || name.toLowerCase().includes("prospecting")) continue;
-      const domainMatch = block.match(/(?:domain|website|url)[:\s]+([a-z0-9.-]+\.[a-z]{2,})/i);
-      const rationaleMatch = block.match(/(?:why|rationale|reason)[:\s*]+(.+)/i);
-      targets.push({
-        name,
-        domain: domainMatch?.[1],
-        description: block.slice(0, 200).replace(/[#*\n]+/g, " ").trim(),
-        rationale: rationaleMatch?.[1]?.trim() || "Strategic target",
-      });
-    }
-    if (targets.length > 0) setTargets(targets);
-  }, [reportText]);
-
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  return { phases, elapsed, running, error, citations, targets, start };
-}
-
-function formatResearchTime(s: number): string {
-  const mins = Math.floor(s / 60);
-  const secs = s % 60;
-  return `${String(mins).padStart(2, "0")}:${String(Math.floor(secs)).padStart(2, "0")}.${String(Math.floor((secs % 1) * 10))}s`;
-}
-
 /* ══════════════════════════════════════════════════════════
-   Main LeadGen page
+   Main LeadGen Page
    ══════════════════════════════════════════════════════════ */
-
 export default function LeadGen() {
   const { user } = useAuth();
-  const { accounts: allAccounts, loading: accountsLoading, refetch } = useDBAccounts(user?.id);
-  const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, error: researchError, citations: researchCitations, targets: researchTargets, start: startResearch } = useLiveResearchStream();
-  const [seedingTarget, setSeedingTarget] = useState<string | null>(null);
-  const [seededTargets, setSeededTargets] = useState<Set<string>>(new Set());
-  const [researchDomain, setResearchDomain] = useState("");
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-  const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
-  const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
-  const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
-  const [showResearchDetails, setShowResearchDetails] = useState(false);
-  const [chatExternalMessages, setChatExternalMessages] = useState<ChatMessage[]>([]);
-  const [autoSeeded, setAutoSeeded] = useState(false);
+  const [activeSection, setActiveSection] = useState<SidebarSection>("research");
+  const [domain, setDomain] = useState("");
+  const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
 
-  const selectedAccount = useMemo(() => allAccounts.find(a => a.id === selectedAccountId) ?? null, [selectedAccountId, allAccounts]);
+  // Research
+  const research = useResearchStream();
 
-  const handleSelectAccount = useCallback((a: FlashAccount) => setSelectedAccountId(a.id), []);
-  const handleBack = useCallback(() => setSelectedAccountId(null), []);
+  // Workspace key derived from domain
+  const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
+  const { upsertWorkspace } = useWorkspaces(user?.id);
 
-  const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
-    if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
-    setLoadingLeads(prev => new Set(prev).add(account.id));
+  // Leads CRUD
+  const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV } = useLeadsCRUD(user?.id, workspaceKey);
 
-    const addLog = (msg: string) => {
-      setActivityLog(prev => ({ ...prev, [account.id]: [...(prev[account.id] || []), msg] }));
-    };
+  // Lead count by persona
+  const leadCountByPersona = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const l of leads) {
+      if (l.persona_tag) map[l.persona_tag] = (map[l.persona_tag] || 0) + 1;
+    }
+    return map;
+  }, [leads]);
+
+  // Auto-navigate to personas when research completes
+  useEffect(() => {
+    if (research.isComplete && research.report && activeSection === "research") {
+      setActiveSection("personas");
+      // Upsert workspace
+      if (domain.trim()) upsertWorkspace(workspaceKey, domain.trim());
+    }
+  }, [research.isComplete]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Find leads for a persona via Apollo
+  const handleFindLeads = useCallback(async (persona: ParsedPersona) => {
+    if (!user || loadingPersona) return;
+    setLoadingPersona(persona.title);
 
     try {
-      const domain = account.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-      addLog(`Analyzing ${account.name} account profile`);
-
-      let content: string;
-      if (mode === "ma") {
-        content = `Account: ${account.name} (${domain}) in ${account.hqCity}.\n\nMODE: M&A / Corporate Development contacts. Search domain "${domain}".\nTarget titles: CFO, VP Corporate Development, CEO, General Counsel, VP Strategy.\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
-      } else {
-        content = `Account: ${account.name} (${domain}) — ${account.focusArea || account.accountType} in ${account.hqCity}.\nSearch domain "${domain}".\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
-      }
-
-      await new Promise(r => setTimeout(r, 800));
-      addLog(`Defining buyer persona`);
-
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
 
-      await new Promise(r => setTimeout(r, 600));
-      addLog(`Querying contact database for ${domain}`);
-
-      const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
+      const domains = research.report?.prospectDomains?.slice(0, 10) || [];
+      const resp = await fetch(`${supabaseUrl}/functions/v1/search-apollo`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
-          "apikey": supabaseKey,
-        },
-        body: JSON.stringify({ website: domain, messages: [{ role: "user", content }], strict_domain: true }),
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
+        body: JSON.stringify({
+          person_titles: persona.titles.slice(0, 5),
+          person_seniorities: ["director", "vp", "c_suite", "owner"],
+          q_organization_domains: domains.length > 0 ? domains.join("\n") : undefined,
+          per_page: 5,
+        }),
       });
 
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const reader = resp.body?.getReader();
-      if (!reader) throw new Error("No response body");
+      const data = await resp.json();
+      const people = data.people || [];
 
-      addLog("Matching seniority filters: Director, VP, C-Suite");
-
-      const collectedLeads: any[] = [];
-      let gotLeads = false;
-      await parseSSEStream(reader, {
-        onTextDelta: () => {},
-        onLeads: (leads) => {
-          if (!gotLeads) { addLog(`Scoring ${leads.length} candidates by fit`); gotLeads = true; }
-          collectedLeads.push(...leads);
-          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
-          setAccountLeads(prev => ({ ...prev, [account.id]: { leads: sorted } }));
-        },
-        onDone: () => {
-          const sorted = [...collectedLeads].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5);
-          setAccountLeads(prev => ({ ...prev, [account.id]: { leads: sorted } }));
-          addLog(collectedLeads.length > 0 ? `Found ${Math.min(collectedLeads.length, 5)} decision-makers` : "No matching contacts found");
-        },
-      });
+      if (people.length > 0) {
+        const newLeads = people.map((p: any) => ({
+          name: p.name || `${p.first_name} ${p.last_name}`,
+          title: p.title,
+          company: p.organization?.name || p.organization_name,
+          email: p.email,
+          linkedin: p.linkedin_url,
+          phone: p.phone_number,
+          source: "apollo",
+          persona_tag: persona.title,
+          score: p.score,
+          reason: `Matched persona: ${persona.title}`,
+        }));
+        await upsertLeads(newLeads);
+      }
     } catch (e) {
-      console.error("Find contacts failed:", e);
-      addLog("Search failed — try again");
+      console.error("Apollo search failed:", e);
     } finally {
-      setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
+      setLoadingPersona(null);
     }
-  }, [loadingLeads, accountLeads]);
+  }, [user, loadingPersona, research.report, upsertLeads]);
 
-  // Auto-seed targets when research completes
-  const researchComplete = !demoRunning && demoPhases.every(p => p.status === "complete");
-  useEffect(() => {
-    if (!researchComplete || autoSeeded || researchTargets.length === 0 || !user) return;
-    setAutoSeeded(true);
+  const handleStartResearch = useCallback(() => {
+    if (domain.trim()) research.start(domain.trim());
+  }, [domain, research]);
 
-    const seedAll = async () => {
-      for (const target of researchTargets) {
-        if (seededTargets.has(target.name)) continue;
-        const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-        const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
-
-        const ratLower = (target.rationale || "").toLowerCase();
-        let stage = "whitespace";
-        if (ratLower.includes("competitor") || ratLower.includes("compet")) stage = "competitor";
-        else if (ratLower.includes("partner") || ratLower.includes("active")) stage = "active";
-        else if (ratLower.includes("target") || ratLower.includes("prospect") || ratLower.includes("acquisition")) stage = "target";
-
-        let priorityScore = 50;
-        if (target.revenue_hint) priorityScore += 15;
-        if (target.employee_hint) priorityScore += 10;
-        if (stage === "target") priorityScore += 10;
-        if (stage === "competitor") priorityScore += 5;
-
-        try {
-          await (supabase.from("flash_accounts") as any).upsert({
-            id: accountId,
-            name: target.name,
-            tenant_slug: "leadgen",
-            owner_id: user.id,
-            account_type: "prospect",
-            stage,
-            website: `https://${domain}`,
-            notes: `${target.rationale}: ${target.description}`,
-            focus_area: target.rationale,
-            hq_city: target.hq_hint || "",
-            annual_revenue: target.revenue_hint || null,
-            employee_count: target.employee_hint || null,
-            priority_score: Math.min(priorityScore, 100),
-          }, { onConflict: "id" });
-          setSeededTargets(prev => new Set(prev).add(target.name));
-        } catch (e) {
-          console.error("Auto-seed failed for", target.name, e);
-        }
-      }
-      refetch();
-
-      const elapsed = Math.round(demoElapsed);
-      const summary: ChatMessage = {
-        role: "assistant",
-        content: `✅ **Research complete** — analyzed **${researchDomain}** in ${elapsed}s.\n\nFound **${researchTargets.length} strategic targets** across your market. All accounts have been added to the pipeline.\n\n[[Find contacts for all]] [[Show research details]] [[Run another domain]]`,
-      };
-      setChatExternalMessages(prev => [...prev, summary]);
-    };
-
-    seedAll();
-  }, [researchComplete, autoSeeded, researchTargets, seededTargets, user, refetch, demoElapsed, researchDomain]);
-
-  // Pill click handler
-  const handlePillClick = useCallback((pill: string) => {
-    if (pill === "Show research details") {
-      setShowResearchDetails(true);
-    } else if (pill === "Run another domain") {
-      setResearchDomain("");
-      setAutoSeeded(false);
-      setSeededTargets(new Set());
-    } else if (pill === "Find contacts for all") {
-      const seededAccounts = allAccounts.filter(a => a.id.startsWith("target-"));
-      for (const acct of seededAccounts.slice(0, 5)) {
-        setTimeout(() => handleFindContacts(acct), 500);
-      }
-      const ackMsg: ChatMessage = {
-        role: "assistant",
-        content: `🔍 Starting contact discovery for **${Math.min(seededAccounts.length, 5)} accounts**… This will take a moment.\n\nClick any account in the pipeline to see discovered contacts.`,
-      };
-      setChatExternalMessages(prev => [...prev, ackMsg]);
+  const renderSection = () => {
+    switch (activeSection) {
+      case "research":
+        return (
+          <ResearchSection
+            domain={domain}
+            onDomainChange={setDomain}
+            onStart={handleStartResearch}
+            phases={research.phases}
+            elapsed={research.elapsed}
+            running={research.running}
+            error={research.error}
+            isComplete={research.isComplete}
+            isInitial={research.isInitial}
+          />
+        );
+      case "personas":
+        return (
+          <PersonasSection
+            report={research.report}
+            leadCountByPersona={leadCountByPersona}
+            onFindLeads={handleFindLeads}
+            loadingPersona={loadingPersona}
+          />
+        );
+      case "leads":
+        return (
+          <LeadsTableSection
+            leads={leads}
+            onUpdateStatus={updateLeadStatus}
+            onDeleteLead={deleteLead}
+            onExportCSV={exportCSV}
+          />
+        );
+      case "outreach":
+        return <OutreachSection outreach={outreach} />;
     }
-  }, [allAccounts, handleFindContacts]);
-
-  // Left panel state
-  const hasError = !!researchError && !demoRunning;
-  const isInitial = !demoRunning && !hasError && demoPhases.every(p => p.status === "pending");
-  const isRunning = demoRunning || (!hasError && demoPhases.some(p => p.status !== "pending") && !researchComplete);
-  const isComplete = researchComplete && !hasError;
+  };
 
   return (
     <>
@@ -670,161 +267,40 @@ export default function LeadGen() {
         <meta name="description" content="Enter a company URL and get deep AI research — market position, buyer personas, competitors, and pipeline targets." />
       </Helmet>
       <Navbar />
-      <div className="flex h-[calc(100vh-56px)] w-full pt-14">
-        {/* Main panel — unified dashboard */}
-        <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-hidden bg-background">
-          <div className="max-w-4xl mx-auto w-full px-8 flex-1 flex flex-col overflow-hidden">
-            
-            {/* Persistent header with URL input */}
-            <header className="flex items-end justify-between border-b border-border/30 pb-5 pt-6 shrink-0">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="size-2 rounded-full bg-primary animate-pulse shadow-[0_0_12px_hsl(var(--primary))]" />
-                  <span className="text-xs font-mono text-primary uppercase tracking-[0.2em]">
-                    {isRunning ? "Research Pipeline Active" : isComplete ? "Pipeline Ready" : "ICP Research Pipeline"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="text"
-                      value={researchDomain}
-                      onChange={e => setResearchDomain(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) { setAutoSeeded(false); startResearch(researchDomain.trim()); } }}
-                      placeholder="e.g. stripe.com"
-                      className="h-10 rounded-lg border border-border/50 bg-muted/20 px-4 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(270,80%,60%,0.4)] w-64 shadow-[inset_0_0_20px_hsl(var(--primary)/0.05)]"
-                    />
-                    <Button
-                      onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim()); }}
-                      size="sm" className="gap-2 h-10 px-5"
-                      disabled={demoRunning || !researchDomain.trim()}
-                    >
-                      <Zap className="w-4 h-4" /> Research
-                    </Button>
+      <div className="pt-14">
+        <SidebarProvider>
+          <div className="min-h-[calc(100vh-56px)] flex w-full">
+            <LeadGenSidebar
+              activeSection={activeSection}
+              onSelectSection={setActiveSection}
+              websiteUrl={domain || undefined}
+              personaCount={research.report?.personas.length || 0}
+              leadCount={leads.length}
+              outreachCount={outreach.length}
+              researchComplete={research.isComplete}
+            />
+
+            <div className="flex-1 flex min-w-0">
+              {/* Main panel */}
+              <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
+                  <SidebarTrigger className="mr-3" />
+                  <span className="text-sm font-medium capitalize">{activeSection}</span>
+                </header>
+                <div className="flex-1 overflow-y-auto p-6">
+                  <div className="max-w-4xl mx-auto">
+                    {renderSection()}
                   </div>
                 </div>
               </div>
-              {(isRunning || isComplete) && (
-                <div className="flex flex-col items-end gap-1">
-                  <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
-                    {isComplete ? "Completed" : "Runtime"}
-                  </span>
-                  <span className="font-mono text-lg text-primary tabular-nums">
-                    {formatResearchTime(demoElapsed)}
-                  </span>
-                </div>
-              )}
-            </header>
 
-            {/* Content area — scrollable */}
-            <div className="flex-1 overflow-y-auto py-6">
-              {/* INITIAL empty state */}
-              {isInitial && (
-                <div className="flex-1 flex flex-col items-center justify-center gap-6 pt-20">
-                  <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.1)]">
-                    <Zap className="w-7 h-7 text-primary" />
-                  </div>
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-muted-foreground max-w-md font-mono">
-                      Enter a company website above to run deep AI research — market position, buyer personas, competitors, and pipeline targets.
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground/60 font-mono">Powered by Perplexity Deep Research — takes ~90-120 seconds</p>
-                </div>
-              )}
-
-              {/* RUNNING: Research stream */}
-              {isRunning && (
-                <ICPResearchStream targetDomain={researchDomain} phases={demoPhases} elapsedSeconds={demoElapsed} />
-              )}
-
-              {/* ERROR */}
-              {hasError && !isRunning && (
-                <div className="flex-1 flex flex-col items-center justify-center gap-6 pt-20">
-                  <div className="size-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
-                    <Zap className="w-7 h-7 text-destructive" />
-                  </div>
-                  <div className="text-center space-y-2">
-                    <h2 className="text-xl font-medium text-foreground">Research Failed</h2>
-                    <p className="text-sm text-muted-foreground max-w-md">{researchError}</p>
-                  </div>
-                  <Button onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim()); }} size="lg" className="gap-2">
-                    <Zap className="w-4 h-4" /> Retry
-                  </Button>
-                </div>
-              )}
-
-              {/* COMPLETE: Pipeline accounts */}
-              {isComplete && (
-                <div className="flex flex-col h-full">
-                  {/* Pipeline header */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-9 h-9 rounded-lg bg-primary/15 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary shadow-[0_0_15px_hsl(var(--primary)/0.1)]">
-                      P
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold leading-tight tracking-tight">Pipeline</h2>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {accountsLoading ? "Loading..." : `${allAccounts.length} accounts`}
-                      </p>
-                    </div>
-                  </div>
-
-                  {selectedAccount ? (
-                    <AccountDetailInline
-                      account={selectedAccount}
-                      onBack={handleBack}
-                      onFindContacts={handleFindContacts}
-                      loadingLeads={loadingLeads.has(selectedAccount.id)}
-                      activityLog={activityLog[selectedAccount.id] || []}
-                      streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
-                      onStageChange={() => {}}
-                    />
-                  ) : allAccounts.length > 0 ? (
-                    <AccountListView accounts={allAccounts} selectedAccountId={selectedAccountId} onSelectAccount={handleSelectAccount} />
-                  ) : (
-                    <div className="flex-1 flex items-center justify-center px-6">
-                      <div className="text-center space-y-3">
-                        <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
-                        <p className="text-sm text-muted-foreground font-mono">No accounts yet. Use the chat to build your pipeline.</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Chat panel */}
+              <div className="w-[380px] shrink-0 border-l border-border flex flex-col overflow-hidden hidden lg:flex">
+                <PipelineChat leadCount={leads.length} />
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Right panel — Chat */}
-        <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <Bot className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Pipeline Assistant</span>
-          </div>
-          <PipelineChat accountCount={allAccounts.length} externalMessages={chatExternalMessages} onPillClick={handlePillClick} />
-        </div>
-
-        {/* Research details dialog */}
-        <Dialog open={showResearchDetails} onOpenChange={setShowResearchDetails}>
-          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-            <DialogTitle>Research Details — {researchDomain}</DialogTitle>
-            <DialogDescription>Full research report from the ICP pipeline</DialogDescription>
-            <ICPResearchStream targetDomain={researchDomain} phases={demoPhases} elapsedSeconds={demoElapsed} />
-            {researchCitations.length > 0 && (
-              <details className="mt-4">
-                <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                  📚 {researchCitations.length} sources cited
-                </summary>
-                <div className="mt-2 space-y-1 text-xs text-muted-foreground max-h-40 overflow-y-auto">
-                  {researchCitations.map((c, i) => (
-                    <a key={i} href={c} target="_blank" rel="noopener" className="block truncate hover:text-primary">[{i + 1}] {c}</a>
-                  ))}
-                </div>
-              </details>
-            )}
-          </DialogContent>
-        </Dialog>
+        </SidebarProvider>
       </div>
     </>
   );
