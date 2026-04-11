@@ -1,13 +1,12 @@
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 /**
- * perplexity-research — Streams Perplexity deep research results as SSE phases
+ * perplexity-research — Streams Perplexity research results as SSE phases
  * 
- * Now uses Perplexity streaming for real-time transparency.
- * Emits streamingText on active phase + extracts findings incrementally.
+ * Uses sonar-pro streaming with keepalive heartbeats to prevent proxy timeouts.
  */
 
 Deno.serve(async (req) => {
@@ -50,13 +49,18 @@ Deno.serve(async (req) => {
         try { controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`)); } catch { /* closed */ }
       };
 
+      // Keepalive: send SSE comment every 3s to prevent proxy idle timeout
+      const heartbeat = setInterval(() => {
+        try { controller.enqueue(encoder.encode(": keepalive\n\n")); } catch { clearInterval(heartbeat); }
+      }, 3000);
+
       // Signal all phases as pending
       for (const p of PHASES) {
         send({ type: "phase", phase: { id: p.id, label: p.label, status: "pending", progress: 0 } });
       }
 
       // Start phase 1
-      send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Connecting to Perplexity Deep Research", progress: 5 } });
+      send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Connecting to Perplexity Research", progress: 5 } });
 
       try {
         const personaFeedback = personaPerformance
@@ -94,6 +98,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           const errText = await resp.text();
           console.error(`Perplexity error ${resp.status}: ${errText}`);
           send({ type: "error", error: `Perplexity API error: ${resp.status}` });
+          clearInterval(heartbeat);
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
           return;
@@ -102,16 +107,14 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
         // Stream response and accumulate text
         let fullText = "";
         let citations: string[] = [];
+        let citationsSent = false;
         let currentPhaseIdx = 0;
         let lastStreamUpdate = 0;
-        const STREAM_INTERVAL = 400; // ms between streamingText updates
+        const STREAM_INTERVAL = 400;
         const completedPhases = new Set<number>();
-        // Track which sections we've already emitted findings for
         const emittedSections = new Set<string>();
-        // Track findings per phase for final send
         const phaseFindings: Record<string, { label: string; value: string; confidence?: number; highlight?: boolean }[]> = {};
 
-        /** Detect which phase a header belongs to */
         function detectPhase(header: string): number {
           const h = header.toLowerCase();
           for (let i = 0; i < PHASES.length; i++) {
@@ -120,9 +123,8 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           return 0;
         }
 
-        /** Parse completed sections from accumulated text and emit findings */
         function parseAndEmitFindings() {
-          const sections: { header: string; body: string; complete: boolean }[] = [];
+          const sections: { header: string; body: string }[] = [];
           const lines = fullText.split("\n");
           let curHeader = "";
           let curBody: string[] = [];
@@ -130,7 +132,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           for (const line of lines) {
             if (line.startsWith("## ") || line.startsWith("# ")) {
               if (curHeader) {
-                sections.push({ header: curHeader, body: curBody.join("\n").trim(), complete: true });
+                sections.push({ header: curHeader, body: curBody.join("\n").trim() });
               }
               curHeader = line.replace(/^#+\s*/, "");
               curBody = [];
@@ -138,14 +140,13 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
               curBody.push(line);
             }
           }
-          // Last section may be incomplete
           if (curHeader) {
-            sections.push({ header: curHeader, body: curBody.join("\n").trim(), complete: false });
+            sections.push({ header: curHeader, body: curBody.join("\n").trim() });
           }
 
           for (let si = 0; si < sections.length; si++) {
             const section = sections[si];
-            const isComplete = si < sections.length - 1; // complete if another section follows
+            const isComplete = si < sections.length - 1;
             if (!isComplete || emittedSections.has(section.header)) continue;
             if (section.body.length < 50) continue;
 
@@ -154,7 +155,6 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             const phase = PHASES[phaseIdx];
             if (!phaseFindings[phase.id]) phaseFindings[phase.id] = [];
 
-            // Extract sub-findings from ### headers or paragraphs
             const subSections = section.body.split(/(?=^### )/m).filter(s => s.trim());
             if (subSections.length > 1) {
               for (const sub of subSections.slice(0, 6)) {
@@ -179,7 +179,6 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
               });
             }
 
-            // Emit findings for this phase
             send({
               type: "phase",
               phase: {
@@ -191,7 +190,6 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
               },
             });
 
-            // If we've moved past this phase, mark it complete
             if (phaseIdx < currentPhaseIdx && !completedPhases.has(phaseIdx)) {
               completedPhases.add(phaseIdx);
               send({
@@ -207,24 +205,16 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             }
           }
 
-          // Detect phase transitions from headers
           const headerPhases = sections.map(s => detectPhase(s.header));
           const latestPhase = Math.max(...headerPhases, 0);
           if (latestPhase > currentPhaseIdx) {
-            // Complete previous phases
             for (let i = currentPhaseIdx; i < latestPhase; i++) {
               if (!completedPhases.has(i)) {
                 completedPhases.add(i);
                 const p = PHASES[i];
                 send({
                   type: "phase",
-                  phase: {
-                    id: p.id,
-                    label: p.label,
-                    status: "complete",
-                    progress: 100,
-                    findings: phaseFindings[p.id] || [],
-                  },
+                  phase: { id: p.id, label: p.label, status: "complete", progress: 100, findings: phaseFindings[p.id] || [] },
                 });
               }
             }
@@ -232,18 +222,11 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             const activeP = PHASES[currentPhaseIdx];
             send({
               type: "phase",
-              phase: {
-                id: activeP.id,
-                label: activeP.label,
-                status: "active",
-                sublabel: "Analyzing",
-                progress: 10,
-              },
+              phase: { id: activeP.id, label: activeP.label, status: "active", sublabel: "Analyzing", progress: 10 },
             });
           }
         }
 
-        // Handle streaming response
         const reader = resp.body?.getReader();
         if (!reader) throw new Error("No response body");
 
@@ -269,91 +252,79 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             try {
               const parsed = JSON.parse(jsonStr);
 
-              // Extract citations if present (only send once)
-              if (parsed.citations && citations.length === 0) {
+              // Extract citations only once
+              if (parsed.citations && !citationsSent) {
                 citations = parsed.citations;
+                citationsSent = true;
                 send({ type: "citations", citations, searchResults: [] });
               }
 
-              // Extract delta text
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
                 fullText += delta.replace(/<\/?think>/g, "");
 
-                // Throttled streaming text update
                 const now = Date.now();
                 if (now - lastStreamUpdate > STREAM_INTERVAL) {
                   lastStreamUpdate = now;
                   const activePhase = PHASES[currentPhaseIdx];
                   const tail = fullText.slice(-300).replace(/<\/?think>/g, "").trim();
-                  if (!tail) { continue; }
-                  send({
-                    phase: {
-                      id: activePhase.id,
-                      label: activePhase.label,
-                      status: "active",
-                      sublabel: "Streaming research",
-                      streamingText: tail,
-                      progress: Math.min(80, 10 + (fullText.length / 50)),
-                    },
-                  });
-
-                  // Check for new completed sections
+                  if (tail) {
+                    send({
+                      phase: {
+                        id: activePhase.id,
+                        label: activePhase.label,
+                        status: "active",
+                        sublabel: "Streaming research",
+                        streamingText: tail,
+                        progress: Math.min(80, 10 + (fullText.length / 50)),
+                      },
+                    });
+                  }
                   parseAndEmitFindings();
                 }
               }
             } catch {
-              // Incomplete JSON chunk, skip
+              // Incomplete JSON chunk
             }
           }
         }
 
-        // Final parse of all remaining sections
+        // Final parse
         parseAndEmitFindings();
 
-        // Send citations
-        if (citations.length > 0) {
+        if (citations.length > 0 && !citationsSent) {
           send({ type: "citations", citations, searchResults: [] });
         }
 
-        // Mark all remaining phases complete with their findings
+        // Mark all remaining phases complete
         for (let i = 0; i < PHASES.length; i++) {
           if (!completedPhases.has(i)) {
             completedPhases.add(i);
             send({
               type: "phase",
-              phase: {
-                id: PHASES[i].id,
-                label: PHASES[i].label,
-                status: "complete",
-                progress: 100,
-                findings: phaseFindings[PHASES[i].id] || [],
-              },
+              phase: { id: PHASES[i].id, label: PHASES[i].label, status: "complete", progress: 100, findings: phaseFindings[PHASES[i].id] || [] },
             });
           }
         }
 
-        // Extract targets from ALL phases (not just phase 4)
+        // Extract targets
         const allPFindings = Object.values(phaseFindings).flat();
-        const extractedTargets: { name: string; domain?: string; description: string; rationale: string; account_type?: string; revenue_hint?: string; employee_hint?: string; hq_hint?: string }[] = [];
+        const extractedTargets: { name: string; domain?: string; description: string; rationale: string; revenue_hint?: string; employee_hint?: string; hq_hint?: string }[] = [];
         const SKIP_NAMES = new Set(["Key", "Note", "Summary", "Overview", "Analysis", "Market", "Company", "Business", "Revenue", "Strategic", "Competitive", "Conclusion", "Introduction", "Background"]);
-        
+
         for (const f of allPFindings) {
           const companyMatches = f.value.matchAll(/\*\*([A-Z][A-Za-z0-9\s&.'\-]+?)\*\*/g);
           for (const m of companyMatches) {
             const name = m[1].trim();
             if (name.length < 3 || name.length > 60 || SKIP_NAMES.has(name) || name.split(" ").length > 6) continue;
-            // Skip if name looks like a section header
             if (/^(The |A |An |This |These |Those |How |What |Why |Where |When )/i.test(name)) continue;
-            
+
             const domainMatch = f.value.match(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "[\\s(]*([a-z0-9-]+\\.[a-z]{2,})[\\s)]*", "i"));
-            
-            // Try to extract revenue hints
             const afterName = f.value.slice(f.value.indexOf(name));
             const revMatch = afterName.match(/\$[\d.,]+\s*[BMK](?:illion)?|\brevenue[:\s]+\$[\d.,]+\s*[BMK]/i);
             const empMatch = afterName.match(/(\d[\d,]+)\s*employees/i);
             const hqMatch = afterName.match(/(?:headquartered|based|HQ)\s+(?:in\s+)?([A-Z][a-zA-Z\s,]+?)(?:\.|,|\s-)/i);
-            
+
             extractedTargets.push({
               name,
               domain: domainMatch?.[1] || undefined,
@@ -375,6 +346,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
         send({ type: "error", error: String(err) });
       }
 
+      clearInterval(heartbeat);
       controller.enqueue(encoder.encode("data: [DONE]\n\n"));
       controller.close();
     },
@@ -386,6 +358,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       "Connection": "keep-alive",
+      "X-Accel-Buffering": "no",
     },
   });
 });
