@@ -146,7 +146,7 @@ export default function LeadGen() {
 
   // Workspace key derived from domain
   const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
-  const { workspaces, upsertWorkspace, touchWorkspace } = useWorkspaces(user?.id);
+  const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
 
   // Leads CRUD
   const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV } = useLeadsCRUD(user?.id, workspaceKey);
@@ -207,6 +207,24 @@ export default function LeadGen() {
     setDomain("");
     research.forceReset();
     setActiveSection("research");
+  }, [research]);
+
+  // Delete workspace
+  const handleDeleteWorkspace = useCallback(async (key: string) => {
+    await deleteWorkspace(key);
+    if (workspaceKey === key) {
+      setDomain("");
+      research.forceReset();
+      setActiveSection("research");
+    }
+  }, [deleteWorkspace, workspaceKey, research]);
+
+  // Re-run research for a workspace
+  const handleRerunWorkspace = useCallback((key: string) => {
+    setDomain(key);
+    research.forceReset();
+    setActiveSection("research");
+    setTimeout(() => research.start(key), 100);
   }, [research]);
 
   // Find leads for a persona via Apollo
@@ -329,6 +347,8 @@ export default function LeadGen() {
               activeWorkspaceKey={workspaceKey !== "default" ? workspaceKey : undefined}
               onSelectWorkspace={handleSelectWorkspace}
               onNewResearch={handleNewResearch}
+              onDeleteWorkspace={handleDeleteWorkspace}
+              onRerunWorkspace={handleRerunWorkspace}
             />
 
             <div className="flex-1 flex min-w-0">
