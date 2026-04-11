@@ -268,7 +268,7 @@ export default function TenantAccountMap() {
         ? "This is a priority target account — find the right entry points for initial outreach."
         : "This is a whitespace opportunity — find contacts to open a net-new relationship.";
 
-      const FLASH_CONTEXT = `You are prospecting on behalf of Flash, a cloud-based parking technology platform (PARCS, EV charging, mobile payments, analytics) powering 16,000+ locations. ${stageNote} ${vendorNote}`;
+      const TENANT_CONTEXT = `${tenant.contextPrompt} ${stageNote} ${vendorNote}`;
 
       let content: string;
       if (mode === "ma") {
