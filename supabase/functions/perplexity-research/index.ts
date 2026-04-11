@@ -178,6 +178,28 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           }
         }
 
+        // Extract structured targets from Phase 4 findings
+        const extractedTargets: { name: string; domain?: string; description: string; rationale: string }[] = [];
+        const phase4Findings = phaseFindings["PHASE_04"] || [];
+        for (const f of phase4Findings) {
+          // Try to extract company names from the text using patterns like "**CompanyName**" or "CompanyName (domain.com)"
+          const companyMatches = f.value.matchAll(/\*\*([A-Z][A-Za-z0-9\s&.'-]+?)\*\*/g);
+          for (const m of companyMatches) {
+            const name = m[1].trim();
+            if (name.length > 2 && name.length < 60 && !["Key", "Note", "Summary", "Overview", "Analysis"].includes(name)) {
+              const domainMatch = f.value.match(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*\\(?([a-z0-9-]+\\.[a-z]{2,})\\)?", "i"));
+              extractedTargets.push({
+                name,
+                domain: domainMatch?.[1] || undefined,
+                description: f.value.slice(0, 200),
+                rationale: f.label,
+              });
+            }
+          }
+        }
+        // Deduplicate by name
+        const uniqueTargets = extractedTargets.filter((t, i, arr) => arr.findIndex(x => x.name === t.name) === i).slice(0, 8);
+
         // Stream phases with delays for visual effect
         for (let i = 0; i < PHASES.length; i++) {
           const phase = PHASES[i];
@@ -223,6 +245,11 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
               findings,
             },
           });
+        }
+
+        // Send extracted targets as a separate event
+        if (uniqueTargets.length > 0) {
+          send({ type: "targets", targets: uniqueTargets });
         }
       } catch (err) {
         console.error("Research pipeline error:", err);
