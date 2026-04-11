@@ -1024,6 +1024,7 @@ export type Database = {
           linkedin: string | null
           name: string
           niche_tag: string | null
+          persona_tag: string | null
           phone: string | null
           photo_url: string | null
           rating: number | null
@@ -1050,6 +1051,7 @@ export type Database = {
           linkedin?: string | null
           name: string
           niche_tag?: string | null
+          persona_tag?: string | null
           phone?: string | null
           photo_url?: string | null
           rating?: number | null
@@ -1076,6 +1078,7 @@ export type Database = {
           linkedin?: string | null
           name?: string
           niche_tag?: string | null
+          persona_tag?: string | null
           phone?: string | null
           photo_url?: string | null
           rating?: number | null
@@ -2296,6 +2299,17 @@ export type Database = {
           demand_count: number
           high_priority_count: number
           skill_name: string
+        }[]
+      }
+      get_persona_performance: {
+        Args: { _workspace_key: string }
+        Returns: {
+          contacted: number
+          lost: number
+          persona_tag: string
+          replied: number
+          total_leads: number
+          won: number
         }[]
       }
       get_public_profile: { Args: { _username: string }; Returns: Json }
