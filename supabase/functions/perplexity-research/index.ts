@@ -81,7 +81,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "sonar-deep-research",
+            model: "sonar-pro",
             stream: true,
             messages: [
               { role: "system", content: "You are a strategic market research analyst. Provide structured, data-rich analysis with specific company names, revenue estimates, and actionable intelligence." },
@@ -278,16 +278,16 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
               // Extract delta text
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
-                fullText += delta;
+                fullText += delta.replace(/<\/?think>/g, "");
 
                 // Throttled streaming text update
                 const now = Date.now();
                 if (now - lastStreamUpdate > STREAM_INTERVAL) {
                   lastStreamUpdate = now;
                   const activePhase = PHASES[currentPhaseIdx];
-                  const tail = fullText.slice(-300);
+                  const tail = fullText.slice(-300).replace(/<\/?think>/g, "").trim();
+                  if (!tail) { continue; }
                   send({
-                    type: "phase",
                     phase: {
                       id: activePhase.id,
                       label: activePhase.label,

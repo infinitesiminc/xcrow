@@ -1,0 +1,1 @@
+DELETE FROM flash_accounts WHERE tenant_slug = 'cliq' AND id LIKE 'target-%';
