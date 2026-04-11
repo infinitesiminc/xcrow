@@ -574,12 +574,27 @@ export default function TenantAccountMap() {
     setSelectedAccountId(null);
   }, []);
 
-  const handleSeedTarget = useCallback(async (target: ResearchTarget) => {
+  const handleSeedTarget = useCallback(async (target: ResearchTarget, findContactsFn: (account: FlashAccount) => void) => {
     if (seedingTarget || seededTargets.has(target.name)) return;
     setSeedingTarget(target.name);
     try {
       const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
       const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
+      const newAccount: FlashAccount = {
+        id: accountId,
+        name: target.name,
+        accountType: "garage_operator" as AccountType,
+        stage: "whitespace" as AccountStage,
+        estimatedSpaces: "N/A",
+        facilityCount: "N/A",
+        focusArea: target.rationale,
+        hqCity: "",
+        hqLat: 0,
+        hqLng: 0,
+        website: `https://${domain}`,
+        differentiator: "",
+      };
+
       await (supabase.from("flash_accounts") as any).upsert({
         id: accountId,
         name: target.name,
@@ -591,10 +606,13 @@ export default function TenantAccountMap() {
         focus_area: target.rationale,
         hq_city: "",
       }, { onConflict: "id" });
+
       setSeededTargets(prev => new Set(prev).add(target.name));
       refetch();
-      // Auto-select the new account
       setSelectedAccountId(accountId);
+
+      // Auto-trigger Apollo contact discovery
+      setTimeout(() => findContactsFn(newAccount), 500);
     } catch (e) {
       console.error("Seed target failed:", e);
     } finally {
@@ -808,7 +826,7 @@ export default function TenantAccountMap() {
                             variant={seededTargets.has(t.name) ? "secondary" : "default"}
                             className="shrink-0 gap-1.5 text-xs"
                             disabled={seedingTarget === t.name || seededTargets.has(t.name)}
-                            onClick={() => handleSeedTarget(t)}
+                            onClick={() => handleSeedTarget(t, handleFindContacts)}
                           >
                             {seedingTarget === t.name ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
