@@ -657,10 +657,10 @@ export default function TenantAccountMap() {
             </div>
           )}
 
-          {/* RUNNING: Compact progress */}
+          {/* RUNNING: Full research stream for transparency */}
           {isRunning && (
-            <div className="flex-1 flex items-center justify-center">
-              <ResearchProgressCompact
+            <div className="flex-1 overflow-y-auto">
+              <ICPResearchStream
                 targetDomain={researchDomain || `${tenant.slug}.com`}
                 phases={demoPhases}
                 elapsedSeconds={demoElapsed}
