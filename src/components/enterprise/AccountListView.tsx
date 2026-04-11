@@ -6,6 +6,38 @@ import { Search, X, ArrowUpDown, ExternalLink } from "lucide-react";
 import type { FlashAccount } from "@/types/accounts";
 import { STAGE_CONFIG, type AccountStage } from "@/types/accounts";
 
+function parseRevenue(rev: string | undefined): number {
+  if (!rev) return 0;
+  const m = rev.replace(/[^0-9.BMK]/gi, "");
+  const num = parseFloat(m);
+  if (isNaN(num)) return 0;
+  if (/B/i.test(rev)) return num * 1_000_000_000;
+  if (/M/i.test(rev)) return num * 1_000_000;
+  if (/K/i.test(rev)) return num * 1_000;
+  return num;
+}
+
+export function scoreTarget(a: { currentVendor?: string; annualRevenue?: string; founded?: number; stage: string } & Record<string, any>): number {
+  let score = 0;
+  const ot = a.ownership_type ?? a.ownershipType;
+  const cm = a.contract_model ?? a.contractModel;
+  if (ot === "family") score += 30;
+  else if (ot === "public") score += 5;
+  else if (ot === "pe-backed") score += 15;
+  const vendor = a.currentVendor ?? a.current_vendor;
+  if (!vendor || vendor === "Unknown" || vendor === "None") score += 20;
+  else if (vendor && vendor !== "Flash") score += 10;
+  const rev = parseRevenue(a.annualRevenue ?? a.annual_revenue);
+  if (rev >= 20_000_000 && rev <= 500_000_000) score += 20;
+  else if (rev > 0 && rev < 20_000_000) score += 10;
+  if (cm === "managed") score += 15;
+  else if (cm === "mixed") score += 10;
+  if (a.founded && a.founded < 2000) score += 10;
+  else if (a.founded && a.founded < 2010) score += 5;
+  if (a.stage === "whitespace") score += 5;
+  return Math.min(score, 100);
+}
+
 /* ── Scoring ── */
 export function accountScore(a: FlashAccount & Record<string, any>): number {
   let score = (a.priorityScore ?? a.priority_score ?? 0) as number;
