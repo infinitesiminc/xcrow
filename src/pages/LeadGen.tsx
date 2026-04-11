@@ -256,7 +256,7 @@ export default function LeadGen() {
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
 
-      const domains = research.report?.prospectDomains?.slice(0, 10) || [];
+      // Don't over-constrain with domains — titles + seniority is enough for discovery
       const resp = await fetch(`${supabaseUrl}/functions/v1/search-apollo`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
@@ -264,9 +264,8 @@ export default function LeadGen() {
           search_mode: "people",
           person_titles: persona.titles.slice(0, 5),
           person_seniorities: ["director", "vp", "c_suite", "owner"],
-          q_organization_domains: domains.length > 0 ? domains : undefined,
           organization_locations: ["United States"],
-          per_page: 5,
+          per_page: 10,
         }),
       });
 
