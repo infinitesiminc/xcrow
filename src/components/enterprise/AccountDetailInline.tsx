@@ -2,21 +2,22 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   ArrowLeft, ExternalLink, Users, Mail, Linkedin, Loader2,
   DollarSign, Calendar, UserCheck, Swords, Warehouse, Clock, FileText,
-  ChevronDown, MapPin, TrendingUp,
+  ChevronDown, MapPin, TrendingUp, Target, Briefcase,
 } from "lucide-react";
 import { useFlashAccountData, type AccountContact } from "./useFlashAccountData";
-import { scoreTarget } from "./AccountListView";
+import { scoreTarget, accountScore } from "./AccountListView";
 import type { FlashAccount, AccountStage } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
 
 interface AccountDetailInlineProps {
   account: FlashAccount;
   onBack: () => void;
-  onFindContacts: (account: FlashAccount) => void;
+  onFindContacts: (account: FlashAccount, mode: "solution" | "ma") => void;
   loadingLeads: boolean;
   activityLog: string[];
   streamedLeads: { name: string; title?: string; email?: string; linkedin?: string; score?: number; reason?: string }[];
@@ -95,6 +96,11 @@ export default function AccountDetailInline({
           <span className="text-[10px] text-muted-foreground">{account.estimatedSpaces} spaces · {account.facilityCount}</span>
         </div>
 
+        {/* Account Score Overview */}
+        {account.id !== "acct-flash-hq" && (
+          <AccountScoreOverview account={account} />
+        )}
+
         {/* Key metrics */}
         {(account.annualRevenue || account.employeeCount || account.founded) && (
           <div className="grid grid-cols-3 gap-1.5">
@@ -153,17 +159,20 @@ export default function AccountDetailInline({
 
         {/* Contacts section */}
         <div className="border-t border-border pt-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5" /> Contacts
-              {displayContacts.length > 0 && <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5">{displayContacts.length}</Badge>}
-            </h4>
-            {!displayContacts.length && !loadingLeads && (
-              <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => onFindContacts(account)}>
-                <Users className="w-3 h-3 mr-1" /> Find Decision-Makers
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5" /> Contacts
+            {displayContacts.length > 0 && <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5">{displayContacts.length}</Badge>}
+          </h4>
+          {!displayContacts.length && !loadingLeads && (
+            <div className="flex gap-1.5">
+              <Button size="sm" variant="outline" className="h-7 text-[10px] flex-1" onClick={() => onFindContacts(account, "solution")}>
+                <Target className="w-3 h-3 mr-1" /> Solution Buyers
               </Button>
-            )}
-          </div>
+              <Button size="sm" variant="outline" className="h-7 text-[10px] flex-1" onClick={() => onFindContacts(account, "ma")}>
+                <Briefcase className="w-3 h-3 mr-1" /> M&A Contacts
+              </Button>
+            </div>
+          )}
 
           {loadingLeads && (
             <div className="space-y-1.5 py-1">
@@ -333,5 +342,53 @@ function MAStrategySection({ account }: { account: FlashAccount }) {
         </p>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+function AccountScoreOverview({ account }: { account: FlashAccount }) {
+  const score = accountScore(account as any);
+  const factors: { label: string; points: number }[] = [];
+
+  const base = (account as any).priorityScore ?? (account as any).priority_score ?? 0;
+  if (base > 0) factors.push({ label: "Base priority", points: Math.min(base, 100) });
+  if (account.stage === "active") factors.push({ label: "Active customer", points: 20 });
+  else if (account.stage === "target") factors.push({ label: "Target account", points: 15 });
+  else if (account.stage === "competitor") factors.push({ label: "Competitor intel", points: 10 });
+  if (account.annualRevenue) factors.push({ label: "Revenue data", points: 10 });
+  if (account.employeeCount) factors.push({ label: "Employee data", points: 5 });
+  if (account.currentVendor && account.currentVendor !== "Unknown") factors.push({ label: "Vendor intel", points: 5 });
+  if (account.founded) factors.push({ label: "Founded year", points: 5 });
+
+  const color = score >= 60 ? "text-emerald-600" : score >= 35 ? "text-amber-600" : "text-muted-foreground";
+
+  return (
+    <div className="rounded-lg border border-border bg-muted/20 p-2.5 space-y-2">
+      <div className="flex items-center gap-3">
+        <div className="relative w-10 h-10 shrink-0">
+          <svg viewBox="0 0 36 36" className="w-10 h-10 -rotate-90">
+            <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
+            <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3"
+              strokeDasharray={`${score * 0.9742} 97.42`}
+              strokeLinecap="round"
+              className={score >= 60 ? "stroke-emerald-500" : score >= 35 ? "stroke-amber-500" : "stroke-muted-foreground"}
+            />
+          </svg>
+          <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-bold ${color}`}>{score}</span>
+        </div>
+        <div>
+          <p className="text-[11px] font-semibold">Account Score</p>
+          <p className="text-[9px] text-muted-foreground">
+            {score >= 60 ? "High-priority lead generation target" : score >= 35 ? "Moderate opportunity — worth exploring" : "Low data signals — enrich before pursuing"}
+          </p>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {factors.map(f => (
+          <span key={f.label} className="inline-flex items-center gap-0.5 text-[9px] bg-muted rounded px-1.5 py-0.5 text-muted-foreground">
+            {f.label} <span className="font-semibold text-foreground">+{f.points}</span>
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

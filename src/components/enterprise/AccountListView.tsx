@@ -40,7 +40,7 @@ export function scoreTarget(a: { currentVendor?: string; annualRevenue?: string;
 }
 
 /** Overall account score combining stage + data completeness */
-function accountScore(a: FlashAccount & Record<string, any>): number {
+export function accountScore(a: FlashAccount & Record<string, any>): number {
   let score = (a.priorityScore ?? a.priority_score ?? 0) as number;
   if (a.annualRevenue) score += 10;
   if (a.employeeCount) score += 5;
