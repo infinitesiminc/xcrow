@@ -413,6 +413,14 @@ Keep responses focused and actionable. Use markdown formatting.`;
     </div>
   );
 }
+/* ── Types for extracted targets ── */
+interface ResearchTarget {
+  name: string;
+  domain?: string;
+  description: string;
+  rationale: string;
+}
+
 /* ── Live Perplexity research stream hook ── */
 function useLiveResearchStream() {
   const INITIAL: ResearchPhase[] = [
@@ -426,17 +434,18 @@ function useLiveResearchStream() {
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
   const [citations, setCitations] = useState<string[]>([]);
+  const [targets, setTargets] = useState<ResearchTarget[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
   const start = useCallback(async (domain: string, companyContext?: string) => {
-    // Reset
     abortRef.current?.abort();
     if (timerRef.current) clearInterval(timerRef.current);
     setPhases(INITIAL);
     setElapsed(0);
     setCitations([]);
+    setTargets([]);
     setRunning(true);
     startRef.current = Date.now();
     timerRef.current = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
@@ -495,6 +504,10 @@ function useLiveResearchStream() {
               setCitations(parsed.citations || []);
             }
 
+            if (parsed.type === "targets" && parsed.targets) {
+              setTargets(parsed.targets);
+            }
+
             if (parsed.type === "error") {
               console.error("Research error:", parsed.error);
             }
@@ -519,7 +532,7 @@ function useLiveResearchStream() {
     };
   }, []);
 
-  return { phases, elapsed, running, citations, start };
+  return { phases, elapsed, running, citations, targets, start };
 }
 
 /* ══════════════════════════════════════════════════════════
