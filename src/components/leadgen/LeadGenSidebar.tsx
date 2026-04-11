@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Search, Users, TableProperties, Mail, Settings, Globe, Plus, Building2 } from "lucide-react";
+import { Search, Users, TableProperties, Mail, Settings, Globe, Plus, Building2, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,6 +32,8 @@ interface LeadGenSidebarProps {
   activeWorkspaceKey?: string;
   onSelectWorkspace?: (key: string) => void;
   onNewResearch?: () => void;
+  onDeleteWorkspace?: (key: string) => void;
+  onRerunWorkspace?: (key: string) => void;
 }
 
 const NAV_ITEMS: { id: SidebarSection; label: string; icon: typeof Search; }[] = [
@@ -53,6 +55,8 @@ export function LeadGenSidebar({
   activeWorkspaceKey,
   onSelectWorkspace,
   onNewResearch,
+  onDeleteWorkspace,
+  onRerunWorkspace,
 }: LeadGenSidebarProps) {
   const navigate = useNavigate();
 
@@ -136,18 +140,37 @@ export function LeadGenSidebar({
               <SidebarMenu>
                 {workspaces.map((ws) => (
                   <SidebarMenuItem key={ws.website_key}>
-                    <SidebarMenuButton
-                      isActive={activeWorkspaceKey === ws.website_key}
-                      onClick={() => onSelectWorkspace?.(ws.website_key)}
-                      tooltip={ws.display_name || ws.website_key}
-                    >
-                      {ws.logo_url ? (
-                        <img src={ws.logo_url} alt="" className="w-4 h-4 rounded object-contain" />
-                      ) : (
-                        <Building2 className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className="truncate text-xs">{ws.display_name || ws.website_key}</span>
-                    </SidebarMenuButton>
+                    <div className="flex items-center group/ws">
+                      <SidebarMenuButton
+                        isActive={activeWorkspaceKey === ws.website_key}
+                        onClick={() => onSelectWorkspace?.(ws.website_key)}
+                        tooltip={ws.display_name || ws.website_key}
+                        className="flex-1"
+                      >
+                        {ws.logo_url ? (
+                          <img src={ws.logo_url} alt="" className="w-4 h-4 rounded object-contain" />
+                        ) : (
+                          <Building2 className="w-4 h-4 text-muted-foreground" />
+                        )}
+                        <span className="truncate text-xs">{ws.display_name || ws.website_key}</span>
+                      </SidebarMenuButton>
+                      <div className="hidden group-hover/ws:flex items-center gap-0.5 pr-1 group-data-[collapsible=icon]:hidden">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onRerunWorkspace?.(ws.website_key); }}
+                          className="p-1 rounded hover:bg-sidebar-accent text-muted-foreground hover:text-foreground"
+                          title="Re-run research"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onDeleteWorkspace?.(ws.website_key); }}
+                          className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                          title="Delete workspace"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
                   </SidebarMenuItem>
                 ))}
                 {workspaces.length === 0 && (
