@@ -285,8 +285,8 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
                 if (now - lastStreamUpdate > STREAM_INTERVAL) {
                   lastStreamUpdate = now;
                   const activePhase = PHASES[currentPhaseIdx];
-                  const tail = fullText.slice(-300);
-                  send({
+                  const tail = fullText.slice(-300).replace(/<\/?think>/g, "").trim();
+                  if (!tail) continue;
                     type: "phase",
                     phase: {
                       id: activePhase.id,
