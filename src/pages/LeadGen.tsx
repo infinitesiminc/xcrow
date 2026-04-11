@@ -439,7 +439,7 @@ function useLiveResearchStream() {
       setRunning(false);
       runningRef.current = false;
     }
-  }, [updatePhasesFromJob]);
+  }, [updatePhasesFromElapsed]);
 
   // Parse targets from report text when complete
   useEffect(() => {
