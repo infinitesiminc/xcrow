@@ -650,101 +650,128 @@ export default function LeadGen() {
       </Helmet>
       <Navbar />
       <div className="flex h-[calc(100vh-56px)] w-full pt-14">
-        {/* Left panel — state machine */}
-        <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-y-auto bg-background">
-          <div className="max-w-4xl mx-auto w-full px-8 py-8 flex-1 flex flex-col">
-            {/* INITIAL: URL input */}
-            {isInitial && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-6">
-                <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Zap className="w-7 h-7 text-primary" />
+        {/* Main panel — unified dashboard */}
+        <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-hidden bg-background">
+          <div className="max-w-4xl mx-auto w-full px-8 flex-1 flex flex-col overflow-hidden">
+            
+            {/* Persistent header with URL input */}
+            <header className="flex items-end justify-between border-b border-border/30 pb-5 pt-6 shrink-0">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="size-2 rounded-full bg-primary animate-pulse shadow-[0_0_12px_hsl(var(--primary))]" />
+                  <span className="text-xs font-mono text-primary uppercase tracking-[0.2em]">
+                    {isRunning ? "Research Pipeline Active" : isComplete ? "Pipeline Ready" : "ICP Research Pipeline"}
+                  </span>
                 </div>
-                <div className="text-center space-y-2">
-                  <h1 className="text-xl font-medium text-foreground">ICP Research Pipeline</h1>
-                  <p className="text-sm text-muted-foreground max-w-md">
-                    Enter a company website to run deep AI research — market position, buyer personas, competitors, and pipeline targets.
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={researchDomain}
+                      onChange={e => setResearchDomain(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) { setAutoSeeded(false); startResearch(researchDomain.trim()); } }}
+                      placeholder="e.g. stripe.com"
+                      className="h-10 rounded-lg border border-border/50 bg-muted/20 px-4 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(270,80%,60%,0.4)] w-64 shadow-[inset_0_0_20px_hsl(var(--primary)/0.05)]"
+                    />
+                    <Button
+                      onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim()); }}
+                      size="sm" className="gap-2 h-10 px-5"
+                      disabled={demoRunning || !researchDomain.trim()}
+                    >
+                      <Zap className="w-4 h-4" /> Research
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2 w-full max-w-md">
-                  <input
-                    type="text"
-                    value={researchDomain}
-                    onChange={e => setResearchDomain(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) { setAutoSeeded(false); startResearch(researchDomain.trim()); } }}
-                    placeholder="e.g. stripe.com"
-                    className="flex-1 h-11 rounded-md border border-input bg-background px-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                  <Button
-                    onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim()); }}
-                    size="lg" className="gap-2" disabled={demoRunning || !researchDomain.trim()}
-                  >
-                    <Zap className="w-4 h-4" /> Research
+              </div>
+              {(isRunning || isComplete) && (
+                <div className="flex flex-col items-end gap-1">
+                  <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
+                    {isComplete ? "Completed" : "Runtime"}
+                  </span>
+                  <span className="font-mono text-lg text-primary tabular-nums">
+                    {formatResearchTime(demoElapsed)}
+                  </span>
+                </div>
+              )}
+            </header>
+
+            {/* Content area — scrollable */}
+            <div className="flex-1 overflow-y-auto py-6">
+              {/* INITIAL empty state */}
+              {isInitial && (
+                <div className="flex-1 flex flex-col items-center justify-center gap-6 pt-20">
+                  <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.1)]">
+                    <Zap className="w-7 h-7 text-primary" />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <p className="text-sm text-muted-foreground max-w-md font-mono">
+                      Enter a company website above to run deep AI research — market position, buyer personas, competitors, and pipeline targets.
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground/60 font-mono">Powered by Perplexity Deep Research — takes ~90-120 seconds</p>
+                </div>
+              )}
+
+              {/* RUNNING: Research stream */}
+              {isRunning && (
+                <ICPResearchStream targetDomain={researchDomain} phases={demoPhases} elapsedSeconds={demoElapsed} />
+              )}
+
+              {/* ERROR */}
+              {hasError && !isRunning && (
+                <div className="flex-1 flex flex-col items-center justify-center gap-6 pt-20">
+                  <div className="size-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                    <Zap className="w-7 h-7 text-destructive" />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h2 className="text-xl font-medium text-foreground">Research Failed</h2>
+                    <p className="text-sm text-muted-foreground max-w-md">{researchError}</p>
+                  </div>
+                  <Button onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim()); }} size="lg" className="gap-2">
+                    <Zap className="w-4 h-4" /> Retry
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Powered by Perplexity Deep Research — takes ~90-120 seconds</p>
-              </div>
-            )}
+              )}
 
-            {/* RUNNING: Full research stream */}
-            {isRunning && (
-              <div className="flex-1 overflow-y-auto">
-                <ICPResearchStream targetDomain={researchDomain} phases={demoPhases} elapsedSeconds={demoElapsed} />
-              </div>
-            )}
-
-            {/* ERROR */}
-            {hasError && !isRunning && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-6">
-                <div className="size-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
-                  <Zap className="w-7 h-7 text-destructive" />
-                </div>
-                <div className="text-center space-y-2">
-                  <h2 className="text-xl font-medium text-foreground">Research Failed</h2>
-                  <p className="text-sm text-muted-foreground max-w-md">{researchError}</p>
-                </div>
-                <Button onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim()); }} size="lg" className="gap-2">
-                  <Zap className="w-4 h-4" /> Retry
-                </Button>
-              </div>
-            )}
-
-            {/* COMPLETE: Account list */}
-            {isComplete && (
-              <div className="flex flex-col h-full">
-                <div className="px-4 pt-4 pb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">P</div>
+              {/* COMPLETE: Pipeline accounts */}
+              {isComplete && (
+                <div className="flex flex-col h-full">
+                  {/* Pipeline header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-lg bg-primary/15 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary shadow-[0_0_15px_hsl(var(--primary)/0.1)]">
+                      P
+                    </div>
                     <div>
-                      <h2 className="text-lg font-bold leading-tight">Pipeline</h2>
-                      <p className="text-xs text-muted-foreground">
+                      <h2 className="text-lg font-semibold leading-tight tracking-tight">Pipeline</h2>
+                      <p className="text-xs text-muted-foreground font-mono">
                         {accountsLoading ? "Loading..." : `${allAccounts.length} accounts`}
                       </p>
                     </div>
                   </div>
-                </div>
 
-                {selectedAccount ? (
-                  <AccountDetailInline
-                    account={selectedAccount}
-                    onBack={handleBack}
-                    onFindContacts={handleFindContacts}
-                    loadingLeads={loadingLeads.has(selectedAccount.id)}
-                    activityLog={activityLog[selectedAccount.id] || []}
-                    streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
-                    onStageChange={() => {}}
-                  />
-                ) : allAccounts.length > 0 ? (
-                  <AccountListView accounts={allAccounts} selectedAccountId={selectedAccountId} onSelectAccount={handleSelectAccount} />
-                ) : (
-                  <div className="flex-1 flex items-center justify-center px-6">
-                    <div className="text-center space-y-3">
-                      <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
-                      <p className="text-sm text-muted-foreground">No accounts yet. Use the chat to build your pipeline.</p>
+                  {selectedAccount ? (
+                    <AccountDetailInline
+                      account={selectedAccount}
+                      onBack={handleBack}
+                      onFindContacts={handleFindContacts}
+                      loadingLeads={loadingLeads.has(selectedAccount.id)}
+                      activityLog={activityLog[selectedAccount.id] || []}
+                      streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
+                      onStageChange={() => {}}
+                    />
+                  ) : allAccounts.length > 0 ? (
+                    <AccountListView accounts={allAccounts} selectedAccountId={selectedAccountId} onSelectAccount={handleSelectAccount} />
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center px-6">
+                      <div className="text-center space-y-3">
+                        <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
+                        <p className="text-sm text-muted-foreground font-mono">No accounts yet. Use the chat to build your pipeline.</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
