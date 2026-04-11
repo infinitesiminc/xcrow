@@ -464,6 +464,12 @@ function useLiveResearchStream() {
   return { phases, elapsed, running, error, citations, targets, start };
 }
 
+function formatResearchTime(s: number): string {
+  const mins = Math.floor(s / 60);
+  const secs = s % 60;
+  return `${String(mins).padStart(2, "0")}:${String(Math.floor(secs)).padStart(2, "0")}.${String(Math.floor((secs % 1) * 10))}s`;
+}
+
 /* ══════════════════════════════════════════════════════════
    Main LeadGen page
    ══════════════════════════════════════════════════════════ */
