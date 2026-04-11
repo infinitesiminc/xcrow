@@ -568,7 +568,12 @@ function useLiveResearchStream() {
         }
       }
     } catch (e: any) {
-      if (e.name !== "AbortError") console.error("Research stream error:", e);
+      if (e.name !== "AbortError") {
+        console.error("Research stream error:", e);
+        setError(e.message || "Research failed");
+        // Mark any incomplete phases as error
+        setPhases(prev => prev.map(ph => ph.status === "active" ? { ...ph, status: "pending" as const } : ph));
+      }
     } finally {
       if (timerRef.current) clearInterval(timerRef.current);
       setRunning(false);
