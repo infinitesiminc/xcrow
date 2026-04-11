@@ -88,14 +88,14 @@ function AccountIcon({ account, className }: { account: FlashAccount; className?
   return <Grid3X3 className={className} />;
 }
 
-function AccountPin({ account }: { account: FlashAccount }) {
+function AccountPin({ account, tenantLogo }: { account: FlashAccount; tenantLogo: string }) {
   const cfg = STAGE_CONFIG[account.stage];
-  const isFlashHQ = account.id === "acct-flash-hq";
-  if (isFlashHQ) {
+  const isHQ = account.id === "acct-flash-hq";
+  if (isHQ && tenantLogo) {
     return (
       <div className="relative cursor-pointer group">
         <div className="w-11 h-11 rounded-full border-[3px] border-primary shadow-lg transition-all group-hover:scale-125 flex items-center justify-center bg-white">
-          <img src={flashLogo} alt="Flash HQ" className="w-7 h-7 object-contain" />
+          <img src={tenantLogo} alt="HQ" className="w-7 h-7 object-contain" />
         </div>
       </div>
     );
