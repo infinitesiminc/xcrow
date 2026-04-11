@@ -209,6 +209,24 @@ export default function LeadGen() {
     setActiveSection("research");
   }, [research]);
 
+  // Delete workspace
+  const handleDeleteWorkspace = useCallback(async (key: string) => {
+    await deleteWorkspace(key);
+    if (workspaceKey === key) {
+      setDomain("");
+      research.forceReset();
+      setActiveSection("research");
+    }
+  }, [deleteWorkspace, workspaceKey, research]);
+
+  // Re-run research for a workspace
+  const handleRerunWorkspace = useCallback((key: string) => {
+    setDomain(key);
+    research.forceReset();
+    setActiveSection("research");
+    setTimeout(() => research.start(key), 100);
+  }, [research]);
+
   // Find leads for a persona via Apollo
   const handleFindLeads = useCallback(async (persona: ParsedPersona) => {
     if (!user || loadingPersona) return;
