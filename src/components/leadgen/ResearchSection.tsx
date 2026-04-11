@@ -134,54 +134,7 @@ export function useResearchStream() {
     })));
   }, []);
 
-  const start = useCallback(async (domain: string, companyContext?: string) => {
-    if (runningRef.current) return;
-    runningRef.current = true;
-    setPhases([...INITIAL]);
-    setElapsed(0);
-    setReport(null);
-    setError(null);
-    setRunning(true);
-    startRef.current = Date.now();
-    timerRef.current = setInterval(() => {
-      const el = (Date.now() - startRef.current) / 1000;
-      setElapsed(el);
-      updatePhasesFromElapsed(el, false);
-    }, 500);
-
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const { data: { session } } = await supabase.auth.getSession();
-      const resp = await fetch(`${supabaseUrl}/functions/v1/perplexity-research`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
-        body: JSON.stringify({ domain: domain.trim().toLowerCase(), companyContext }),
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const { job_id } = await resp.json();
-      if (!job_id) throw new Error("No job_id returned");
-      jobIdRef.current = job_id;
-
-      startPolling(job_id);
-    } catch (e: any) {
-      console.error("Research start error:", e);
-      setError(e.message || "Failed to start research");
-      if (timerRef.current) clearInterval(timerRef.current);
-      setRunning(false);
-      runningRef.current = false;
-      jobIdRef.current = null;
-    }
-  }, [updatePhasesFromElapsed, startPolling]);
-
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  /* Start polling for an existing job (resume after accidental click) */
+  /* Start polling for a job_id — shared by start() and resumeIfRunning() */
   const startPolling = useCallback((jobId: string) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
     pollingRef.current = setInterval(async () => {
