@@ -96,6 +96,11 @@ export default function AccountDetailInline({
           <span className="text-[10px] text-muted-foreground">{account.estimatedSpaces} spaces · {account.facilityCount}</span>
         </div>
 
+        {/* Account Score Overview */}
+        {account.id !== "acct-flash-hq" && (
+          <AccountScoreOverview account={account} />
+        )}
+
         {/* Key metrics */}
         {(account.annualRevenue || account.employeeCount || account.founded) && (
           <div className="grid grid-cols-3 gap-1.5">
