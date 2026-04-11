@@ -347,10 +347,14 @@ export default function TenantAccountMap() {
       {/* Header */}
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
-          <img src={flashLogo} alt="Flash" className="w-8 h-8 object-contain" />
+          {tenant.logo ? (
+            <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
+          )}
           <div>
-            <h2 className="text-lg font-bold leading-tight">Flash Accounts</h2>
-            <p className="text-xs text-muted-foreground">{allAccounts.length} operators · Pipeline & intelligence</p>
+            <h2 className="text-lg font-bold leading-tight">{tenant.name} Accounts</h2>
+            <p className="text-xs text-muted-foreground">{allAccounts.length} accounts · Pipeline & intelligence</p>
           </div>
         </div>
       </div>
@@ -426,7 +430,7 @@ export default function TenantAccountMap() {
         </div>
 
         <APIProvider apiKey={API_KEY}>
-          <Map mapId={MAP_ID} defaultCenter={{ lat: 39.0, lng: -98.0 }} defaultZoom={4.5}
+          <Map mapId={MAP_ID} defaultCenter={{ lat: tenant.mapCenter.lat, lng: tenant.mapCenter.lng }} defaultZoom={tenant.mapCenter.zoom}
             gestureHandling="greedy" disableDefaultUI={false} style={{ width: "100%", height: "100%" }}>
             <MapContent
               accounts={allAccounts}
@@ -437,6 +441,7 @@ export default function TenantAccountMap() {
               garages={displayedGarages}
               showGarages={showGarages}
               onSelectGarage={() => {}}
+              tenantLogo={tenant.logo}
             />
             <MapViewportSync hint={viewportHint} />
           </Map>
