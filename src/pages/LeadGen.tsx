@@ -184,28 +184,35 @@ export default function LeadGen() {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
         body: JSON.stringify({
+          search_mode: "people",
           person_titles: persona.titles.slice(0, 5),
           person_seniorities: ["director", "vp", "c_suite", "owner"],
-          q_organization_domains: domains.length > 0 ? domains.join("\n") : undefined,
+          q_organization_domains: domains.length > 0 ? domains : undefined,
+          organization_locations: ["United States"],
           per_page: 5,
         }),
       });
 
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        console.error("Apollo search error:", errData);
+        throw new Error(`HTTP ${resp.status}: ${errData.error || "Unknown"}`);
+      }
       const data = await resp.json();
       const people = data.people || [];
+      console.log(`Apollo returned ${people.length} people for persona "${persona.title}"`);
 
       if (people.length > 0) {
         const newLeads = people.map((p: any) => ({
-          name: p.name || `${p.first_name} ${p.last_name}`,
+          name: p.name,
           title: p.title,
-          company: p.organization?.name || p.organization_name,
+          company: p.company,
           email: p.email,
-          linkedin: p.linkedin_url,
-          phone: p.phone_number,
+          linkedin: p.linkedin,
+          phone: p.phone,
+          photo_url: p.photo_url,
           source: "apollo",
           persona_tag: persona.title,
-          score: p.score,
           reason: `Matched persona: ${persona.title}`,
         }));
         await upsertLeads(newLeads);
