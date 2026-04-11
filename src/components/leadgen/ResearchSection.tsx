@@ -210,33 +210,37 @@ export function useResearchStream() {
     };
   }, []);
 
-  /* Resume: check if there's an active job for a domain and resume polling */
+  /* Resume only the newest valid in-flight job for a domain */
   const resumeIfRunning = useCallback(async (userId: string, domainKey: string) => {
     try {
       const { data } = await (supabase.from("research_jobs") as any)
         .select("id, status, created_at")
         .eq("user_id", userId)
         .eq("domain", domainKey)
-        .in("status", ["pending", "processing"])
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
-      if (data?.id) {
-        jobIdRef.current = data.id;
-        runningRef.current = true;
-        setRunning(true);
-        setError(null);
-        setReport(null);
-        startRef.current = new Date(data.created_at).getTime();
-        timerRef.current = setInterval(() => {
-          const el = (Date.now() - startRef.current) / 1000;
-          setElapsed(el);
-          updatePhasesFromElapsed(el, false);
-        }, 500);
-        startPolling(data.id);
-        return true;
-      }
-    } catch { /* no active job */ }
+
+      if (!data?.id || !["pending", "processing"].includes(data.status)) return false;
+
+      const jobAgeMs = Date.now() - new Date(data.created_at).getTime();
+      const maxResumableAgeMs = 15 * 60 * 1000;
+      if (jobAgeMs > maxResumableAgeMs) return false;
+
+      jobIdRef.current = data.id;
+      runningRef.current = true;
+      setRunning(true);
+      setError(null);
+      setReport(null);
+      startRef.current = new Date(data.created_at).getTime();
+      timerRef.current = setInterval(() => {
+        const el = (Date.now() - startRef.current) / 1000;
+        setElapsed(el);
+        updatePhasesFromElapsed(el, false);
+      }, 500);
+      startPolling(data.id);
+      return true;
+    } catch { /* no resumable job */ }
     return false;
   }, [updatePhasesFromElapsed, startPolling]);
 

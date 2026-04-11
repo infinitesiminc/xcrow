@@ -160,19 +160,18 @@ export default function LeadGen() {
     return map;
   }, [leads]);
 
-  // On mount: check for any in-progress research job and resume
+  // On mount: resume only the latest still-valid in-flight job
   useEffect(() => {
     if (!user) return;
     (async () => {
-      // Find most recent active job for this user
       const { data } = await (supabase.from("research_jobs") as any)
-        .select("id, domain, created_at")
+        .select("domain, status")
         .eq("user_id", user.id)
-        .in("status", ["pending", "processing"])
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
-      if (data?.domain) {
+
+      if (data?.domain && ["pending", "processing"].includes(data.status)) {
         setDomain(data.domain);
         const resumed = await research.resumeIfRunning(user.id, data.domain);
         if (resumed) setActiveSection("research");
