@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown, Globe } from "lucide-react";
 import type { FlashAccount } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
+import { useTenant } from "@/contexts/TenantContext";
 
 /** Parse revenue string to numeric for sorting */
 export function parseRevenue(rev: string | undefined): number {
