@@ -574,7 +574,34 @@ export default function TenantAccountMap() {
     setSelectedAccountId(null);
   }, []);
 
-  const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
+  const handleSeedTarget = useCallback(async (target: ResearchTarget) => {
+    if (seedingTarget || seededTargets.has(target.name)) return;
+    setSeedingTarget(target.name);
+    try {
+      const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+      const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
+      await (supabase.from("flash_accounts") as any).upsert({
+        id: accountId,
+        name: target.name,
+        tenant_slug: tenant.slug,
+        account_type: "garage_operator",
+        stage: "whitespace",
+        website: `https://${domain}`,
+        notes: `${target.rationale}: ${target.description}`,
+        focus_area: target.rationale,
+        hq_city: "",
+      }, { onConflict: "id" });
+      setSeededTargets(prev => new Set(prev).add(target.name));
+      refetch();
+      // Auto-select the new account
+      setSelectedAccountId(accountId);
+    } catch (e) {
+      console.error("Seed target failed:", e);
+    } finally {
+      setSeedingTarget(null);
+    }
+  }, [seedingTarget, seededTargets, tenant.slug, refetch]);
+
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
     setLoadingLeads(prev => new Set(prev).add(account.id));
 
