@@ -146,7 +146,7 @@ export default function LeadGen() {
 
   // Workspace key derived from domain
   const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
-  const { workspaces, upsertWorkspace, touchWorkspace } = useWorkspaces(user?.id);
+  const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
 
   // Leads CRUD
   const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV } = useLeadsCRUD(user?.id, workspaceKey);
