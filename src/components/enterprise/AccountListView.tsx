@@ -4,7 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown, Globe } from "lucide-react";
 import type { FlashAccount } from "@/types/accounts";
 import { STAGE_CONFIG } from "@/types/accounts";
-import { useTenant } from "@/contexts/TenantContext";
 
 /** Parse revenue string to numeric for sorting */
 export function parseRevenue(rev: string | undefined): number {
@@ -107,12 +106,9 @@ interface AccountListViewProps {
 }
 
 export default function AccountListView({ accounts, selectedAccountId, onSelectAccount }: AccountListViewProps) {
-  const { tenant } = useTenant();
   const typeLabels = useMemo(() => {
-    const map: Record<string, string> = { ...FALLBACK_TYPE_LABELS };
-    tenant.accountTypes.forEach(t => { map[t.value] = t.label; });
-    return map;
-  }, [tenant.accountTypes]);
+    return { ...FALLBACK_TYPE_LABELS };
+  }, []);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
