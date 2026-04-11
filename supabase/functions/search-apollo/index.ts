@@ -141,8 +141,7 @@ Deno.serve(async (req) => {
       console.log("Apollo people search:", JSON.stringify(apolloBody));
 
       const apolloResult = await searchApollo(apolloBody, APOLLO_API_KEY, [
-        "https://api.apollo.io/api/v1/mixed_people/search",
-        "https://api.apollo.io/api/v1/people/search",
+        "https://api.apollo.io/api/v1/mixed_people/api_search",
       ]);
       if (!apolloResult.ok) {
         console.error("Apollo people search failed:", apolloResult.code, apolloResult.details);
