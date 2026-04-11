@@ -12,7 +12,9 @@ import AccountListView from "@/components/enterprise/AccountListView";
 import AccountDetailInline from "@/components/enterprise/AccountDetailInline";
 import DataPipelineSection from "@/components/enterprise/DataPipelineSection";
 import ICPResearchStream, { type ResearchPhase } from "@/components/enterprise/ICPResearchStream";
+import ResearchProgressCompact from "@/components/enterprise/ResearchProgressCompact";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import {
