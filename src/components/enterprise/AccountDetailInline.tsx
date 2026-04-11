@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import { useFlashAccountData, type AccountContact } from "./useFlashAccountData";
 import { scoreTarget, accountScore } from "./AccountListView";
-import type { FlashAccount, AccountStage } from "@/data/flash-prospects";
-import { STAGE_CONFIG } from "@/data/flash-prospects";
+import type { FlashAccount, AccountStage } from "@/types/accounts";
+import { STAGE_CONFIG } from "@/types/accounts";
 
 interface AccountDetailInlineProps {
   account: FlashAccount;
