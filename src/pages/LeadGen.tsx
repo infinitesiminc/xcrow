@@ -160,6 +160,26 @@ export default function LeadGen() {
     return map;
   }, [leads]);
 
+  // On mount: check for any in-progress research job and resume
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      // Find most recent active job for this user
+      const { data } = await (supabase.from("research_jobs") as any)
+        .select("id, domain, created_at")
+        .eq("user_id", user.id)
+        .in("status", ["pending", "processing"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (data?.domain) {
+        setDomain(data.domain);
+        const resumed = await research.resumeIfRunning(user.id, data.domain);
+        if (resumed) setActiveSection("research");
+      }
+    })();
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-navigate to personas when research completes & create workspace
   useEffect(() => {
     if (research.isComplete && research.report && activeSection === "research") {
