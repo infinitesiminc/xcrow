@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  let body: { domain: string; companyContext?: string };
+  let body: { domain: string; companyContext?: string; personaPerformance?: string };
   try {
     body = await req.json();
     if (!body.domain) throw new Error("Missing domain");
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { domain, companyContext } = body;
+  const { domain, companyContext, personaPerformance } = body;
 
   // Define research phases we'll map the output to
   const PHASES = [
@@ -64,7 +64,11 @@ Deno.serve(async (req) => {
       send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Querying Perplexity Deep Research", progress: 5 } });
 
       try {
-        const prompt = `Research the company at ${domain}. ${companyContext || ""}
+        const personaFeedback = personaPerformance
+          ? `\n\nIMPORTANT - Previous campaign performance data:\n${personaPerformance}\nWeight your persona and target recommendations based on what has worked historically.`
+          : '';
+
+        const prompt = `Research the company at ${domain}. ${companyContext || ""}${personaFeedback}
 
 Provide a comprehensive analysis structured with these EXACT section headers:
 ## Market Overview and Business Model
