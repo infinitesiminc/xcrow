@@ -89,6 +89,18 @@ interface AccountLeadData {
   leads: { name: string; title?: string; email?: string; linkedin?: string; score?: number; reason?: string }[];
 }
 
+const liveResearchRequestState = {
+  activeKey: null as string | null,
+  activeRequestId: 0,
+};
+
+function buildResearchRequestKey(domain: string, companyContext?: string) {
+  return JSON.stringify({
+    domain: domain.trim().toLowerCase(),
+    companyContext: companyContext?.trim() ?? "",
+  });
+}
+
 /* ══════════════════════════════════════════════════════════
    Tenant Setup Chat — AI-powered pipeline builder
    ══════════════════════════════════════════════════════════ */
@@ -343,13 +355,29 @@ function useLiveResearchStream() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
 
   const runningRef = useRef(false);
 
   const start = useCallback(async (domain: string, companyContext?: string) => {
+    const normalizedDomain = domain.trim().toLowerCase();
+    const requestKey = buildResearchRequestKey(normalizedDomain, companyContext);
+
+    if (liveResearchRequestState.activeKey === requestKey) return;
+
     // Prevent duplicate simultaneous calls
     if (runningRef.current) return;
+
+    const requestId = liveResearchRequestState.activeRequestId + 1;
+    liveResearchRequestState.activeRequestId = requestId;
+    liveResearchRequestState.activeKey = requestKey;
+    requestIdRef.current = requestId;
     runningRef.current = true;
+
+    const isCurrentRequest = () =>
+      requestIdRef.current === requestId &&
+      liveResearchRequestState.activeRequestId === requestId &&
+      liveResearchRequestState.activeKey === requestKey;
     
     abortRef.current?.abort();
     if (timerRef.current) clearInterval(timerRef.current);
@@ -377,7 +405,7 @@ function useLiveResearchStream() {
           "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
           "apikey": supabaseKey,
         },
-        body: JSON.stringify({ domain, companyContext }),
+        body: JSON.stringify({ domain: normalizedDomain, companyContext }),
         signal: controller.signal,
       });
 
@@ -387,11 +415,20 @@ function useLiveResearchStream() {
 
       const decoder = new TextDecoder();
       let buf = "";
+      let sawDone = false;
+      let streamEndedUnexpectedly = false;
 
       while (true) {
+        if (!isCurrentRequest()) {
+          controller.abort();
+          break;
+        }
         if (controller.signal.aborted) break;
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          streamEndedUnexpectedly = !sawDone;
+          break;
+        }
         buf += decoder.decode(value, { stream: true });
 
         let idx: number;
@@ -404,9 +441,13 @@ function useLiveResearchStream() {
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
+          if (jsonStr === "[DONE]") {
+            sawDone = true;
+            continue;
+          }
 
           try {
+            if (!isCurrentRequest()) continue;
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "phase" && parsed.phase) {
               const p = parsed.phase;
@@ -433,21 +474,31 @@ function useLiveResearchStream() {
           }
         }
       }
+
+      if (!controller.signal.aborted && streamEndedUnexpectedly && isCurrentRequest()) {
+        throw new Error("Research stream ended early");
+      }
     } catch (e: any) {
-      if (e.name !== "AbortError") {
+      if (e.name !== "AbortError" && isCurrentRequest()) {
         console.error("Research stream error:", e);
         setError(e.message || "Research failed");
         setPhases(prev => prev.map(ph => ph.status === "active" ? { ...ph, status: "pending" as const } : ph));
       }
     } finally {
-      if (timerRef.current) clearInterval(timerRef.current);
-      setRunning(false);
-      runningRef.current = false;
+      if (isCurrentRequest()) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setRunning(false);
+        runningRef.current = false;
+        liveResearchRequestState.activeKey = null;
+      }
     }
   }, []);
 
   useEffect(() => {
     return () => {
+      if (requestIdRef.current === liveResearchRequestState.activeRequestId) {
+        liveResearchRequestState.activeKey = null;
+      }
       abortRef.current?.abort();
       if (timerRef.current) clearInterval(timerRef.current);
     };
