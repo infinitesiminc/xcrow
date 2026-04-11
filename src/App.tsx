@@ -64,7 +64,7 @@ const App = () => (
           <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<SmartHomeRoute />} />
-              <Route path="/leadgen" element={<Navigate to="/leadgen" replace />} />
+              <Route path="/leadhunter" element={<Navigate to="/leadgen" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               
