@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown, Globe } from "lucide-react";
 import type { FlashAccount } from "@/data/flash-prospects";
 import { STAGE_CONFIG } from "@/data/flash-prospects";
+import { useTenant } from "@/contexts/TenantContext";
 
 /** Parse revenue string to numeric for sorting */
 export function parseRevenue(rev: string | undefined): number {
@@ -92,8 +93,9 @@ function AccountIcon({ account, className }: { account: FlashAccount; className?
   return <Grid3X3 className={className} />;
 }
 
-const TYPE_LABELS: Record<string, string> = {
+const FALLBACK_TYPE_LABELS: Record<string, string> = {
   fleet_operator: "Operator",
+  garage_operator: "Operator",
   airport: "Airport",
   large_venue: "Venue",
 };
@@ -105,6 +107,12 @@ interface AccountListViewProps {
 }
 
 export default function AccountListView({ accounts, selectedAccountId, onSelectAccount }: AccountListViewProps) {
+  const { tenant } = useTenant();
+  const typeLabels = useMemo(() => {
+    const map: Record<string, string> = { ...FALLBACK_TYPE_LABELS };
+    tenant.accountTypes.forEach(t => { map[t.value] = t.label; });
+    return map;
+  }, [tenant.accountTypes]);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -250,7 +258,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                     {isFlashHQ ? "Flash (You)" : acct.name}
                   </span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-muted text-muted-foreground">
-                    {TYPE_LABELS[acct.accountType] || acct.accountType}
+                    {typeLabels[acct.accountType] || acct.accountType}
                   </span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium text-white shrink-0" style={{ backgroundColor: cfg.markerColor }}>
                     {cfg.label}
