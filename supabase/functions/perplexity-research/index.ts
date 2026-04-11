@@ -63,6 +63,7 @@ For EACH segment (identify 2-4):
 - **Secondary buyer**: same detail
 - **Buying triggers**: events that create urgency
 - **Disqualifiers**: what makes a company NOT a fit
+- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")
 
 ## Competitive Landscape
 Direct competitors (name, domain, differentiation). Where does ${domain} win vs lose?
