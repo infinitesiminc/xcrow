@@ -378,7 +378,11 @@ function useLiveResearchStream() {
     setError(null);
     setRunning(true);
     startRef.current = Date.now();
-    timerRef.current = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
+    timerRef.current = setInterval(() => {
+      const el = (Date.now() - startRef.current) / 1000;
+      setElapsed(el);
+      updatePhasesFromElapsed(el, false);
+    }, 500);
 
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -409,11 +413,10 @@ function useLiveResearchStream() {
 
           if (fetchErr || !data) return;
 
-          updatePhasesFromJob(data.current_phase || "PHASE_01", data.progress || 0, data.status);
-
           if (data.status === "complete") {
             if (pollingRef.current) clearInterval(pollingRef.current);
             if (timerRef.current) clearInterval(timerRef.current);
+            updatePhasesFromElapsed(0, true);
             setReportText(data.report_text);
             setRunning(false);
             runningRef.current = false;
