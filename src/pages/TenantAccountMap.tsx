@@ -827,9 +827,10 @@ export default function TenantAccountMap() {
   }, [allAccounts, handleFindContacts]);
 
   // Determine left panel state
-  const isInitial = !demoRunning && demoPhases.every(p => p.status === "pending");
-  const isRunning = demoRunning || (demoPhases.some(p => p.status !== "pending") && !researchComplete);
-  const isComplete = researchComplete;
+  const hasError = !!researchError && !demoRunning;
+  const isInitial = !demoRunning && !hasError && demoPhases.every(p => p.status === "pending");
+  const isRunning = demoRunning || (!hasError && demoPhases.some(p => p.status !== "pending") && !researchComplete);
+  const isComplete = researchComplete && !hasError;
 
   // ── Non-map layout (chat + list hybrid) ──
   if (!tenant.featureFlags.showMap) {
