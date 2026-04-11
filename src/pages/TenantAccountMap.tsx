@@ -885,7 +885,31 @@ export default function TenantAccountMap() {
               </div>
             )}
 
-            {/* COMPLETE: Account list */}
+            {/* ERROR: Research failed */}
+            {hasError && !isRunning && (
+              <div className="flex-1 flex flex-col items-center justify-center gap-6">
+                <div className="size-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                  <Zap className="w-7 h-7 text-destructive" />
+                </div>
+                <div className="text-center space-y-2">
+                  <h2 className="text-xl font-medium text-foreground">Research Failed</h2>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    {researchError || "Something went wrong during research. Please try again."}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }}
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Zap className="w-4 h-4" />
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {isComplete && (
               <div className="flex flex-col h-full">
                 <div className="px-4 pt-4 pb-3">
