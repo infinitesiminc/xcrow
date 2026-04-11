@@ -344,10 +344,16 @@ function useLiveResearchStream() {
   const startRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
+  const runningRef = useRef(false);
+
   const start = useCallback(async (domain: string, companyContext?: string) => {
+    // Prevent duplicate simultaneous calls
+    if (runningRef.current) return;
+    runningRef.current = true;
+    
     abortRef.current?.abort();
     if (timerRef.current) clearInterval(timerRef.current);
-    setPhases(INITIAL);
+    setPhases([...INITIAL]);
     setElapsed(0);
     setCitations([]);
     setTargets([]);
@@ -393,6 +399,8 @@ function useLiveResearchStream() {
           let line = buf.slice(0, idx);
           buf = buf.slice(idx + 1);
           if (line.endsWith("\r")) line = line.slice(0, -1);
+          // Skip SSE comments (keepalive heartbeats) and empty lines
+          if (line.startsWith(":") || line.trim() === "") continue;
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
@@ -404,6 +412,10 @@ function useLiveResearchStream() {
               const p = parsed.phase;
               setPhases(prev => prev.map(ph => ph.id === p.id ? { ...ph, ...p } : ph));
             }
+            if (parsed.phase && !parsed.type) {
+              const p = parsed.phase;
+              setPhases(prev => prev.map(ph => ph.id === p.id ? { ...ph, ...p } : ph));
+            }
             if (parsed.type === "citations") {
               setCitations(parsed.citations || []);
             }
@@ -412,8 +424,10 @@ function useLiveResearchStream() {
             }
             if (parsed.type === "error") {
               console.error("Research error:", parsed.error);
+              setError(parsed.error);
             }
           } catch {
+            // Incomplete JSON — put line back and wait for more data
             buf = line + "\n" + buf;
             break;
           }
@@ -428,15 +442,7 @@ function useLiveResearchStream() {
     } finally {
       if (timerRef.current) clearInterval(timerRef.current);
       setRunning(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      abortRef.current?.abort();
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
+      runningRef.current = false;
 
   return { phases, elapsed, running, error, citations, targets, start };
 }
