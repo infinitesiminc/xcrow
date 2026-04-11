@@ -753,62 +753,87 @@ export default function TenantAccountMap() {
     }
   }, [loadingLeads, accountLeads, tenant]);
 
+  // Auto-seed targets when research completes
+  const researchComplete = !demoRunning && demoPhases.every(p => p.status === "complete");
+  useEffect(() => {
+    if (!researchComplete || autoSeeded || researchTargets.length === 0) return;
+    setAutoSeeded(true);
+
+    const seedAll = async () => {
+      for (const target of researchTargets) {
+        if (seededTargets.has(target.name)) continue;
+        const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+        const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
+        try {
+          await (supabase.from("flash_accounts") as any).upsert({
+            id: accountId,
+            name: target.name,
+            tenant_slug: tenant.slug,
+            account_type: "garage_operator",
+            stage: "whitespace",
+            website: `https://${domain}`,
+            notes: `${target.rationale}: ${target.description}`,
+            focus_area: target.rationale,
+            hq_city: "",
+          }, { onConflict: "id" });
+          setSeededTargets(prev => new Set(prev).add(target.name));
+        } catch (e) {
+          console.error("Auto-seed failed for", target.name, e);
+        }
+      }
+      refetch();
+
+      // Inject summary into chat
+      const elapsed = Math.round(demoElapsed);
+      const summary: ChatMessage = {
+        role: "assistant",
+        content: `✅ **Research complete** — analyzed **${researchDomain || "cliq.com"}** in ${elapsed}s.\n\nFound **${researchTargets.length} strategic targets** across your market. All accounts have been added to the pipeline.\n\n[[Find contacts for all]] [[Show research details]] [[Run another domain]]`,
+      };
+      setChatExternalMessages(prev => [...prev, summary]);
+    };
+
+    seedAll();
+  }, [researchComplete, autoSeeded, researchTargets, seededTargets, tenant.slug, refetch, demoElapsed, researchDomain]);
+
+  // Pill click handler
+  const handlePillClick = useCallback((pill: string) => {
+    if (pill === "Show research details") {
+      setShowResearchDetails(true);
+    } else if (pill === "Run another domain") {
+      setResearchDomain("");
+      setAutoSeeded(false);
+      setSeededTargets(new Set());
+      // Reset phases by triggering a re-render with pending state
+      // The useLiveResearchStream hook resets when start() is called
+    } else if (pill === "Find contacts for all") {
+      // Batch find contacts for all seeded accounts
+      const seededAccounts = allAccounts.filter(a => a.id.startsWith("target-"));
+      for (const acct of seededAccounts.slice(0, 5)) {
+        setTimeout(() => handleFindContacts(acct), 500);
+      }
+      const ackMsg: ChatMessage = {
+        role: "assistant",
+        content: `🔍 Starting contact discovery for **${Math.min(seededAccounts.length, 5)} accounts**… This will take a moment.\n\nClick any account in the pipeline to see discovered contacts.`,
+      };
+      setChatExternalMessages(prev => [...prev, ackMsg]);
+    }
+  }, [allAccounts, handleFindContacts]);
+
+  // Determine left panel state
+  const isInitial = !demoRunning && demoPhases.every(p => p.status === "pending");
+  const isRunning = demoRunning || (demoPhases.some(p => p.status !== "pending") && !researchComplete);
+  const isComplete = researchComplete;
+
   // ── Non-map layout (chat + list hybrid) ──
   if (!tenant.featureFlags.showMap) {
-    const accountPanel = (
-      <div className="flex flex-col h-full bg-background">
-        <div className="px-4 pt-4 pb-3">
-          <div className="flex items-center gap-3">
-            {tenant.logo ? (
-              <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain rounded" />
-            ) : (
-              <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
-            )}
-            <div>
-              <h2 className="text-lg font-bold leading-tight">{tenant.name} Pipeline</h2>
-              <p className="text-xs text-muted-foreground">
-                {accountsLoading ? "Loading..." : `${allAccounts.length} accounts`}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {selectedAccount ? (
-          <AccountDetailInline
-            account={selectedAccount}
-            onBack={handleBack}
-            onFindContacts={handleFindContacts}
-            loadingLeads={loadingLeads.has(selectedAccount.id)}
-            activityLog={activityLog[selectedAccount.id] || []}
-            streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
-            onStageChange={() => {}}
-          />
-        ) : allAccounts.length > 0 ? (
-          <AccountListView
-            accounts={allAccounts}
-            selectedAccountId={selectedAccountId}
-            onSelectAccount={handleSelectAccount}
-          />
-        ) : (
-          <div className="flex-1 flex items-center justify-center px-6">
-            <div className="text-center space-y-3">
-              <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">
-                No accounts yet. Use the chat to build your pipeline.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-
     return (
       <div className="flex h-[calc(100vh-48px)] w-full">
-        {/* Research stream panel */}
+        {/* Left panel — state machine */}
         <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-y-auto bg-background">
-          <div className="max-w-4xl mx-auto w-full px-8 py-8">
-            {!demoRunning && demoPhases.every(p => p.status === "pending") && (
-              <div className="flex flex-col items-center justify-center gap-6 py-20">
+          <div className="max-w-4xl mx-auto w-full px-8 py-8 flex-1 flex flex-col">
+            {/* INITIAL: URL input */}
+            {isInitial && (
+              <div className="flex-1 flex flex-col items-center justify-center gap-6">
                 <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
                   <Zap className="w-7 h-7 text-primary" />
                 </div>
@@ -823,12 +848,12 @@ export default function TenantAccountMap() {
                     type="text"
                     value={researchDomain}
                     onChange={e => setResearchDomain(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) startResearch(researchDomain.trim(), tenant.contextPrompt); }}
+                    onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) { setAutoSeeded(false); startResearch(researchDomain.trim(), tenant.contextPrompt); } }}
                     placeholder="e.g. cliq.com"
                     className="flex-1 h-11 rounded-md border border-input bg-background px-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                   <Button
-                    onClick={() => startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt)}
+                    onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }}
                     size="lg"
                     className="gap-2"
                     disabled={demoRunning}
@@ -840,93 +865,69 @@ export default function TenantAccountMap() {
                 <p className="text-xs text-muted-foreground">Powered by Perplexity Deep Research — takes ~90-120 seconds</p>
               </div>
             )}
-            {(demoRunning || demoPhases.some(p => p.status !== "pending")) && (
-              <ICPResearchStream
-                targetDomain={researchDomain || "cliq.com"}
-                phases={demoPhases}
-                elapsedSeconds={demoElapsed}
-              />
+
+            {/* RUNNING: Compact progress */}
+            {isRunning && (
+              <div className="flex-1 flex items-center justify-center">
+                <ResearchProgressCompact
+                  targetDomain={researchDomain || "cliq.com"}
+                  phases={demoPhases}
+                  elapsedSeconds={demoElapsed}
+                />
+              </div>
             )}
-            {!demoRunning && demoPhases.every(p => p.status === "complete") && (
-              <div className="flex flex-col items-center gap-6 pt-6 w-full max-w-2xl mx-auto">
-                {/* Extracted targets → Pipeline */}
-                {researchTargets.length > 0 && (
-                  <div className="w-full space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-primary" />
-                      <h3 className="text-sm font-semibold text-foreground">Strategic Targets Identified</h3>
-                      <Badge variant="secondary" className="text-xs">{researchTargets.length}</Badge>
+
+            {/* COMPLETE: Account list */}
+            {isComplete && (
+              <div className="flex flex-col h-full">
+                <div className="px-4 pt-4 pb-3">
+                  <div className="flex items-center gap-3">
+                    {tenant.logo ? (
+                      <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain rounded" />
+                    ) : (
+                      <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
+                    )}
+                    <div>
+                      <h2 className="text-lg font-bold leading-tight">{tenant.name} Pipeline</h2>
+                      <p className="text-xs text-muted-foreground">
+                        {accountsLoading ? "Loading..." : `${allAccounts.length} accounts`}
+                      </p>
                     </div>
-                    <div className="grid gap-2">
-                      {researchTargets.map((t, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
-                          <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
-                            {t.name.charAt(0)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-foreground truncate">{t.name}</span>
-                              {t.domain && (
-                                <span className="text-xs text-muted-foreground">{t.domain}</span>
-                              )}
-                            </div>
-                            <p className="text-xs text-muted-foreground line-clamp-1">{t.rationale}</p>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant={seededTargets.has(t.name) ? "secondary" : "default"}
-                            className="shrink-0 gap-1.5 text-xs"
-                            disabled={seedingTarget === t.name || seededTargets.has(t.name)}
-                            onClick={() => handleSeedTarget(t, handleFindContacts)}
-                          >
-                            {seedingTarget === t.name ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : seededTargets.has(t.name) ? (
-                              <>✓ Added</>
-                            ) : (
-                              <>
-                                <Zap className="w-3 h-3" />
-                                Add to Pipeline
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      ))}
+                  </div>
+                </div>
+
+                {selectedAccount ? (
+                  <AccountDetailInline
+                    account={selectedAccount}
+                    onBack={handleBack}
+                    onFindContacts={handleFindContacts}
+                    loadingLeads={loadingLeads.has(selectedAccount.id)}
+                    activityLog={activityLog[selectedAccount.id] || []}
+                    streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
+                    onStageChange={() => {}}
+                  />
+                ) : allAccounts.length > 0 ? (
+                  <AccountListView
+                    accounts={allAccounts}
+                    selectedAccountId={selectedAccountId}
+                    onSelectAccount={handleSelectAccount}
+                  />
+                ) : (
+                  <div className="flex-1 flex items-center justify-center px-6">
+                    <div className="text-center space-y-3">
+                      <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
+                      <p className="text-sm text-muted-foreground">
+                        No accounts yet. Use the chat to build your pipeline.
+                      </p>
                     </div>
                   </div>
                 )}
-
-                {researchCitations.length > 0 && (
-                  <details className="w-full">
-                    <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                      📚 {researchCitations.length} sources cited
-                    </summary>
-                    <div className="mt-2 space-y-1 text-xs text-muted-foreground max-h-40 overflow-y-auto">
-                      {researchCitations.map((c, i) => (
-                        <a key={i} href={c} target="_blank" rel="noopener" className="block truncate hover:text-primary">[{i + 1}] {c}</a>
-                      ))}
-                    </div>
-                  </details>
-                )}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={researchDomain}
-                    onChange={e => setResearchDomain(e.target.value)}
-                    placeholder="Try another domain..."
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm w-48"
-                  />
-                  <Button onClick={() => { setSeededTargets(new Set()); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }} variant="outline" size="sm" className="gap-2">
-                    <Zap className="w-3.5 h-3.5" />
-                    Run Again
-                  </Button>
-                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Account list panel */}
+        {/* Right panel — Chat */}
         <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Bot className="w-4 h-4 text-primary" />
@@ -936,8 +937,35 @@ export default function TenantAccountMap() {
             tenant={tenant}
             accountCount={allAccounts.length}
             onAccountsAdded={refetch}
+            externalMessages={chatExternalMessages}
+            onPillClick={handlePillClick}
           />
         </div>
+
+        {/* Research details dialog */}
+        <Dialog open={showResearchDetails} onOpenChange={setShowResearchDetails}>
+          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogTitle>Research Details — {researchDomain || "cliq.com"}</DialogTitle>
+            <DialogDescription>Full research report from the ICP pipeline</DialogDescription>
+            <ICPResearchStream
+              targetDomain={researchDomain || "cliq.com"}
+              phases={demoPhases}
+              elapsedSeconds={demoElapsed}
+            />
+            {researchCitations.length > 0 && (
+              <details className="mt-4">
+                <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                  📚 {researchCitations.length} sources cited
+                </summary>
+                <div className="mt-2 space-y-1 text-xs text-muted-foreground max-h-40 overflow-y-auto">
+                  {researchCitations.map((c, i) => (
+                    <a key={i} href={c} target="_blank" rel="noopener" className="block truncate hover:text-primary">[{i + 1}] {c}</a>
+                  ))}
+                </div>
+              </details>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
