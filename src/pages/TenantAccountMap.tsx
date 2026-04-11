@@ -580,6 +580,23 @@ export default function TenantAccountMap() {
     try {
       const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
       const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
+      const newAccount: FlashAccount = {
+        id: accountId,
+        name: target.name,
+        accountType: "garage_operator" as AccountType,
+        stage: "whitespace" as AccountStage,
+        estimatedSpaces: "N/A",
+        facilityCount: "N/A",
+        focusArea: target.rationale,
+        hqCity: "",
+        hqLat: 0,
+        hqLng: 0,
+        website: `https://${domain}`,
+        differentiator: "",
+        priorityScore: 0,
+        notes: `${target.rationale}: ${target.description}`,
+      };
+
       await (supabase.from("flash_accounts") as any).upsert({
         id: accountId,
         name: target.name,
@@ -591,16 +608,19 @@ export default function TenantAccountMap() {
         focus_area: target.rationale,
         hq_city: "",
       }, { onConflict: "id" });
+
       setSeededTargets(prev => new Set(prev).add(target.name));
       refetch();
-      // Auto-select the new account
       setSelectedAccountId(accountId);
+
+      // Auto-trigger Apollo contact discovery
+      setTimeout(() => handleFindContacts(newAccount), 500);
     } catch (e) {
       console.error("Seed target failed:", e);
     } finally {
       setSeedingTarget(null);
     }
-  }, [seedingTarget, seededTargets, tenant.slug, refetch]);
+  }, [seedingTarget, seededTargets, tenant.slug, refetch, handleFindContacts]);
 
   const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
