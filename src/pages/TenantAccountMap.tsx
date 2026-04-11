@@ -329,7 +329,7 @@ export default function TenantAccountMap() {
     } finally {
       setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
     }
-  }, [loadingLeads, accountLeads]);
+  }, [loadingLeads, accountLeads, tenant]);
 
   if (!API_KEY) {
     return (
