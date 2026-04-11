@@ -210,29 +210,15 @@ export default function ICPResearchStream({
 
   return (
     <div className={`flex flex-col gap-10 relative ${className}`}>
-      {/* Header */}
-      <header className="flex items-end justify-between border-b border-border/30 pb-6">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <div className="size-2 rounded-full bg-primary animate-pulse shadow-[0_0_12px_hsl(var(--primary))]" />
-            <span className="text-xs font-mono text-primary uppercase tracking-[0.2em]">
-              Research Pipeline Active
-            </span>
-          </div>
-          <h1 className="text-3xl font-light tracking-tight text-foreground flex items-center gap-4">
-            Target:
-            <span className="font-mono text-xl font-medium bg-muted/30 border border-border/50 px-4 py-1.5 rounded-lg shadow-[inset_0_0_20px_hsl(var(--primary)/0.08)]">
-              {displayDomain}
-            </span>
-          </h1>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">Runtime</span>
-          <span className="font-mono text-xl text-primary tabular-nums">
-            {formatTime(elapsedSeconds)}
-          </span>
-        </div>
-      </header>
+      {/* Subtitle */}
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-mono text-[hsl(270,80%,60%)] uppercase tracking-widest animate-pulse">
+          Deep Research in Progress
+        </span>
+        <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
+          This takes 30-90 seconds
+        </span>
+      </div>
 
       {/* Phase pipeline with spine */}
       <div className="relative pl-14 flex flex-col gap-8">

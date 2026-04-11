@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown, Globe } from "lucide-react";
+import { Search, X, ArrowUpDown, ExternalLink } from "lucide-react";
 import type { FlashAccount } from "@/types/accounts";
-import { STAGE_CONFIG } from "@/types/accounts";
+import { STAGE_CONFIG, type AccountStage } from "@/types/accounts";
 
-/** Parse revenue string to numeric for sorting */
-export function parseRevenue(rev: string | undefined): number {
+function parseRevenue(rev: string | undefined): number {
   if (!rev) return 0;
   const m = rev.replace(/[^0-9.BMK]/gi, "");
   const num = parseFloat(m);
@@ -17,7 +17,6 @@ export function parseRevenue(rev: string | undefined): number {
   return num;
 }
 
-/** Score an operator for M&A attractiveness (0–100) */
 export function scoreTarget(a: { currentVendor?: string; annualRevenue?: string; founded?: number; stage: string } & Record<string, any>): number {
   let score = 0;
   const ot = a.ownership_type ?? a.ownershipType;
@@ -39,7 +38,7 @@ export function scoreTarget(a: { currentVendor?: string; annualRevenue?: string;
   return Math.min(score, 100);
 }
 
-/** Overall account score combining stage + data completeness */
+/* ── Scoring ── */
 export function accountScore(a: FlashAccount & Record<string, any>): number {
   let score = (a.priorityScore ?? a.priority_score ?? 0) as number;
   if (a.annualRevenue) score += 10;
@@ -52,53 +51,111 @@ export function accountScore(a: FlashAccount & Record<string, any>): number {
   return Math.min(score, 100);
 }
 
-const TYPE_ORDER: Record<string, number> = {
-  fleet_operator: 0, airport: 1, large_venue: 2,
-};
-function typeRank(a: FlashAccount): number {
-  return TYPE_ORDER[a.accountType] ?? 3;
-}
-
-/** Derive country from hqCity string */
-function deriveCountry(hqCity: string | undefined): string {
-  if (!hqCity) return "US";
-  const c = hqCity.toLowerCase();
-  if (c.includes("australia") || c.endsWith(", au")) return "AU";
-  if (c.includes("uk") || c.includes("england") || c.includes("london")) return "UK";
-  if (c.includes("canada")) return "CA";
-  if (c.includes("spain")) return "ES";
-  if (c.includes("france") || c.includes("paris")) return "FR";
-  if (c.includes("germany") || c.includes("berlin") || c.includes("munich")) return "DE";
-  if (c.includes("brazil") || c.includes("são paulo")) return "BR";
-  if (c.includes("japan") || c.includes("tokyo")) return "JP";
-  if (c.includes("india") || c.includes("mumbai") || c.includes("delhi") || c.includes("bangalore")) return "IN";
-  if (c.includes("mexico")) return "MX";
-  if (c.includes("china") || c.includes("beijing") || c.includes("shanghai")) return "CN";
-  return "US";
-}
-
-const COUNTRY_LABELS: Record<string, string> = {
-  US: "🇺🇸 US", AU: "🇦🇺 AU", UK: "🇬🇧 UK", CA: "🇨🇦 CA", ES: "🇪🇸 ES",
-  FR: "🇫🇷 FR", DE: "🇩🇪 DE", BR: "🇧🇷 BR", JP: "🇯🇵 JP", IN: "🇮🇳 IN",
-  MX: "🇲🇽 MX", CN: "🇨🇳 CN",
-};
-
 type SortKey = "name" | "type" | "score";
 
-function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
-  if (account.accountType === "airport") return <Plane className={className} />;
-  if (account.stage === "competitor") return <Swords className={className} />;
-  if (account.accountType === "large_venue") return <Building2 className={className} />;
-  return <Grid3X3 className={className} />;
+/* ── Score Ring ── */
+function ScoreRing({ score }: { score: number }) {
+  const pct = Math.min(score, 100);
+  const color = score >= 60 ? "hsl(142,71%,45%)" : score >= 35 ? "hsl(45,93%,47%)" : "hsl(var(--muted-foreground))";
+  const circumference = 2 * Math.PI * 12;
+  const dashOffset = circumference - (pct / 100) * circumference;
+  return (
+    <div className="relative shrink-0 size-9">
+      <svg viewBox="0 0 28 28" className="size-9 -rotate-90">
+        <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted/20" />
+        <circle
+          cx="14" cy="14" r="12" fill="none" stroke={color} strokeWidth="2.5"
+          strokeDasharray={circumference} strokeDashoffset={dashOffset}
+          strokeLinecap="round"
+          style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold tabular-nums" style={{ color }}>
+        {score}
+      </span>
+    </div>
+  );
 }
 
-const FALLBACK_TYPE_LABELS: Record<string, string> = {
-  fleet_operator: "Operator",
-  garage_operator: "Operator",
-  airport: "Airport",
-  large_venue: "Venue",
-};
+/* ── Spine Node ── */
+function SpineNode({ stage }: { stage: AccountStage }) {
+  const cfg = STAGE_CONFIG[stage];
+  return (
+    <div
+      className="size-3 rounded-full z-10 shrink-0"
+      style={{
+        backgroundColor: cfg.markerColor,
+        boxShadow: `0 0 8px ${cfg.markerColor}60`,
+      }}
+    />
+  );
+}
 
+/* ── Stage Badge ── */
+function StageBadge({ stage }: { stage: AccountStage }) {
+  const cfg = STAGE_CONFIG[stage];
+  const isCompetitor = stage === "competitor";
+  return (
+    <span
+      className="text-[9px] px-2 py-0.5 rounded-full font-medium tracking-wide uppercase shrink-0"
+      style={{
+        backgroundColor: isCompetitor ? `${cfg.markerColor}20` : `${cfg.markerColor}15`,
+        color: cfg.markerColor,
+        border: `1px solid ${cfg.markerColor}30`,
+      }}
+    >
+      {cfg.label}
+    </span>
+  );
+}
+
+/* ── Account Row ── */
+function AccountRow({ account, isSelected, onClick }: { account: FlashAccount; isSelected: boolean; onClick: () => void }) {
+  const score = accountScore(account);
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.25 }}
+      onClick={onClick}
+      className={`w-full text-left group relative transition-all duration-300 ${
+        isSelected
+          ? "bg-card/70 border border-[hsl(270,80%,60%,0.3)] shadow-[inset_0_0_30px_hsl(270,80%,60%,0.04),0_0_15px_hsl(270,80%,60%,0.04)]"
+          : "bg-transparent border border-transparent hover:bg-card/40 hover:border-border/30"
+      } rounded-xl px-4 py-3`}
+    >
+      <div className="flex items-center gap-3">
+        <ScoreRing score={score} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground truncate">{account.name}</span>
+            {account.website && (
+              <ExternalLink className="w-3 h-3 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+            {account.hqCity && <span className="truncate">{account.hqCity}</span>}
+            {account.annualRevenue && (
+              <>
+                <span className="text-muted-foreground/20">·</span>
+                <span>{account.annualRevenue}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[9px] px-2 py-0.5 rounded-full font-medium bg-muted/40 text-muted-foreground border border-border/30">
+            prospect
+          </span>
+          <StageBadge stage={account.stage} />
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+/* ── Main Component ── */
 interface AccountListViewProps {
   accounts: FlashAccount[];
   selectedAccountId: string | null;
@@ -106,26 +163,12 @@ interface AccountListViewProps {
 }
 
 export default function AccountListView({ accounts, selectedAccountId, onSelectAccount }: AccountListViewProps) {
-  const typeLabels = useMemo(() => {
-    return { ...FALLBACK_TYPE_LABELS };
-  }, []);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [countryFilter, setCountryFilter] = useState<string | null>(null);
-
-  // Derive available countries from accounts
-  const countryOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
-    accounts.forEach(a => { const c = deriveCountry(a.hqCity); counts[c] = (counts[c] || 0) + 1; });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  }, [accounts]);
 
   const filtered = useMemo(() => {
     let list = accounts;
-    if (countryFilter) {
-      list = list.filter(a => deriveCountry(a.hqCity) === countryFilter);
-    }
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(a => {
@@ -136,7 +179,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
     list = [...list].sort((a, b) => {
       let av: number | string, bv: number | string;
       switch (sortKey) {
-        case "type": av = typeRank(a); bv = typeRank(b); break;
+        case "type": av = a.stage; bv = b.stage; break;
         case "score": av = accountScore(a); bv = accountScore(b); break;
         default: av = a.name; bv = b.name; break;
       }
@@ -145,7 +188,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
       return sortDir === "asc" ? (av as number) - (bv as number) : (bv as number) - (av as number);
     });
     return list;
-  }, [accounts, search, sortKey, sortDir, countryFilter]);
+  }, [accounts, search, sortKey, sortDir]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -155,58 +198,36 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       {/* Search */}
-      <div className="px-3 pb-2">
+      <div className="px-4 pb-3">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input
             placeholder="Search accounts..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-8 pr-8 h-8 text-xs bg-muted/40 border-0 focus-visible:ring-1"
+            className="pl-9 pr-8 h-9 text-sm bg-muted/20 border-border/30 focus-visible:ring-1 focus-visible:ring-[hsl(270,80%,60%,0.4)] font-mono"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
               <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Country filters */}
-      {countryOptions.length > 1 && (
-        <div className="px-3 pb-2 flex items-center gap-1.5 flex-wrap">
-          <Globe className="w-3 h-3 text-muted-foreground shrink-0" />
-          <button
-            onClick={() => setCountryFilter(null)}
-            className={`text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors ${
-              !countryFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            All
-          </button>
-          {countryOptions.map(([code, count]) => (
-            <button
-              key={code}
-              onClick={() => setCountryFilter(countryFilter === code ? null : code)}
-              className={`text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors ${
-                countryFilter === code ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {COUNTRY_LABELS[code] || code} <span className="opacity-60">{count}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* Sort bar */}
-      <div className="px-3 pb-1.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+      <div className="px-4 pb-2 flex items-center gap-3 text-xs text-muted-foreground font-mono">
         <span className="font-medium">{filtered.length} accounts</span>
         <span className="ml-auto" />
         {(["name", "type", "score"] as SortKey[]).map(key => (
           <button
             key={key}
             onClick={() => handleSort(key)}
-            className={`px-1.5 py-0.5 rounded font-medium transition-colors ${sortKey === key ? "bg-primary/10 text-primary" : "hover:text-foreground"}`}
+            className={`px-2 py-0.5 rounded-md font-medium transition-colors ${
+              sortKey === key
+                ? "bg-[hsl(270,80%,60%,0.1)] text-[hsl(270,80%,60%)] border border-[hsl(270,80%,60%,0.2)]"
+                : "hover:text-foreground"
+            }`}
           >
             {key === "name" ? "Name" : key === "type" ? "Type" : "Score"}
             {sortKey === key && <ArrowUpDown className="w-2.5 h-2.5 inline ml-0.5" />}
@@ -214,60 +235,39 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
         ))}
       </div>
 
-      {/* List */}
+      {/* Account list with spine */}
       <ScrollArea className="flex-1">
-        <div className="px-2 pb-2 space-y-0.5">
-          {filtered.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground text-xs">No accounts match</div>
+        <div className="relative pl-8 pr-4 pb-4">
+          {/* Vertical spine */}
+          {filtered.length > 0 && (
+            <div className="absolute left-[18px] top-2 bottom-4 w-px bg-gradient-to-b from-primary via-[hsl(270,80%,60%,0.4)] to-muted-foreground/10 shadow-[0_0_6px_hsl(var(--primary)/0.2)]" />
           )}
-          {filtered.map(acct => {
-            const cfg = STAGE_CONFIG[acct.stage];
-            const isFlashHQ = acct.id === "acct-flash-hq";
-            const isSelected = selectedAccountId === acct.id;
-            const score = accountScore(acct);
-            const scorePct = Math.min(score, 100);
-            const scoreColor = score >= 40 ? "#22c55e" : score >= 25 ? "#eab308" : "#94a3b8";
-            const circumference = 2 * Math.PI * 10;
-            const dashOffset = circumference - (scorePct / 100) * circumference;
-            return (
-              <button
-                key={acct.id}
-                onClick={() => onSelectAccount(acct)}
-                className={`w-full text-left px-3 py-2 rounded-lg transition-all border ${
-                  isSelected ? "bg-primary/5 border-primary/20" : "hover:bg-muted/60 border-transparent"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {/* Score ring */}
-                  <div className="relative shrink-0 w-7 h-7">
-                    <svg viewBox="0 0 24 24" className="w-7 h-7 -rotate-90">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted/30" />
-                      <circle cx="12" cy="12" r="10" fill="none" stroke={scoreColor} strokeWidth="2.5"
-                        strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                        strokeLinecap="round" />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold tabular-nums" style={{ color: scoreColor }}>
-                      {score}
-                    </span>
+
+          <div className="flex flex-col gap-1">
+            <AnimatePresence>
+              {filtered.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground text-xs font-mono pl-4">
+                  No accounts match your search
+                </div>
+              ) : (
+                filtered.map(acct => (
+                  <div key={acct.id} className="relative flex items-center">
+                    {/* Spine node */}
+                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-8">
+                      <SpineNode stage={acct.stage} />
+                    </div>
+                    <div className="flex-1">
+                      <AccountRow
+                        account={acct}
+                        isSelected={selectedAccountId === acct.id}
+                        onClick={() => onSelectAccount(acct)}
+                      />
+                    </div>
                   </div>
-                  <span className="text-xs font-semibold flex-1 min-w-0 truncate">
-                    {isFlashHQ ? "Flash (You)" : acct.name}
-                  </span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-muted text-muted-foreground">
-                    {typeLabels[acct.accountType] || acct.accountType}
-                  </span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium text-white shrink-0" style={{ backgroundColor: cfg.markerColor }}>
-                    {cfg.label}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground pl-9">
-                  <span>{acct.hqCity}</span>
-                  {acct.annualRevenue && <><span className="text-muted-foreground/30">·</span><span>{acct.annualRevenue}</span></>}
-                  {acct.estimatedSpaces && acct.estimatedSpaces !== "N/A" && <><span className="text-muted-foreground/30">·</span><span>{acct.estimatedSpaces} spaces</span></>}
-                </div>
-              </button>
-            );
-          })}
+                ))
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </ScrollArea>
     </div>
