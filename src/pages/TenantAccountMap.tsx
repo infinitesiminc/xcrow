@@ -574,7 +574,7 @@ export default function TenantAccountMap() {
     setSelectedAccountId(null);
   }, []);
 
-  const handleSeedTarget = useCallback(async (target: ResearchTarget) => {
+  const handleSeedTarget = useCallback(async (target: ResearchTarget, findContactsFn: (account: FlashAccount) => void) => {
     if (seedingTarget || seededTargets.has(target.name)) return;
     setSeedingTarget(target.name);
     try {
@@ -593,8 +593,6 @@ export default function TenantAccountMap() {
         hqLng: 0,
         website: `https://${domain}`,
         differentiator: "",
-        priorityScore: 0,
-        notes: `${target.rationale}: ${target.description}`,
       };
 
       await (supabase.from("flash_accounts") as any).upsert({
@@ -614,13 +612,13 @@ export default function TenantAccountMap() {
       setSelectedAccountId(accountId);
 
       // Auto-trigger Apollo contact discovery
-      setTimeout(() => handleFindContacts(newAccount), 500);
+      setTimeout(() => findContactsFn(newAccount), 500);
     } catch (e) {
       console.error("Seed target failed:", e);
     } finally {
       setSeedingTarget(null);
     }
-  }, [seedingTarget, seededTargets, tenant.slug, refetch, handleFindContacts]);
+  }, [seedingTarget, seededTargets, tenant.slug, refetch]);
 
   const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
