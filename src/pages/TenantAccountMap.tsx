@@ -481,6 +481,7 @@ function useLiveResearchStream() {
   const [phases, setPhases] = useState<ResearchPhase[]>(INITIAL);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [citations, setCitations] = useState<string[]>([]);
   const [targets, setTargets] = useState<ResearchTarget[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -494,6 +495,7 @@ function useLiveResearchStream() {
     setElapsed(0);
     setCitations([]);
     setTargets([]);
+    setError(null);
     setRunning(true);
     startRef.current = Date.now();
     timerRef.current = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
@@ -566,7 +568,12 @@ function useLiveResearchStream() {
         }
       }
     } catch (e: any) {
-      if (e.name !== "AbortError") console.error("Research stream error:", e);
+      if (e.name !== "AbortError") {
+        console.error("Research stream error:", e);
+        setError(e.message || "Research failed");
+        // Mark any incomplete phases as error
+        setPhases(prev => prev.map(ph => ph.status === "active" ? { ...ph, status: "pending" as const } : ph));
+      }
     } finally {
       if (timerRef.current) clearInterval(timerRef.current);
       setRunning(false);
@@ -580,7 +587,7 @@ function useLiveResearchStream() {
     };
   }, []);
 
-  return { phases, elapsed, running, citations, targets, start };
+  return { phases, elapsed, running, error, citations, targets, start };
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -591,7 +598,7 @@ export default function TenantAccountMap() {
   const isMobile = useIsMobile();
   const { tenant } = useTenant();
   const { accounts: allAccounts, loading: accountsLoading, refetch } = useDBAccounts(tenant.slug);
-  const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, citations: researchCitations, targets: researchTargets, start: startResearch } = useLiveResearchStream();
+  const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, error: researchError, citations: researchCitations, targets: researchTargets, start: startResearch } = useLiveResearchStream();
   const [seedingTarget, setSeedingTarget] = useState<string | null>(null);
   const [seededTargets, setSeededTargets] = useState<Set<string>>(new Set());
   const [researchDomain, setResearchDomain] = useState("");
@@ -820,9 +827,10 @@ export default function TenantAccountMap() {
   }, [allAccounts, handleFindContacts]);
 
   // Determine left panel state
-  const isInitial = !demoRunning && demoPhases.every(p => p.status === "pending");
-  const isRunning = demoRunning || (demoPhases.some(p => p.status !== "pending") && !researchComplete);
-  const isComplete = researchComplete;
+  const hasError = !!researchError && !demoRunning;
+  const isInitial = !demoRunning && !hasError && demoPhases.every(p => p.status === "pending");
+  const isRunning = demoRunning || (!hasError && demoPhases.some(p => p.status !== "pending") && !researchComplete);
+  const isComplete = researchComplete && !hasError;
 
   // ── Non-map layout (chat + list hybrid) ──
   if (!tenant.featureFlags.showMap) {
@@ -877,7 +885,31 @@ export default function TenantAccountMap() {
               </div>
             )}
 
-            {/* COMPLETE: Account list */}
+            {/* ERROR: Research failed */}
+            {hasError && !isRunning && (
+              <div className="flex-1 flex flex-col items-center justify-center gap-6">
+                <div className="size-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                  <Zap className="w-7 h-7 text-destructive" />
+                </div>
+                <div className="text-center space-y-2">
+                  <h2 className="text-xl font-medium text-foreground">Research Failed</h2>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    {researchError || "Something went wrong during research. Please try again."}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }}
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Zap className="w-4 h-4" />
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {isComplete && (
               <div className="flex flex-col h-full">
                 <div className="px-4 pt-4 pb-3">
