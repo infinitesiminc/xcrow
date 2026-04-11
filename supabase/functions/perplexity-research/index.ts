@@ -269,8 +269,8 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             try {
               const parsed = JSON.parse(jsonStr);
 
-              // Extract citations if present
-              if (parsed.citations) {
+              // Extract citations if present (only send once)
+              if (parsed.citations && citations.length === 0) {
                 citations = parsed.citations;
                 send({ type: "citations", citations, searchResults: [] });
               }
