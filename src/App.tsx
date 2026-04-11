@@ -94,9 +94,9 @@ const App = () => (
                 <Route index element={<Admin />} />
                 <Route path=":tenantSlug" element={<TenantAccountMap />} />
               </Route>
-              <Route path="/flashparkingmap" element={<Navigate to="/admin/flash" replace />} />
-              <Route path="/enterprise/*" element={<Navigate to="/admin" replace />} />
-              <Route path="/enterprise" element={<Navigate to="/admin" replace />} />
+              <Route path="/flashparkingmap" element={<Navigate to="/admin/cliq" replace />} />
+              <Route path="/enterprise/*" element={<Navigate to="/admin/cliq" replace />} />
+              <Route path="/enterprise" element={<Navigate to="/admin/cliq" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

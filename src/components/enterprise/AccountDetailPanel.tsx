@@ -9,8 +9,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useFlashAccountData, type AccountContact } from "./useFlashAccountData";
-import type { FlashAccount, AccountStage } from "@/data/flash-prospects";
-import { STAGE_CONFIG } from "@/data/flash-prospects";
+import type { FlashAccount, AccountStage } from "@/types/accounts";
+import { STAGE_CONFIG } from "@/types/accounts";
 
 interface AccountDetailPanelProps {
   account: FlashAccount;

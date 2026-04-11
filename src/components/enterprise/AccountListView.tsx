@@ -2,8 +2,8 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X, Grid3X3, Plane, Building2, Swords, ArrowUpDown, Globe } from "lucide-react";
-import type { FlashAccount } from "@/data/flash-prospects";
-import { STAGE_CONFIG } from "@/data/flash-prospects";
+import type { FlashAccount } from "@/types/accounts";
+import { STAGE_CONFIG } from "@/types/accounts";
 import { useTenant } from "@/contexts/TenantContext";
 
 /** Parse revenue string to numeric for sorting */

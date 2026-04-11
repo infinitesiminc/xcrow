@@ -1,16 +1,12 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { useTenant } from "@/contexts/TenantContext";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, Building2, Grid3X3, Zap, Swords, Plane, Warehouse, Send, Bot, User, Loader2 } from "lucide-react";
+import { Building2, Zap, Send, Bot, User, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import AccountListView from "@/components/enterprise/AccountListView";
 import AccountDetailInline from "@/components/enterprise/AccountDetailInline";
-import DataPipelineSection from "@/components/enterprise/DataPipelineSection";
 import ICPResearchStream, { type ResearchPhase } from "@/components/enterprise/ICPResearchStream";
 import ResearchProgressCompact from "@/components/enterprise/ResearchProgressCompact";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,20 +14,11 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import {
-  FLASH_LOCATIONS,
-  type FlashLocation,
-} from "@/data/flash-parking-locations";
-import {
-  FLASH_ACCOUNTS,
-  FLASH_PLATFORM_STATS,
   STAGE_CONFIG,
   type FlashAccount,
   type AccountStage,
   type AccountType,
-} from "@/data/flash-prospects";
-import { FLASH_AIRPORT_ACCOUNTS } from "@/data/flash-airports";
-
-const STATIC_ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
+} from "@/types/accounts";
 
 /* ── Hook: load accounts from DB with tenant_slug filter ── */
 function useDBAccounts(tenantSlug: string): { accounts: FlashAccount[]; loading: boolean; refetch: () => void } {
@@ -46,7 +33,7 @@ function useDBAccounts(tenantSlug: string): { accounts: FlashAccount[]; loading:
         .eq("tenant_slug", tenantSlug)
         .order("name");
       if (error || !data || data.length === 0) {
-        setDbAccounts(null);
+        setDbAccounts([]);
         setLoading(false);
         return;
       }
@@ -75,7 +62,7 @@ function useDBAccounts(tenantSlug: string): { accounts: FlashAccount[]; loading:
       }));
       setDbAccounts(mapped);
     } catch {
-      setDbAccounts(null);
+      setDbAccounts([]);
     } finally {
       setLoading(false);
     }
@@ -83,144 +70,19 @@ function useDBAccounts(tenantSlug: string): { accounts: FlashAccount[]; loading:
 
   useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
 
-  // For Flash, fall back to static data; other tenants show empty
-  const fallback = tenantSlug === "flash" ? STATIC_ALL_ACCOUNTS : [];
-  return { accounts: dbAccounts ?? fallback, loading, refetch: fetchAccounts };
+  return { accounts: dbAccounts ?? [], loading, refetch: fetchAccounts };
 }
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKesJxuvh-sKL1z_gCj371z0";
-const MAP_ID = "flash-parking-map";
-
-/* ── Pin components ── */
-function AccountIcon({ account, className }: { account: FlashAccount; className?: string }) {
-  if (account.accountType === "airport") return <Plane className={className} />;
-  if (account.stage === "competitor") return <Swords className={className} />;
-  if (account.accountType === "large_venue") return <Building2 className={className} />;
-  return <Grid3X3 className={className} />;
-}
-
-function AccountPin({ account, tenantLogo }: { account: FlashAccount; tenantLogo: string }) {
-  const cfg = STAGE_CONFIG[account.stage];
-  const isHQ = account.id === "acct-flash-hq";
-  if (isHQ && tenantLogo) {
-    return (
-      <div className="relative cursor-pointer group">
-        <div className="w-11 h-11 rounded-full border-[3px] border-primary shadow-lg transition-all group-hover:scale-125 flex items-center justify-center bg-white">
-          <img src={tenantLogo} alt="HQ" className="w-7 h-7 object-contain" />
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="relative cursor-pointer group flex flex-col items-center">
-      <div className="w-9 h-9 rounded-full border-[3px] border-white shadow-lg transition-all group-hover:scale-125 flex items-center justify-center"
-        style={{ backgroundColor: cfg.markerColor }}>
-        <AccountIcon account={account} className="w-4 h-4 text-white" />
-      </div>
-      {account.accountType === "fleet_operator" && (
-        <span className="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-foreground bg-background/80 px-1 rounded shadow-sm">HQ</span>
-      )}
-    </div>
-  );
-}
-
-function DeployedSitePin() {
-  return <div className="cursor-pointer"><div className="w-3 h-3 rounded-full bg-gray-400/50 border border-white/60" /></div>;
-}
-
-const OPERATOR_COLORS: Record<string, string> = {
-  "Joe's Auto Parks": "#e65100", "LAZ Parking": "#1565c0", "SP Plus": "#2e7d32",
-  "ParkABM": "#6a1b9a", "ABM": "#6a1b9a", "Perfect Parking": "#00838f",
-};
-function getOperatorColor(op: string | null): string {
-  if (!op) return "#b0bec5";
-  return OPERATOR_COLORS[op] ?? "#78909c";
-}
-
-function GaragePin({ operator, capacity }: { operator?: string | null; capacity?: number | null }) {
-  const color = getOperatorColor(operator);
-  const label = operator && operator !== "Unknown" && operator !== "Independent" ? operator : null;
-  return (
-    <div className="cursor-pointer group flex flex-col items-center">
-      <div className="w-4 h-4 rounded-sm border border-white/80 shadow-sm transition-all group-hover:scale-150 flex items-center justify-center"
-        style={{ backgroundColor: color }}>
-        <Warehouse className="w-2.5 h-2.5 text-white" />
-      </div>
-      {label && (
-        <span className="mt-0.5 text-[7px] font-bold uppercase tracking-wider text-foreground bg-background/80 px-1 rounded shadow-sm whitespace-nowrap max-w-[80px] truncate">
-          {label}
-        </span>
-      )}
-    </div>
-  );
-}
-
-interface DiscoveredGarage {
-  id: string; place_id: string; name: string; address: string | null;
-  lat: number; lng: number; rating: number | null; reviews_count: number;
-  photo_reference: string | null; types: string[]; operator_guess: string | null;
-  scan_zone: string | null; website: string | null; phone: string | null;
-  capacity: number | null; capacity_source: string | null;
+/* ── Types for extracted targets ── */
+interface ResearchTarget {
+  name: string;
+  domain?: string;
+  description: string;
+  rationale: string;
 }
 
 interface AccountLeadData {
   leads: { name: string; title?: string; email?: string; linkedin?: string; score?: number; reason?: string }[];
-}
-
-/* ── Z-index by priority ── */
-const STAGE_Z: Record<string, number> = { whitespace: 1, target: 2, active: 3, competitor: 4 };
-function getMarkerZ(account: FlashAccount) {
-  if (account.id === "acct-flash-hq") return 100;
-  return STAGE_Z[account.stage] ?? 1;
-}
-
-/* ── Map content ── */
-function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite, garages, showGarages, onSelectGarage, tenantLogo }: {
-  accounts: FlashAccount[];
-  onSelectAccount: (a: FlashAccount) => void;
-  showDeployed: boolean; deployedLocations: FlashLocation[];
-  onSelectSite: (l: FlashLocation) => void;
-  garages: DiscoveredGarage[];
-  showGarages: boolean;
-  onSelectGarage: (g: DiscoveredGarage) => void;
-  tenantLogo: string;
-}) {
-  return (
-    <>
-      {showDeployed && deployedLocations.map(loc => (
-        <AdvancedMarker key={loc.id} position={{ lat: loc.lat, lng: loc.lng }} zIndex={0} onClick={() => onSelectSite(loc)}>
-          <DeployedSitePin />
-        </AdvancedMarker>
-      ))}
-      {showGarages && garages.map(g => (
-        <AdvancedMarker key={g.id} position={{ lat: g.lat, lng: g.lng }} zIndex={0} onClick={() => onSelectGarage(g)}>
-          <GaragePin operator={g.operator_guess} capacity={g.capacity} />
-        </AdvancedMarker>
-      ))}
-      {accounts.map(acct => (
-        <AdvancedMarker key={acct.id} position={{ lat: acct.hqLat, lng: acct.hqLng }} zIndex={getMarkerZ(acct)} onClick={() => onSelectAccount(acct)}>
-          <AccountPin account={acct} tenantLogo={tenantLogo} />
-        </AdvancedMarker>
-      ))}
-    </>
-  );
-}
-
-/* ── Map viewport sync ── */
-interface ViewportHint { lat: number; lng: number; zoom: number }
-
-function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
-  const map = useMap();
-  const prevRef = useRef<string>("");
-  useEffect(() => {
-    if (!map || !hint) return;
-    const key = `${hint.lat},${hint.lng},${hint.zoom}`;
-    if (key === prevRef.current) return;
-    prevRef.current = key;
-    map.panTo({ lat: hint.lat, lng: hint.lng });
-    map.setZoom(hint.zoom);
-  }, [map, hint]);
-  return null;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -246,20 +108,18 @@ function TenantSetupChat({ tenant, accountCount, onAccountsAdded, externalMessag
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const injectedCountRef = useRef(0);
 
-  // Auto-start with welcome message
   useEffect(() => {
     if (messages.length === 0) {
       const welcome: ChatMessage = {
         role: "assistant",
         content: accountCount > 0
           ? `Welcome back to the **${tenant.name}** pipeline. You have **${accountCount} accounts** loaded.\n\nI can help you:\n- 🔍 Research competitors and prospects\n- 👥 Find decision-makers at target accounts\n- 📊 Analyze market opportunities\n\nWhat would you like to do?`
-          : `Let's build the **${tenant.name}** account pipeline from scratch.\n\nI'll auto-research your company and industry to seed the pipeline with:\n- 🎯 Target accounts (ISOs, merchants, fintechs)\n- ⚔️ Key competitors\n- 🏢 Strategic partners\n\nTo get started, just say **"set up my pipeline"** or tell me about a specific company to research.`,
+          : `Let's build the **${tenant.name}** account pipeline from scratch.\n\nI'll auto-research your company and industry to seed the pipeline with:\n- 🎯 Target accounts\n- ⚔️ Key competitors\n- 🏢 Strategic partners\n\nTo get started, just say **"set up my pipeline"** or tell me about a specific company to research.`,
       };
       setMessages([welcome]);
     }
   }, []);
 
-  // Inject external messages
   useEffect(() => {
     if (externalMessages && externalMessages.length > injectedCountRef.current) {
       const newMsgs = externalMessages.slice(injectedCountRef.current);
@@ -355,7 +215,6 @@ Keep responses focused and actionable. Use markdown formatting.`;
     }
   };
 
-  // Render pills from [[pill text]] syntax
   const renderMessageContent = (content: string) => {
     const parts = content.split(/(\[\[[^\]]+\]\])/g);
     const elements: React.ReactNode[] = [];
@@ -461,13 +320,6 @@ Keep responses focused and actionable. Use markdown formatting.`;
     </div>
   );
 }
-/* ── Types for extracted targets ── */
-interface ResearchTarget {
-  name: string;
-  domain?: string;
-  description: string;
-  rationale: string;
-}
 
 /* ── Live Perplexity research stream hook ── */
 function useLiveResearchStream() {
@@ -544,20 +396,16 @@ function useLiveResearchStream() {
 
           try {
             const parsed = JSON.parse(jsonStr);
-
             if (parsed.type === "phase" && parsed.phase) {
               const p = parsed.phase;
               setPhases(prev => prev.map(ph => ph.id === p.id ? { ...ph, ...p } : ph));
             }
-
             if (parsed.type === "citations") {
               setCitations(parsed.citations || []);
             }
-
             if (parsed.type === "targets" && parsed.targets) {
               setTargets(parsed.targets);
             }
-
             if (parsed.type === "error") {
               console.error("Research error:", parsed.error);
             }
@@ -571,7 +419,6 @@ function useLiveResearchStream() {
       if (e.name !== "AbortError") {
         console.error("Research stream error:", e);
         setError(e.message || "Research failed");
-        // Mark any incomplete phases as error
         setPhases(prev => prev.map(ph => ph.status === "active" ? { ...ph, status: "pending" as const } : ph));
       }
     } finally {
@@ -603,80 +450,22 @@ export default function TenantAccountMap() {
   const [seededTargets, setSeededTargets] = useState<Set<string>>(new Set());
   const [researchDomain, setResearchDomain] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-  const [showDeployed, setShowDeployed] = useState(false);
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
   const [loadingLeads, setLoadingLeads] = useState<Set<string>>(new Set());
   const [activityLog, setActivityLog] = useState<Record<string, string[]>>({});
-  const [showGarages, setShowGarages] = useState(false);
-  const [laGarages, setLaGarages] = useState<DiscoveredGarage[]>([]);
-  const [showOnlyOperators, setShowOnlyOperators] = useState(true);
-  const [viewportHint, setViewportHint] = useState<ViewportHint | null>(null);
   const [showResearchDetails, setShowResearchDetails] = useState(false);
   const [chatExternalMessages, setChatExternalMessages] = useState<ChatMessage[]>([]);
   const [autoSeeded, setAutoSeeded] = useState(false);
-
-  const displayedGarages = useMemo(() =>
-    showOnlyOperators ? laGarages.filter(g => g.operator_guess) : laGarages
-  , [laGarages, showOnlyOperators]);
 
   const selectedAccount = useMemo(() => allAccounts.find(a => a.id === selectedAccountId) ?? null, [selectedAccountId, allAccounts]);
 
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
-    if (a.hqLat && a.hqLng) {
-      setViewportHint({ lat: a.hqLat, lng: a.hqLng, zoom: 12 });
-    }
   }, []);
 
   const handleBack = useCallback(() => {
     setSelectedAccountId(null);
   }, []);
-
-  const handleSeedTarget = useCallback(async (target: ResearchTarget, findContactsFn: (account: FlashAccount) => void) => {
-    if (seedingTarget || seededTargets.has(target.name)) return;
-    setSeedingTarget(target.name);
-    try {
-      const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-      const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
-      const newAccount: FlashAccount = {
-        id: accountId,
-        name: target.name,
-        accountType: "garage_operator" as AccountType,
-        stage: "whitespace" as AccountStage,
-        estimatedSpaces: "N/A",
-        facilityCount: "N/A",
-        focusArea: target.rationale,
-        hqCity: "",
-        hqLat: 0,
-        hqLng: 0,
-        website: `https://${domain}`,
-        differentiator: "",
-      };
-
-      await (supabase.from("flash_accounts") as any).upsert({
-        id: accountId,
-        name: target.name,
-        tenant_slug: tenant.slug,
-        account_type: "garage_operator",
-        stage: "whitespace",
-        website: `https://${domain}`,
-        notes: `${target.rationale}: ${target.description}`,
-        focus_area: target.rationale,
-        hq_city: "",
-      }, { onConflict: "id" });
-
-      setSeededTargets(prev => new Set(prev).add(target.name));
-      refetch();
-      setSelectedAccountId(accountId);
-
-      // Auto-trigger Apollo contact discovery
-      setTimeout(() => findContactsFn(newAccount), 500);
-    } catch (e) {
-      console.error("Seed target failed:", e);
-    } finally {
-      setSeedingTarget(null);
-    }
-  }, [seedingTarget, seededTargets, tenant.slug, refetch]);
 
   const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
@@ -790,11 +579,10 @@ export default function TenantAccountMap() {
       }
       refetch();
 
-      // Inject summary into chat
       const elapsed = Math.round(demoElapsed);
       const summary: ChatMessage = {
         role: "assistant",
-        content: `✅ **Research complete** — analyzed **${researchDomain || "cliq.com"}** in ${elapsed}s.\n\nFound **${researchTargets.length} strategic targets** across your market. All accounts have been added to the pipeline.\n\n[[Find contacts for all]] [[Show research details]] [[Run another domain]]`,
+        content: `✅ **Research complete** — analyzed **${researchDomain || tenant.slug + ".com"}** in ${elapsed}s.\n\nFound **${researchTargets.length} strategic targets** across your market. All accounts have been added to the pipeline.\n\n[[Find contacts for all]] [[Show research details]] [[Run another domain]]`,
       };
       setChatExternalMessages(prev => [...prev, summary]);
     };
@@ -810,10 +598,7 @@ export default function TenantAccountMap() {
       setResearchDomain("");
       setAutoSeeded(false);
       setSeededTargets(new Set());
-      // Reset phases by triggering a re-render with pending state
-      // The useLiveResearchStream hook resets when start() is called
     } else if (pill === "Find contacts for all") {
-      // Batch find contacts for all seeded accounts
       const seededAccounts = allAccounts.filter(a => a.id.startsWith("target-"));
       for (const acct of seededAccounts.slice(0, 5)) {
         setTimeout(() => handleFindContacts(acct), 500);
@@ -832,292 +617,170 @@ export default function TenantAccountMap() {
   const isRunning = demoRunning || (!hasError && demoPhases.some(p => p.status !== "pending") && !researchComplete);
   const isComplete = researchComplete && !hasError;
 
-  // ── Non-map layout (chat + list hybrid) ──
-  if (!tenant.featureFlags.showMap) {
-    return (
-      <div className="flex h-[calc(100vh-48px)] w-full">
-        {/* Left panel — state machine */}
-        <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-y-auto bg-background">
-          <div className="max-w-4xl mx-auto w-full px-8 py-8 flex-1 flex flex-col">
-            {/* INITIAL: URL input */}
-            {isInitial && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-6">
-                <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Zap className="w-7 h-7 text-primary" />
-                </div>
-                <div className="text-center space-y-2">
-                  <h2 className="text-xl font-medium text-foreground">ICP Research Pipeline</h2>
-                  <p className="text-sm text-muted-foreground max-w-md">
-                    Enter a company website to run deep AI research — market position, buyer personas, competitors, and pipeline targets.
-                  </p>
-                </div>
-                <div className="flex gap-2 w-full max-w-md">
-                  <input
-                    type="text"
-                    value={researchDomain}
-                    onChange={e => setResearchDomain(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) { setAutoSeeded(false); startResearch(researchDomain.trim(), tenant.contextPrompt); } }}
-                    placeholder="e.g. cliq.com"
-                    className="flex-1 h-11 rounded-md border border-input bg-background px-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                  <Button
-                    onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }}
-                    size="lg"
-                    className="gap-2"
-                    disabled={demoRunning}
-                  >
-                    <Zap className="w-4 h-4" />
-                    Research
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">Powered by Perplexity Deep Research — takes ~90-120 seconds</p>
-              </div>
-            )}
-
-            {/* RUNNING: Compact progress */}
-            {isRunning && (
-              <div className="flex-1 flex items-center justify-center">
-                <ResearchProgressCompact
-                  targetDomain={researchDomain || "cliq.com"}
-                  phases={demoPhases}
-                  elapsedSeconds={demoElapsed}
-                />
-              </div>
-            )}
-
-            {/* ERROR: Research failed */}
-            {hasError && !isRunning && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-6">
-                <div className="size-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
-                  <Zap className="w-7 h-7 text-destructive" />
-                </div>
-                <div className="text-center space-y-2">
-                  <h2 className="text-xl font-medium text-foreground">Research Failed</h2>
-                  <p className="text-sm text-muted-foreground max-w-md">
-                    {researchError || "Something went wrong during research. Please try again."}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }}
-                    size="lg"
-                    className="gap-2"
-                  >
-                    <Zap className="w-4 h-4" />
-                    Retry
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {isComplete && (
-              <div className="flex flex-col h-full">
-                <div className="px-4 pt-4 pb-3">
-                  <div className="flex items-center gap-3">
-                    {tenant.logo ? (
-                      <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain rounded" />
-                    ) : (
-                      <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
-                    )}
-                    <div>
-                      <h2 className="text-lg font-bold leading-tight">{tenant.name} Pipeline</h2>
-                      <p className="text-xs text-muted-foreground">
-                        {accountsLoading ? "Loading..." : `${allAccounts.length} accounts`}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {selectedAccount ? (
-                  <AccountDetailInline
-                    account={selectedAccount}
-                    onBack={handleBack}
-                    onFindContacts={handleFindContacts}
-                    loadingLeads={loadingLeads.has(selectedAccount.id)}
-                    activityLog={activityLog[selectedAccount.id] || []}
-                    streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
-                    onStageChange={() => {}}
-                  />
-                ) : allAccounts.length > 0 ? (
-                  <AccountListView
-                    accounts={allAccounts}
-                    selectedAccountId={selectedAccountId}
-                    onSelectAccount={handleSelectAccount}
-                  />
-                ) : (
-                  <div className="flex-1 flex items-center justify-center px-6">
-                    <div className="text-center space-y-3">
-                      <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
-                      <p className="text-sm text-muted-foreground">
-                        No accounts yet. Use the chat to build your pipeline.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right panel — Chat */}
-        <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <Bot className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">{tenant.name} Pipeline Assistant</span>
-          </div>
-          <TenantSetupChat
-            tenant={tenant}
-            accountCount={allAccounts.length}
-            onAccountsAdded={refetch}
-            externalMessages={chatExternalMessages}
-            onPillClick={handlePillClick}
-          />
-        </div>
-
-        {/* Research details dialog */}
-        <Dialog open={showResearchDetails} onOpenChange={setShowResearchDetails}>
-          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-            <DialogTitle>Research Details — {researchDomain || "cliq.com"}</DialogTitle>
-            <DialogDescription>Full research report from the ICP pipeline</DialogDescription>
-            <ICPResearchStream
-              targetDomain={researchDomain || "cliq.com"}
-              phases={demoPhases}
-              elapsedSeconds={demoElapsed}
-            />
-            {researchCitations.length > 0 && (
-              <details className="mt-4">
-                <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                  📚 {researchCitations.length} sources cited
-                </summary>
-                <div className="mt-2 space-y-1 text-xs text-muted-foreground max-h-40 overflow-y-auto">
-                  {researchCitations.map((c, i) => (
-                    <a key={i} href={c} target="_blank" rel="noopener" className="block truncate hover:text-primary">[{i + 1}] {c}</a>
-                  ))}
-                </div>
-              </details>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
-    );
-  }
-
-  // ── Map-based layout (Flash and other map tenants) ──
-  if (!API_KEY) {
-    return (
-      <div className="flex items-center justify-center min-h-[80vh] p-8">
-        <div className="text-center max-w-md space-y-4">
-          <MapPin className="w-12 h-12 mx-auto text-muted-foreground" />
-          <h1 className="text-2xl font-bold">Google Maps API Key Required</h1>
-        </div>
-      </div>
-    );
-  }
-
-  const sidebar = (
-    <div className="flex flex-col h-full bg-background">
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex items-center gap-3">
-          {tenant.logo ? (
-            <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain" />
-          ) : (
-            <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
-          )}
-          <div>
-            <h2 className="text-lg font-bold leading-tight">{tenant.name} Accounts</h2>
-            <p className="text-xs text-muted-foreground">{allAccounts.length} accounts · Pipeline & intelligence</p>
-          </div>
-        </div>
-      </div>
-
-      {selectedAccount ? (
-        <AccountDetailInline
-          account={selectedAccount}
-          onBack={handleBack}
-          onFindContacts={handleFindContacts}
-          loadingLeads={loadingLeads.has(selectedAccount.id)}
-          activityLog={activityLog[selectedAccount.id] || []}
-          streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
-          onStageChange={() => {}}
-        />
-      ) : (
-        <AccountListView
-          accounts={allAccounts}
-          selectedAccountId={selectedAccountId}
-          onSelectAccount={handleSelectAccount}
-        />
-      )}
-
-      {tenant.featureFlags.showGarageDiscovery && (
-        <DataPipelineSection
-          accounts={allAccounts}
-          showGarages={showGarages}
-          onToggleGarages={setShowGarages}
-          garages={laGarages}
-          onGaragesLoaded={setLaGarages}
-        />
-      )}
-    </div>
-  );
-
   return (
-    <div className="flex h-screen w-full">
-      {!isMobile && (
-        <div className="w-[440px] border-r border-border bg-background shrink-0 flex flex-col overflow-hidden">
-          {sidebar}
-        </div>
-      )}
-
-      <div className="flex-1 relative overflow-hidden">
-        {isMobile && (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="sm" className="absolute top-3 left-3 z-10 shadow-lg">
-                <Filter className="w-4 h-4 mr-1" /> Accounts
-                <Badge variant="secondary" className="ml-1.5 text-xs">{allAccounts.length}</Badge>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[440px] p-0">
-              <SheetTitle className="sr-only">Account Panel</SheetTitle>
-              {sidebar}
-            </SheetContent>
-          </Sheet>
-        )}
-
-        {/* Legend */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
-          {(Object.keys(tenant.stages) as AccountStage[]).map(s => (
-            <div key={s} className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tenant.stages[s]?.markerColor || STAGE_CONFIG[s]?.markerColor }} />
-              <span>{tenant.stages[s]?.label || STAGE_CONFIG[s]?.label}</span>
+    <div className="flex h-[calc(100vh-48px)] w-full">
+      {/* Left panel — state machine */}
+      <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-y-auto bg-background">
+        <div className="max-w-4xl mx-auto w-full px-8 py-8 flex-1 flex flex-col">
+          {/* INITIAL: URL input */}
+          {isInitial && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-6">
+              <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Zap className="w-7 h-7 text-primary" />
+              </div>
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-medium text-foreground">ICP Research Pipeline</h2>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Enter a company website to run deep AI research — market position, buyer personas, competitors, and pipeline targets.
+                </p>
+              </div>
+              <div className="flex gap-2 w-full max-w-md">
+                <input
+                  type="text"
+                  value={researchDomain}
+                  onChange={e => setResearchDomain(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) { setAutoSeeded(false); startResearch(researchDomain.trim(), tenant.contextPrompt); } }}
+                  placeholder={`e.g. ${tenant.slug}.com`}
+                  className="flex-1 h-11 rounded-md border border-input bg-background px-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <Button
+                  onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim() || `${tenant.slug}.com`, tenant.contextPrompt); }}
+                  size="lg"
+                  className="gap-2"
+                  disabled={demoRunning}
+                >
+                  <Zap className="w-4 h-4" />
+                  Research
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Powered by Perplexity Deep Research — takes ~90-120 seconds</p>
             </div>
-          ))}
-          {showGarages && (
-            <div className="flex items-center gap-1.5 border-l border-border pl-4">
-              <Warehouse className="w-3 h-3 text-muted-foreground" />
-              <span>Garages ({displayedGarages.length})</span>
+          )}
+
+          {/* RUNNING: Compact progress */}
+          {isRunning && (
+            <div className="flex-1 flex items-center justify-center">
+              <ResearchProgressCompact
+                targetDomain={researchDomain || `${tenant.slug}.com`}
+                phases={demoPhases}
+                elapsedSeconds={demoElapsed}
+              />
+            </div>
+          )}
+
+          {/* ERROR: Research failed */}
+          {hasError && !isRunning && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-6">
+              <div className="size-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                <Zap className="w-7 h-7 text-destructive" />
+              </div>
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-medium text-foreground">Research Failed</h2>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  {researchError || "Something went wrong during research. Please try again."}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => { setAutoSeeded(false); startResearch(researchDomain.trim() || `${tenant.slug}.com`, tenant.contextPrompt); }}
+                  size="lg"
+                  className="gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  Retry
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {isComplete && (
+            <div className="flex flex-col h-full">
+              <div className="px-4 pt-4 pb-3">
+                <div className="flex items-center gap-3">
+                  {tenant.logo ? (
+                    <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain rounded" />
+                  ) : (
+                    <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
+                  )}
+                  <div>
+                    <h2 className="text-lg font-bold leading-tight">{tenant.name} Pipeline</h2>
+                    <p className="text-xs text-muted-foreground">
+                      {accountsLoading ? "Loading..." : `${allAccounts.length} accounts`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {selectedAccount ? (
+                <AccountDetailInline
+                  account={selectedAccount}
+                  onBack={handleBack}
+                  onFindContacts={handleFindContacts}
+                  loadingLeads={loadingLeads.has(selectedAccount.id)}
+                  activityLog={activityLog[selectedAccount.id] || []}
+                  streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
+                  onStageChange={() => {}}
+                />
+              ) : allAccounts.length > 0 ? (
+                <AccountListView
+                  accounts={allAccounts}
+                  selectedAccountId={selectedAccountId}
+                  onSelectAccount={handleSelectAccount}
+                />
+              ) : (
+                <div className="flex-1 flex items-center justify-center px-6">
+                  <div className="text-center space-y-3">
+                    <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
+                    <p className="text-sm text-muted-foreground">
+                      No accounts yet. Use the chat to build your pipeline.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        <APIProvider apiKey={API_KEY}>
-          <Map mapId={MAP_ID} defaultCenter={{ lat: tenant.mapCenter.lat, lng: tenant.mapCenter.lng }} defaultZoom={tenant.mapCenter.zoom}
-            gestureHandling="greedy" disableDefaultUI={false} style={{ width: "100%", height: "100%" }}>
-            <MapContent
-              accounts={allAccounts}
-              onSelectAccount={handleSelectAccount}
-              showDeployed={showDeployed}
-              deployedLocations={FLASH_LOCATIONS}
-              onSelectSite={() => {}}
-              garages={displayedGarages}
-              showGarages={showGarages}
-              onSelectGarage={() => {}}
-              tenantLogo={tenant.logo}
-            />
-            <MapViewportSync hint={viewportHint} />
-          </Map>
-        </APIProvider>
       </div>
+
+      {/* Right panel — Chat */}
+      <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <Bot className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium">{tenant.name} Pipeline Assistant</span>
+        </div>
+        <TenantSetupChat
+          tenant={tenant}
+          accountCount={allAccounts.length}
+          onAccountsAdded={refetch}
+          externalMessages={chatExternalMessages}
+          onPillClick={handlePillClick}
+        />
+      </div>
+
+      {/* Research details dialog */}
+      <Dialog open={showResearchDetails} onOpenChange={setShowResearchDetails}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogTitle>Research Details — {researchDomain || `${tenant.slug}.com`}</DialogTitle>
+          <DialogDescription>Full research report from the ICP pipeline</DialogDescription>
+          <ICPResearchStream
+            targetDomain={researchDomain || `${tenant.slug}.com`}
+            phases={demoPhases}
+            elapsedSeconds={demoElapsed}
+          />
+          {researchCitations.length > 0 && (
+            <details className="mt-4">
+              <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                📚 {researchCitations.length} sources cited
+              </summary>
+              <div className="mt-2 space-y-1 text-xs text-muted-foreground max-h-40 overflow-y-auto">
+                {researchCitations.map((c, i) => (
+                  <a key={i} href={c} target="_blank" rel="noopener" className="block truncate hover:text-primary">[{i + 1}] {c}</a>
+                ))}
+              </div>
+            </details>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -11,10 +11,10 @@ const TenantContext = createContext<TenantContextValue | null>(null);
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const slug = tenantSlug || "flash";
+  const slug = tenantSlug || "cliq";
   
   const value = useMemo<TenantContextValue>(() => {
-    const tenant = getTenant(slug) || TENANTS.flash;
+    const tenant = getTenant(slug) || TENANTS.cliq;
     return { tenant, tenantSlug: tenant.slug };
   }, [slug]);
 
@@ -28,8 +28,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
 export function useTenant(): TenantContextValue {
   const ctx = useContext(TenantContext);
   if (!ctx) {
-    // Fallback for components used outside TenantProvider
-    return { tenant: TENANTS.flash, tenantSlug: "flash" };
+    return { tenant: TENANTS.cliq, tenantSlug: "cliq" };
   }
   return ctx;
 }
