@@ -258,7 +258,7 @@ export default function AccountListView({ accounts, selectedAccountId, onSelectA
                     {isFlashHQ ? "Flash (You)" : acct.name}
                   </span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-muted text-muted-foreground">
-                    {TYPE_LABELS[acct.accountType] || acct.accountType}
+                    {typeLabels[acct.accountType] || acct.accountType}
                   </span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium text-white shrink-0" style={{ backgroundColor: cfg.markerColor }}>
                     {cfg.label}
