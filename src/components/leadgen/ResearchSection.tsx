@@ -161,38 +161,18 @@ export function useResearchStream() {
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const { job_id } = await resp.json();
       if (!job_id) throw new Error("No job_id returned");
+      jobIdRef.current = job_id;
 
-      pollingRef.current = setInterval(async () => {
-        try {
-          const { data, error: fetchErr } = await (supabase.from("research_jobs") as any)
-            .select("status, progress, current_phase, report_text, error")
-            .eq("id", job_id)
-            .single();
-          if (fetchErr || !data) return;
-          if (data.status === "complete") {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-            if (timerRef.current) clearInterval(timerRef.current);
-            updatePhasesFromElapsed(0, true);
-            if (data.report_text) setReport(parseReportText(data.report_text));
-            setRunning(false);
-            runningRef.current = false;
-          } else if (data.status === "failed") {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-            if (timerRef.current) clearInterval(timerRef.current);
-            setError(data.error || "Research failed");
-            setRunning(false);
-            runningRef.current = false;
-          }
-        } catch (pollErr) { console.error("Poll error:", pollErr); }
-      }, 3000);
+      startPolling(job_id);
     } catch (e: any) {
       console.error("Research start error:", e);
       setError(e.message || "Failed to start research");
       if (timerRef.current) clearInterval(timerRef.current);
       setRunning(false);
       runningRef.current = false;
+      jobIdRef.current = null;
     }
-  }, [updatePhasesFromElapsed]);
+  }, [updatePhasesFromElapsed, startPolling]);
 
   useEffect(() => {
     return () => {
