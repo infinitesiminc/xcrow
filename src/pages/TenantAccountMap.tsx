@@ -496,6 +496,7 @@ export default function TenantAccountMap() {
   const isMobile = useIsMobile();
   const { tenant } = useTenant();
   const { accounts: allAccounts, loading: accountsLoading, refetch } = useDBAccounts(tenant.slug);
+  const { phases: demoPhases, elapsed: demoElapsed } = useDemoResearchStream();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [showDeployed, setShowDeployed] = useState(false);
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
