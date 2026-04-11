@@ -352,10 +352,15 @@ function useLiveResearchStream() {
   const [error, setError] = useState<string | null>(null);
   const [citations, setCitations] = useState<string[]>([]);
   const [targets, setTargets] = useState<ResearchTarget[]>([]);
+  const phasesRef = useRef<ResearchPhase[]>(INITIAL);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    phasesRef.current = phases;
+  }, [phases]);
 
   const runningRef = useRef(false);
 
@@ -476,7 +481,13 @@ function useLiveResearchStream() {
       }
 
       if (!controller.signal.aborted && streamEndedUnexpectedly && isCurrentRequest()) {
-        throw new Error("Research stream ended early");
+        const hasMeaningfulProgress = phasesRef.current.some((phase) =>
+          phase.status === "complete" || phase.status === "active" || (phase.findings?.length ?? 0) > 0
+        );
+
+        if (!hasMeaningfulProgress) {
+          throw new Error("Research stream ended early");
+        }
       }
     } catch (e: any) {
       if (e.name !== "AbortError" && isCurrentRequest()) {

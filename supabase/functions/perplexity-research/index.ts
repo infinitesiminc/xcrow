@@ -206,9 +206,13 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           }
 
           const headerPhases = sections.map(s => detectPhase(s.header));
-          const latestPhase = Math.max(...headerPhases, 0);
-          if (latestPhase > currentPhaseIdx) {
-            for (let i = currentPhaseIdx; i < latestPhase; i++) {
+          const sequentialPhase = headerPhases.find((phaseIdx, index) => {
+            if (phaseIdx <= currentPhaseIdx) return false;
+            return headerPhases.slice(0, index).every((seenPhaseIdx) => seenPhaseIdx >= phaseIdx - 1);
+          });
+
+          if (sequentialPhase !== undefined && sequentialPhase > currentPhaseIdx) {
+            for (let i = currentPhaseIdx; i < sequentialPhase; i++) {
               if (!completedPhases.has(i)) {
                 completedPhases.add(i);
                 const p = PHASES[i];
@@ -218,11 +222,11 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
                 });
               }
             }
-            currentPhaseIdx = latestPhase;
+            currentPhaseIdx = sequentialPhase;
             const activeP = PHASES[currentPhaseIdx];
             send({
               type: "phase",
-              phase: { id: activeP.id, label: activeP.label, status: "active", sublabel: "Analyzing", progress: 10 },
+              phase: { id: activeP.id, label: activeP.label, status: "active", sublabel: "Analyzing", progress: 10, findings: phaseFindings[activeP.id] || [] },
             });
           }
         }
