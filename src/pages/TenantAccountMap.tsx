@@ -779,9 +779,56 @@ export default function TenantAccountMap() {
               />
             )}
             {!demoRunning && demoPhases.every(p => p.status === "complete") && (
-              <div className="flex flex-col items-center gap-4 pt-6">
+              <div className="flex flex-col items-center gap-6 pt-6 w-full max-w-2xl mx-auto">
+                {/* Extracted targets → Pipeline */}
+                {researchTargets.length > 0 && (
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      <h3 className="text-sm font-semibold text-foreground">Strategic Targets Identified</h3>
+                      <Badge variant="secondary" className="text-xs">{researchTargets.length}</Badge>
+                    </div>
+                    <div className="grid gap-2">
+                      {researchTargets.map((t, i) => (
+                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                            {t.name.charAt(0)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground truncate">{t.name}</span>
+                              {t.domain && (
+                                <span className="text-xs text-muted-foreground">{t.domain}</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-1">{t.rationale}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={seededTargets.has(t.name) ? "secondary" : "default"}
+                            className="shrink-0 gap-1.5 text-xs"
+                            disabled={seedingTarget === t.name || seededTargets.has(t.name)}
+                            onClick={() => handleSeedTarget(t)}
+                          >
+                            {seedingTarget === t.name ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : seededTargets.has(t.name) ? (
+                              <>✓ Added</>
+                            ) : (
+                              <>
+                                <Zap className="w-3 h-3" />
+                                Add to Pipeline
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {researchCitations.length > 0 && (
-                  <details className="w-full max-w-2xl">
+                  <details className="w-full">
                     <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
                       📚 {researchCitations.length} sources cited
                     </summary>
@@ -800,7 +847,7 @@ export default function TenantAccountMap() {
                     placeholder="Try another domain..."
                     className="h-9 rounded-md border border-input bg-background px-3 text-sm w-48"
                   />
-                  <Button onClick={() => startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt)} variant="outline" size="sm" className="gap-2">
+                  <Button onClick={() => { setSeededTargets(new Set()); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }} variant="outline" size="sm" className="gap-2">
                     <Zap className="w-3.5 h-3.5" />
                     Run Again
                   </Button>
