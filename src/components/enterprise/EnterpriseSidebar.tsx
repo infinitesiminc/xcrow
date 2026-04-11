@@ -14,29 +14,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { LayoutDashboard, Building2, Plus } from "lucide-react";
-import flashLogo from "@/assets/flash-logo.png";
-
-export interface EnterpriseAccount {
-  id: string;
-  name: string;
-  slug: string;
-  logo?: string;
-  color?: string;
-}
-
-const ENTERPRISE_ACCOUNTS: EnterpriseAccount[] = [
-  {
-    id: "flash",
-    name: "Flash Parking",
-    slug: "flash",
-    color: "hsl(270 70% 55%)",
-  },
-];
+import { getAllTenants } from "@/config/tenants";
 
 export default function EnterpriseSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const tenants = getAllTenants();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -78,34 +62,31 @@ export default function EnterpriseSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-
         <SidebarGroup>
           <SidebarGroupLabel>Accounts</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {ENTERPRISE_ACCOUNTS.map((account) => {
-                const isActive = location.pathname === `/admin/${account.slug}`;
+              {tenants.map((tenant) => {
+                const isActive = location.pathname === `/admin/${tenant.slug}`;
                 return (
-                  <SidebarMenuItem key={account.id}>
+                  <SidebarMenuItem key={tenant.slug}>
                     <SidebarMenuButton asChild>
                       <NavLink
-                        to={`/admin/${account.slug}`}
+                        to={`/admin/${tenant.slug}`}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
                           isActive
                             ? "bg-accent text-accent-foreground font-medium"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         }`}
                       >
-                        {account.slug === "flash" ? (
-                          <img src={flashLogo} alt="Flash" className="h-4 w-4 shrink-0 rounded" />
+                        {tenant.logo ? (
+                          <img src={tenant.logo} alt={tenant.name} className="h-4 w-4 shrink-0 rounded" />
                         ) : (
-                          <div
-                            className="h-4 w-4 shrink-0 rounded bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary"
-                          >
-                            {account.name.charAt(0)}
+                          <div className="h-4 w-4 shrink-0 rounded bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary">
+                            {tenant.name.charAt(0)}
                           </div>
                         )}
-                        {!collapsed && <span>{account.name}</span>}
+                        {!collapsed && <span>{tenant.name}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

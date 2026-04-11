@@ -2,7 +2,7 @@ import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import EnterpriseSidebar from "@/components/enterprise/EnterpriseSidebar";
-import Navbar from "@/components/Navbar";
+import { TenantProvider } from "@/contexts/TenantContext";
 
 export default function EnterpriseLayout() {
   const { isSuperAdmin, loading } = useAuth();
@@ -20,7 +20,9 @@ export default function EnterpriseLayout() {
             <span className="text-xs font-medium text-muted-foreground">Enterprise Console</span>
           </header>
           <main className="flex-1 overflow-auto">
-            <Outlet />
+            <TenantProvider>
+              <Outlet />
+            </TenantProvider>
           </main>
         </div>
       </div>
