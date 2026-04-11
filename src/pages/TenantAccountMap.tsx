@@ -11,6 +11,7 @@ import { parseSSEStream } from "@/lib/sse-parser";
 import AccountListView from "@/components/enterprise/AccountListView";
 import AccountDetailInline from "@/components/enterprise/AccountDetailInline";
 import DataPipelineSection from "@/components/enterprise/DataPipelineSection";
+import ICPResearchStream, { type ResearchPhase } from "@/components/enterprise/ICPResearchStream";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
