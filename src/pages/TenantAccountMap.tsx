@@ -213,8 +213,9 @@ function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
 }
 
 /* ── Main page ── */
-export default function FlashParkingMap() {
+export default function TenantAccountMap() {
   const isMobile = useIsMobile();
+  const { tenant } = useTenant();
   const { accounts: allAccounts } = useDBAccounts();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [showDeployed, setShowDeployed] = useState(false);
