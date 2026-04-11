@@ -339,27 +339,31 @@ function useLiveResearchStream() {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const runningRef = useRef(false);
 
-  // Derive phases from job's current_phase + progress
-  const updatePhasesFromJob = useCallback((currentPhase: string, progress: number, status: string) => {
-    const phaseIdx = PHASE_ORDER.indexOf(currentPhase);
+  // Simulate phase progression based on elapsed time (since non-streaming won't give real-time updates)
+  const PHASE_TIMING = [15, 35, 55, 70]; // seconds when each phase "activates"
+  const phaseTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const updatePhasesFromElapsed = useCallback((elapsedSec: number, isComplete: boolean) => {
+    if (isComplete) {
+      setPhases(PHASE_ORDER.map((id, i) => ({ id, label: PHASE_LABELS[i], status: "complete" as const, progress: 100 })));
+      return;
+    }
+    let activeIdx = 0;
+    for (let i = PHASE_TIMING.length - 1; i >= 0; i--) {
+      if (elapsedSec >= PHASE_TIMING[i]) { activeIdx = i; break; }
+    }
+    const sublabels = [
+      "Analyzing website & value proposition",
+      "Mapping ICP segments & buyer personas",
+      "Scanning competitive landscape",
+      "Identifying strategic targets",
+    ];
     setPhases(PHASE_ORDER.map((id, i) => ({
       id,
       label: PHASE_LABELS[i],
-      status: status === "complete"
-        ? "complete" as const
-        : i < phaseIdx
-          ? "complete" as const
-          : i === phaseIdx
-            ? "active" as const
-            : "pending" as const,
-      progress: status === "complete"
-        ? 100
-        : i < phaseIdx
-          ? 100
-          : i === phaseIdx
-            ? progress
-            : 0,
-      sublabel: i === phaseIdx && status === "processing" ? "Deep research in progress — 30-90 seconds" : undefined,
+      status: i < activeIdx ? "complete" as const : i === activeIdx ? "active" as const : "pending" as const,
+      progress: i < activeIdx ? 100 : i === activeIdx ? Math.min(90, Math.floor(((elapsedSec - PHASE_TIMING[activeIdx]) / (PHASE_TIMING[activeIdx + 1] || 90 - PHASE_TIMING[activeIdx])) * 80) + 10) : 0,
+      sublabel: i === activeIdx ? sublabels[i] : undefined,
     })));
   }, []);
 
