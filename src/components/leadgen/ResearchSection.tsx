@@ -55,43 +55,40 @@ export function parseReportText(text: string): ParsedReport {
         let currentSection = "";
         for (const line of lines) {
           const l = line.trim().toLowerCase();
-          if (l.includes("pain") || l.includes("challenge")) currentSection = "pain";
+          if (l.includes("search title")) currentSection = "title";
+          else if (l.includes("pain") || l.includes("challenge") || l.includes("disqualif")) currentSection = "pain";
           else if (l.includes("trigger") || l.includes("buying")) currentSection = "trigger";
-          else if (l.includes("title") || l.includes("role")) currentSection = "title";
+          else if (l.includes("primary buyer") || l.includes("secondary buyer")) {
+            // Extract inline title from "**Primary buyer**: VP of Sales, ..."
+            const inlineMatch = line.match(/\*\*(?:Primary|Secondary)\s+buyer\*\*:\s*(.+)/i);
+            if (inlineMatch) {
+              const rawTitle = inlineMatch[1].split(",")[0].replace(/\*\*/g, "").trim();
+              // Only add if it looks like a real job title (short, has a role word)
+              if (rawTitle.length < 60 && rawTitle.length > 2) titles.push(rawTitle);
+            }
+            currentSection = "";
+            continue;
+          }
 
           const bulletMatch = line.match(/^[-*]\s+(.+)/);
           if (bulletMatch) {
             const val = bulletMatch[1].replace(/\*\*/g, "").trim();
             if (currentSection === "pain") painPoints.push(val);
             else if (currentSection === "trigger") buyingTriggers.push(val);
-            else if (currentSection === "title") titles.push(val);
-            else painPoints.push(val); // default to pain
+            else if (currentSection === "title") {
+              // Clean up list items like "- VP of Sales" or "- \"Director of Payments\""
+              const clean = val.replace(/^["']+|["']+$/g, "").trim();
+              if (clean.length > 2 && clean.length < 60) titles.push(clean);
+            }
           }
         }
 
-        // If no explicit titles found, derive searchable job titles from persona name
+        // Fallback: generate generic decision-maker titles if none found
         if (titles.length === 0) {
-          // Strip "ICP Segment N:" prefixes and generic fluff
-          const cleanTitle = title
-            .replace(/^ICP\s+Segment\s*\d*:?\s*/i, "")
-            .replace(/\s+Seeking\s+.+$/i, "")
-            .replace(/\s+and\s+Payment\s+.+$/i, "")
-            .trim();
-
-          // Try to extract meaningful role keywords
-          const roleKeywords = ["CEO", "CTO", "CFO", "COO", "VP", "Director", "Head", "Owner", "President", "Manager", "Partner"];
-          const hasRole = roleKeywords.some(r => cleanTitle.toLowerCase().includes(r.toLowerCase()));
-
-          if (hasRole) {
-            titles.push(cleanTitle);
-          } else {
-            // Generate plausible decision-maker titles from the segment description
-            const segment = cleanTitle.split(/[,()]/)[0].trim();
-            titles.push(`VP ${segment}`, `Director ${segment}`, `Head of ${segment}`, `${segment} Director`);
-          }
+          titles.push("VP of Sales", "Director of Business Development", "Head of Partnerships", "Chief Revenue Officer");
         }
 
-        personas.push({ title, painPoints: painPoints.slice(0, 4), buyingTriggers: buyingTriggers.slice(0, 3), titles });
+        personas.push({ title, painPoints: painPoints.slice(0, 4), buyingTriggers: buyingTriggers.slice(0, 3), titles: titles.slice(0, 5) });
       }
     }
 
