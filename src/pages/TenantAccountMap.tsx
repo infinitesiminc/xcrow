@@ -414,6 +414,53 @@ Keep responses focused and actionable. Use markdown formatting.`;
   );
 }
 
+/* ── Demo phases for the research stream mockup ── */
+const DEMO_PHASES: ResearchPhase[] = [
+  {
+    id: "PHASE_01",
+    label: "Website DNA & Core Premise",
+    status: "complete",
+    progress: 100,
+    findings: [
+      {
+        label: "Extracted Value Proposition",
+        value: "Next-gen payment orchestration platform for ISOs and merchant acquirers — enabling white-label payment processing with embedded analytics.",
+        confidence: 96,
+      },
+      {
+        label: "Semantic Themes Identified",
+        value: "\"Payment Facilitation\" (98%), \"ISO Management\" (94%), \"Merchant Onboarding\" (91%), \"Revenue Share Models\" (87%)",
+        confidence: 94,
+      },
+    ],
+  },
+  {
+    id: "PHASE_02",
+    label: "ICP & Persona Synapse",
+    sublabel: "Synthesizing",
+    status: "active",
+    progress: 62,
+    findings: [
+      {
+        label: "Tier 1: VP of Payment Operations",
+        value: "Primary pain point: managing multiple processor integrations across a fragmented ISO portfolio. Motivated by reducing integration costs and accelerating merchant boarding time from weeks to hours.",
+        confidence: 91,
+      },
+    ],
+    streamingText: "Tier 2: Head of Strategic Partnerships — This persona controls channel partner relationships and is actively evaluating white-label solutions to expand their ISO network without additional headcount. Key trigger: recent industry consolidation forcing smaller ISOs to seek technology",
+  },
+  {
+    id: "PHASE_03",
+    label: "Competitor Matrix",
+    status: "pending",
+  },
+  {
+    id: "PHASE_04",
+    label: "Pipeline Seed Generation",
+    status: "pending",
+  },
+];
+
 /* ══════════════════════════════════════════════════════════
    Main page component
    ══════════════════════════════════════════════════════════ */
