@@ -11,6 +11,7 @@ import { parseSSEStream } from "@/lib/sse-parser";
 import AccountListView from "@/components/enterprise/AccountListView";
 import AccountDetailInline from "@/components/enterprise/AccountDetailInline";
 import DataPipelineSection from "@/components/enterprise/DataPipelineSection";
+import ICPResearchStream, { type ResearchPhase } from "@/components/enterprise/ICPResearchStream";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
@@ -413,6 +414,53 @@ Keep responses focused and actionable. Use markdown formatting.`;
   );
 }
 
+/* ── Demo phases for the research stream mockup ── */
+const DEMO_PHASES: ResearchPhase[] = [
+  {
+    id: "PHASE_01",
+    label: "Website DNA & Core Premise",
+    status: "complete",
+    progress: 100,
+    findings: [
+      {
+        label: "Extracted Value Proposition",
+        value: "Next-gen payment orchestration platform for ISOs and merchant acquirers — enabling white-label payment processing with embedded analytics.",
+        confidence: 96,
+      },
+      {
+        label: "Semantic Themes Identified",
+        value: "\"Payment Facilitation\" (98%), \"ISO Management\" (94%), \"Merchant Onboarding\" (91%), \"Revenue Share Models\" (87%)",
+        confidence: 94,
+      },
+    ],
+  },
+  {
+    id: "PHASE_02",
+    label: "ICP & Persona Synapse",
+    sublabel: "Synthesizing",
+    status: "active",
+    progress: 62,
+    findings: [
+      {
+        label: "Tier 1: VP of Payment Operations",
+        value: "Primary pain point: managing multiple processor integrations across a fragmented ISO portfolio. Motivated by reducing integration costs and accelerating merchant boarding time from weeks to hours.",
+        confidence: 91,
+      },
+    ],
+    streamingText: "Tier 2: Head of Strategic Partnerships — This persona controls channel partner relationships and is actively evaluating white-label solutions to expand their ISO network without additional headcount. Key trigger: recent industry consolidation forcing smaller ISOs to seek technology",
+  },
+  {
+    id: "PHASE_03",
+    label: "Competitor Matrix",
+    status: "pending",
+  },
+  {
+    id: "PHASE_04",
+    label: "Pipeline Seed Generation",
+    status: "pending",
+  },
+];
+
 /* ══════════════════════════════════════════════════════════
    Main page component
    ══════════════════════════════════════════════════════════ */
@@ -581,8 +629,19 @@ export default function TenantAccountMap() {
 
     return (
       <div className="flex h-[calc(100vh-48px)] w-full">
-        {/* Chat panel */}
-        <div className="flex-1 border-r border-border flex flex-col min-w-0">
+        {/* Research stream panel */}
+        <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-y-auto bg-background">
+          <div className="max-w-4xl mx-auto w-full px-8 py-8">
+            <ICPResearchStream
+              targetDomain="cliq.com"
+              phases={DEMO_PHASES}
+              elapsedSeconds={14.8}
+            />
+          </div>
+        </div>
+
+        {/* Account list panel */}
+        <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Bot className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">{tenant.name} Pipeline Assistant</span>
@@ -592,11 +651,6 @@ export default function TenantAccountMap() {
             accountCount={allAccounts.length}
             onAccountsAdded={refetch}
           />
-        </div>
-
-        {/* Account list panel */}
-        <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
-          {accountPanel}
         </div>
       </div>
     );
