@@ -26,11 +26,8 @@ type ApolloSearchResult =
   | { ok: true; data: any; endpoint: string }
   | { ok: false; status: number; error: string; details: string; code: string };
 
-async function searchApollo(apolloBody: Record<string, unknown>, apiKey: string): Promise<ApolloSearchResult> {
-  const endpoints = [
-    "https://api.apollo.io/api/v1/mixed_companies/search",
-    "https://api.apollo.io/api/v1/organizations/search",
-  ];
+async function searchApollo(apolloBody: Record<string, unknown>, apiKey: string, endpointList: string[]): Promise<ApolloSearchResult> {
+  const endpoints = endpointList;
 
   let lastPlanRestrictionDetails = "";
 
@@ -105,7 +102,13 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const {
-      // Search filters
+      // Search mode: "people" or "companies" (default)
+      search_mode,
+      // People search filters
+      person_titles,
+      person_seniorities,
+      q_organization_domains,
+      // Company search filters
       organization_locations = ["United States"],
       organization_num_employees_ranges,
       q_organization_keyword_tags,
@@ -117,7 +120,62 @@ Deno.serve(async (req) => {
       import_results = false,
     } = body;
 
-    // Build Apollo request body
+    // Auto-detect search mode
+    const mode = search_mode || (person_titles?.length ? "people" : "companies");
+
+    if (mode === "people") {
+      // ── People search ──
+      const apolloBody: Record<string, unknown> = {
+        page,
+        per_page: Math.min(per_page, 25),
+      };
+      if (person_titles?.length) apolloBody.person_titles = person_titles;
+      if (person_seniorities?.length) apolloBody.person_seniorities = person_seniorities;
+      if (q_organization_domains) {
+        // Apollo expects domains as newline-separated string or array
+        const domains = Array.isArray(q_organization_domains) ? q_organization_domains : q_organization_domains.split("\n").filter(Boolean);
+        apolloBody.q_organization_domains = domains.join("\n");
+      }
+      if (organization_locations?.length) apolloBody.organization_locations = organization_locations;
+
+      console.log("Apollo people search:", JSON.stringify(apolloBody));
+
+      const apolloResult = await searchApollo(apolloBody, APOLLO_API_KEY, [
+        "https://api.apollo.io/api/v1/mixed_people/search",
+        "https://api.apollo.io/api/v1/people/search",
+      ]);
+      if (!apolloResult.ok) {
+        console.error("Apollo people search failed:", apolloResult.code, apolloResult.details);
+        return respond({ error: apolloResult.error, details: apolloResult.details, code: apolloResult.code }, apolloResult.status);
+      }
+
+      const apolloData = apolloResult.data;
+      const people = apolloData.people || apolloData.contacts || [];
+      const pagination = apolloData.pagination || {};
+
+      const mapped = people.map((p: any) => ({
+        name: p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown",
+        title: p.title || null,
+        company: p.organization?.name || p.organization_name || null,
+        email: p.email || null,
+        linkedin: p.linkedin_url || null,
+        phone: p.phone_number || p.sanitized_phone || null,
+        photo_url: p.photo_url || null,
+        source: "apollo",
+      }));
+
+      return respond({
+        people: mapped,
+        pagination: {
+          page: pagination.page || page,
+          per_page: pagination.per_page || per_page,
+          total_entries: pagination.total_entries || 0,
+          total_pages: Math.ceil((pagination.total_entries || 0) / per_page),
+        },
+      });
+    }
+
+    // ── Company search (existing logic) ──
     const apolloBody: Record<string, unknown> = {
       page,
       per_page: Math.min(per_page, 100),
@@ -129,9 +187,12 @@ Deno.serve(async (req) => {
     if (q_organization_name) apolloBody.q_organization_name = q_organization_name;
     if (latest_funding_stage) apolloBody.latest_funding_stage_cd = [latest_funding_stage];
 
-    console.log("Apollo search:", JSON.stringify(apolloBody));
+    console.log("Apollo company search:", JSON.stringify(apolloBody));
 
-    const apolloResult = await searchApollo(apolloBody, APOLLO_API_KEY);
+    const apolloResult = await searchApollo(apolloBody, APOLLO_API_KEY, [
+      "https://api.apollo.io/api/v1/mixed_companies/search",
+      "https://api.apollo.io/api/v1/organizations/search",
+    ]);
     if (!apolloResult.ok) {
       console.error("Apollo search failed:", apolloResult.code, apolloResult.details);
       return respond({ error: apolloResult.error, details: apolloResult.details, code: apolloResult.code }, apolloResult.status);
