@@ -69,12 +69,26 @@ export function parseReportText(text: string): ParsedReport {
           }
         }
 
-        // If no explicit titles found, derive from persona title
+        // If no explicit titles found, derive searchable job titles from persona name
         if (titles.length === 0) {
-          titles.push(title);
-          // Add common variations
-          if (title.includes("VP")) titles.push(title.replace("VP", "Vice President"));
-          if (title.includes("Dir")) titles.push(title.replace("Dir", "Director"));
+          // Strip "ICP Segment N:" prefixes and generic fluff
+          const cleanTitle = title
+            .replace(/^ICP\s+Segment\s*\d*:?\s*/i, "")
+            .replace(/\s+Seeking\s+.+$/i, "")
+            .replace(/\s+and\s+Payment\s+.+$/i, "")
+            .trim();
+
+          // Try to extract meaningful role keywords
+          const roleKeywords = ["CEO", "CTO", "CFO", "COO", "VP", "Director", "Head", "Owner", "President", "Manager", "Partner"];
+          const hasRole = roleKeywords.some(r => cleanTitle.toLowerCase().includes(r.toLowerCase()));
+
+          if (hasRole) {
+            titles.push(cleanTitle);
+          } else {
+            // Generate plausible decision-maker titles from the segment description
+            const segment = cleanTitle.split(/[,()]/)[0].trim();
+            titles.push(`VP ${segment}`, `Director ${segment}`, `Head of ${segment}`, `${segment} Director`);
+          }
         }
 
         personas.push({ title, painPoints: painPoints.slice(0, 4), buyingTriggers: buyingTriggers.slice(0, 3), titles });
