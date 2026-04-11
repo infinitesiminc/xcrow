@@ -604,6 +604,9 @@ export default function TenantAccountMap() {
   const [laGarages, setLaGarages] = useState<DiscoveredGarage[]>([]);
   const [showOnlyOperators, setShowOnlyOperators] = useState(true);
   const [viewportHint, setViewportHint] = useState<ViewportHint | null>(null);
+  const [showResearchDetails, setShowResearchDetails] = useState(false);
+  const [chatExternalMessages, setChatExternalMessages] = useState<ChatMessage[]>([]);
+  const [autoSeeded, setAutoSeeded] = useState(false);
 
   const displayedGarages = useMemo(() =>
     showOnlyOperators ? laGarages.filter(g => g.operator_guess) : laGarages
