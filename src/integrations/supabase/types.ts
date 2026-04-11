@@ -710,6 +710,7 @@ export type Database = {
           ownership_type: string | null
           priority_score: number
           stage: string
+          tenant_slug: string
           updated_at: string
           website: string | null
         }
@@ -736,6 +737,7 @@ export type Database = {
           ownership_type?: string | null
           priority_score?: number
           stage?: string
+          tenant_slug?: string
           updated_at?: string
           website?: string | null
         }
@@ -762,6 +764,7 @@ export type Database = {
           ownership_type?: string | null
           priority_score?: number
           stage?: string
+          tenant_slug?: string
           updated_at?: string
           website?: string | null
         }

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import flashLogo from "@/assets/flash-logo.png";
 import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { useTenant } from "@/contexts/TenantContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -88,14 +88,14 @@ function AccountIcon({ account, className }: { account: FlashAccount; className?
   return <Grid3X3 className={className} />;
 }
 
-function AccountPin({ account }: { account: FlashAccount }) {
+function AccountPin({ account, tenantLogo }: { account: FlashAccount; tenantLogo: string }) {
   const cfg = STAGE_CONFIG[account.stage];
-  const isFlashHQ = account.id === "acct-flash-hq";
-  if (isFlashHQ) {
+  const isHQ = account.id === "acct-flash-hq";
+  if (isHQ && tenantLogo) {
     return (
       <div className="relative cursor-pointer group">
         <div className="w-11 h-11 rounded-full border-[3px] border-primary shadow-lg transition-all group-hover:scale-125 flex items-center justify-center bg-white">
-          <img src={flashLogo} alt="Flash HQ" className="w-7 h-7 object-contain" />
+          <img src={tenantLogo} alt="HQ" className="w-7 h-7 object-contain" />
         </div>
       </div>
     );
@@ -164,7 +164,7 @@ function getMarkerZ(account: FlashAccount) {
 }
 
 /* ── Map content ── */
-function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite, garages, showGarages, onSelectGarage }: {
+function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite, garages, showGarages, onSelectGarage, tenantLogo }: {
   accounts: FlashAccount[];
   onSelectAccount: (a: FlashAccount) => void;
   showDeployed: boolean; deployedLocations: FlashLocation[];
@@ -172,6 +172,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
   garages: DiscoveredGarage[];
   showGarages: boolean;
   onSelectGarage: (g: DiscoveredGarage) => void;
+  tenantLogo: string;
 }) {
   return (
     <>
@@ -187,7 +188,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
       ))}
       {accounts.map(acct => (
         <AdvancedMarker key={acct.id} position={{ lat: acct.hqLat, lng: acct.hqLng }} zIndex={getMarkerZ(acct)} onClick={() => onSelectAccount(acct)}>
-          <AccountPin account={acct} />
+          <AccountPin account={acct} tenantLogo={tenantLogo} />
         </AdvancedMarker>
       ))}
     </>
@@ -212,8 +213,9 @@ function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
 }
 
 /* ── Main page ── */
-export default function FlashParkingMap() {
+export default function TenantAccountMap() {
   const isMobile = useIsMobile();
+  const { tenant } = useTenant();
   const { accounts: allAccounts } = useDBAccounts();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [showDeployed, setShowDeployed] = useState(false);
@@ -266,17 +268,17 @@ export default function FlashParkingMap() {
         ? "This is a priority target account — find the right entry points for initial outreach."
         : "This is a whitespace opportunity — find contacts to open a net-new relationship.";
 
-      const FLASH_CONTEXT = `You are prospecting on behalf of Flash, a cloud-based parking technology platform (PARCS, EV charging, mobile payments, analytics) powering 16,000+ locations. ${stageNote} ${vendorNote}`;
+      const TENANT_CONTEXT = `${tenant.contextPrompt} ${stageNote} ${vendorNote}`;
 
       let content: string;
       if (mode === "ma") {
-        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — ${account.accountType === "airport" ? "a commercial airport" : "a parking operator"} in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}.\n\nMODE: M&A / Corporate Development contacts. Search domain "${domain}".\n\nTarget titles: CFO, VP Corporate Development, CEO, General Counsel, VP Strategy, Chief Strategy Officer, Board Member.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
+        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — ${account.accountType === "airport" ? "a commercial airport" : "a parking operator"} in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}.\n\nMODE: M&A / Corporate Development contacts. Search domain "${domain}".\n\nTarget titles: CFO, VP Corporate Development, CEO, General Counsel, VP Strategy, Chief Strategy Officer, Board Member.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
       } else if (account.accountType === "airport") {
-        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a commercial airport with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nCRITICAL: Search ONLY within the airport authority/corporation — use domain "${domain}".\n\nTarget titles: Director/VP of Parking & Ground Transportation, Chief Commercial/Revenue Officer, Director of Landside Operations, Airport Director/CEO, VP of Facilities.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
+        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a commercial airport with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nCRITICAL: Search ONLY within the airport authority/corporation — use domain "${domain}".\n\nTarget titles: Director/VP of Parking & Ground Transportation, Chief Commercial/Revenue Officer, Director of Landside Operations, Airport Director/CEO, VP of Facilities.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
       } else if (account.accountType === "large_venue") {
-        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a large venue operator in ${account.hqCity} with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nSearch domain "${domain}" first.\n\nTarget titles: VP/Director of Parking Operations, VP of Facilities, COO, VP of Guest Experience, Director of Revenue Operations.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
+        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a large venue operator in ${account.hqCity} with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nSearch domain "${domain}" first.\n\nTarget titles: VP/Director of Parking Operations, VP of Facilities, COO, VP of Guest Experience, Director of Revenue Operations.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
       } else {
-        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a parking operator in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}.\n\nSearch domain "${domain}".\n\nTarget titles: VP/SVP of Operations, COO/CTO, VP of Technology, VP of Revenue, Regional VP.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
+        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a parking operator in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}.\n\nSearch domain "${domain}".\n\nTarget titles: VP/SVP of Operations, COO/CTO, VP of Technology, VP of Revenue, Regional VP.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
       }
 
       await new Promise(r => setTimeout(r, 800));
@@ -327,7 +329,7 @@ export default function FlashParkingMap() {
     } finally {
       setLoadingLeads(prev => { const n = new Set(prev); n.delete(account.id); return n; });
     }
-  }, [loadingLeads, accountLeads]);
+  }, [loadingLeads, accountLeads, tenant]);
 
   if (!API_KEY) {
     return (
@@ -345,10 +347,14 @@ export default function FlashParkingMap() {
       {/* Header */}
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
-          <img src={flashLogo} alt="Flash" className="w-8 h-8 object-contain" />
+          {tenant.logo ? (
+            <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
+          )}
           <div>
-            <h2 className="text-lg font-bold leading-tight">Flash Accounts</h2>
-            <p className="text-xs text-muted-foreground">{allAccounts.length} operators · Pipeline & intelligence</p>
+            <h2 className="text-lg font-bold leading-tight">{tenant.name} Accounts</h2>
+            <p className="text-xs text-muted-foreground">{allAccounts.length} accounts · Pipeline & intelligence</p>
           </div>
         </div>
       </div>
@@ -424,7 +430,7 @@ export default function FlashParkingMap() {
         </div>
 
         <APIProvider apiKey={API_KEY}>
-          <Map mapId={MAP_ID} defaultCenter={{ lat: 39.0, lng: -98.0 }} defaultZoom={4.5}
+          <Map mapId={MAP_ID} defaultCenter={{ lat: tenant.mapCenter.lat, lng: tenant.mapCenter.lng }} defaultZoom={tenant.mapCenter.zoom}
             gestureHandling="greedy" disableDefaultUI={false} style={{ width: "100%", height: "100%" }}>
             <MapContent
               accounts={allAccounts}
@@ -435,6 +441,7 @@ export default function FlashParkingMap() {
               garages={displayedGarages}
               showGarages={showGarages}
               onSelectGarage={() => {}}
+              tenantLogo={tenant.logo}
             />
             <MapViewportSync hint={viewportHint} />
           </Map>
