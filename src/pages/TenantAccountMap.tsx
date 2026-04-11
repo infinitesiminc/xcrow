@@ -413,21 +413,34 @@ Keep responses focused and actionable. Use markdown formatting.`;
     </div>
   );
 }
-/* ── Animated demo phases hook ── */
+/* ── Animated demo phases hook (manual trigger) ── */
 function useDemoResearchStream() {
-  const [phases, setPhases] = useState<ResearchPhase[]>([
+  const INITIAL: ResearchPhase[] = [
     { id: "PHASE_01", label: "Website DNA & Core Premise", status: "pending" },
     { id: "PHASE_02", label: "ICP & Persona Synapse", status: "pending" },
     { id: "PHASE_03", label: "Competitor Matrix", status: "pending" },
     { id: "PHASE_04", label: "Pipeline Seed Generation", status: "pending" },
-  ]);
+  ];
+
+  const [phases, setPhases] = useState<ResearchPhase[]>(INITIAL);
   const [elapsed, setElapsed] = useState(0);
-  const startRef = useRef(Date.now());
+  const [running, setRunning] = useState(false);
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startRef = useRef(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
+  const start = useCallback(() => {
+    // Reset
+    timeoutsRef.current.forEach(clearTimeout);
+    if (timerRef.current) clearInterval(timerRef.current);
+    setPhases(INITIAL);
+    setElapsed(0);
+    setRunning(true);
+    startRef.current = Date.now();
 
-    const STREAM_TEXTS = {
+    timerRef.current = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
+
+    const T = {
       p1_vp: "Next-gen payment orchestration platform for ISOs and merchant acquirers — enabling white-label payment processing with embedded analytics.",
       p1_themes: '"Payment Facilitation" (98%), "ISO Management" (94%), "Merchant Onboarding" (91%), "Revenue Share Models" (87%)',
       p2_t1: "Primary pain point: managing multiple processor integrations across a fragmented ISO portfolio. Motivated by reducing integration costs and accelerating merchant boarding time from weeks to hours.",
@@ -440,52 +453,58 @@ function useDemoResearchStream() {
     };
 
     const steps: { delay: number; update: (prev: ResearchPhase[]) => ResearchPhase[] }[] = [
-      // Phase 1 starts
       { delay: 500, update: (p) => p.map((ph, i) => i === 0 ? { ...ph, status: "active" as const, sublabel: "Crawling", progress: 10 } : ph) },
-      { delay: 2000, update: (p) => p.map((ph, i) => i === 0 ? { ...ph, progress: 45, findings: [{ label: "Extracted Value Proposition", value: STREAM_TEXTS.p1_vp, confidence: 96 }] } : ph) },
+      { delay: 2000, update: (p) => p.map((ph, i) => i === 0 ? { ...ph, progress: 45, findings: [{ label: "Extracted Value Proposition", value: T.p1_vp, confidence: 96 }] } : ph) },
       { delay: 3500, update: (p) => p.map((ph, i) => i === 0 ? { ...ph, progress: 100, status: "complete" as const, findings: [
-        { label: "Extracted Value Proposition", value: STREAM_TEXTS.p1_vp, confidence: 96 },
-        { label: "Semantic Themes Identified", value: STREAM_TEXTS.p1_themes, confidence: 94 },
+        { label: "Extracted Value Proposition", value: T.p1_vp, confidence: 96 },
+        { label: "Semantic Themes Identified", value: T.p1_themes, confidence: 94 },
       ] } : ph) },
-      // Phase 2 starts
       { delay: 4200, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, status: "active" as const, sublabel: "Synthesizing", progress: 15 } : ph) },
-      { delay: 5500, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, progress: 45, findings: [{ label: "Tier 1: VP of Payment Operations", value: STREAM_TEXTS.p2_t1, confidence: 91 }] } : ph) },
-      { delay: 7000, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, progress: 72, streamingText: STREAM_TEXTS.p2_stream.slice(0, 80) } : ph) },
-      { delay: 8500, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, progress: 90, streamingText: STREAM_TEXTS.p2_stream.slice(0, 180) } : ph) },
+      { delay: 5500, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, progress: 45, findings: [{ label: "Tier 1: VP of Payment Operations", value: T.p2_t1, confidence: 91 }] } : ph) },
+      { delay: 7000, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, progress: 72, streamingText: T.p2_stream.slice(0, 80) } : ph) },
+      { delay: 8500, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, progress: 90, streamingText: T.p2_stream.slice(0, 180) } : ph) },
       { delay: 10000, update: (p) => p.map((ph, i) => i === 1 ? { ...ph, progress: 100, status: "complete" as const, streamingText: undefined, findings: [
-        { label: "Tier 1: VP of Payment Operations", value: STREAM_TEXTS.p2_t1, confidence: 91 },
-        { label: "Tier 2: Head of Strategic Partnerships", value: STREAM_TEXTS.p2_stream, confidence: 87, highlight: true },
+        { label: "Tier 1: VP of Payment Operations", value: T.p2_t1, confidence: 91 },
+        { label: "Tier 2: Head of Strategic Partnerships", value: T.p2_stream, confidence: 87, highlight: true },
       ] } : ph) },
-      // Phase 3
       { delay: 10800, update: (p) => p.map((ph, i) => i === 2 ? { ...ph, status: "active" as const, sublabel: "Scanning", progress: 20 } : ph) },
-      { delay: 12500, update: (p) => p.map((ph, i) => i === 2 ? { ...ph, progress: 60, findings: [{ label: "Competitor #1 — Payrix", value: STREAM_TEXTS.p3_f1, confidence: 88 }] } : ph) },
+      { delay: 12500, update: (p) => p.map((ph, i) => i === 2 ? { ...ph, progress: 60, findings: [{ label: "Competitor #1 — Payrix", value: T.p3_f1, confidence: 88 }] } : ph) },
       { delay: 14500, update: (p) => p.map((ph, i) => i === 2 ? { ...ph, progress: 100, status: "complete" as const, findings: [
-        { label: "Competitor #1 — Payrix", value: STREAM_TEXTS.p3_f1, confidence: 88 },
-        { label: "Competitor #2 — Stripe Connect", value: STREAM_TEXTS.p3_f2, confidence: 85 },
+        { label: "Competitor #1 — Payrix", value: T.p3_f1, confidence: 88 },
+        { label: "Competitor #2 — Stripe Connect", value: T.p3_f2, confidence: 85 },
       ] } : ph) },
-      // Phase 4
       { delay: 15200, update: (p) => p.map((ph, i) => i === 3 ? { ...ph, status: "active" as const, sublabel: "Prospecting", progress: 10 } : ph) },
-      { delay: 17000, update: (p) => p.map((ph, i) => i === 3 ? { ...ph, progress: 40, findings: [{ label: "Lead #1", value: STREAM_TEXTS.p4_f1, confidence: 94, highlight: true }] } : ph) },
+      { delay: 17000, update: (p) => p.map((ph, i) => i === 3 ? { ...ph, progress: 40, findings: [{ label: "Lead #1", value: T.p4_f1, confidence: 94, highlight: true }] } : ph) },
       { delay: 19000, update: (p) => p.map((ph, i) => i === 3 ? { ...ph, progress: 70, findings: [
-        { label: "Lead #1", value: STREAM_TEXTS.p4_f1, confidence: 94, highlight: true },
-        { label: "Lead #2", value: STREAM_TEXTS.p4_f2, confidence: 91 },
+        { label: "Lead #1", value: T.p4_f1, confidence: 94, highlight: true },
+        { label: "Lead #2", value: T.p4_f2, confidence: 91 },
       ] } : ph) },
       { delay: 21000, update: (p) => p.map((ph, i) => i === 3 ? { ...ph, progress: 100, status: "complete" as const, findings: [
-        { label: "Lead #1", value: STREAM_TEXTS.p4_f1, confidence: 94, highlight: true },
-        { label: "Lead #2", value: STREAM_TEXTS.p4_f2, confidence: 91 },
-        { label: "Lead #3", value: STREAM_TEXTS.p4_f3, confidence: 88 },
+        { label: "Lead #1", value: T.p4_f1, confidence: 94, highlight: true },
+        { label: "Lead #2", value: T.p4_f2, confidence: 91 },
+        { label: "Lead #3", value: T.p4_f3, confidence: 88 },
       ] } : ph) },
     ];
 
-    const timeouts = steps.map(s => setTimeout(() => setPhases(prev => s.update(prev)), s.delay));
+    // Final step: mark as done
+    const finalDelay = 21500;
+    const allTimeouts = steps.map(s => setTimeout(() => setPhases(prev => s.update(prev)), s.delay));
+    allTimeouts.push(setTimeout(() => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setRunning(false);
+    }, finalDelay));
 
+    timeoutsRef.current = allTimeouts;
+  }, []);
+
+  useEffect(() => {
     return () => {
-      clearInterval(timer);
-      timeouts.forEach(clearTimeout);
+      timeoutsRef.current.forEach(clearTimeout);
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
-  return { phases, elapsed };
+  return { phases, elapsed, running, start };
 }
 
 /* ══════════════════════════════════════════════════════════
