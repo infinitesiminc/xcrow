@@ -703,28 +703,65 @@ export default function TenantAccountMap() {
                 <div className="text-center space-y-2">
                   <h2 className="text-xl font-medium text-foreground">ICP Research Pipeline</h2>
                   <p className="text-sm text-muted-foreground max-w-md">
-                    Watch the AI analyze a company website, build buyer personas, map competitors, and seed your pipeline — all in real time.
+                    Enter a company website to run deep AI research — market position, buyer personas, competitors, and pipeline targets.
                   </p>
                 </div>
-                <Button onClick={startDemo} size="lg" className="gap-2">
-                  <Zap className="w-4 h-4" />
-                  Run Demo Research
-                </Button>
+                <div className="flex gap-2 w-full max-w-md">
+                  <input
+                    type="text"
+                    value={researchDomain}
+                    onChange={e => setResearchDomain(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && researchDomain.trim()) startResearch(researchDomain.trim(), tenant.contextPrompt); }}
+                    placeholder="e.g. cliq.com"
+                    className="flex-1 h-11 rounded-md border border-input bg-background px-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <Button
+                    onClick={() => startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt)}
+                    size="lg"
+                    className="gap-2"
+                    disabled={demoRunning}
+                  >
+                    <Zap className="w-4 h-4" />
+                    Research
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Powered by Perplexity Deep Research — takes ~90-120 seconds</p>
               </div>
             )}
             {(demoRunning || demoPhases.some(p => p.status !== "pending")) && (
               <ICPResearchStream
-                targetDomain="cliq.com"
+                targetDomain={researchDomain || "cliq.com"}
                 phases={demoPhases}
                 elapsedSeconds={demoElapsed}
               />
             )}
             {!demoRunning && demoPhases.every(p => p.status === "complete") && (
-              <div className="flex justify-center pt-6">
-                <Button onClick={startDemo} variant="outline" size="sm" className="gap-2">
-                  <Zap className="w-3.5 h-3.5" />
-                  Run Again
-                </Button>
+              <div className="flex flex-col items-center gap-4 pt-6">
+                {researchCitations.length > 0 && (
+                  <details className="w-full max-w-2xl">
+                    <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                      📚 {researchCitations.length} sources cited
+                    </summary>
+                    <div className="mt-2 space-y-1 text-xs text-muted-foreground max-h-40 overflow-y-auto">
+                      {researchCitations.map((c, i) => (
+                        <a key={i} href={c} target="_blank" rel="noopener" className="block truncate hover:text-primary">[{i + 1}] {c}</a>
+                      ))}
+                    </div>
+                  </details>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={researchDomain}
+                    onChange={e => setResearchDomain(e.target.value)}
+                    placeholder="Try another domain..."
+                    className="h-9 rounded-md border border-input bg-background px-3 text-sm w-48"
+                  />
+                  <Button onClick={() => startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt)} variant="outline" size="sm" className="gap-2">
+                    <Zap className="w-3.5 h-3.5" />
+                    Run Again
+                  </Button>
+                </div>
               </div>
             )}
           </div>
