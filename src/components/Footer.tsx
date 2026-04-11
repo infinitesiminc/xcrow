@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 
 const PRODUCT = [
-  { label: "Lead Hunter", to: "/leadhunter" },
+  { label: "Lead Gen", to: "/leadgen" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Pricing", to: "/pricing" },
   { label: "Blog", to: "/blog" },
@@ -65,7 +65,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
       </div>
       <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Xcrow. All rights reserved.</p>
-        <p className="text-xs text-muted-foreground">The #1 Outbound Lead Hunter</p>
+        <p className="text-xs text-muted-foreground">The #1 Outbound Lead Gen</p>
       </div>
     </div>
   </footer>

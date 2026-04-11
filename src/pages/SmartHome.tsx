@@ -1,6 +1,6 @@
 /**
  * SmartHome — Renders the landing page for all users.
- * URL input navigates to /leadhunter for analysis.
+ * URL input navigates to /leadgen for analysis.
  */
 import { lazy, Suspense } from "react";
 

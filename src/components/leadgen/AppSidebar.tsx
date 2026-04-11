@@ -171,7 +171,7 @@ export function AppSidebar({
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="text-xs font-semibold text-sidebar-foreground truncate">
-              {companySummary || "Lead Hunter"}
+              {companySummary || "Lead Gen"}
             </p>
             {websiteUrl && (
               <p className="text-[10px] text-muted-foreground truncate">

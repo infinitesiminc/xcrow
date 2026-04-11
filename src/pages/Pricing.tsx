@@ -166,7 +166,7 @@ export default function Pricing() {
                     <Button
                       className={`w-full h-12 font-bold rounded-xl gap-2 ${plan.featured ? "shadow-md" : ""}`}
                       variant={plan.featured ? "default" : "outline"}
-                      onClick={() => navigate("/leadhunter")}
+                      onClick={() => navigate("/leadgen")}
                     >
                       {plan.featured && <Sparkles className="w-4 h-4" />}
                       {plan.cta}
@@ -218,9 +218,9 @@ export default function Pricing() {
               Your First Leads Are <span className="text-primary">Free</span>
             </h2>
             <p className="text-muted-foreground mb-10 text-lg">No credit card required. Start hunting in 60 seconds.</p>
-            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadhunter")}>
+            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadgen")}>
               <ArrowRight className="w-5 h-5" />
-              Start Hunting — It's Free
+              Start Generating — It's Free
             </Button>
           </motion.div>
         </section>

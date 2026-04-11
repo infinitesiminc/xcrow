@@ -8,7 +8,7 @@ interface SEOHeadProps {
 }
 
 const defaults = {
-  title: "Xcrow — The #1 Outbound Lead Hunter",
+  title: "Xcrow — The #1 Outbound Lead Gen",
   description: "Enter one website. Get qualified decision-makers and outreach-ready leads in seconds.",
   ogImage: "https://xcrow.ai/og-image.jpg",
 };

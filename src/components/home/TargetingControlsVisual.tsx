@@ -71,7 +71,7 @@ export default function TargetingControlsVisual() {
                 <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
                 <div className="w-3 h-3 rounded-full bg-green-400/60" />
               </div>
-              <span className="text-xs text-muted-foreground font-medium ml-2">Lead Hunter — Targeting</span>
+              <span className="text-xs text-muted-foreground font-medium ml-2">Lead Gen — Targeting</span>
             </div>
 
             <div className="flex flex-col sm:flex-row">

@@ -46,7 +46,7 @@ export default function Demo() {
               </div>
               <p className="text-sm text-muted-foreground">
                 Prefer to try it yourself?{" "}
-                <button onClick={() => navigate("/leadhunter")} className="text-primary font-semibold hover:underline">
+                <button onClick={() => navigate("/leadgen")} className="text-primary font-semibold hover:underline">
                   Jump straight in →
                 </button>
               </p>

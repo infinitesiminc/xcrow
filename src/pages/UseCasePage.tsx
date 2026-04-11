@@ -47,7 +47,7 @@ export default function UseCasePage() {
               {data.heroDesc}
             </motion.p>
             <motion.div {...fade(0.3)}>
-              <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadhunter")}>
+              <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadgen")}>
                 <ArrowRight className="w-5 h-5" />
                 Try It Free
               </Button>
@@ -164,9 +164,9 @@ export default function UseCasePage() {
               Start Finding <span className="text-primary">{data.industry}</span> Leads
             </h2>
             <p className="text-muted-foreground mb-10 text-lg">Free to start. No credit card. Leads in 60 seconds.</p>
-            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadhunter")}>
+            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadgen")}>
               <ArrowRight className="w-5 h-5" />
-              Start Hunting — It's Free
+              Start Generating — It's Free
             </Button>
           </motion.div>
         </section>

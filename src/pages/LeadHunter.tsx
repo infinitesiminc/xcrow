@@ -173,7 +173,7 @@ function PipelineChat({ accountCount, onPillClick, externalMessages }: {
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
 
-      const systemPrompt = `You are the Xcrow Lead Hunter Pipeline Assistant. Your job is to help build and manage the B2B account pipeline. You can:
+      const systemPrompt = `You are the Xcrow Lead Gen Pipeline Assistant. Your job is to help build and manage the B2B account pipeline. You can:
 1. Research companies and suggest them as target accounts
 2. Identify competitors in the industry
 3. Provide market intelligence and analysis
@@ -465,10 +465,10 @@ function useLiveResearchStream() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   Main LeadHunter page
+   Main LeadGen page
    ══════════════════════════════════════════════════════════ */
 
-export default function LeadHunter() {
+export default function LeadGen() {
   const { user } = useAuth();
   const { accounts: allAccounts, loading: accountsLoading, refetch } = useDBAccounts(user?.id);
   const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, error: researchError, citations: researchCitations, targets: researchTargets, start: startResearch } = useLiveResearchStream();
@@ -585,7 +585,7 @@ export default function LeadHunter() {
           await (supabase.from("flash_accounts") as any).upsert({
             id: accountId,
             name: target.name,
-            tenant_slug: "leadhunter",
+            tenant_slug: "leadgen",
             owner_id: user.id,
             account_type: "prospect",
             stage,
@@ -645,7 +645,7 @@ export default function LeadHunter() {
   return (
     <>
       <Helmet>
-        <title>Xcrow Lead Hunter — AI Research Pipeline</title>
+        <title>Xcrow Lead Gen — AI Research Pipeline</title>
         <meta name="description" content="Enter a company URL and get deep AI research — market position, buyer personas, competitors, and pipeline targets." />
       </Helmet>
       <Navbar />

@@ -136,7 +136,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
   /* ── write-through cache helper ── */
   function updateCache(company: CompanyData, stepResults: Record<string, any>, tree: GTMTreeData) {
     const websiteKey = normalizeWebsiteKey(company.website || company.id);
-    supabase.from("leadhunter_cache").upsert({
+    supabase.from("leadgen_cache").upsert({
       website_key: websiteKey,
       company_data: company as any,
       step_results: stepResults as any,
@@ -189,7 +189,7 @@ export default function CompanyExplorer({ initialWebsite }: { initialWebsite?: s
     try {
       const { data: cached } = await withTimeout(
         supabase
-          .from("leadhunter_cache")
+          .from("leadgen_cache")
           .select("*")
           .eq("website_key", websiteKey)
           .gt("expires_at", new Date().toISOString())

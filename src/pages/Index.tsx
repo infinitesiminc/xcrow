@@ -1,5 +1,5 @@
 /**
- * Index — Gong-inspired landing page for Xcrow Lead Hunter
+ * Index — Gong-inspired landing page for Xcrow Lead Gen
  */
 import { useState, useRef, useEffect } from "react";
 import logoCrow from "@/assets/logo-crow.png";
@@ -59,7 +59,7 @@ export default function Index() {
       const pending = sessionStorage.getItem("xcrow_pending_url");
       if (pending) {
         sessionStorage.removeItem("xcrow_pending_url");
-        navigate(`/leadhunter?website=${encodeURIComponent(pending)}`);
+        navigate(`/leadgen?website=${encodeURIComponent(pending)}`);
       }
     }
   }, [user, navigate]);
@@ -79,7 +79,7 @@ export default function Index() {
       openAuthModal();
       return;
     }
-    navigate(`/leadhunter?website=${encodeURIComponent(url)}`);
+    navigate(`/leadgen?website=${encodeURIComponent(url)}`);
   };
 
   const scrollToInput = () => {
