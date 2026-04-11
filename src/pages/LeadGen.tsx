@@ -173,11 +173,17 @@ export default function LeadGen() {
   // Restore workspace: load cached report from research_jobs
   const handleSelectWorkspace = useCallback(async (key: string) => {
     if (!user) return;
-    // Set domain to workspace key (the normalized hostname)
     setDomain(key);
     touchWorkspace(key);
 
-    // Try to load most recent completed research for this domain
+    // First check if there's an active research job running for this domain
+    const resumed = await research.resumeIfRunning(user.id, key);
+    if (resumed) {
+      setActiveSection("research");
+      return;
+    }
+
+    // Otherwise load cached completed report
     const { data } = await (supabase.from("research_jobs") as any)
       .select("report_text, domain")
       .eq("user_id", user.id)
@@ -191,7 +197,7 @@ export default function LeadGen() {
       research.restore(parseReportText(data.report_text));
       setActiveSection("personas");
     } else {
-      research.reset();
+      research.forceReset();
       setActiveSection("research");
     }
   }, [user, touchWorkspace, research]);
@@ -199,7 +205,7 @@ export default function LeadGen() {
   // New research: clear state
   const handleNewResearch = useCallback(() => {
     setDomain("");
-    research.reset();
+    research.forceReset();
     setActiveSection("research");
   }, [research]);
 
