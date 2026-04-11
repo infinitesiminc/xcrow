@@ -1,0 +1,1 @@
+UPDATE public.flash_accounts SET account_type = 'iso' WHERE tenant_slug = 'cliq' AND account_type = 'garage_operator';

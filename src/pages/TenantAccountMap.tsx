@@ -776,7 +776,7 @@ export default function TenantAccountMap() {
             id: accountId,
             name: target.name,
             tenant_slug: tenant.slug,
-            account_type: "garage_operator",
+            account_type: tenant.accountTypes[0]?.value || "prospect",
             stage: "whitespace",
             website: `https://${domain}`,
             notes: `${target.rationale}: ${target.description}`,
