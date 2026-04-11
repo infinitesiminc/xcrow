@@ -114,6 +114,7 @@ export function useResearchStream() {
   const startRef = useRef(0);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const runningRef = useRef(false);
+  const jobIdRef = useRef<string | null>(null);
 
   const updatePhasesFromElapsed = useCallback((elapsedSec: number, isComplete: boolean) => {
     if (isComplete) {
@@ -200,21 +201,97 @@ export function useResearchStream() {
     };
   }, []);
 
+  /* Start polling for an existing job (resume after accidental click) */
+  const startPolling = useCallback((jobId: string) => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    pollingRef.current = setInterval(async () => {
+      try {
+        const { data, error: fetchErr } = await (supabase.from("research_jobs") as any)
+          .select("status, progress, current_phase, report_text, error")
+          .eq("id", jobId)
+          .single();
+        if (fetchErr || !data) return;
+        if (data.status === "complete") {
+          if (pollingRef.current) clearInterval(pollingRef.current);
+          if (timerRef.current) clearInterval(timerRef.current);
+          updatePhasesFromElapsed(0, true);
+          if (data.report_text) setReport(parseReportText(data.report_text));
+          setRunning(false);
+          runningRef.current = false;
+          jobIdRef.current = null;
+        } else if (data.status === "failed") {
+          if (pollingRef.current) clearInterval(pollingRef.current);
+          if (timerRef.current) clearInterval(timerRef.current);
+          setError(data.error || "Research failed");
+          setRunning(false);
+          runningRef.current = false;
+          jobIdRef.current = null;
+        }
+      } catch (pollErr) { console.error("Poll error:", pollErr); }
+    }, 3000);
+  }, [updatePhasesFromElapsed]);
+
+  /* Resume: check if there's an active job for a domain and resume polling */
+  const resumeIfRunning = useCallback(async (userId: string, domainKey: string) => {
+    try {
+      const { data } = await (supabase.from("research_jobs") as any)
+        .select("id, status, created_at")
+        .eq("user_id", userId)
+        .eq("domain", domainKey)
+        .in("status", ["pending", "processing"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (data?.id) {
+        jobIdRef.current = data.id;
+        runningRef.current = true;
+        setRunning(true);
+        setError(null);
+        setReport(null);
+        startRef.current = new Date(data.created_at).getTime();
+        timerRef.current = setInterval(() => {
+          const el = (Date.now() - startRef.current) / 1000;
+          setElapsed(el);
+          updatePhasesFromElapsed(el, false);
+        }, 500);
+        startPolling(data.id);
+        return true;
+      }
+    } catch { /* no active job */ }
+    return false;
+  }, [updatePhasesFromElapsed, startPolling]);
+
   const restore = useCallback((parsed: ParsedReport) => {
     setReport(parsed);
     setPhases(PHASE_ORDER.map((id, i) => ({ id, label: PHASE_LABELS[i], status: "complete" as const, progress: 100 })));
     setRunning(false);
     setError(null);
     runningRef.current = false;
+    jobIdRef.current = null;
   }, []);
 
   const reset = useCallback(() => {
+    // Don't kill polling if a job is actively running server-side
+    if (runningRef.current && jobIdRef.current) return;
     setReport(null);
     setPhases([...INITIAL]);
     setElapsed(0);
     setError(null);
     setRunning(false);
     runningRef.current = false;
+    jobIdRef.current = null;
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
+  }, []);
+
+  const forceReset = useCallback(() => {
+    setReport(null);
+    setPhases([...INITIAL]);
+    setElapsed(0);
+    setError(null);
+    setRunning(false);
+    runningRef.current = false;
+    jobIdRef.current = null;
     if (pollingRef.current) clearInterval(pollingRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
   }, []);
@@ -222,7 +299,7 @@ export function useResearchStream() {
   const isComplete = !running && !error && phases.every(p => p.status === "complete");
   const isInitial = !running && !error && phases.every(p => p.status === "pending");
 
-  return { phases, elapsed, running, error, report, start, restore, reset, isComplete, isInitial };
+  return { phases, elapsed, running, error, report, start, restore, reset, forceReset, resumeIfRunning, isComplete, isInitial };
 }
 
 /* ── Research Section UI ── */
