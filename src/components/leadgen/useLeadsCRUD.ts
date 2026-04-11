@@ -145,6 +145,7 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
         status: "new" as const,
         niche_tag: l.niche_tag || null,
         rating: l.score != null ? l.score : null,
+        persona_tag: l.persona_tag || null,
       }));
 
       for (const row of rows) {

@@ -19,10 +19,12 @@ Deno.serve(async (req) => {
 
   let lead: any
   let senderInfo: any
+  let personaTag: string | null = null
   try {
     const body = await req.json()
     lead = body.lead
     senderInfo = body.senderInfo || {}
+    personaTag = body.personaTag || null
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
       status: 400,
@@ -37,6 +39,10 @@ Deno.serve(async (req) => {
     })
   }
 
+  const personaContext = personaTag
+    ? `\nPERSONA CONTEXT: The recipient matches the "${personaTag}" buyer persona. Tailor the hook and value prop to resonate with this persona's priorities and pain points.`
+    : '';
+
   const prompt = `You are an elite B2B cold outreach copywriter. Draft a concise, high-converting cold email.
 
 SENDER:
@@ -50,6 +56,7 @@ RECIPIENT:
 - Title: ${lead.title || 'decision-maker'}
 - Company: ${lead.company || 'their company'}
 - Context: ${lead.reason || lead.summary || 'potential customer'}
+${personaContext}
 
 FORMAT RULES (this will be pasted into an email client):
 1. Use plain text with line breaks — NO HTML, NO markdown
