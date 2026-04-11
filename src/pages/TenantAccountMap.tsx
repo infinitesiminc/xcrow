@@ -5,12 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MapPin, Filter, ExternalLink, Search, Building2, Grid3X3, Zap, Swords, Plane, Warehouse } from "lucide-react";
+import { MapPin, Filter, ExternalLink, Search, Building2, Grid3X3, Zap, Swords, Plane, Warehouse, Send, Bot, User, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import AccountListView from "@/components/enterprise/AccountListView";
 import AccountDetailInline from "@/components/enterprise/AccountDetailInline";
 import DataPipelineSection from "@/components/enterprise/DataPipelineSection";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ReactMarkdown from "react-markdown";
 import {
   FLASH_LOCATIONS,
   type FlashLocation,
@@ -27,54 +30,59 @@ import { FLASH_AIRPORT_ACCOUNTS } from "@/data/flash-airports";
 
 const STATIC_ALL_ACCOUNTS = [...FLASH_ACCOUNTS, ...FLASH_AIRPORT_ACCOUNTS];
 
-/* ── Hook: load accounts from DB with static fallback ── */
-function useDBAccounts(): { accounts: FlashAccount[]; loading: boolean } {
+/* ── Hook: load accounts from DB with tenant_slug filter ── */
+function useDBAccounts(tenantSlug: string): { accounts: FlashAccount[]; loading: boolean; refetch: () => void } {
   const [dbAccounts, setDbAccounts] = useState<FlashAccount[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data, error } = await (supabase.from("flash_accounts") as any).select("*").order("name");
-        if (error || !data || data.length === 0) {
-          setDbAccounts(null);
-          setLoading(false);
-          return;
-        }
-        const mapped: FlashAccount[] = data.map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          accountType: r.account_type as AccountType,
-          stage: r.stage as AccountStage,
-          estimatedSpaces: r.estimated_spaces || "N/A",
-          facilityCount: r.facility_count || "N/A",
-          focusArea: r.focus_area || "",
-          hqCity: r.hq_city || "",
-          hqLat: r.hq_lat || 0,
-          hqLng: r.hq_lng || 0,
-          website: r.website || "",
-          differentiator: r.differentiator || "",
-          caseStudyUrl: r.case_study_url || undefined,
-          currentVendor: r.current_vendor || undefined,
-          annualRevenue: r.annual_revenue || undefined,
-          employeeCount: r.employee_count || undefined,
-          founded: r.founded || undefined,
-          priorityScore: r.priority_score || 0,
-          notes: r.notes || undefined,
-          // pass through DB-only fields for scoring
-          ownership_type: r.ownership_type,
-          contract_model: r.contract_model,
-        }));
-        setDbAccounts(mapped);
-      } catch {
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await (supabase.from("flash_accounts") as any)
+        .select("*")
+        .eq("tenant_slug", tenantSlug)
+        .order("name");
+      if (error || !data || data.length === 0) {
         setDbAccounts(null);
-      } finally {
         setLoading(false);
+        return;
       }
-    })();
-  }, []);
+      const mapped: FlashAccount[] = data.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        accountType: r.account_type as AccountType,
+        stage: r.stage as AccountStage,
+        estimatedSpaces: r.estimated_spaces || "N/A",
+        facilityCount: r.facility_count || "N/A",
+        focusArea: r.focus_area || "",
+        hqCity: r.hq_city || "",
+        hqLat: r.hq_lat || 0,
+        hqLng: r.hq_lng || 0,
+        website: r.website || "",
+        differentiator: r.differentiator || "",
+        caseStudyUrl: r.case_study_url || undefined,
+        currentVendor: r.current_vendor || undefined,
+        annualRevenue: r.annual_revenue || undefined,
+        employeeCount: r.employee_count || undefined,
+        founded: r.founded || undefined,
+        priorityScore: r.priority_score || 0,
+        notes: r.notes || undefined,
+        ownership_type: r.ownership_type,
+        contract_model: r.contract_model,
+      }));
+      setDbAccounts(mapped);
+    } catch {
+      setDbAccounts(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [tenantSlug]);
 
-  return { accounts: dbAccounts ?? STATIC_ALL_ACCOUNTS, loading };
+  useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
+
+  // For Flash, fall back to static data; other tenants show empty
+  const fallback = tenantSlug === "flash" ? STATIC_ALL_ACCOUNTS : [];
+  return { accounts: dbAccounts ?? fallback, loading, refetch: fetchAccounts };
 }
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "AIzaSyDMSptsCr9hKesJxuvh-sKL1z_gCj371z0";
@@ -212,11 +220,207 @@ function MapViewportSync({ hint }: { hint: ViewportHint | null }) {
   return null;
 }
 
-/* ── Main page ── */
+/* ══════════════════════════════════════════════════════════
+   Tenant Setup Chat — AI-powered pipeline builder
+   ══════════════════════════════════════════════════════════ */
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+function TenantSetupChat({ tenant, accountCount, onAccountsAdded }: {
+  tenant: { slug: string; name: string; contextPrompt: string; accountTypes: { value: string; label: string }[] };
+  accountCount: number;
+  onAccountsAdded: () => void;
+}) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-start with welcome message
+  useEffect(() => {
+    if (messages.length === 0) {
+      const welcome: ChatMessage = {
+        role: "assistant",
+        content: accountCount > 0
+          ? `Welcome back to the **${tenant.name}** pipeline. You have **${accountCount} accounts** loaded.\n\nI can help you:\n- 🔍 Research competitors and prospects\n- 👥 Find decision-makers at target accounts\n- 📊 Analyze market opportunities\n\nWhat would you like to do?`
+          : `Let's build the **${tenant.name}** account pipeline from scratch.\n\nI'll auto-research your company and industry to seed the pipeline with:\n- 🎯 Target accounts (ISOs, merchants, fintechs)\n- ⚔️ Key competitors\n- 🏢 Strategic partners\n\nTo get started, just say **"set up my pipeline"** or tell me about a specific company to research.`,
+      };
+      setMessages([welcome]);
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = async () => {
+    const text = input.trim();
+    if (!text || isStreaming) return;
+
+    const userMsg: ChatMessage = { role: "user", content: text };
+    setMessages(prev => [...prev, userMsg]);
+    setInput("");
+    setIsStreaming(true);
+
+    let assistantSoFar = "";
+    const upsertAssistant = (chunk: string) => {
+      assistantSoFar += chunk;
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant" && prev.length > 1 && prev[prev.length - 2]?.role === "user") {
+          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+        }
+        return [...prev, { role: "assistant", content: assistantSoFar }];
+      });
+    };
+
+    try {
+      const systemPrompt = `You are the Xcrow Enterprise Pipeline Assistant for ${tenant.name}. ${tenant.contextPrompt}
+
+Your job is to help build and manage the account pipeline. You can:
+1. Research companies and suggest them as target accounts
+2. Identify competitors in the industry
+3. Provide market intelligence and analysis
+4. Help prioritize accounts by fit and opportunity size
+
+Account types available: ${tenant.accountTypes.map(t => t.label).join(", ")}.
+
+When suggesting accounts to add, format them clearly with name, type, estimated revenue, and why they're a good target.
+Keep responses focused and actionable. Use markdown formatting.`;
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+          "apikey": supabaseKey,
+        },
+        body: JSON.stringify({
+          website: `${tenant.slug}.com`,
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...messages.filter(m => m.role !== "assistant" || messages.indexOf(m) > 0).map(m => ({ role: m.role, content: m.content })),
+            { role: "user", content: text },
+          ],
+        }),
+      });
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const reader = resp.body?.getReader();
+      if (!reader) throw new Error("No body");
+
+      await parseSSEStream(reader, {
+        onTextDelta: (chunk) => upsertAssistant(chunk),
+        onLeads: (leads) => {
+          // Could auto-add to pipeline in future
+          upsertAssistant(`\n\n> 📋 Found ${leads.length} contacts — pipeline integration coming soon.`);
+        },
+        onDone: () => {},
+      });
+    } catch (e) {
+      console.error("Chat error:", e);
+      upsertAssistant("\n\n⚠️ Something went wrong. Please try again.");
+    } finally {
+      setIsStreaming(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Chat messages */}
+      <ScrollArea className="flex-1 px-4 py-3">
+        <div className="space-y-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : ""}`}>
+              {msg.role === "assistant" && (
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Bot className="w-4 h-4 text-primary" />
+                </div>
+              )}
+              <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${
+                msg.role === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/60 text-foreground"
+              }`}>
+                {msg.role === "assistant" ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                )}
+              </div>
+              {msg.role === "user" && (
+                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
+                  <User className="w-4 h-4 text-primary-foreground" />
+                </div>
+              )}
+            </div>
+          ))}
+          {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
+            <div className="flex gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Bot className="w-4 h-4 text-primary" />
+              </div>
+              <div className="bg-muted/60 rounded-lg px-3.5 py-2.5">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            </div>
+          )}
+          <div ref={scrollRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Input */}
+      <div className="border-t border-border p-3">
+        <div className="flex gap-2">
+          <Textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={`Ask about ${tenant.name}'s market, research a company, or say "set up my pipeline"...`}
+            className="min-h-[42px] max-h-[120px] resize-none text-sm"
+            rows={1}
+          />
+          <Button
+            size="icon"
+            onClick={handleSend}
+            disabled={!input.trim() || isStreaming}
+            className="shrink-0 h-[42px] w-[42px]"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   Main page component
+   ══════════════════════════════════════════════════════════ */
+
 export default function TenantAccountMap() {
   const isMobile = useIsMobile();
   const { tenant } = useTenant();
-  const { accounts: allAccounts } = useDBAccounts();
+  const { accounts: allAccounts, loading: accountsLoading, refetch } = useDBAccounts(tenant.slug);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [showDeployed, setShowDeployed] = useState(false);
   const [accountLeads, setAccountLeads] = useState<Record<string, AccountLeadData>>({});
@@ -235,7 +439,6 @@ export default function TenantAccountMap() {
 
   const handleSelectAccount = useCallback((a: FlashAccount) => {
     setSelectedAccountId(a.id);
-    // Auto-zoom to account HQ
     if (a.hqLat && a.hqLng) {
       setViewportHint({ lat: a.hqLat, lng: a.hqLng, zoom: 12 });
     }
@@ -258,27 +461,23 @@ export default function TenantAccountMap() {
       addLog(`Analyzing ${account.name} account profile`);
 
       const vendorNote = account.currentVendor && account.currentVendor !== "Unknown"
-        ? `Current parking technology vendor: ${account.currentVendor}. Frame the outreach as a competitive displacement opportunity.`
-        : "No known incumbent vendor — this is a greenfield opportunity.";
+        ? `Current vendor: ${account.currentVendor}. Frame outreach as a competitive displacement opportunity.`
+        : "No known incumbent vendor — greenfield opportunity.";
       const stageNote = account.stage === "active"
-        ? "This is an EXISTING Flash customer — find contacts for upsell/expansion conversations."
+        ? `This is an EXISTING ${tenant.name} partner — find contacts for upsell/expansion.`
         : account.stage === "competitor"
-        ? "This account uses a competitor's platform — find contacts for competitive displacement outreach."
+        ? "This account uses a competitor — find contacts for competitive displacement."
         : account.stage === "target"
-        ? "This is a priority target account — find the right entry points for initial outreach."
+        ? "This is a priority target — find the right entry points."
         : "This is a whitespace opportunity — find contacts to open a net-new relationship.";
 
       const TENANT_CONTEXT = `${tenant.contextPrompt} ${stageNote} ${vendorNote}`;
 
       let content: string;
       if (mode === "ma") {
-        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — ${account.accountType === "airport" ? "a commercial airport" : "a parking operator"} in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}.\n\nMODE: M&A / Corporate Development contacts. Search domain "${domain}".\n\nTarget titles: CFO, VP Corporate Development, CEO, General Counsel, VP Strategy, Chief Strategy Officer, Board Member.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
-      } else if (account.accountType === "airport") {
-        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a commercial airport with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nCRITICAL: Search ONLY within the airport authority/corporation — use domain "${domain}".\n\nTarget titles: Director/VP of Parking & Ground Transportation, Chief Commercial/Revenue Officer, Director of Landside Operations, Airport Director/CEO, VP of Facilities.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
-      } else if (account.accountType === "large_venue") {
-        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a large venue operator in ${account.hqCity} with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nSearch domain "${domain}" first.\n\nTarget titles: VP/Director of Parking Operations, VP of Facilities, COO, VP of Guest Experience, Director of Revenue Operations.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
+        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) in ${account.hqCity}.\n\nMODE: M&A / Corporate Development contacts. Search domain "${domain}".\n\nTarget titles: CFO, VP Corporate Development, CEO, General Counsel, VP Strategy, Chief Strategy Officer.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
       } else {
-        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a parking operator in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}.\n\nSearch domain "${domain}".\n\nTarget titles: VP/SVP of Operations, COO/CTO, VP of Technology, VP of Revenue, Regional VP.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
+        content = `${TENANT_CONTEXT}\n\nAccount: ${account.name} (${domain}) — ${account.focusArea || account.accountType} in ${account.hqCity}.\n\nSearch domain "${domain}".\n\nTarget titles based on buying persona for ${tenant.name} solutions.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
       }
 
       await new Promise(r => setTimeout(r, 800));
@@ -298,7 +497,7 @@ export default function TenantAccountMap() {
           "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
           "apikey": supabaseKey,
         },
-        body: JSON.stringify({ website: "flashparking.com", messages: [{ role: "user", content }], strict_domain: true }),
+        body: JSON.stringify({ website: domain, messages: [{ role: "user", content }], strict_domain: true }),
       });
 
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -331,6 +530,79 @@ export default function TenantAccountMap() {
     }
   }, [loadingLeads, accountLeads, tenant]);
 
+  // ── Non-map layout (chat + list hybrid) ──
+  if (!tenant.featureFlags.showMap) {
+    const accountPanel = (
+      <div className="flex flex-col h-full bg-background">
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center gap-3">
+            {tenant.logo ? (
+              <img src={tenant.logo} alt={tenant.name} className="w-8 h-8 object-contain rounded" />
+            ) : (
+              <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">{tenant.name.charAt(0)}</div>
+            )}
+            <div>
+              <h2 className="text-lg font-bold leading-tight">{tenant.name} Pipeline</h2>
+              <p className="text-xs text-muted-foreground">
+                {accountsLoading ? "Loading..." : `${allAccounts.length} accounts`}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {selectedAccount ? (
+          <AccountDetailInline
+            account={selectedAccount}
+            onBack={handleBack}
+            onFindContacts={handleFindContacts}
+            loadingLeads={loadingLeads.has(selectedAccount.id)}
+            activityLog={activityLog[selectedAccount.id] || []}
+            streamedLeads={accountLeads[selectedAccount.id]?.leads || []}
+            onStageChange={() => {}}
+          />
+        ) : allAccounts.length > 0 ? (
+          <AccountListView
+            accounts={allAccounts}
+            selectedAccountId={selectedAccountId}
+            onSelectAccount={handleSelectAccount}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center px-6">
+            <div className="text-center space-y-3">
+              <Building2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">
+                No accounts yet. Use the chat to build your pipeline.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+
+    return (
+      <div className="flex h-[calc(100vh-48px)] w-full">
+        {/* Chat panel */}
+        <div className="flex-1 border-r border-border flex flex-col min-w-0">
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+            <Bot className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium">{tenant.name} Pipeline Assistant</span>
+          </div>
+          <TenantSetupChat
+            tenant={tenant}
+            accountCount={allAccounts.length}
+            onAccountsAdded={refetch}
+          />
+        </div>
+
+        {/* Account list panel */}
+        <div className="w-[420px] shrink-0 flex flex-col overflow-hidden">
+          {accountPanel}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Map-based layout (Flash and other map tenants) ──
   if (!API_KEY) {
     return (
       <div className="flex items-center justify-center min-h-[80vh] p-8">
@@ -344,7 +616,6 @@ export default function TenantAccountMap() {
 
   const sidebar = (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
           {tenant.logo ? (
@@ -359,7 +630,6 @@ export default function TenantAccountMap() {
         </div>
       </div>
 
-      {/* Main content: list or detail */}
       {selectedAccount ? (
         <AccountDetailInline
           account={selectedAccount}
@@ -378,14 +648,15 @@ export default function TenantAccountMap() {
         />
       )}
 
-      {/* Data Pipeline (bottom, collapsible) */}
-      <DataPipelineSection
-        accounts={allAccounts}
-        showGarages={showGarages}
-        onToggleGarages={setShowGarages}
-        garages={laGarages}
-        onGaragesLoaded={setLaGarages}
-      />
+      {tenant.featureFlags.showGarageDiscovery && (
+        <DataPipelineSection
+          accounts={allAccounts}
+          showGarages={showGarages}
+          onToggleGarages={setShowGarages}
+          garages={laGarages}
+          onGaragesLoaded={setLaGarages}
+        />
+      )}
     </div>
   );
 
@@ -415,10 +686,10 @@ export default function TenantAccountMap() {
 
         {/* Legend */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border border-border rounded-lg px-4 py-2 flex gap-4 shadow-md text-xs">
-          {(["active", "target", "whitespace", "competitor"] as AccountStage[]).map(s => (
+          {(Object.keys(tenant.stages) as AccountStage[]).map(s => (
             <div key={s} className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: STAGE_CONFIG[s].markerColor }} />
-              <span>{STAGE_CONFIG[s].label}</span>
+              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tenant.stages[s]?.markerColor || STAGE_CONFIG[s]?.markerColor }} />
+              <span>{tenant.stages[s]?.label || STAGE_CONFIG[s]?.label}</span>
             </div>
           ))}
           {showGarages && (
