@@ -347,10 +347,6 @@ function useLiveResearchStream() {
   ];
 
   const [phases, setPhases] = useState<ResearchPhase[]>(INITIAL);
-
-  useEffect(() => {
-    phasesRef.current = phases;
-  }, [phases]);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -361,6 +357,10 @@ function useLiveResearchStream() {
   const startRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    phasesRef.current = phases;
+  }, [phases]);
 
   const runningRef = useRef(false);
 
