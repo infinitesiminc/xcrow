@@ -6,12 +6,8 @@ const corsHeaders = {
 /**
  * perplexity-research — Streams Perplexity deep research results as SSE phases
  * 
- * POST { domain: string, companyContext?: string }
- * 
- * Streams SSE events:
- *   data: { type: "phase", phase: { id, label, status, progress, findings?, streamingText? } }
- *   data: { type: "citations", citations: string[], searchResults: {...}[] }
- *   data: [DONE]
+ * Now uses Perplexity streaming for real-time transparency.
+ * Emits streamingText on active phase + extracts findings incrementally.
  */
 
 Deno.serve(async (req) => {
@@ -31,7 +27,7 @@ Deno.serve(async (req) => {
   try {
     body = await req.json();
     if (!body.domain) throw new Error("Missing domain");
-  } catch (e) {
+  } catch (_e) {
     return new Response(JSON.stringify({ error: "Invalid request: domain required" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -40,19 +36,18 @@ Deno.serve(async (req) => {
 
   const { domain, companyContext, personaPerformance } = body;
 
-  // Define research phases we'll map the output to
   const PHASES = [
-    { id: "PHASE_01", label: "Website DNA & Market Position", sections: ["Market Overview", "Business Model", "Market Position"] },
-    { id: "PHASE_02", label: "ICP & Buyer Personas", sections: ["Ideal Customer", "Customer Profile", "Market Segments"] },
-    { id: "PHASE_03", label: "Competitive Landscape", sections: ["Competitive", "Competitor", "Key Competitors"] },
-    { id: "PHASE_04", label: "Strategic Targets & Pipeline Seed", sections: ["Acquisition", "Partnership", "Target", "Strategic"] },
+    { id: "PHASE_01", label: "Website DNA & Market Position", sections: ["market overview", "business model", "market position"] },
+    { id: "PHASE_02", label: "ICP & Buyer Personas", sections: ["ideal customer", "customer profile", "market segment"] },
+    { id: "PHASE_03", label: "Competitive Landscape", sections: ["competitive", "competitor", "key competitor"] },
+    { id: "PHASE_04", label: "Strategic Targets & Pipeline Seed", sections: ["acquisition", "partnership", "target", "strategic"] },
   ];
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (data: unknown) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        try { controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`)); } catch { /* closed */ }
       };
 
       // Signal all phases as pending
@@ -60,8 +55,8 @@ Deno.serve(async (req) => {
         send({ type: "phase", phase: { id: p.id, label: p.label, status: "pending", progress: 0 } });
       }
 
-      // Start phase 1 as active
-      send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Querying Perplexity Deep Research", progress: 5 } });
+      // Start phase 1
+      send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Connecting to Perplexity Deep Research", progress: 5 } });
 
       try {
         const personaFeedback = personaPerformance
@@ -87,6 +82,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           },
           body: JSON.stringify({
             model: "sonar-deep-research",
+            stream: true,
             messages: [
               { role: "system", content: "You are a strategic market research analyst. Provide structured, data-rich analysis with specific company names, revenue estimates, and actionable intelligence." },
               { role: "user", content: prompt },
@@ -103,90 +99,244 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           return;
         }
 
-        // Update phase 1 progress while waiting
-        send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Deep research in progress", progress: 30 } });
-
-        const data = await resp.json();
-        const content: string = data.choices?.[0]?.message?.content || "";
-        const citations: string[] = data.citations || [];
-        const searchResults = data.search_results || [];
-
-        // Send citations
-        send({ type: "citations", citations, searchResults: searchResults.slice(0, 15) });
-
-        // Parse markdown into sections by ## headers
-        const sections: { header: string; body: string }[] = [];
-        const lines = content.split("\n");
-        let currentHeader = "";
-        let currentBody: string[] = [];
-
-        for (const line of lines) {
-          if (line.startsWith("## ") || line.startsWith("# ")) {
-            if (currentHeader) {
-              sections.push({ header: currentHeader, body: currentBody.join("\n").trim() });
-            }
-            currentHeader = line.replace(/^#+\s*/, "");
-            currentBody = [];
-          } else {
-            currentBody.push(line);
-          }
-        }
-        if (currentHeader) {
-          sections.push({ header: currentHeader, body: currentBody.join("\n").trim() });
-        }
-
-        // Map sections to phases
+        // Stream response and accumulate text
+        let fullText = "";
+        let citations: string[] = [];
+        let currentPhaseIdx = 0;
+        let lastStreamUpdate = 0;
+        const STREAM_INTERVAL = 400; // ms between streamingText updates
+        const completedPhases = new Set<number>();
+        // Track which sections we've already emitted findings for
+        const emittedSections = new Set<string>();
+        // Track findings per phase for final send
         const phaseFindings: Record<string, { label: string; value: string; confidence?: number; highlight?: boolean }[]> = {};
 
-        for (const section of sections) {
-          const headerLower = section.header.toLowerCase();
-          let matchedPhase = PHASES[0]; // default to phase 1
+        /** Detect which phase a header belongs to */
+        function detectPhase(header: string): number {
+          const h = header.toLowerCase();
+          for (let i = 0; i < PHASES.length; i++) {
+            if (PHASES[i].sections.some(s => h.includes(s))) return i;
+          }
+          return 0;
+        }
 
-          for (const phase of PHASES) {
-            if (phase.sections.some(s => headerLower.includes(s.toLowerCase()))) {
-              matchedPhase = phase;
-              break;
+        /** Parse completed sections from accumulated text and emit findings */
+        function parseAndEmitFindings() {
+          const sections: { header: string; body: string; complete: boolean }[] = [];
+          const lines = fullText.split("\n");
+          let curHeader = "";
+          let curBody: string[] = [];
+
+          for (const line of lines) {
+            if (line.startsWith("## ") || line.startsWith("# ")) {
+              if (curHeader) {
+                sections.push({ header: curHeader, body: curBody.join("\n").trim(), complete: true });
+              }
+              curHeader = line.replace(/^#+\s*/, "");
+              curBody = [];
+            } else {
+              curBody.push(line);
             }
           }
+          // Last section may be incomplete
+          if (curHeader) {
+            sections.push({ header: curHeader, body: curBody.join("\n").trim(), complete: false });
+          }
 
-          if (!phaseFindings[matchedPhase.id]) phaseFindings[matchedPhase.id] = [];
+          for (let si = 0; si < sections.length; si++) {
+            const section = sections[si];
+            const isComplete = si < sections.length - 1; // complete if another section follows
+            if (!isComplete || emittedSections.has(section.header)) continue;
+            if (section.body.length < 50) continue;
 
-          // Split body into subsections (### headers) or paragraphs
-          const subSections = section.body.split(/(?=^### )/m).filter(s => s.trim());
+            emittedSections.add(section.header);
+            const phaseIdx = detectPhase(section.header);
+            const phase = PHASES[phaseIdx];
+            if (!phaseFindings[phase.id]) phaseFindings[phase.id] = [];
 
-          if (subSections.length > 1) {
-            for (const sub of subSections.slice(0, 6)) {
-              const subLines = sub.split("\n");
-              const subHeader = subLines[0].replace(/^#+\s*/, "").trim();
-              const subBody = subLines.slice(1).join("\n").trim();
-              if (subBody.length > 20) {
-                phaseFindings[matchedPhase.id].push({
-                  label: subHeader || section.header,
-                  value: subBody.slice(0, 500),
-                  confidence: 75 + Math.floor(Math.random() * 20),
-                  highlight: phaseFindings[matchedPhase.id].length === 0,
-                });
+            // Extract sub-findings from ### headers or paragraphs
+            const subSections = section.body.split(/(?=^### )/m).filter(s => s.trim());
+            if (subSections.length > 1) {
+              for (const sub of subSections.slice(0, 6)) {
+                const subLines = sub.split("\n");
+                const subHeader = subLines[0].replace(/^#+\s*/, "").trim();
+                const subBody = subLines.slice(1).join("\n").trim();
+                if (subBody.length > 20) {
+                  phaseFindings[phase.id].push({
+                    label: subHeader || section.header,
+                    value: subBody.slice(0, 500),
+                    confidence: 75 + Math.floor(Math.random() * 20),
+                    highlight: phaseFindings[phase.id].length === 0,
+                  });
+                }
               }
-            }
-          } else {
-            // Single block — split into ~300 char chunks as findings
-            const bodyText = section.body;
-            if (bodyText.length > 50) {
-              phaseFindings[matchedPhase.id].push({
+            } else if (section.body.length > 50) {
+              phaseFindings[phase.id].push({
                 label: section.header,
-                value: bodyText.slice(0, 600),
+                value: section.body.slice(0, 600),
                 confidence: 80 + Math.floor(Math.random() * 15),
-                highlight: phaseFindings[matchedPhase.id].length === 0,
+                highlight: phaseFindings[phase.id].length === 0,
+              });
+            }
+
+            // Emit findings for this phase
+            send({
+              type: "phase",
+              phase: {
+                id: phase.id,
+                label: phase.label,
+                status: "active",
+                progress: Math.min(90, 30 + (phaseFindings[phase.id].length * 15)),
+                findings: phaseFindings[phase.id],
+              },
+            });
+
+            // If we've moved past this phase, mark it complete
+            if (phaseIdx < currentPhaseIdx && !completedPhases.has(phaseIdx)) {
+              completedPhases.add(phaseIdx);
+              send({
+                type: "phase",
+                phase: {
+                  id: phase.id,
+                  label: phase.label,
+                  status: "complete",
+                  progress: 100,
+                  findings: phaseFindings[phase.id],
+                },
               });
             }
           }
+
+          // Detect phase transitions from headers
+          const headerPhases = sections.map(s => detectPhase(s.header));
+          const latestPhase = Math.max(...headerPhases, 0);
+          if (latestPhase > currentPhaseIdx) {
+            // Complete previous phases
+            for (let i = currentPhaseIdx; i < latestPhase; i++) {
+              if (!completedPhases.has(i)) {
+                completedPhases.add(i);
+                const p = PHASES[i];
+                send({
+                  type: "phase",
+                  phase: {
+                    id: p.id,
+                    label: p.label,
+                    status: "complete",
+                    progress: 100,
+                    findings: phaseFindings[p.id] || [],
+                  },
+                });
+              }
+            }
+            currentPhaseIdx = latestPhase;
+            const activeP = PHASES[currentPhaseIdx];
+            send({
+              type: "phase",
+              phase: {
+                id: activeP.id,
+                label: activeP.label,
+                status: "active",
+                sublabel: "Analyzing",
+                progress: 10,
+              },
+            });
+          }
         }
 
-        // Extract structured targets from Phase 4 findings
-        const extractedTargets: { name: string; domain?: string; description: string; rationale: string }[] = [];
+        // Handle streaming response
+        const reader = resp.body?.getReader();
+        if (!reader) throw new Error("No response body");
+
+        const decoder = new TextDecoder();
+        let sseBuffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          sseBuffer += decoder.decode(value, { stream: true });
+
+          let idx: number;
+          while ((idx = sseBuffer.indexOf("\n")) !== -1) {
+            let line = sseBuffer.slice(0, idx);
+            sseBuffer = sseBuffer.slice(idx + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (!line.startsWith("data: ")) continue;
+
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+
+              // Extract citations if present
+              if (parsed.citations) {
+                citations = parsed.citations;
+                send({ type: "citations", citations, searchResults: [] });
+              }
+
+              // Extract delta text
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) {
+                fullText += delta;
+
+                // Throttled streaming text update
+                const now = Date.now();
+                if (now - lastStreamUpdate > STREAM_INTERVAL) {
+                  lastStreamUpdate = now;
+                  const activePhase = PHASES[currentPhaseIdx];
+                  const tail = fullText.slice(-300);
+                  send({
+                    type: "phase",
+                    phase: {
+                      id: activePhase.id,
+                      label: activePhase.label,
+                      status: "active",
+                      sublabel: "Streaming research",
+                      streamingText: tail,
+                      progress: Math.min(80, 10 + (fullText.length / 50)),
+                    },
+                  });
+
+                  // Check for new completed sections
+                  parseAndEmitFindings();
+                }
+              }
+            } catch {
+              // Incomplete JSON chunk, skip
+            }
+          }
+        }
+
+        // Final parse of all remaining sections
+        parseAndEmitFindings();
+
+        // Send citations
+        if (citations.length > 0) {
+          send({ type: "citations", citations, searchResults: [] });
+        }
+
+        // Mark all remaining phases complete with their findings
+        for (let i = 0; i < PHASES.length; i++) {
+          if (!completedPhases.has(i)) {
+            completedPhases.add(i);
+            send({
+              type: "phase",
+              phase: {
+                id: PHASES[i].id,
+                label: PHASES[i].label,
+                status: "complete",
+                progress: 100,
+                findings: phaseFindings[PHASES[i].id] || [],
+              },
+            });
+          }
+        }
+
+        // Extract and send targets from phase 4
         const phase4Findings = phaseFindings["PHASE_04"] || [];
+        const extractedTargets: { name: string; domain?: string; description: string; rationale: string }[] = [];
         for (const f of phase4Findings) {
-          // Try to extract company names from the text using patterns like "**CompanyName**" or "CompanyName (domain.com)"
           const companyMatches = f.value.matchAll(/\*\*([A-Z][A-Za-z0-9\s&.'-]+?)\*\*/g);
           for (const m of companyMatches) {
             const name = m[1].trim();
@@ -201,60 +351,11 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             }
           }
         }
-        // Deduplicate by name
         const uniqueTargets = extractedTargets.filter((t, i, arr) => arr.findIndex(x => x.name === t.name) === i).slice(0, 8);
-
-        // Stream phases with delays for visual effect
-        for (let i = 0; i < PHASES.length; i++) {
-          const phase = PHASES[i];
-          const findings = phaseFindings[phase.id] || [];
-
-          // Mark active
-          send({
-            type: "phase",
-            phase: {
-              id: phase.id,
-              label: phase.label,
-              status: "active",
-              sublabel: "Synthesizing",
-              progress: 30,
-              findings: [],
-            },
-          });
-
-          // Stream findings one by one
-          for (let j = 0; j < findings.length; j++) {
-            await new Promise(r => setTimeout(r, 300));
-            send({
-              type: "phase",
-              phase: {
-                id: phase.id,
-                label: phase.label,
-                status: "active",
-                progress: Math.min(90, 30 + ((j + 1) / findings.length) * 60),
-                findings: findings.slice(0, j + 1),
-              },
-            });
-          }
-
-          // Mark complete
-          await new Promise(r => setTimeout(r, 200));
-          send({
-            type: "phase",
-            phase: {
-              id: phase.id,
-              label: phase.label,
-              status: "complete",
-              progress: 100,
-              findings,
-            },
-          });
-        }
-
-        // Send extracted targets as a separate event
         if (uniqueTargets.length > 0) {
           send({ type: "targets", targets: uniqueTargets });
         }
+
       } catch (err) {
         console.error("Research pipeline error:", err);
         send({ type: "error", error: String(err) });
