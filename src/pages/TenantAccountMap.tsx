@@ -602,6 +602,7 @@ export default function TenantAccountMap() {
     }
   }, [seedingTarget, seededTargets, tenant.slug, refetch]);
 
+  const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
     setLoadingLeads(prev => new Set(prev).add(account.id));
 
