@@ -58,12 +58,11 @@ export function parseReportText(text: string): ParsedReport {
           if (l.includes("search title")) currentSection = "title";
           else if (l.includes("pain") || l.includes("challenge") || l.includes("disqualif")) currentSection = "pain";
           else if (l.includes("trigger") || l.includes("buying")) currentSection = "trigger";
-          else if (l.includes("primary buyer") || l.includes("secondary buyer")) {
+          else if (l.includes("primary buyer") || l.includes("secondary buyer") || l.includes("decision-maker") || l.includes("decision maker")) {
             // Extract inline title from "**Primary buyer**: VP of Sales, ..."
-            const inlineMatch = line.match(/\*\*(?:Primary|Secondary)\s+buyer\*\*:\s*(.+)/i);
+            const inlineMatch = line.match(/\*\*(?:Primary|Secondary)\s+(?:buyer|decision[\s-]?maker)\*\*:\s*(.+)/i);
             if (inlineMatch) {
               const rawTitle = inlineMatch[1].split(",")[0].replace(/\*\*/g, "").trim();
-              // Only add if it looks like a real job title (short, has a role word)
               if (rawTitle.length < 60 && rawTitle.length > 2) titles.push(rawTitle);
             }
             currentSection = "";
@@ -83,9 +82,23 @@ export function parseReportText(text: string): ParsedReport {
           }
         }
 
-        // Fallback: generate generic decision-maker titles if none found
+        // Fallback: generate PERSONA-SPECIFIC titles from the segment name
         if (titles.length === 0) {
-          titles.push("VP of Sales", "Director of Business Development", "Head of Partnerships", "Chief Revenue Officer");
+          // Clean the persona title to extract the core segment concept
+          const cleanSegment = title
+            .replace(/^(?:ICP\s+)?Segment\s*\d*:?\s*/i, "")
+            .replace(/\s+(?:Seeking|Looking|Needing)\s+.+$/i, "")
+            .split(/[,(]/)[0]
+            .trim();
+
+          // Generate role-based titles from the segment
+          if (cleanSegment.length > 2) {
+            titles.push(`VP of ${cleanSegment}`, `Director of ${cleanSegment}`, `Head of ${cleanSegment}`);
+          }
+          // Always add a few universal decision-maker titles as last resort
+          if (titles.length === 0) {
+            titles.push("VP of Sales", "Director of Operations", "Chief Revenue Officer");
+          }
         }
 
         personas.push({ title, painPoints: painPoints.slice(0, 4), buyingTriggers: buyingTriggers.slice(0, 3), titles: titles.slice(0, 5) });
