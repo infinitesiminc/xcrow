@@ -26,7 +26,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
-const Leadgen = lazy(() => import("./pages/Leadgen.tsx"));
+const LeadHunter = lazy(() => import("./pages/LeadHunter.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
 const Pricing = lazy(() => import("./pages/Pricing.tsx"));
@@ -38,11 +38,6 @@ const BlogPostPage = lazy(() => import("./pages/BlogPostPage.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Demo = lazy(() => import("./pages/Demo.tsx"));
 const Texas = lazy(() => import("./pages/Texas.tsx"));
-const Admin = lazy(() => import("./pages/Admin.tsx"));
-const TenantAccountMap = lazy(() => import("./pages/TenantAccountMap.tsx"));
-
-const EnterpriseLayout = lazy(() => import("./pages/EnterpriseLayout.tsx"));
-
 
 const queryClient = new QueryClient();
 
@@ -88,15 +83,12 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/demo" element={<Demo />} />
               <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
-              <Route path="/leadhunter" element={<Leadgen />} />
+              <Route path="/leadhunter" element={<AuthGate><LeadHunter /></AuthGate>} />
               <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/admin" element={<EnterpriseLayout />}>
-                <Route index element={<Admin />} />
-                <Route path=":tenantSlug" element={<TenantAccountMap />} />
-              </Route>
-              <Route path="/flashparkingmap" element={<Navigate to="/admin/cliq" replace />} />
-              <Route path="/enterprise/*" element={<Navigate to="/admin/cliq" replace />} />
-              <Route path="/enterprise" element={<Navigate to="/admin/cliq" replace />} />
+              <Route path="/admin" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/admin/*" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/enterprise/*" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/flashparkingmap" element={<Navigate to="/leadhunter" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
