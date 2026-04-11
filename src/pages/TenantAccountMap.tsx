@@ -481,6 +481,7 @@ function useLiveResearchStream() {
   const [phases, setPhases] = useState<ResearchPhase[]>(INITIAL);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [citations, setCitations] = useState<string[]>([]);
   const [targets, setTargets] = useState<ResearchTarget[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
