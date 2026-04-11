@@ -4,9 +4,11 @@ const corsHeaders = {
 };
 
 /**
- * perplexity-research — Streams Perplexity research results as SSE phases
- * 
- * Uses sonar-pro streaming with keepalive heartbeats to prevent proxy timeouts.
+ * perplexity-research — Deep research via Perplexity sonar-deep-research
+ *
+ * Sends a single comprehensive prompt, streams SSE with keepalive heartbeats.
+ * sonar-deep-research performs multi-query analysis internally, so we let it
+ * do its thing and parse the structured output as it arrives.
  */
 
 Deno.serve(async (req) => {
@@ -36,10 +38,10 @@ Deno.serve(async (req) => {
   const { domain, companyContext, personaPerformance } = body;
 
   const PHASES = [
-    { id: "PHASE_01", label: "Website DNA & Market Position", sections: ["market overview", "business model", "market position"] },
-    { id: "PHASE_02", label: "ICP & Buyer Personas", sections: ["ideal customer", "customer profile", "market segment"] },
-    { id: "PHASE_03", label: "Competitive Landscape", sections: ["competitive", "competitor", "key competitor"] },
-    { id: "PHASE_04", label: "Strategic Targets & Pipeline Seed", sections: ["acquisition", "partnership", "target", "strategic"] },
+    { id: "PHASE_01", label: "Company DNA & Value Proposition", sections: ["company overview", "value proposition", "business model", "product", "service"] },
+    { id: "PHASE_02", label: "ICP & Buyer Personas", sections: ["ideal customer", "buyer persona", "target audience", "customer profile", "icp"] },
+    { id: "PHASE_03", label: "Competitive Landscape", sections: ["competitive", "competitor", "alternative", "market player"] },
+    { id: "PHASE_04", label: "Prospecting Targets", sections: ["prospect", "target compan", "pipeline", "outbound", "outreach target"] },
   ];
 
   const encoder = new TextEncoder();
@@ -58,25 +60,52 @@ Deno.serve(async (req) => {
       for (const p of PHASES) {
         send({ type: "phase", phase: { id: p.id, label: p.label, status: "pending", progress: 0 } });
       }
-
-      // Start phase 1
-      send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Connecting to Perplexity Research", progress: 5 } });
+      send({ type: "phase", phase: { id: "PHASE_01", label: PHASES[0].label, status: "active", sublabel: "Deep research in progress — this takes 30-60 seconds", progress: 5 } });
 
       try {
         const personaFeedback = personaPerformance
-          ? `\n\nIMPORTANT - Previous campaign performance data:\n${personaPerformance}\nWeight your persona and target recommendations based on what has worked historically.`
-          : '';
+          ? `\n\nHistorical campaign performance (weight recommendations accordingly):\n${personaPerformance}`
+          : "";
 
-        const prompt = `Research the company at ${domain}. ${companyContext || ""}${personaFeedback}
+        const systemPrompt = `You are a B2B go-to-market research analyst. Your job is to analyze a company's website and produce a precise, actionable report that a sales team can immediately use to build outbound pipeline.
 
-Provide a comprehensive analysis structured with these EXACT section headers:
-## Market Overview and Business Model
-## Competitive Landscape and Key Competitors  
-## Ideal Customer Profiles and Market Segments
-## Strategic Acquisition and Partnership Targets
+Be specific. Use real company names, real job titles, real revenue figures. No filler. No hedging. Every claim should be grounded in what you find.`;
 
-For each section include specific data points, company names, revenue figures, and confidence assessments where possible.
-For the Strategic Targets section, identify 3-5 specific companies with names, descriptions, and strategic rationale.`;
+        const userPrompt = `Conduct deep research on the company at: ${domain}
+${companyContext ? `\nAdditional context: ${companyContext}` : ""}${personaFeedback}
+
+Structure your report with these EXACT markdown headers:
+
+## Company Overview and Value Proposition
+- What does this company sell? What problem do they solve?
+- Business model (SaaS, marketplace, services, etc.)
+- Pricing model if discoverable
+- Key differentiators vs. alternatives
+- Estimated revenue range and employee count if available
+
+## Ideal Customer Profiles and Buyer Personas
+This is the most important section. For each ICP segment:
+- **Segment name** (e.g. "Mid-market SaaS companies scaling sales")
+- **Company characteristics**: industry, employee range, revenue range, tech stack signals, geography
+- **Primary buyer persona**: exact job title, department, seniority level, what they care about, pain points this company solves for them
+- **Secondary buyer persona**: same detail
+- **Buying triggers**: what events or situations make them actively search for this solution?
+- **Disqualifiers**: what makes a company NOT a fit?
+
+Identify 2-4 distinct ICP segments with this level of detail.
+
+## Competitive Landscape
+- Direct competitors (name, domain, how they differ)
+- Indirect competitors / alternatives
+- Where does this company win vs. lose?
+
+## Prospecting Targets
+Identify 5-10 specific companies that would be ideal customers for ${domain}. For each:
+- **Company name** and domain
+- Which ICP segment they fit
+- Why they'd be a good prospect (specific rationale)
+- Estimated employee count or revenue if available
+- Key decision-maker title to target`;
 
         const resp = await fetch("https://api.perplexity.ai/chat/completions", {
           method: "POST",
@@ -85,11 +114,11 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "sonar-pro",
+            model: "sonar-deep-research",
             stream: true,
             messages: [
-              { role: "system", content: "You are a strategic market research analyst. Provide structured, data-rich analysis with specific company names, revenue estimates, and actionable intelligence." },
-              { role: "user", content: prompt },
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
             ],
           }),
         });
@@ -104,13 +133,12 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           return;
         }
 
-        // Stream response and accumulate text
         let fullText = "";
         let citations: string[] = [];
         let citationsSent = false;
         let currentPhaseIdx = 0;
         let lastStreamUpdate = 0;
-        const STREAM_INTERVAL = 400;
+        const STREAM_INTERVAL = 500;
         const completedPhases = new Set<number>();
         const emittedSections = new Set<string>();
         const phaseFindings: Record<string, { label: string; value: string; confidence?: number; highlight?: boolean }[]> = {};
@@ -157,14 +185,14 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
 
             const subSections = section.body.split(/(?=^### )/m).filter(s => s.trim());
             if (subSections.length > 1) {
-              for (const sub of subSections.slice(0, 6)) {
+              for (const sub of subSections.slice(0, 8)) {
                 const subLines = sub.split("\n");
                 const subHeader = subLines[0].replace(/^#+\s*/, "").trim();
                 const subBody = subLines.slice(1).join("\n").trim();
                 if (subBody.length > 20) {
                   phaseFindings[phase.id].push({
                     label: subHeader || section.header,
-                    value: subBody.slice(0, 500),
+                    value: subBody.slice(0, 600),
                     confidence: 75 + Math.floor(Math.random() * 20),
                     highlight: phaseFindings[phase.id].length === 0,
                   });
@@ -173,7 +201,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             } else if (section.body.length > 50) {
               phaseFindings[phase.id].push({
                 label: section.header,
-                value: section.body.slice(0, 600),
+                value: section.body.slice(0, 800),
                 confidence: 80 + Math.floor(Math.random() * 15),
                 highlight: phaseFindings[phase.id].length === 0,
               });
@@ -185,7 +213,7 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
                 id: phase.id,
                 label: phase.label,
                 status: "active",
-                progress: Math.min(90, 30 + (phaseFindings[phase.id].length * 15)),
+                progress: Math.min(90, 30 + (phaseFindings[phase.id].length * 12)),
                 findings: phaseFindings[phase.id],
               },
             });
@@ -194,21 +222,16 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
               completedPhases.add(phaseIdx);
               send({
                 type: "phase",
-                phase: {
-                  id: phase.id,
-                  label: phase.label,
-                  status: "complete",
-                  progress: 100,
-                  findings: phaseFindings[phase.id],
-                },
+                phase: { id: phase.id, label: phase.label, status: "complete", progress: 100, findings: phaseFindings[phase.id] },
               });
             }
           }
 
+          // Advance phases sequentially
           const headerPhases = sections.map(s => detectPhase(s.header));
           const sequentialPhase = headerPhases.find((phaseIdx, index) => {
             if (phaseIdx <= currentPhaseIdx) return false;
-            return headerPhases.slice(0, index).every((seenPhaseIdx) => seenPhaseIdx >= phaseIdx - 1);
+            return headerPhases.slice(0, index).every((seen) => seen >= phaseIdx - 1);
           });
 
           if (sequentialPhase !== undefined && sequentialPhase > currentPhaseIdx) {
@@ -216,21 +239,16 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
               if (!completedPhases.has(i)) {
                 completedPhases.add(i);
                 const p = PHASES[i];
-                send({
-                  type: "phase",
-                  phase: { id: p.id, label: p.label, status: "complete", progress: 100, findings: phaseFindings[p.id] || [] },
-                });
+                send({ type: "phase", phase: { id: p.id, label: p.label, status: "complete", progress: 100, findings: phaseFindings[p.id] || [] } });
               }
             }
             currentPhaseIdx = sequentialPhase;
             const activeP = PHASES[currentPhaseIdx];
-            send({
-              type: "phase",
-              phase: { id: activeP.id, label: activeP.label, status: "active", sublabel: "Analyzing", progress: 10, findings: phaseFindings[activeP.id] || [] },
-            });
+            send({ type: "phase", phase: { id: activeP.id, label: activeP.label, status: "active", sublabel: "Analyzing", progress: 10, findings: phaseFindings[activeP.id] || [] } });
           }
         }
 
+        // Stream the response
         const reader = resp.body?.getReader();
         if (!reader) throw new Error("No response body");
 
@@ -256,7 +274,6 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             try {
               const parsed = JSON.parse(jsonStr);
 
-              // Extract citations only once
               if (parsed.citations && !citationsSent) {
                 citations = parsed.citations;
                 citationsSent = true;
@@ -271,16 +288,16 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
                 if (now - lastStreamUpdate > STREAM_INTERVAL) {
                   lastStreamUpdate = now;
                   const activePhase = PHASES[currentPhaseIdx];
-                  const tail = fullText.slice(-300).replace(/<\/?think>/g, "").trim();
+                  const tail = fullText.slice(-400).replace(/<\/?think>/g, "").trim();
                   if (tail) {
                     send({
                       phase: {
                         id: activePhase.id,
                         label: activePhase.label,
                         status: "active",
-                        sublabel: "Streaming research",
+                        sublabel: "Deep research streaming",
                         streamingText: tail,
-                        progress: Math.min(80, 10 + (fullText.length / 50)),
+                        progress: Math.min(80, 10 + (fullText.length / 80)),
                       },
                     });
                   }
@@ -300,30 +317,27 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           send({ type: "citations", citations, searchResults: [] });
         }
 
-        // Mark all remaining phases complete
+        // Complete all remaining phases
         for (let i = 0; i < PHASES.length; i++) {
           if (!completedPhases.has(i)) {
             completedPhases.add(i);
-            send({
-              type: "phase",
-              phase: { id: PHASES[i].id, label: PHASES[i].label, status: "complete", progress: 100, findings: phaseFindings[PHASES[i].id] || [] },
-            });
+            send({ type: "phase", phase: { id: PHASES[i].id, label: PHASES[i].label, status: "complete", progress: 100, findings: phaseFindings[PHASES[i].id] || [] } });
           }
         }
 
-        // Extract targets
-        const allPFindings = Object.values(phaseFindings).flat();
+        // Extract prospecting targets from findings
+        const allFindings = Object.values(phaseFindings).flat();
         const extractedTargets: { name: string; domain?: string; description: string; rationale: string; revenue_hint?: string; employee_hint?: string; hq_hint?: string }[] = [];
-        const SKIP_NAMES = new Set(["Key", "Note", "Summary", "Overview", "Analysis", "Market", "Company", "Business", "Revenue", "Strategic", "Competitive", "Conclusion", "Introduction", "Background"]);
+        const SKIP = new Set(["Key", "Note", "Summary", "Overview", "Analysis", "Market", "Company", "Business", "Revenue", "Strategic", "Competitive", "Conclusion", "Introduction", "Background", "Important", "Example"]);
 
-        for (const f of allPFindings) {
-          const companyMatches = f.value.matchAll(/\*\*([A-Z][A-Za-z0-9\s&.'\-]+?)\*\*/g);
-          for (const m of companyMatches) {
+        for (const f of allFindings) {
+          const matches = f.value.matchAll(/\*\*([A-Z][A-Za-z0-9\s&.'\-]+?)\*\*/g);
+          for (const m of matches) {
             const name = m[1].trim();
-            if (name.length < 3 || name.length > 60 || SKIP_NAMES.has(name) || name.split(" ").length > 6) continue;
+            if (name.length < 3 || name.length > 60 || SKIP.has(name) || name.split(" ").length > 6) continue;
             if (/^(The |A |An |This |These |Those |How |What |Why |Where |When )/i.test(name)) continue;
 
-            const domainMatch = f.value.match(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "[\\s(]*([a-z0-9-]+\\.[a-z]{2,})[\\s)]*", "i"));
+            const domainMatch = f.value.match(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\\s(]*([a-z0-9-]+\\.[a-z]{2,})[\\s)]*", "i"));
             const afterName = f.value.slice(f.value.indexOf(name));
             const revMatch = afterName.match(/\$[\d.,]+\s*[BMK](?:illion)?|\brevenue[:\s]+\$[\d.,]+\s*[BMK]/i);
             const empMatch = afterName.match(/(\d[\d,]+)\s*employees/i);
@@ -340,10 +354,14 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
             });
           }
         }
-        const uniqueTargets = extractedTargets.filter((t, i, arr) => arr.findIndex(x => x.name === t.name) === i).slice(0, 10);
+
+        const uniqueTargets = extractedTargets.filter((t, i, arr) => arr.findIndex(x => x.name === t.name) === i).slice(0, 15);
         if (uniqueTargets.length > 0) {
           send({ type: "targets", targets: uniqueTargets });
         }
+
+        // Send full report for downstream use
+        send({ type: "full_report", text: fullText });
 
       } catch (err) {
         console.error("Research pipeline error:", err);
