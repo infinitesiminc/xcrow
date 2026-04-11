@@ -243,7 +243,7 @@ export default function FlashParkingMap() {
     setSelectedAccountId(null);
   }, []);
 
-  const handleFindContacts = useCallback(async (account: FlashAccount) => {
+  const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
     setLoadingLeads(prev => new Set(prev).add(account.id));
 
@@ -269,7 +269,9 @@ export default function FlashParkingMap() {
       const FLASH_CONTEXT = `You are prospecting on behalf of Flash, a cloud-based parking technology platform (PARCS, EV charging, mobile payments, analytics) powering 16,000+ locations. ${stageNote} ${vendorNote}`;
 
       let content: string;
-      if (account.accountType === "airport") {
+      if (mode === "ma") {
+        content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — ${account.accountType === "airport" ? "a commercial airport" : "a parking operator"} in ${account.hqCity} with ${account.estimatedSpaces} spaces across ${account.facilityCount}.\n\nMODE: M&A / Corporate Development contacts. Search domain "${domain}".\n\nTarget titles: CFO, VP Corporate Development, CEO, General Counsel, VP Strategy, Chief Strategy Officer, Board Member.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
+      } else if (account.accountType === "airport") {
         content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a commercial airport with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nCRITICAL: Search ONLY within the airport authority/corporation — use domain "${domain}".\n\nTarget titles: Director/VP of Parking & Ground Transportation, Chief Commercial/Revenue Officer, Director of Landside Operations, Airport Director/CEO, VP of Facilities.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;
       } else if (account.accountType === "large_venue") {
         content = `${FLASH_CONTEXT}\n\nAccount: ${account.name} (${domain}) — a large venue operator in ${account.hqCity} with ${account.estimatedSpaces} parking spaces across ${account.facilityCount}.\n\nSearch domain "${domain}" first.\n\nTarget titles: VP/Director of Parking Operations, VP of Facilities, COO, VP of Guest Experience, Director of Revenue Operations.\n\nReturn top 5 decision-makers with "score", "reason", "title" fields.`;

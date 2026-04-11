@@ -16,7 +16,7 @@ import { STAGE_CONFIG } from "@/data/flash-prospects";
 interface AccountDetailInlineProps {
   account: FlashAccount;
   onBack: () => void;
-  onFindContacts: (account: FlashAccount) => void;
+  onFindContacts: (account: FlashAccount, mode: "solution" | "ma") => void;
   loadingLeads: boolean;
   activityLog: string[];
   streamedLeads: { name: string; title?: string; email?: string; linkedin?: string; score?: number; reason?: string }[];
