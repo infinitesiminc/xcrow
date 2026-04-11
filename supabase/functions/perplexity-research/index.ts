@@ -7,12 +7,14 @@ const corsHeaders = {
 };
 
 /**
- * perplexity-research — Background job pattern
+ * perplexity-research — Background job pattern (non-streaming)
  *
- * 1. Creates a research_jobs row
- * 2. Returns job_id immediately
- * 3. Runs Perplexity in background via EdgeRuntime.waitUntil()
- * 4. Client polls the research_jobs table for results
+ * 1. Creates a research_jobs row, returns job_id immediately
+ * 2. Calls Perplexity NON-streaming (single response) in background
+ * 3. Writes result to DB — client polls for completion
+ *
+ * Non-streaming eliminates CPU time issues: Perplexity does all work,
+ * we just await the response (I/O wait, not CPU).
  */
 
 async function runResearch(jobId: string, domain: string, companyContext?: string) {
@@ -23,16 +25,20 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
 
   const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
   if (!PERPLEXITY_API_KEY) {
-    await supabaseAdmin.from("research_jobs").update({ status: "failed", error: "PERPLEXITY_API_KEY not configured", completed_at: new Date().toISOString() }).eq("id", jobId);
+    await supabaseAdmin.from("research_jobs").update({
+      status: "failed",
+      error: "PERPLEXITY_API_KEY not configured",
+      completed_at: new Date().toISOString(),
+    }).eq("id", jobId);
     return;
   }
 
-  const updateProgress = async (phase: string, progress: number) => {
-    await supabaseAdmin.from("research_jobs").update({ current_phase: phase, progress }).eq("id", jobId);
-  };
-
   try {
-    await updateProgress("PHASE_01", 5);
+    // Mark as actively processing
+    await supabaseAdmin.from("research_jobs").update({
+      current_phase: "PHASE_01",
+      progress: 10,
+    }).eq("id", jobId);
 
     const systemPrompt = `You are a B2B go-to-market research analyst. Analyze a company's website and produce a precise, actionable ICP report for outbound sales.
 
@@ -68,6 +74,7 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
 - Why they'd buy (specific rationale)
 - Decision-maker title to target`;
 
+    // NON-streaming call — Perplexity does all work, we just wait
     const resp = await fetch("https://api.perplexity.ai/chat/completions", {
       method: "POST",
       headers: {
@@ -76,7 +83,6 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
       },
       body: JSON.stringify({
         model: "sonar-deep-research",
-        stream: true,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -87,81 +93,22 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
     if (!resp.ok) {
       const errText = await resp.text();
       console.error(`Perplexity error ${resp.status}: ${errText}`);
-      await supabaseAdmin.from("research_jobs").update({ status: "failed", error: `Perplexity API error: ${resp.status}`, completed_at: new Date().toISOString() }).eq("id", jobId);
+      await supabaseAdmin.from("research_jobs").update({
+        status: "failed",
+        error: `Perplexity API error: ${resp.status}`,
+        completed_at: new Date().toISOString(),
+      }).eq("id", jobId);
       return;
     }
 
-    const reader = resp.body?.getReader();
-    if (!reader) throw new Error("No response body");
+    const data = await resp.json();
+    const reportText = data.choices?.[0]?.message?.content || "";
 
-    const decoder = new TextDecoder();
-    const chunks: string[] = [];
-    let sseBuffer = "";
-    let totalLen = 0;
-    let lastProgressUpdate = 0;
-
-    // Phase detection via sliding window
-    const phaseHeaders: [string, string][] = [
-      ["## company overview", "PHASE_01"],
-      ["## icp segments", "PHASE_02"],
-      ["## buyer persona", "PHASE_02"],
-      ["## competitive landscape", "PHASE_03"],
-      ["## prospecting targets", "PHASE_04"],
-    ];
-    let currentPhase = "PHASE_01";
-    let recentText = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      sseBuffer += decoder.decode(value, { stream: true });
-
-      let idx: number;
-      while ((idx = sseBuffer.indexOf("\n")) !== -1) {
-        let line = sseBuffer.slice(0, idx);
-        sseBuffer = sseBuffer.slice(idx + 1);
-        if (line.endsWith("\r")) line = line.slice(0, -1);
-        if (!line.startsWith("data: ")) continue;
-
-        const jsonStr = line.slice(6).trim();
-        if (jsonStr === "[DONE]") continue;
-
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const delta = parsed.choices?.[0]?.delta?.content;
-          if (delta) {
-            const clean = delta.replace(/<\/?think>/g, "");
-            chunks.push(clean);
-            totalLen += clean.length;
-
-            recentText += clean;
-            if (recentText.length > 400) recentText = recentText.slice(-200);
-
-            // Throttled phase + progress update (every 5s to minimize DB writes)
-            const now = Date.now();
-            if (now - lastProgressUpdate > 5000) {
-              lastProgressUpdate = now;
-              const lower = recentText.toLowerCase();
-              for (const [key, phaseId] of phaseHeaders) {
-                if (lower.includes(key)) currentPhase = phaseId;
-              }
-              const progress = Math.min(90, 5 + Math.floor(totalLen / 80));
-              await updateProgress(currentPhase, progress);
-            }
-          }
-        } catch {
-          // incomplete JSON chunk
-        }
-      }
-    }
-
-    // Done — save full report
     await supabaseAdmin.from("research_jobs").update({
       status: "complete",
       progress: 100,
       current_phase: "PHASE_04",
-      report_text: chunks.join(""),
+      report_text: reportText,
       completed_at: new Date().toISOString(),
     }).eq("id", jobId);
 
@@ -180,7 +127,6 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  // Extract user from JWT
   const authHeader = req.headers.get("authorization") ?? "";
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -212,7 +158,6 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Create job row
   const { data: job, error: insertError } = await supabaseAdmin.from("research_jobs").insert({
     user_id: userId,
     domain: body.domain,
@@ -229,7 +174,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Fire and forget — background processing
+  // Fire and forget — non-streaming Perplexity call in background
   (globalThis as any).EdgeRuntime.waitUntil(
     runResearch(job.id, body.domain, body.companyContext)
   );
