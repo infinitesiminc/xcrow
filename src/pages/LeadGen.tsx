@@ -347,6 +347,8 @@ export default function LeadGen() {
               activeWorkspaceKey={workspaceKey !== "default" ? workspaceKey : undefined}
               onSelectWorkspace={handleSelectWorkspace}
               onNewResearch={handleNewResearch}
+              onDeleteWorkspace={handleDeleteWorkspace}
+              onRerunWorkspace={handleRerunWorkspace}
             />
 
             <div className="flex-1 flex min-w-0">
