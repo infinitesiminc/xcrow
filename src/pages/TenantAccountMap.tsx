@@ -662,8 +662,8 @@ export default function TenantAccountMap() {
           <div className="max-w-4xl mx-auto w-full px-8 py-8">
             <ICPResearchStream
               targetDomain="cliq.com"
-              phases={DEMO_PHASES}
-              elapsedSeconds={14.8}
+              phases={demoPhases}
+              elapsedSeconds={demoElapsed}
             />
           </div>
         </div>
