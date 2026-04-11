@@ -7,7 +7,7 @@ import { parseSSEStream } from "@/lib/sse-parser";
 import Navbar from "@/components/Navbar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LeadGenSidebar, type SidebarSection } from "@/components/leadgen/LeadGenSidebar";
-import ResearchSection, { useResearchStream, type ParsedPersona } from "@/components/leadgen/ResearchSection";
+import ResearchSection, { useResearchStream, parseReportText, type ParsedPersona } from "@/components/leadgen/ResearchSection";
 import PersonasSection from "@/components/leadgen/PersonasSection";
 import LeadsTableSection from "@/components/leadgen/LeadsTableSection";
 import OutreachSection from "@/components/leadgen/OutreachSection";
@@ -146,7 +146,7 @@ export default function LeadGen() {
 
   // Workspace key derived from domain
   const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
-  const { upsertWorkspace } = useWorkspaces(user?.id);
+  const { workspaces, upsertWorkspace, touchWorkspace } = useWorkspaces(user?.id);
 
   // Leads CRUD
   const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV } = useLeadsCRUD(user?.id, workspaceKey);
@@ -160,14 +160,48 @@ export default function LeadGen() {
     return map;
   }, [leads]);
 
-  // Auto-navigate to personas when research completes
+  // Auto-navigate to personas when research completes & create workspace
   useEffect(() => {
     if (research.isComplete && research.report && activeSection === "research") {
       setActiveSection("personas");
-      // Upsert workspace
-      if (domain.trim()) upsertWorkspace(workspaceKey, domain.trim());
+      if (domain.trim()) {
+        upsertWorkspace(workspaceKey, domain.trim());
+      }
     }
   }, [research.isComplete]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Restore workspace: load cached report from research_jobs
+  const handleSelectWorkspace = useCallback(async (key: string) => {
+    if (!user) return;
+    // Set domain to workspace key (the normalized hostname)
+    setDomain(key);
+    touchWorkspace(key);
+
+    // Try to load most recent completed research for this domain
+    const { data } = await (supabase.from("research_jobs") as any)
+      .select("report_text, domain")
+      .eq("user_id", user.id)
+      .eq("domain", key)
+      .eq("status", "complete")
+      .order("completed_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (data?.report_text) {
+      research.restore(parseReportText(data.report_text));
+      setActiveSection("personas");
+    } else {
+      research.reset();
+      setActiveSection("research");
+    }
+  }, [user, touchWorkspace, research]);
+
+  // New research: clear state
+  const handleNewResearch = useCallback(() => {
+    setDomain("");
+    research.reset();
+    setActiveSection("research");
+  }, [research]);
 
   // Find leads for a persona via Apollo
   const handleFindLeads = useCallback(async (persona: ParsedPersona) => {
@@ -285,6 +319,10 @@ export default function LeadGen() {
               leadCount={leads.length}
               outreachCount={outreach.length}
               researchComplete={research.isComplete}
+              workspaces={workspaces}
+              activeWorkspaceKey={workspaceKey !== "default" ? workspaceKey : undefined}
+              onSelectWorkspace={handleSelectWorkspace}
+              onNewResearch={handleNewResearch}
             />
 
             <div className="flex-1 flex min-w-0">

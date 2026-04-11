@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { Search, Users, TableProperties, Mail, Settings, Globe } from "lucide-react";
+import { Search, Users, TableProperties, Mail, Settings, Globe, Plus, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { UserWorkspace } from "@/hooks/use-workspaces";
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +28,10 @@ interface LeadGenSidebarProps {
   leadCount?: number;
   outreachCount?: number;
   researchComplete?: boolean;
+  workspaces?: UserWorkspace[];
+  activeWorkspaceKey?: string;
+  onSelectWorkspace?: (key: string) => void;
+  onNewResearch?: () => void;
 }
 
 const NAV_ITEMS: { id: SidebarSection; label: string; icon: typeof Search; }[] = [
@@ -42,6 +49,10 @@ export function LeadGenSidebar({
   leadCount = 0,
   outreachCount = 0,
   researchComplete,
+  workspaces = [],
+  activeWorkspaceKey,
+  onSelectWorkspace,
+  onNewResearch,
 }: LeadGenSidebarProps) {
   const navigate = useNavigate();
 
@@ -100,6 +111,52 @@ export function LeadGenSidebar({
                 );
               })}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Workspaces */}
+        <SidebarSeparator />
+        <SidebarGroup>
+          <SidebarGroupLabel className="flex items-center justify-between">
+            <span>Workspaces</span>
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 h-8 text-xs"
+                onClick={onNewResearch}
+              >
+                <Plus className="w-3 h-3" />
+                New Research
+              </Button>
+            </div>
+            <ScrollArea className="max-h-[200px]">
+              <SidebarMenu>
+                {workspaces.map((ws) => (
+                  <SidebarMenuItem key={ws.website_key}>
+                    <SidebarMenuButton
+                      isActive={activeWorkspaceKey === ws.website_key}
+                      onClick={() => onSelectWorkspace?.(ws.website_key)}
+                      tooltip={ws.display_name || ws.website_key}
+                    >
+                      {ws.logo_url ? (
+                        <img src={ws.logo_url} alt="" className="w-4 h-4 rounded object-contain" />
+                      ) : (
+                        <Building2 className="w-4 h-4 text-muted-foreground" />
+                      )}
+                      <span className="truncate text-xs">{ws.display_name || ws.website_key}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {workspaces.length === 0 && (
+                  <p className="text-[10px] text-muted-foreground px-3 py-2 group-data-[collapsible=icon]:hidden">
+                    No workspaces yet
+                  </p>
+                )}
+              </SidebarMenu>
+            </ScrollArea>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
