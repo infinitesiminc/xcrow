@@ -1011,6 +1011,48 @@ export type Database = {
         }
         Relationships: []
       }
+      research_jobs: {
+        Row: {
+          company_context: string | null
+          completed_at: string | null
+          created_at: string
+          current_phase: string | null
+          domain: string
+          error: string | null
+          id: string
+          progress: number
+          report_text: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          company_context?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_phase?: string | null
+          domain: string
+          error?: string | null
+          id?: string
+          progress?: number
+          report_text?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          company_context?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_phase?: string | null
+          domain?: string
+          error?: string | null
+          id?: string
+          progress?: number
+          report_text?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_leads: {
         Row: {
           address: string | null

@@ -311,61 +311,78 @@ Keep responses focused and actionable. Use markdown formatting.`;
   );
 }
 
-/* ── Live Perplexity research stream hook ── */
+/* ── Perplexity research via background job + polling ── */
 function useLiveResearchStream() {
-  const INITIAL: ResearchPhase[] = [
-    { id: "PHASE_01", label: "Website DNA & Market Position", status: "pending" },
-    { id: "PHASE_02", label: "ICP & Buyer Personas", status: "pending" },
-    { id: "PHASE_03", label: "Competitive Landscape", status: "pending" },
-    { id: "PHASE_04", label: "Strategic Targets & Pipeline Seed", status: "pending" },
+  const PHASE_ORDER = ["PHASE_01", "PHASE_02", "PHASE_03", "PHASE_04"];
+  const PHASE_LABELS = [
+    "Website DNA & Market Position",
+    "ICP & Buyer Personas",
+    "Competitive Landscape",
+    "Strategic Targets & Pipeline Seed",
   ];
+
+  const INITIAL: ResearchPhase[] = PHASE_ORDER.map((id, i) => ({
+    id,
+    label: PHASE_LABELS[i],
+    status: "pending" as const,
+  }));
 
   const [phases, setPhases] = useState<ResearchPhase[]>(INITIAL);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [citations, setCitations] = useState<string[]>([]);
+  const [citations] = useState<string[]>([]);
   const [targets, setTargets] = useState<ResearchTarget[]>([]);
-  const phasesRef = useRef<ResearchPhase[]>(INITIAL);
+  const [reportText, setReportText] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef(0);
-  const abortRef = useRef<AbortController | null>(null);
-  const requestIdRef = useRef(0);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const runningRef = useRef(false);
 
-  useEffect(() => { phasesRef.current = phases; }, [phases]);
+  // Simulate phase progression based on elapsed time (since non-streaming won't give real-time updates)
+  const PHASE_TIMING = [15, 35, 55, 70]; // seconds when each phase "activates"
+  const phaseTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const updatePhasesFromElapsed = useCallback((elapsedSec: number, isComplete: boolean) => {
+    if (isComplete) {
+      setPhases(PHASE_ORDER.map((id, i) => ({ id, label: PHASE_LABELS[i], status: "complete" as const, progress: 100 })));
+      return;
+    }
+    let activeIdx = 0;
+    for (let i = PHASE_TIMING.length - 1; i >= 0; i--) {
+      if (elapsedSec >= PHASE_TIMING[i]) { activeIdx = i; break; }
+    }
+    const sublabels = [
+      "Analyzing website & value proposition",
+      "Mapping ICP segments & buyer personas",
+      "Scanning competitive landscape",
+      "Identifying strategic targets",
+    ];
+    setPhases(PHASE_ORDER.map((id, i) => ({
+      id,
+      label: PHASE_LABELS[i],
+      status: i < activeIdx ? "complete" as const : i === activeIdx ? "active" as const : "pending" as const,
+      progress: i < activeIdx ? 100 : i === activeIdx ? Math.min(90, Math.floor(((elapsedSec - PHASE_TIMING[activeIdx]) / (PHASE_TIMING[activeIdx + 1] || 90 - PHASE_TIMING[activeIdx])) * 80) + 10) : 0,
+      sublabel: i === activeIdx ? sublabels[i] : undefined,
+    })));
+  }, []);
 
   const start = useCallback(async (domain: string, companyContext?: string) => {
-    const normalizedDomain = domain.trim().toLowerCase();
-    const requestKey = buildResearchRequestKey(normalizedDomain, companyContext);
-
-    if (liveResearchRequestState.activeKey === requestKey) return;
     if (runningRef.current) return;
-
-    const requestId = liveResearchRequestState.activeRequestId + 1;
-    liveResearchRequestState.activeRequestId = requestId;
-    liveResearchRequestState.activeKey = requestKey;
-    requestIdRef.current = requestId;
     runningRef.current = true;
 
-    const isCurrentRequest = () =>
-      requestIdRef.current === requestId &&
-      liveResearchRequestState.activeRequestId === requestId &&
-      liveResearchRequestState.activeKey === requestKey;
-
-    abortRef.current?.abort();
-    if (timerRef.current) clearInterval(timerRef.current);
     setPhases([...INITIAL]);
     setElapsed(0);
-    setCitations([]);
     setTargets([]);
+    setReportText(null);
     setError(null);
     setRunning(true);
     startRef.current = Date.now();
-    timerRef.current = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
-
-    const controller = new AbortController();
-    abortRef.current = controller;
+    timerRef.current = setInterval(() => {
+      const el = (Date.now() - startRef.current) / 1000;
+      setElapsed(el);
+      updatePhasesFromElapsed(el, false);
+    }, 500);
 
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -379,84 +396,82 @@ function useLiveResearchStream() {
           "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
           "apikey": supabaseKey,
         },
-        body: JSON.stringify({ domain: normalizedDomain, companyContext }),
-        signal: controller.signal,
+        body: JSON.stringify({ domain: domain.trim().toLowerCase(), companyContext }),
       });
 
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const reader = resp.body?.getReader();
-      if (!reader) throw new Error("No body");
+      const { job_id } = await resp.json();
+      if (!job_id) throw new Error("No job_id returned");
 
-      const decoder = new TextDecoder();
-      let buf = "";
-      let sawDone = false;
-      let streamEndedUnexpectedly = false;
+      // Poll for results
+      pollingRef.current = setInterval(async () => {
+        try {
+          const { data, error: fetchErr } = await (supabase.from("research_jobs") as any)
+            .select("status, progress, current_phase, report_text, error")
+            .eq("id", job_id)
+            .single();
 
-      while (true) {
-        if (!isCurrentRequest()) { controller.abort(); break; }
-        if (controller.signal.aborted) break;
-        const { done, value } = await reader.read();
-        if (done) { streamEndedUnexpectedly = !sawDone; break; }
-        buf += decoder.decode(value, { stream: true });
+          if (fetchErr || !data) return;
 
-        let idx: number;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx);
-          buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") { sawDone = true; continue; }
-
-          try {
-            if (!isCurrentRequest()) continue;
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "phase" && parsed.phase) {
-              const p = parsed.phase;
-              setPhases(prev => prev.map(ph => ph.id === p.id ? { ...ph, ...p } : ph));
-            }
-            if (parsed.phase && !parsed.type) {
-              const p = parsed.phase;
-              setPhases(prev => prev.map(ph => ph.id === p.id ? { ...ph, ...p } : ph));
-            }
-            if (parsed.type === "citations") setCitations(parsed.citations || []);
-            if (parsed.type === "targets" && parsed.targets) setTargets(parsed.targets);
-            if (parsed.type === "error") { console.error("Research error:", parsed.error); setError(parsed.error); }
-          } catch {
-            buf = line + "\n" + buf;
-            break;
+          if (data.status === "complete") {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            if (timerRef.current) clearInterval(timerRef.current);
+            updatePhasesFromElapsed(0, true);
+            setReportText(data.report_text);
+            setRunning(false);
+            runningRef.current = false;
+          } else if (data.status === "failed") {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            if (timerRef.current) clearInterval(timerRef.current);
+            setError(data.error || "Research failed");
+            setRunning(false);
+            runningRef.current = false;
           }
+        } catch (pollErr) {
+          console.error("Poll error:", pollErr);
         }
-      }
+      }, 3000);
 
-      if (!controller.signal.aborted && streamEndedUnexpectedly && isCurrentRequest()) {
-        const hasMeaningfulProgress = phasesRef.current.some(phase =>
-          phase.status === "complete" || phase.status === "active" || (phase.findings?.length ?? 0) > 0
-        );
-        if (!hasMeaningfulProgress) throw new Error("Research stream ended early");
-      }
     } catch (e: any) {
-      if (e.name !== "AbortError" && isCurrentRequest()) {
-        console.error("Research stream error:", e);
-        setError(e.message || "Research failed");
-        setPhases(prev => prev.map(ph => ph.status === "active" ? { ...ph, status: "pending" as const } : ph));
-      }
-    } finally {
-      if (isCurrentRequest()) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        setRunning(false);
-        runningRef.current = false;
-        liveResearchRequestState.activeKey = null;
-      }
+      console.error("Research start error:", e);
+      setError(e.message || "Failed to start research");
+      if (timerRef.current) clearInterval(timerRef.current);
+      setRunning(false);
+      runningRef.current = false;
     }
-  }, []);
+  }, [updatePhasesFromElapsed]);
+
+  // Parse targets from report text when complete
+  useEffect(() => {
+    if (!reportText) return;
+    // Extract targets from the "## Prospecting Targets" section
+    const targetsMatch = reportText.match(/## Prospecting Targets[\s\S]*$/i);
+    if (!targetsMatch) return;
+
+    const section = targetsMatch[0];
+    const targets: ResearchTarget[] = [];
+    // Match company entries: lines starting with "- **" or "### " or numbered
+    const companyBlocks = section.split(/(?=###?\s|\d+\.\s\*\*)/);
+    for (const block of companyBlocks) {
+      const nameMatch = block.match(/(?:###?\s+|\d+\.\s+\*\*)([\w\s.&'-]+)/);
+      if (!nameMatch) continue;
+      const name = nameMatch[1].trim().replace(/\*\*/g, "");
+      if (name.length < 2 || name.toLowerCase().includes("prospecting")) continue;
+      const domainMatch = block.match(/(?:domain|website|url)[:\s]+([a-z0-9.-]+\.[a-z]{2,})/i);
+      const rationaleMatch = block.match(/(?:why|rationale|reason)[:\s*]+(.+)/i);
+      targets.push({
+        name,
+        domain: domainMatch?.[1],
+        description: block.slice(0, 200).replace(/[#*\n]+/g, " ").trim(),
+        rationale: rationaleMatch?.[1]?.trim() || "Strategic target",
+      });
+    }
+    if (targets.length > 0) setTargets(targets);
+  }, [reportText]);
 
   useEffect(() => {
     return () => {
-      if (requestIdRef.current === liveResearchRequestState.activeRequestId) liveResearchRequestState.activeKey = null;
-      abortRef.current?.abort();
+      if (pollingRef.current) clearInterval(pollingRef.current);
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
