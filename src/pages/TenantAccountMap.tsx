@@ -679,11 +679,38 @@ export default function TenantAccountMap() {
         {/* Research stream panel */}
         <div className="flex-1 border-r border-border flex flex-col min-w-0 overflow-y-auto bg-background">
           <div className="max-w-4xl mx-auto w-full px-8 py-8">
-            <ICPResearchStream
-              targetDomain="cliq.com"
-              phases={demoPhases}
-              elapsedSeconds={demoElapsed}
-            />
+            {!demoRunning && demoPhases.every(p => p.status === "pending") && (
+              <div className="flex flex-col items-center justify-center gap-6 py-20">
+                <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <Zap className="w-7 h-7 text-primary" />
+                </div>
+                <div className="text-center space-y-2">
+                  <h2 className="text-xl font-medium text-foreground">ICP Research Pipeline</h2>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    Watch the AI analyze a company website, build buyer personas, map competitors, and seed your pipeline — all in real time.
+                  </p>
+                </div>
+                <Button onClick={startDemo} size="lg" className="gap-2">
+                  <Zap className="w-4 h-4" />
+                  Run Demo Research
+                </Button>
+              </div>
+            )}
+            {(demoRunning || demoPhases.some(p => p.status !== "pending")) && (
+              <ICPResearchStream
+                targetDomain="cliq.com"
+                phases={demoPhases}
+                elapsedSeconds={demoElapsed}
+              />
+            )}
+            {!demoRunning && demoPhases.every(p => p.status === "complete") && (
+              <div className="flex justify-center pt-6">
+                <Button onClick={startDemo} variant="outline" size="sm" className="gap-2">
+                  <Zap className="w-3.5 h-3.5" />
+                  Run Again
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
