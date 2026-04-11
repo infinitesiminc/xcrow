@@ -443,6 +443,15 @@ function useLiveResearchStream() {
       if (timerRef.current) clearInterval(timerRef.current);
       setRunning(false);
       runningRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   return { phases, elapsed, running, error, citations, targets, start };
 }
