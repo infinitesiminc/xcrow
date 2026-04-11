@@ -58,24 +58,32 @@ const FLASH_CONFIG: TenantConfig = {
 const CLIQ_CONFIG: TenantConfig = {
   slug: "cliq",
   name: "Cliq",
-  logo: "", // To be added after analyzing cliq.com
-  industry: "events-tech",
-  contextPrompt: "You are prospecting on behalf of Cliq, a B2B events and engagement platform.",
+  logo: "https://cdn.prod.website-files.com/62422583765bcd76a4651683/69408713a1a47f0cacfa13fc_CLIQ_LogoExport-2024-Trademark_CLIQ_Logo_RegisteredTrademark_WhiteOrange.png",
+  industry: "fintech-payments",
+  contextPrompt: `You are prospecting on behalf of Cliq, a financial technology company ("Champions of Commerce") processing $1.8B+ in monthly transactions. Cliq partners with ISOs and agents to help businesses transact with customers via:
+- Merchant Service Solutions (credit, debit, ACH payment processing, chargeback/fraud mitigation)
+- Payroll & Expense Issuing Solutions (custom card programs for ISOs and agent partners)
+- Fintech Solutions (integrated platform for transaction processing, management, and reporting)
+- Consulting & Custom Solutions (merchant onboarding, account management, performance tracking)
+- Lending Solutions (embedded lending via Jaris partnership)
+- Dispute Management (365-day chargeback alert monitoring, expert support)
+Key selling points: 125+ years combined experience, 25 custom tech solutions, VAMP compliance.`,
   accountTypes: [
-    { value: "enterprise", label: "Enterprise", icon: "building" },
-    { value: "agency", label: "Agency", icon: "grid" },
-    { value: "venue", label: "Venue", icon: "building" },
+    { value: "iso", label: "ISO / Agent", icon: "grid" },
+    { value: "merchant", label: "Merchant", icon: "building" },
+    { value: "fintech", label: "Fintech Partner", icon: "zap" },
+    { value: "lender", label: "Lender / CDFI", icon: "dollar-sign" },
   ],
   stages: {
-    active: { label: "Customer", color: "hsl(142, 71%, 45%)", markerColor: "#22c55e", description: "Active Cliq customer" },
-    target: { label: "Target", color: "hsl(45, 93%, 47%)", markerColor: "#eab308", description: "Identified prospect" },
-    whitespace: { label: "Whitespace", color: "hsl(0, 0%, 65%)", markerColor: "#a3a3a3", description: "Uncontacted opportunity" },
-    competitor: { label: "Competitor", color: "hsl(0, 84%, 60%)", markerColor: "#ef4444", description: "Uses competing platform" },
+    active: { label: "Active Partner", color: "hsl(142, 71%, 45%)", markerColor: "#22c55e", description: "Active Cliq partner processing transactions" },
+    target: { label: "Target", color: "hsl(24, 95%, 53%)", markerColor: "#f97316", description: "Identified prospect for Cliq solutions" },
+    whitespace: { label: "Whitespace", color: "hsl(0, 0%, 65%)", markerColor: "#a3a3a3", description: "Uncontacted opportunity in payments space" },
+    competitor: { label: "Competitor", color: "hsl(0, 84%, 60%)", markerColor: "#ef4444", description: "Uses competing payment processor" },
   },
-  mapCenter: { lat: 39.0, lng: -98.0, zoom: 4.5 },
-  featureFlags: { showMap: false, showMA: false, showGarageDiscovery: false, showDeployedSites: false },
+  mapCenter: { lat: 34.05, lng: -118.25, zoom: 5 }, // LA-based
+  featureFlags: { showMap: false, showMA: true, showGarageDiscovery: false, showDeployedSites: false },
   scoringWeights: {
-    revenue: 10, employees: 5, vendor: 5, founded: 5,
+    revenue: 15, employees: 5, vendor: 10, founded: 3,
     stageBonus: { active: 20, target: 15, competitor: 10, whitespace: 0 },
   },
   dbTable: "flash_accounts",
