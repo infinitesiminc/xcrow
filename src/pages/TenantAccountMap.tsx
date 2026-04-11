@@ -164,7 +164,7 @@ function getMarkerZ(account: FlashAccount) {
 }
 
 /* ── Map content ── */
-function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite, garages, showGarages, onSelectGarage }: {
+function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations, onSelectSite, garages, showGarages, onSelectGarage, tenantLogo }: {
   accounts: FlashAccount[];
   onSelectAccount: (a: FlashAccount) => void;
   showDeployed: boolean; deployedLocations: FlashLocation[];
@@ -172,6 +172,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
   garages: DiscoveredGarage[];
   showGarages: boolean;
   onSelectGarage: (g: DiscoveredGarage) => void;
+  tenantLogo: string;
 }) {
   return (
     <>
@@ -187,7 +188,7 @@ function MapContent({ accounts, onSelectAccount, showDeployed, deployedLocations
       ))}
       {accounts.map(acct => (
         <AdvancedMarker key={acct.id} position={{ lat: acct.hqLat, lng: acct.hqLng }} zIndex={getMarkerZ(acct)} onClick={() => onSelectAccount(acct)}>
-          <AccountPin account={acct} />
+          <AccountPin account={acct} tenantLogo={tenantLogo} />
         </AdvancedMarker>
       ))}
     </>
