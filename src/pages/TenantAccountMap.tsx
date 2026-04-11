@@ -232,16 +232,19 @@ interface ChatMessage {
   content: string;
 }
 
-function TenantSetupChat({ tenant, accountCount, onAccountsAdded }: {
+function TenantSetupChat({ tenant, accountCount, onAccountsAdded, externalMessages, onPillClick }: {
   tenant: { slug: string; name: string; contextPrompt: string; accountTypes: { value: string; label: string }[] };
   accountCount: number;
   onAccountsAdded: () => void;
+  externalMessages?: ChatMessage[];
+  onPillClick?: (pill: string) => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const injectedCountRef = useRef(0);
 
   // Auto-start with welcome message
   useEffect(() => {
@@ -255,6 +258,15 @@ function TenantSetupChat({ tenant, accountCount, onAccountsAdded }: {
       setMessages([welcome]);
     }
   }, []);
+
+  // Inject external messages
+  useEffect(() => {
+    if (externalMessages && externalMessages.length > injectedCountRef.current) {
+      const newMsgs = externalMessages.slice(injectedCountRef.current);
+      injectedCountRef.current = externalMessages.length;
+      setMessages(prev => [...prev, ...newMsgs]);
+    }
+  }, [externalMessages]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -323,7 +335,6 @@ Keep responses focused and actionable. Use markdown formatting.`;
       await parseSSEStream(reader, {
         onTextDelta: (chunk) => upsertAssistant(chunk),
         onLeads: (leads) => {
-          // Could auto-add to pipeline in future
           upsertAssistant(`\n\n> 📋 Found ${leads.length} contacts — pipeline integration coming soon.`);
         },
         onDone: () => {},
@@ -344,9 +355,47 @@ Keep responses focused and actionable. Use markdown formatting.`;
     }
   };
 
+  // Render pills from [[pill text]] syntax
+  const renderMessageContent = (content: string) => {
+    const parts = content.split(/(\[\[[^\]]+\]\])/g);
+    const elements: React.ReactNode[] = [];
+    let markdownBuf = "";
+
+    const flushMarkdown = () => {
+      if (markdownBuf) {
+        elements.push(
+          <div key={elements.length} className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
+            <ReactMarkdown>{markdownBuf}</ReactMarkdown>
+          </div>
+        );
+        markdownBuf = "";
+      }
+    };
+
+    for (const part of parts) {
+      const pillMatch = part.match(/^\[\[(.+)\]\]$/);
+      if (pillMatch) {
+        flushMarkdown();
+        const pillText = pillMatch[1];
+        elements.push(
+          <button
+            key={elements.length}
+            onClick={() => onPillClick?.(pillText)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary hover:bg-primary/20 transition-colors cursor-pointer my-1 mr-1.5"
+          >
+            {pillText}
+          </button>
+        );
+      } else {
+        markdownBuf += part;
+      }
+    }
+    flushMarkdown();
+    return elements;
+  };
+
   return (
     <div className="flex flex-col h-full">
-      {/* Chat messages */}
       <ScrollArea className="flex-1 px-4 py-3">
         <div className="space-y-4">
           {messages.map((msg, i) => (
@@ -362,9 +411,7 @@ Keep responses focused and actionable. Use markdown formatting.`;
                   : "bg-muted/60 text-foreground"
               }`}>
                 {msg.role === "assistant" ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
+                  <div className="flex flex-col">{renderMessageContent(msg.content)}</div>
                 ) : (
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 )}
@@ -390,7 +437,6 @@ Keep responses focused and actionable. Use markdown formatting.`;
         </div>
       </ScrollArea>
 
-      {/* Input */}
       <div className="border-t border-border p-3">
         <div className="flex gap-2">
           <Textarea
