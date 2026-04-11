@@ -107,6 +107,12 @@ interface AccountListViewProps {
 }
 
 export default function AccountListView({ accounts, selectedAccountId, onSelectAccount }: AccountListViewProps) {
+  const { tenant } = useTenant();
+  const typeLabels = useMemo(() => {
+    const map: Record<string, string> = { ...FALLBACK_TYPE_LABELS };
+    tenant.accountTypes.forEach(t => { map[t.value] = t.label; });
+    return map;
+  }, [tenant.accountTypes]);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
