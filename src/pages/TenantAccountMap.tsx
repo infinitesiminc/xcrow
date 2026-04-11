@@ -79,6 +79,10 @@ interface ResearchTarget {
   domain?: string;
   description: string;
   rationale: string;
+  revenue_hint?: string;
+  employee_hint?: string;
+  hq_hint?: string;
+  account_type?: string;
 }
 
 interface AccountLeadData {
@@ -560,17 +564,43 @@ export default function TenantAccountMap() {
         if (seededTargets.has(target.name)) continue;
         const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
         const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
+        
+        // Determine account type from rationale
+        const ratLower = (target.rationale || "").toLowerCase();
+        let accountType = tenant.accountTypes[0]?.value || "prospect";
+        for (const at of tenant.accountTypes) {
+          if (ratLower.includes(at.label.toLowerCase()) || ratLower.includes(at.value.toLowerCase())) {
+            accountType = at.value;
+            break;
+          }
+        }
+        // Determine stage from rationale keywords
+        let stage = "whitespace";
+        if (ratLower.includes("competitor") || ratLower.includes("compet")) stage = "competitor";
+        else if (ratLower.includes("partner") || ratLower.includes("active")) stage = "active";
+        else if (ratLower.includes("target") || ratLower.includes("prospect") || ratLower.includes("acquisition")) stage = "target";
+
+        // Calculate a basic priority score from available data
+        let priorityScore = 50;
+        if (target.revenue_hint) priorityScore += 15;
+        if (target.employee_hint) priorityScore += 10;
+        if (stage === "target") priorityScore += 10;
+        if (stage === "competitor") priorityScore += 5;
+
         try {
           await (supabase.from("flash_accounts") as any).upsert({
             id: accountId,
             name: target.name,
             tenant_slug: tenant.slug,
-            account_type: tenant.accountTypes[0]?.value || "prospect",
-            stage: "whitespace",
+            account_type: accountType,
+            stage,
             website: `https://${domain}`,
             notes: `${target.rationale}: ${target.description}`,
             focus_area: target.rationale,
-            hq_city: "",
+            hq_city: target.hq_hint || "",
+            annual_revenue: target.revenue_hint || null,
+            employee_count: target.employee_hint || null,
+            priority_score: Math.min(priorityScore, 100),
           }, { onConflict: "id" });
           setSeededTargets(prev => new Set(prev).add(target.name));
         } catch (e) {
