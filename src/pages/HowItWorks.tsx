@@ -79,7 +79,7 @@ export default function HowItWorks() {
               No spreadsheets. No manual research. No GTM expertise. Just paste a URL and let AI do the work.
             </motion.p>
             <motion.div {...fade(0.3)}>
-              <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadhunter")}>
+              <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadgen")}>
                 <ArrowRight className="w-5 h-5" />
                 Try It Now — Free
               </Button>
@@ -144,9 +144,9 @@ export default function HowItWorks() {
               Ready to <span className="text-primary">See It in Action?</span>
             </h2>
             <p className="text-muted-foreground mb-10 text-lg">Paste your first URL and get leads in under a minute.</p>
-            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadhunter")}>
+            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadgen")}>
               <ArrowRight className="w-5 h-5" />
-              Start Hunting — It's Free
+              Start Generating — It's Free
             </Button>
           </motion.div>
         </section>

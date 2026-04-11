@@ -48,7 +48,7 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
   const navItems = [
-    { label: "Lead Hunter", path: "/leadhunter", icon: Compass },
+    { label: "Lead Gen", path: "/leadgen", icon: Compass },
     { label: "How It Works", path: "/how-it-works", icon: undefined },
     { label: "Pricing", path: "/pricing", icon: undefined },
     ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
@@ -60,7 +60,7 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
   };
 
   const activeWs = workspaces?.find(w => w.website_key === activeWorkspaceKey);
-  const showSwitcher = user && workspaces && workspaces.length > 0 && location.pathname.startsWith("/leadhunter");
+  const showSwitcher = user && workspaces && workspaces.length > 0 && location.pathname.startsWith("/leadgen");
 
   const confirmDelete = () => {
     if (deleteTarget) {

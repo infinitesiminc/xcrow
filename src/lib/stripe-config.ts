@@ -22,12 +22,12 @@ export const STRIPE_PRODUCTS = {
   GROWTH_PER_ROLE: "prod_U9wC33liMvz8gf",
 } as const;
 
-/** Product IDs that grant Lead Hunter Starter access */
+/** Product IDs that grant Lead Gen Starter access */
 export const STARTER_PRODUCT_IDS = new Set([
   STRIPE_PRODUCTS.LEADHUNTER_STARTER,
 ]);
 
-/** Product IDs that grant Lead Hunter Pro access (includes legacy pro) */
+/** Product IDs that grant Lead Gen Pro access (includes legacy pro) */
 export const PRO_PRODUCT_IDS = new Set([
   STRIPE_PRODUCTS.LEADHUNTER_PRO,
   STRIPE_PRODUCTS.CHAMPION,

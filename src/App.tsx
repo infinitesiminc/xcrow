@@ -15,7 +15,7 @@ const SmartHome = lazy(() => import("./pages/SmartHome"));
 const SmartHomeRoute = () => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to="/leadhunter" replace />;
+  if (user) return <Navigate to="/leadgen" replace />;
   return <><Navbar /><SmartHome /></>;
 };
 const Auth = lazy(() => import("./pages/Auth.tsx"));
@@ -26,7 +26,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
-const LeadHunter = lazy(() => import("./pages/LeadHunter.tsx"));
+const LeadGen = lazy(() => import("./pages/LeadGen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
 const Pricing = lazy(() => import("./pages/Pricing.tsx"));
@@ -64,7 +64,7 @@ const App = () => (
           <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<SmartHomeRoute />} />
-              <Route path="/leadgen" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/leadhunter" element={<Navigate to="/leadgen" replace />} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               
@@ -83,12 +83,12 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/demo" element={<Demo />} />
               <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
-              <Route path="/leadhunter" element={<AuthGate><LeadHunter /></AuthGate>} />
-              <Route path="/leadhunter/*" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/admin" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/admin/*" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/enterprise/*" element={<Navigate to="/leadhunter" replace />} />
-              <Route path="/flashparkingmap" element={<Navigate to="/leadhunter" replace />} />
+              <Route path="/leadgen" element={<AuthGate><LeadGen /></AuthGate>} />
+              <Route path="/leadgen/*" element={<Navigate to="/leadgen" replace />} />
+              <Route path="/admin" element={<Navigate to="/leadgen" replace />} />
+              <Route path="/admin/*" element={<Navigate to="/leadgen" replace />} />
+              <Route path="/enterprise/*" element={<Navigate to="/leadgen" replace />} />
+              <Route path="/flashparkingmap" element={<Navigate to="/leadgen" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

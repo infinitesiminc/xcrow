@@ -16,7 +16,7 @@ const SIZES = {
 };
 
 export default function CrowHuntingLoader({
-  label = "Hunting leads…",
+  label = "Finding leads…",
   size = "md",
   className = "",
 }: CrowHuntingLoaderProps) {

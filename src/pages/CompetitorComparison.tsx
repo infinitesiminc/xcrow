@@ -45,7 +45,7 @@ export default function CompetitorComparison() {
               {data.tagline}
             </motion.p>
             <motion.div {...fade(0.3)}>
-              <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadhunter")}>
+              <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadgen")}>
                 <ArrowRight className="w-5 h-5" />
                 Try Xcrow Free
               </Button>
@@ -150,9 +150,9 @@ export default function CompetitorComparison() {
             <p className="text-muted-foreground mb-10 text-lg">
               Paste one URL. Get scored leads in 60 seconds. Free to start.
             </p>
-            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadhunter")}>
+            <Button size="lg" className="h-14 px-10 gap-2.5 text-base font-bold shadow-lg rounded-xl" onClick={() => navigate("/leadgen")}>
               <ArrowRight className="w-5 h-5" />
-              Start Hunting — It's Free
+              Start Generating — It's Free
             </Button>
           </motion.div>
         </section>

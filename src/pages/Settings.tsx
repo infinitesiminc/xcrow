@@ -172,7 +172,7 @@ export default function Settings() {
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 border-r border-border/50 flex-col bg-muted/5">
         <div className="p-5 border-b border-border/30">
-          <button onClick={() => navigate("/leadhunter")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-5">
+          <button onClick={() => navigate("/leadgen")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-5">
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
@@ -216,7 +216,7 @@ export default function Settings() {
       {/* Mobile top nav */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="flex items-center gap-2 px-4 py-2">
-          <button onClick={() => navigate("/leadhunter")} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <button onClick={() => navigate("/leadgen")} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           </button>
           <h1 className="text-sm font-semibold text-foreground">Settings</h1>
