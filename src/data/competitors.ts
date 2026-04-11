@@ -23,7 +23,7 @@ export const COMPETITORS: Record<string, CompetitorData> = {
     seoDescription:
       "Compare Xcrow and Apollo.io for B2B lead generation. See why teams choose Xcrow's AI-powered lead hunting over manual database filtering.",
     heroHeadline: "Stop Filtering.",
-    heroAccent: "Start Hunting.",
+    heroAccent: "Start Generating.",
     painPoints: [
       { title: "Manual list building", desc: "Apollo requires you to know your ICP, set filters, and manually build lists. Xcrow's AI figures out your ideal targets automatically." },
       { title: "No fit scoring", desc: "Apollo shows contacts but doesn't tell you who's the best fit. Xcrow scores every lead with AI-powered reasoning." },
@@ -52,7 +52,7 @@ export const COMPETITORS: Record<string, CompetitorData> = {
     tagline: "Clay is the spreadsheet. Xcrow is the answer.",
     description:
       "Clay is a powerful data enrichment and workflow tool loved by sales ops teams. But it requires you to already know who to target and how to build complex automations. Xcrow starts from zero — just paste a URL.",
-    seoTitle: "Xcrow vs Clay — AI Lead Hunting Without the Complexity",
+    seoTitle: "Xcrow vs Clay — AI Lead Generation Without the Complexity",
     seoDescription:
       "Compare Xcrow and Clay for B2B prospecting. Xcrow delivers scored leads from a single URL — no workflows, no spreadsheets, no GTM expertise.",
     heroHeadline: "No Workflows.",

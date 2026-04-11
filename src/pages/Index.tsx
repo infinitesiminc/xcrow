@@ -166,7 +166,7 @@ export default function Index() {
                     disabled={!websiteUrl.trim()}
                   >
                     <img src={logoCrow} alt="" className="w-6 h-6 object-contain brightness-0 invert" />
-                    Hunt Leads
+                    Generate Leads
                   </Button>
                 </div>
               </motion.form>
@@ -377,7 +377,7 @@ export default function Index() {
                 onClick={scrollToInput}
               >
                 <img src={logoCrow} alt="" className="w-6 h-6 object-contain brightness-0 invert" />
-                Hunt Leads — It's Free
+                Generate Leads — It's Free
               </Button>
             </motion.div>
           </div>
