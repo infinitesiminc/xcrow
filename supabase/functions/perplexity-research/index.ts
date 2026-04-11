@@ -333,25 +333,39 @@ For the Strategic Targets section, identify 3-5 specific companies with names, d
           }
         }
 
-        // Extract and send targets from phase 4
-        const phase4Findings = phaseFindings["PHASE_04"] || [];
-        const extractedTargets: { name: string; domain?: string; description: string; rationale: string }[] = [];
-        for (const f of phase4Findings) {
-          const companyMatches = f.value.matchAll(/\*\*([A-Z][A-Za-z0-9\s&.'-]+?)\*\*/g);
+        // Extract targets from ALL phases (not just phase 4)
+        const allPFindings = Object.values(phaseFindings).flat();
+        const extractedTargets: { name: string; domain?: string; description: string; rationale: string; account_type?: string; revenue_hint?: string; employee_hint?: string; hq_hint?: string }[] = [];
+        const SKIP_NAMES = new Set(["Key", "Note", "Summary", "Overview", "Analysis", "Market", "Company", "Business", "Revenue", "Strategic", "Competitive", "Conclusion", "Introduction", "Background"]);
+        
+        for (const f of allPFindings) {
+          const companyMatches = f.value.matchAll(/\*\*([A-Z][A-Za-z0-9\s&.'\-]+?)\*\*/g);
           for (const m of companyMatches) {
             const name = m[1].trim();
-            if (name.length > 2 && name.length < 60 && !["Key", "Note", "Summary", "Overview", "Analysis"].includes(name)) {
-              const domainMatch = f.value.match(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*\\(?([a-z0-9-]+\\.[a-z]{2,})\\)?", "i"));
-              extractedTargets.push({
-                name,
-                domain: domainMatch?.[1] || undefined,
-                description: f.value.slice(0, 200),
-                rationale: f.label,
-              });
-            }
+            if (name.length < 3 || name.length > 60 || SKIP_NAMES.has(name) || name.split(" ").length > 6) continue;
+            // Skip if name looks like a section header
+            if (/^(The |A |An |This |These |Those |How |What |Why |Where |When )/i.test(name)) continue;
+            
+            const domainMatch = f.value.match(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "[\\s(]*([a-z0-9-]+\\.[a-z]{2,})[\\s)]*", "i"));
+            
+            // Try to extract revenue hints
+            const afterName = f.value.slice(f.value.indexOf(name));
+            const revMatch = afterName.match(/\$[\d.,]+\s*[BMK](?:illion)?|\brevenue[:\s]+\$[\d.,]+\s*[BMK]/i);
+            const empMatch = afterName.match(/(\d[\d,]+)\s*employees/i);
+            const hqMatch = afterName.match(/(?:headquartered|based|HQ)\s+(?:in\s+)?([A-Z][a-zA-Z\s,]+?)(?:\.|,|\s-)/i);
+            
+            extractedTargets.push({
+              name,
+              domain: domainMatch?.[1] || undefined,
+              description: f.value.slice(0, 300),
+              rationale: f.label,
+              revenue_hint: revMatch?.[0] || undefined,
+              employee_hint: empMatch?.[1] || undefined,
+              hq_hint: hqMatch?.[1]?.trim() || undefined,
+            });
           }
         }
-        const uniqueTargets = extractedTargets.filter((t, i, arr) => arr.findIndex(x => x.name === t.name) === i).slice(0, 8);
+        const uniqueTargets = extractedTargets.filter((t, i, arr) => arr.findIndex(x => x.name === t.name) === i).slice(0, 10);
         if (uniqueTargets.length > 0) {
           send({ type: "targets", targets: uniqueTargets });
         }
