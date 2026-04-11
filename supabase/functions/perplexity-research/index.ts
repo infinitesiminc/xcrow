@@ -224,7 +224,7 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
         }
 
         // Send the full report — client does all parsing
-        send({ type: "full_report", text: fullText });
+        send({ type: "full_report", text: chunks.join("") });
 
       } catch (err) {
         console.error("Research pipeline error:", err);
