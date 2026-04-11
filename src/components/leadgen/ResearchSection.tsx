@@ -200,10 +200,29 @@ export function useResearchStream() {
     };
   }, []);
 
+  const restore = useCallback((parsed: ParsedReport) => {
+    setReport(parsed);
+    setPhases(PHASE_ORDER.map((id, i) => ({ id, label: PHASE_LABELS[i], status: "complete" as const, progress: 100 })));
+    setRunning(false);
+    setError(null);
+    runningRef.current = false;
+  }, []);
+
+  const reset = useCallback(() => {
+    setReport(null);
+    setPhases([...INITIAL]);
+    setElapsed(0);
+    setError(null);
+    setRunning(false);
+    runningRef.current = false;
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
+  }, []);
+
   const isComplete = !running && !error && phases.every(p => p.status === "complete");
   const isInitial = !running && !error && phases.every(p => p.status === "pending");
 
-  return { phases, elapsed, running, error, report, start, isComplete, isInitial };
+  return { phases, elapsed, running, error, report, start, restore, reset, isComplete, isInitial };
 }
 
 /* ── Research Section UI ── */
