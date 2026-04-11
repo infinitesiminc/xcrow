@@ -120,24 +120,28 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
           return;
         }
 
-        let fullText = "";
+        const chunks: string[] = [];
+        let totalLen = 0;
         const reader = resp.body?.getReader();
         if (!reader) throw new Error("No response body");
 
         const decoder = new TextDecoder();
         let sseBuffer = "";
         let lastEmit = 0;
+        let lastPhaseCheck = 0;
 
-        // Simple phase detection by header presence
-        const phaseHeaders = [
-          { key: "company overview", idx: 0 },
-          { key: "icp segments", idx: 1 },
-          { key: "buyer persona", idx: 1 },
-          { key: "competitive landscape", idx: 2 },
-          { key: "prospecting targets", idx: 3 },
+        // Phase detection keywords
+        const phaseKeywords: [string, number][] = [
+          ["## company overview", 0],
+          ["## icp segments", 1],
+          ["## buyer persona", 1],
+          ["## competitive landscape", 2],
+          ["## prospecting targets", 3],
         ];
         let currentPhase = 0;
         const completedPhases = new Set<number>();
+        // Track last N chars for phase detection instead of full text
+        let recentText = "";
 
         while (true) {
           const { done, value } = await reader.read();
@@ -159,29 +163,38 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
               const parsed = JSON.parse(jsonStr);
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
-                fullText += delta.replace(/<\/?think>/g, "");
+                const clean = delta.replace(/<\/?think>/g, "");
+                chunks.push(clean);
+                totalLen += clean.length;
 
-                // Lightweight phase advancement — just check for ## headers
-                const lower = fullText.toLowerCase();
-                for (const ph of phaseHeaders) {
-                  if (ph.idx > currentPhase && lower.includes(`## ${ph.key}`)) {
-                    // Complete previous phases
-                    for (let i = currentPhase; i < ph.idx; i++) {
-                      if (!completedPhases.has(i)) {
-                        completedPhases.add(i);
-                        send({ type: "phase", phase: { id: PHASES[i].id, label: PHASES[i].label, status: "complete", progress: 100 } });
+                // Keep a sliding window for phase detection (last 200 chars)
+                recentText += clean;
+                if (recentText.length > 400) recentText = recentText.slice(-200);
+
+                const now = Date.now();
+
+                // Throttled phase check (every 2s to save CPU)
+                if (now - lastPhaseCheck > 2000) {
+                  lastPhaseCheck = now;
+                  const lower = recentText.toLowerCase();
+                  for (const [key, phIdx] of phaseKeywords) {
+                    if (phIdx > currentPhase && lower.includes(key)) {
+                      for (let i = currentPhase; i < phIdx; i++) {
+                        if (!completedPhases.has(i)) {
+                          completedPhases.add(i);
+                          send({ type: "phase", phase: { id: PHASES[i].id, label: PHASES[i].label, status: "complete", progress: 100 } });
+                        }
                       }
+                      currentPhase = phIdx;
+                      send({ type: "phase", phase: { id: PHASES[currentPhase].id, label: PHASES[currentPhase].label, status: "active", sublabel: "Analyzing", progress: 10 } });
                     }
-                    currentPhase = ph.idx;
-                    send({ type: "phase", phase: { id: PHASES[currentPhase].id, label: PHASES[currentPhase].label, status: "active", sublabel: "Analyzing", progress: 10 } });
                   }
                 }
 
-                // Throttled streaming text update (every 600ms)
-                const now = Date.now();
-                if (now - lastEmit > 600) {
+                // Throttled streaming text update (every 1.5s)
+                if (now - lastEmit > 1500) {
                   lastEmit = now;
-                  const tail = fullText.slice(-300).replace(/<\/?think>/g, "").trim();
+                  const tail = recentText.slice(-300).trim();
                   if (tail) {
                     send({
                       type: "phase",
@@ -191,7 +204,7 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
                         status: "active",
                         sublabel: "Deep research streaming",
                         streamingText: tail,
-                        progress: Math.min(85, 10 + Math.floor(fullText.length / 100)),
+                        progress: Math.min(85, 10 + Math.floor(totalLen / 100)),
                       },
                     });
                   }
