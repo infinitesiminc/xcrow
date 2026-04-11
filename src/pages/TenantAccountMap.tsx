@@ -587,7 +587,7 @@ function useLiveResearchStream() {
     };
   }, []);
 
-  return { phases, elapsed, running, citations, targets, start };
+  return { phases, elapsed, running, error, citations, targets, start };
 }
 
 /* ══════════════════════════════════════════════════════════
