@@ -826,7 +826,7 @@ export default function TenantAccountMap() {
                             variant={seededTargets.has(t.name) ? "secondary" : "default"}
                             className="shrink-0 gap-1.5 text-xs"
                             disabled={seedingTarget === t.name || seededTargets.has(t.name)}
-                            onClick={() => handleSeedTarget(t)}
+                            onClick={() => handleSeedTarget(t, handleFindContacts)}
                           >
                             {seedingTarget === t.name ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
