@@ -413,6 +413,14 @@ Keep responses focused and actionable. Use markdown formatting.`;
     </div>
   );
 }
+/* ── Types for extracted targets ── */
+interface ResearchTarget {
+  name: string;
+  domain?: string;
+  description: string;
+  rationale: string;
+}
+
 /* ── Live Perplexity research stream hook ── */
 function useLiveResearchStream() {
   const INITIAL: ResearchPhase[] = [
@@ -426,17 +434,18 @@ function useLiveResearchStream() {
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
   const [citations, setCitations] = useState<string[]>([]);
+  const [targets, setTargets] = useState<ResearchTarget[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
   const start = useCallback(async (domain: string, companyContext?: string) => {
-    // Reset
     abortRef.current?.abort();
     if (timerRef.current) clearInterval(timerRef.current);
     setPhases(INITIAL);
     setElapsed(0);
     setCitations([]);
+    setTargets([]);
     setRunning(true);
     startRef.current = Date.now();
     timerRef.current = setInterval(() => setElapsed((Date.now() - startRef.current) / 1000), 100);
@@ -495,6 +504,10 @@ function useLiveResearchStream() {
               setCitations(parsed.citations || []);
             }
 
+            if (parsed.type === "targets" && parsed.targets) {
+              setTargets(parsed.targets);
+            }
+
             if (parsed.type === "error") {
               console.error("Research error:", parsed.error);
             }
@@ -519,7 +532,7 @@ function useLiveResearchStream() {
     };
   }, []);
 
-  return { phases, elapsed, running, citations, start };
+  return { phases, elapsed, running, citations, targets, start };
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -530,7 +543,9 @@ export default function TenantAccountMap() {
   const isMobile = useIsMobile();
   const { tenant } = useTenant();
   const { accounts: allAccounts, loading: accountsLoading, refetch } = useDBAccounts(tenant.slug);
-  const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, citations: researchCitations, start: startResearch } = useLiveResearchStream();
+  const { phases: demoPhases, elapsed: demoElapsed, running: demoRunning, citations: researchCitations, targets: researchTargets, start: startResearch } = useLiveResearchStream();
+  const [seedingTarget, setSeedingTarget] = useState<string | null>(null);
+  const [seededTargets, setSeededTargets] = useState<Set<string>>(new Set());
   const [researchDomain, setResearchDomain] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [showDeployed, setShowDeployed] = useState(false);
@@ -558,6 +573,34 @@ export default function TenantAccountMap() {
   const handleBack = useCallback(() => {
     setSelectedAccountId(null);
   }, []);
+
+  const handleSeedTarget = useCallback(async (target: ResearchTarget) => {
+    if (seedingTarget || seededTargets.has(target.name)) return;
+    setSeedingTarget(target.name);
+    try {
+      const accountId = `target-${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+      const domain = target.domain || `${target.name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`;
+      await (supabase.from("flash_accounts") as any).upsert({
+        id: accountId,
+        name: target.name,
+        tenant_slug: tenant.slug,
+        account_type: "garage_operator",
+        stage: "whitespace",
+        website: `https://${domain}`,
+        notes: `${target.rationale}: ${target.description}`,
+        focus_area: target.rationale,
+        hq_city: "",
+      }, { onConflict: "id" });
+      setSeededTargets(prev => new Set(prev).add(target.name));
+      refetch();
+      // Auto-select the new account
+      setSelectedAccountId(accountId);
+    } catch (e) {
+      console.error("Seed target failed:", e);
+    } finally {
+      setSeedingTarget(null);
+    }
+  }, [seedingTarget, seededTargets, tenant.slug, refetch]);
 
   const handleFindContacts = useCallback(async (account: FlashAccount, mode: "solution" | "ma" = "solution") => {
     if (loadingLeads.has(account.id) || accountLeads[account.id]) return;
@@ -736,9 +779,56 @@ export default function TenantAccountMap() {
               />
             )}
             {!demoRunning && demoPhases.every(p => p.status === "complete") && (
-              <div className="flex flex-col items-center gap-4 pt-6">
+              <div className="flex flex-col items-center gap-6 pt-6 w-full max-w-2xl mx-auto">
+                {/* Extracted targets → Pipeline */}
+                {researchTargets.length > 0 && (
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      <h3 className="text-sm font-semibold text-foreground">Strategic Targets Identified</h3>
+                      <Badge variant="secondary" className="text-xs">{researchTargets.length}</Badge>
+                    </div>
+                    <div className="grid gap-2">
+                      {researchTargets.map((t, i) => (
+                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                            {t.name.charAt(0)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground truncate">{t.name}</span>
+                              {t.domain && (
+                                <span className="text-xs text-muted-foreground">{t.domain}</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-1">{t.rationale}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={seededTargets.has(t.name) ? "secondary" : "default"}
+                            className="shrink-0 gap-1.5 text-xs"
+                            disabled={seedingTarget === t.name || seededTargets.has(t.name)}
+                            onClick={() => handleSeedTarget(t)}
+                          >
+                            {seedingTarget === t.name ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : seededTargets.has(t.name) ? (
+                              <>✓ Added</>
+                            ) : (
+                              <>
+                                <Zap className="w-3 h-3" />
+                                Add to Pipeline
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {researchCitations.length > 0 && (
-                  <details className="w-full max-w-2xl">
+                  <details className="w-full">
                     <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
                       📚 {researchCitations.length} sources cited
                     </summary>
@@ -757,7 +847,7 @@ export default function TenantAccountMap() {
                     placeholder="Try another domain..."
                     className="h-9 rounded-md border border-input bg-background px-3 text-sm w-48"
                   />
-                  <Button onClick={() => startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt)} variant="outline" size="sm" className="gap-2">
+                  <Button onClick={() => { setSeededTargets(new Set()); startResearch(researchDomain.trim() || "cliq.com", tenant.contextPrompt); }} variant="outline" size="sm" className="gap-2">
                     <Zap className="w-3.5 h-3.5" />
                     Run Again
                   </Button>
