@@ -178,72 +178,20 @@ export default function LeadGen() {
         }));
         await upsertLeads(newLeads);
 
-        // Auto-enrich: reveal contact details using Apollo credits
         await refetch();
-        const { data: savedLeads } = await supabase
-          .from("saved_leads")
-          .select("id, email, linkedin, phone")
-          .eq("user_id", user.id)
-          .eq("workspace_key", workspaceKey)
-          .eq("persona_tag", persona.title);
-
-        const needsEnrich = (savedLeads || [])
-          .filter((l: any) => !l.email || !l.linkedin || !l.phone)
-          .map((l: any) => l.id);
-
-        if (needsEnrich.length > 0) {
-          console.log(`Auto-enriching ${needsEnrich.length} leads...`);
-          const { data: { session: s2 } } = await supabase.auth.getSession();
-          await fetch(`${supabaseUrl}/functions/v1/enrich-leads`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${s2?.access_token ?? supabaseKey}`,
-              "apikey": supabaseKey,
-            },
-            body: JSON.stringify({ lead_ids: needsEnrich }),
-          });
-          await refetch();
-        }
       }
     } catch (e) {
       console.error("Apollo search failed:", e);
     } finally {
       setLoadingPersona(null);
     }
-  }, [user, loadingPersona, research.report, upsertLeads]);
+  }, [user, loadingPersona, research.report, upsertLeads, refetch, workspaceKey]);
 
   const handleDraftEmail = useCallback((lead: SavedLead) => {
     setDraftLead(lead);
   }, []);
 
-  const handleEnrichLeads = useCallback(async (leadIds: string[]) => {
-    if (!user) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-    const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-leads`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
-        "apikey": supabaseKey,
-      },
-      body: JSON.stringify({ lead_ids: leadIds }),
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      console.error("Enrich failed:", err);
-      return;
-    }
-
-    const result = await resp.json();
-    console.log("Enrich result:", result);
-    // Refresh leads to show updated data
-    await refetch();
-  }, [user, refetch]);
+  // Enrichment removed — leads arrive with full contact data from Apollo
 
   const handleStartResearch = useCallback(() => {
     if (domain.trim()) research.start(domain.trim());
@@ -284,7 +232,6 @@ export default function LeadGen() {
             onDeleteLead={deleteLead}
             onExportCSV={exportCSV}
             onDraftEmail={handleDraftEmail}
-            onEnrichLeads={handleEnrichLeads}
             userId={user?.id}
           />
         );

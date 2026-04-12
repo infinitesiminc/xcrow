@@ -132,7 +132,6 @@ Deno.serve(async (req) => {
       if (person_titles?.length) apolloBody.person_titles = person_titles;
       if (person_seniorities?.length) apolloBody.person_seniorities = person_seniorities;
       if (q_organization_domains) {
-        // Apollo expects domains as newline-separated string or array
         const domains = Array.isArray(q_organization_domains) ? q_organization_domains : q_organization_domains.split("\n").filter(Boolean);
         apolloBody.q_organization_domains = domains.join("\n");
       }
@@ -152,21 +151,66 @@ Deno.serve(async (req) => {
       const people = apolloData.people || apolloData.contacts || [];
       const pagination = apolloData.pagination || {};
 
-      const mapped = people.map((p: any) => ({
-        apollo_id: p.id || null,
-        name: p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown",
-        title: p.title || null,
-        company: p.organization?.name || p.organization_name || null,
-        email: p.email || null,
-        linkedin: p.linkedin_url || null,
-        phone: p.phone_number || p.sanitized_phone || null,
-        photo_url: p.photo_url || null,
-        address: [p.city, p.state, p.country].filter(Boolean).join(", ") || null,
-        source: "apollo",
-      }));
+      // Auto-reveal: for each person with an apollo_id but missing email/linkedin,
+      // call people/match to get full contact details
+      const revealed = [];
+      for (const p of people) {
+        const apolloId = p.id;
+        let email = p.email || null;
+        let linkedin = p.linkedin_url || null;
+        let phone = p.phone_number || p.sanitized_phone || null;
+        let name = p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown";
+        let title = p.title || null;
+        let address = [p.city, p.state, p.country].filter(Boolean).join(", ") || null;
+
+        if (apolloId && (!email || !linkedin)) {
+          try {
+            const matchRes = await fetch("https://api.apollo.io/api/v1/people/match", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Api-Key": APOLLO_API_KEY,
+              },
+              body: JSON.stringify({ id: apolloId, reveal_personal_emails: true }),
+            });
+            if (matchRes.ok) {
+              const matchData = await matchRes.json();
+              const person = matchData.person;
+              if (person) {
+                if (!email && person.email) email = person.email;
+                if (!linkedin && person.linkedin_url) linkedin = person.linkedin_url;
+                if (!phone && (person.phone_number || person.sanitized_phone)) phone = person.phone_number || person.sanitized_phone;
+                if (person.name && person.name !== name) name = person.name;
+                if (!title && person.title) title = person.title;
+                const loc = [person.city, person.state, person.country].filter(Boolean).join(", ");
+                if (!address && loc) address = loc;
+              }
+            } else {
+              console.warn(`Apollo reveal failed for ${apolloId}: ${matchRes.status}`);
+            }
+            // Rate limit between reveals
+            await new Promise((r) => setTimeout(r, 200));
+          } catch (err) {
+            console.warn(`Apollo reveal error for ${apolloId}:`, err);
+          }
+        }
+
+        revealed.push({
+          apollo_id: apolloId || null,
+          name,
+          title,
+          company: p.organization?.name || p.organization_name || null,
+          email,
+          linkedin,
+          phone,
+          photo_url: p.photo_url || null,
+          address,
+          source: "apollo",
+        });
+      }
 
       return respond({
-        people: mapped,
+        people: revealed,
         pagination: {
           page: pagination.page || page,
           per_page: pagination.per_page || per_page,
