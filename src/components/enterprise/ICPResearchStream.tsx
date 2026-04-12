@@ -216,7 +216,7 @@ export default function ICPResearchStream({
           Deep Research in Progress
         </span>
         <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-          This usually takes 2-3 minutes
+          {Math.floor(elapsedSeconds / 60)}:{String(Math.floor(elapsedSeconds % 60)).padStart(2, "0")} elapsed
         </span>
       </div>
 
