@@ -81,30 +81,11 @@ const h1 = {
   margin: '0 0 16px',
   textAlign: 'center' as const,
 }
-const h2 = {
-  fontSize: '18px',
-  fontWeight: '600' as const,
-  color: '#1a1a2e',
-  margin: '0 0 12px',
-}
 const text = {
   fontSize: '14px',
   color: '#55575d',
   lineHeight: '1.6',
   margin: '0 0 14px',
-}
-const summaryText = {
-  fontSize: '13px',
-  color: '#6b6b78',
-  lineHeight: '1.6',
-  margin: '0 0 16px',
-  fontStyle: 'italic' as const,
-}
-const ctaText = {
-  fontSize: '14px',
-  color: '#1a1a2e',
-  fontWeight: '600' as const,
-  margin: '16px 0 0',
 }
 const link = { color: 'hsl(270, 70%, 55%)', textDecoration: 'underline' }
 const buttonSection = { textAlign: 'center' as const, margin: '24px 0' }
@@ -119,24 +100,3 @@ const button = {
 }
 const divider = { borderColor: '#e5e5e5', margin: '24px 0' }
 const footer = { fontSize: '12px', color: '#999', margin: '0' }
-const insightBox = {
-  backgroundColor: '#faf9ff',
-  borderRadius: '8px',
-  padding: '14px 16px',
-  margin: '0 0 12px',
-  border: '1px solid #ede8f5',
-}
-const insightLabel = {
-  fontSize: '11px',
-  fontWeight: '700' as const,
-  color: 'hsl(270, 70%, 55%)',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.05em',
-  margin: '0 0 8px',
-}
-const insightItem = {
-  fontSize: '13px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 4px',
-}
