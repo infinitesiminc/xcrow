@@ -47,10 +47,15 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
-  const navItems = [
-    { label: "Lead Gen", path: "/leadgen", icon: Compass },
-    ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
-  ];
+  const navItems = user
+    ? [
+        { label: "Lead Gen", path: "/leadgen", icon: Compass },
+        ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
+      ]
+    : [
+        { label: "Pricing", path: "/pricing", icon: undefined },
+        { label: "Contact", path: "/contact", icon: undefined },
+      ];
 
   const handleNav = (path: string) => {
     navigate(path);
