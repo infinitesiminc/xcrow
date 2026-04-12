@@ -37,6 +37,11 @@ interface AdminUser {
   job_title: string;
   created_at: string;
   onboarding_completed: boolean;
+  credit_balance: number;
+  lead_count: number;
+  last_sign_in: string | null;
+  plan: string;
+  plan_source: string | null;
 }
 
 interface FeatureFlag {
