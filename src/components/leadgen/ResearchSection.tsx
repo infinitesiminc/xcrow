@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Zap, Building2, Users, Target, Swords } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import ICPResearchStream, { type ResearchPhase } from "@/components/enterprise/ICPResearchStream";
+import ICPResearchStream, { type ResearchPhase } from "./ICPResearchStream";
 
 /* ── Types ── */
 export interface ParsedPersona {
