@@ -30,12 +30,10 @@ interface NicheFunnelMapProps {
   activeNiche: string | null;
   onSelectNiche: (niche: string | null) => void;
   onFindLeads?: (niche: string) => void;
-  onEnrichLeads?: (niche: string) => void;
   onScoreLeads?: (niche: string) => void;
   onDraftAll?: (niche: string) => void;
   onExportNiche?: (niche: string) => void;
   isFinding?: boolean;
-  isEnriching?: boolean;
 }
 
 interface TreeNode {
@@ -66,7 +64,6 @@ function TreeRow({
   onSelect,
   activeNiche,
   onFindLeads,
-  onEnrichLeads,
   onScoreLeads,
   onDraftAll,
   onExportNiche,
@@ -84,12 +81,10 @@ function TreeRow({
   onSelect: () => void;
   activeNiche: string | null;
   onFindLeads?: (niche: string) => void;
-  onEnrichLeads?: (niche: string) => void;
   onScoreLeads?: (niche: string) => void;
   onDraftAll?: (niche: string) => void;
   onExportNiche?: (niche: string) => void;
   isFinding?: boolean;
-  isEnriching?: boolean;
   expandedSet: Set<string>;
   onToggleExpand: (label: string) => void;
   onSelectNiche: (niche: string | null) => void;
@@ -172,10 +167,6 @@ function TreeRow({
             <Button variant="default" size="sm" className="h-6 text-xs gap-1 px-2" onClick={() => onFindLeads?.(node.label)} disabled={isFinding}>
               {isFinding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
               Find
-            </Button>
-            <Button variant="outline" size="sm" className="h-6 text-xs gap-1 px-2" onClick={() => onEnrichLeads?.(node.label)} disabled={isEnriching || total === 0}>
-              {isEnriching ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3 h-3" />}
-              Enrich
             </Button>
             <Button variant="outline" size="sm" className="h-6 text-xs gap-1 px-2" onClick={() => onScoreLeads?.(node.label)} disabled={total === 0}>
               <BarChart3 className="w-3 h-3" /> Score
