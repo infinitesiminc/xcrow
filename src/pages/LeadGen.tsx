@@ -344,7 +344,7 @@ export default function LeadGen() {
             onUpdateStatus={updateLeadStatus}
             onDeleteLead={deleteLead}
             onExportCSV={exportCSV}
-            onDraftEmail={onDraftEmail}
+            onDraftEmail={handleDraftEmail}
             userId={user?.id}
           />
         );
