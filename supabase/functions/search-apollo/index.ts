@@ -87,10 +87,11 @@ Deno.serve(async (req) => {
     return respond({ error: "Unauthorized" }, 401);
   }
   const _sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  const { data: claimsData, error: claimsError } = await _sb.auth.getClaims(authHeader.replace("Bearer ", ""));
-  if (claimsError || !claimsData?.claims) {
+  const { data: userData, error: userError } = await _sb.auth.getUser(authHeader.replace("Bearer ", ""));
+  if (userError || !userData?.user) {
     return respond({ error: "Unauthorized" }, 401);
   }
+  const userId = userData.user.id;
   const { data: isAdmin } = await _sb.rpc("is_superadmin", { _user_id: claimsData.claims.sub });
   if (!isAdmin) {
     return respond({ error: "Forbidden" }, 403);
