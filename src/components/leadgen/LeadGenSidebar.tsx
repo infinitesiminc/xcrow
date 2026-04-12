@@ -91,14 +91,14 @@ export function LeadGenSidebar({
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             {displayDomain ? (
               <>
-                <p className="text-sm font-semibold text-sidebar-foreground truncate">
+                <p className="text-base font-bold text-sidebar-foreground truncate leading-tight">
                   {activeWorkspace?.display_name || displayDomain}
                 </p>
                 <p className="text-[10px] text-primary/70 font-mono truncate">Active workspace</p>
               </>
             ) : (
               <>
-                <p className="text-sm font-medium text-sidebar-foreground">Lead Gen</p>
+                <p className="text-base font-bold text-sidebar-foreground">Lead Gen</p>
                 <p className="text-[10px] text-muted-foreground">No workspace selected</p>
               </>
             )}
@@ -107,38 +107,7 @@ export function LeadGenSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Pipeline</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {NAV_ITEMS.map((item) => {
-                const badge = getBadge(item.id);
-                const disabled = !researchComplete && item.id !== "research";
-                return (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      isActive={activeSection === item.id}
-                      onClick={() => !disabled && onSelectSection(item.id)}
-                      tooltip={item.label}
-                      className={disabled ? "opacity-40 pointer-events-none" : ""}
-                    >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                      {badge != null && (
-                        <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4">
-                          {badge}
-                        </Badge>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Workspaces */}
-        <SidebarSeparator />
+        {/* Workspaces — top section */}
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
             <span>Workspaces</span>
@@ -201,6 +170,39 @@ export function LeadGenSidebar({
                 )}
               </SidebarMenu>
             </ScrollArea>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Pipeline */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Pipeline</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {NAV_ITEMS.map((item) => {
+                const badge = getBadge(item.id);
+                const disabled = !researchComplete && item.id !== "research";
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      isActive={activeSection === item.id}
+                      onClick={() => !disabled && onSelectSection(item.id)}
+                      tooltip={item.label}
+                      className={disabled ? "opacity-40 pointer-events-none" : ""}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                      {badge != null && (
+                        <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4">
+                          {badge}
+                        </Badge>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
