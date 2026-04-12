@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, UserCheck, BarChart3, Mail, Download, Loader2, Target } from "lucide-react";
+import { Search, BarChart3, Mail, Download, Loader2, Target } from "lucide-react";
 
 export interface ICPCriteria {
   industry?: string;

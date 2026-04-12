@@ -6,7 +6,6 @@ import {
   ChevronRight,
   ChevronDown,
   Search,
-  UserCheck,
   BarChart3,
   Mail,
   Download,
