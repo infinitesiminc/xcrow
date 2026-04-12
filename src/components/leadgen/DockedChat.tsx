@@ -15,7 +15,7 @@ export function DockedChat({ children }: DockedChatProps) {
   // Desktop: always-visible docked panel
   if (!isMobile) {
     return (
-      <div className="w-[420px] border-r border-border flex flex-col bg-background shrink-0 h-full">
+      <div className="w-[420px] border-r border-border flex flex-col bg-background shrink-0 h-full overflow-hidden">
         {children}
       </div>
     );
