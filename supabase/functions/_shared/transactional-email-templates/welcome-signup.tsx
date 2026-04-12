@@ -5,6 +5,8 @@ import {
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = "xcrow"
+const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
+const LOGO = `${STORAGE}/email-assets/xcrow-logo.png`
 
 interface WelcomeSignupProps {
   displayName?: string
@@ -32,8 +34,8 @@ const WelcomeSignupEmail = ({
     </Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={logoBanner}>
-          <Text style={logoText}>🐦‍⬛ {SITE_NAME}</Text>
+        <Section style={logoSection}>
+          <Img src={LOGO} alt="Xcrow" width="40" height="40" style={logoImgStyle} />
         </Section>
 
         <Heading style={h1}>
@@ -113,19 +115,8 @@ export const template = {
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
 const container = { padding: '32px 28px', maxWidth: '560px', margin: '0 auto' }
 
-const logoBanner = {
-  backgroundColor: 'hsl(262, 83%, 58%)',
-  borderRadius: '12px 12px 0 0',
-  padding: '16px 24px',
-  margin: '0 0 0 0',
-}
-const logoText = {
-  fontSize: '18px',
-  fontWeight: '700' as const,
-  color: '#ffffff',
-  margin: '0',
-  letterSpacing: '0.5px',
-}
+const logoSection = { textAlign: 'center' as const, marginBottom: '24px' }
+const logoImgStyle = { margin: '0 auto', borderRadius: '10px' }
 
 const h1 = { fontSize: '22px', fontWeight: '700' as const, color: '#1a1a2e', margin: '24px 0 12px' }
 const text = { fontSize: '14px', color: '#55575d', lineHeight: '1.6', margin: '0 0 16px' }
