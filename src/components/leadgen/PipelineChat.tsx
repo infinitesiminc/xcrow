@@ -282,12 +282,9 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
             personaNames: context.personaNames,
             leadCount: context.leadCount,
             leadsWithoutEmail: context.leadsWithoutEmail,
+            icpContext: context.icpContext || undefined,
           },
           messages: [
-            {
-              role: "system",
-              content: `You are the user's lead gen co-pilot. Help find leads, draft outreach, analyze pipeline. Be concise and action-oriented.`,
-            },
             ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
             { role: "user", content: text },
           ],
