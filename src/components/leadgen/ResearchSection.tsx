@@ -109,14 +109,13 @@ export function parseReportText(text: string): ParsedReport {
             .split(/[,(]/)[0]
             .trim();
 
-          // Generate role-based titles from the segment
-          if (cleanSegment.length > 2) {
+          // Only use segment for role titles if it's short & generic enough for Apollo
+          // Long/complex names like "US Department of Defense - Tactical UAS Procurement" won't match
+          if (cleanSegment.length > 2 && cleanSegment.length <= 30 && !cleanSegment.includes(" - ")) {
             titles.push(`VP of ${cleanSegment}`, `Director of ${cleanSegment}`, `Head of ${cleanSegment}`);
           }
-          // Always add a few universal decision-maker titles as last resort
-          if (titles.length === 0) {
-            titles.push("VP of Sales", "Director of Operations", "Chief Revenue Officer");
-          }
+          // Always add universal decision-maker titles so Apollo can find real people
+          titles.push("VP of Sales", "Director of Business Development", "Chief Revenue Officer", "VP of Operations", "Director of Procurement");
         }
 
         personas.push({ title, painPoints: painPoints.slice(0, 4), buyingTriggers: buyingTriggers.slice(0, 3), titles: titles.slice(0, 5) });
