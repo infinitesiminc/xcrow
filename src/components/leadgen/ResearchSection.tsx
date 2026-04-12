@@ -75,6 +75,14 @@ export function parseReportText(text: string): ParsedReport {
             }
             currentSection = "";
             continue;
+          } else if (l.includes("exact title")) {
+            // Extract from "**Exact title**: Director of ISO Programs, VP of Partner Programs, ..."
+            const exactMatch = line.match(/\*\*Exact\s+title\*\*:\s*(.+)/i);
+            if (exactMatch) {
+              const rawTitles = exactMatch[1].replace(/\*\*/g, "").split(",").map(t => t.trim()).filter(t => t.length > 2 && t.length < 60);
+              titles.push(...rawTitles);
+            }
+            continue;
           }
 
           const bulletMatch = line.trim().match(/^[-*]\s+(.+)/);
