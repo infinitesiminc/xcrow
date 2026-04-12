@@ -213,7 +213,7 @@ export default function LeadGen() {
                 </DockedChat>
 
                 {/* Main scrollable dashboard — RIGHT */}
-                <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex-1 overflow-y-auto p-6" style={{ overscrollBehavior: "contain" }}>
                   <div className="max-w-4xl mx-auto space-y-6">
                     {showResearchInput && (
                       <ResearchSection
