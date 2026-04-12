@@ -22,8 +22,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 /* ── data ── */
 const MARQUEE_ROWS = [
-  ["Apple", "Stripe", "OpenAI", "Netflix", "Figma", "Anthropic", "Canva", "Salesforce"],
-  ["Datadog", "Notion", "Shopify", "HubSpot", "Snowflake", "Cloudflare", "Twilio", "Zoom"],
+  ["Y Combinator", "Techstars", "500 Global", "Antler", "Sequoia Arc", "a]6z START", "Plug and Play", "On Deck"],
+  ["Seedcamp", "Entrepreneur First", "SOSV", "Founders Factory", "Indie Bio", "MassChallenge", "Launch", "Alchemist"],
 ];
 
 const STATS = [
@@ -198,7 +198,7 @@ export default function Index() {
         <section className="border-y border-border/40 bg-muted/20 py-8">
           <motion.div {...fadeInView()} className="max-w-5xl mx-auto px-4">
             <p className="text-center text-xs text-muted-foreground/60 tracking-[0.2em] uppercase font-medium mb-5">
-              Founders use Xcrow to land their first 10 customers
+              Trusted by founders at top incubators & accelerators
             </p>
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
