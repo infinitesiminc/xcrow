@@ -147,7 +147,7 @@ export default function LeadGen() {
       </Helmet>
       <Navbar />
       <div className="pt-14">
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={false}>
           <div className="min-h-[calc(100vh-56px)] flex w-full">
             <LeadGenSidebar
               activeSection="research"
@@ -175,54 +175,7 @@ export default function LeadGen() {
                 )}
               </header>
               <div className="flex-1 flex min-h-0">
-                <div className="flex-1 overflow-y-auto p-6">
-                  <div className="max-w-4xl mx-auto space-y-6">
-                    {/* Research: input/streaming or collapsible summary */}
-                    {showResearchInput && (
-                      <ResearchSection
-                        domain={domain}
-                        onDomainChange={setDomain}
-                        onStart={handleStartResearch}
-                        phases={research.phases}
-                        elapsed={research.elapsed}
-                        running={research.running}
-                        error={research.error}
-                        isComplete={research.isComplete}
-                        isInitial={research.isInitial}
-                        report={research.report}
-                      />
-                    )}
-
-                    {showResearchSummary && (
-                      <ResearchSummaryCard report={research.report!} elapsed={research.elapsed} />
-                    )}
-
-                    {/* Personas: inline horizontal cards */}
-                    {research.isComplete && research.report && (
-                      <PersonasSection
-                        report={research.report}
-                        leadCountByPersona={leadCountByPersona}
-                        onFindLeads={handleFindLeadsChat}
-                        loadingPersona={loadingPersona}
-                      />
-                    )}
-
-                    {/* Leads table: always visible when research complete */}
-                    {research.isComplete && (
-                      <LeadsTableSection
-                        leads={leads}
-                        outreach={outreach}
-                        onUpdateStatus={updateLeadStatus}
-                        onDeleteLead={deleteLead}
-                        onExportCSV={exportCSV}
-                        onDraftEmail={handleDraftEmail}
-                        userId={user?.id}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Docked chat panel */}
+                {/* Docked chat panel — LEFT */}
                 <DockedChat>
                   <PipelineChat
                     context={{
@@ -255,6 +208,51 @@ export default function LeadGen() {
                     onPersonaConsumed={() => setPendingPersona(null)}
                   />
                 </DockedChat>
+
+                {/* Main scrollable dashboard — RIGHT */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  <div className="max-w-4xl mx-auto space-y-6">
+                    {showResearchInput && (
+                      <ResearchSection
+                        domain={domain}
+                        onDomainChange={setDomain}
+                        onStart={handleStartResearch}
+                        phases={research.phases}
+                        elapsed={research.elapsed}
+                        running={research.running}
+                        error={research.error}
+                        isComplete={research.isComplete}
+                        isInitial={research.isInitial}
+                        report={research.report}
+                      />
+                    )}
+
+                    {showResearchSummary && (
+                      <ResearchSummaryCard report={research.report!} elapsed={research.elapsed} />
+                    )}
+
+                    {research.isComplete && research.report && (
+                      <PersonasSection
+                        report={research.report}
+                        leadCountByPersona={leadCountByPersona}
+                        onFindLeads={handleFindLeadsChat}
+                        loadingPersona={loadingPersona}
+                      />
+                    )}
+
+                    {research.isComplete && (
+                      <LeadsTableSection
+                        leads={leads}
+                        outreach={outreach}
+                        onUpdateStatus={updateLeadStatus}
+                        onDeleteLead={deleteLead}
+                        onExportCSV={exportCSV}
+                        onDraftEmail={handleDraftEmail}
+                        userId={user?.id}
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
