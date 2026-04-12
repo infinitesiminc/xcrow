@@ -236,6 +236,7 @@ export default function LeadsTableSection({
                 </button>
               </TableHead>
               <TableHead className="text-xs w-[100px]">Contact</TableHead>
+              <TableHead className="text-xs w-[130px]">Location</TableHead>
               <TableHead className="text-xs w-[100px]">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("status")}>
                   Status <SortIcon col="status" />
