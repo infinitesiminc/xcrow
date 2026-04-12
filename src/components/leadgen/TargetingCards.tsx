@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { GTMTreeData, GTMProduct, GTMBuyerMapping } from "@/components/academy/gtm-types";
+import type { GTMTreeData, GTMProduct, GTMBuyerMapping } from "./gtm-types";
 
 const VERTICAL_ICONS: Record<string, React.ElementType> = {
   financial: Landmark, banking: Landmark, mortgage: Landmark, insurance: Shield,

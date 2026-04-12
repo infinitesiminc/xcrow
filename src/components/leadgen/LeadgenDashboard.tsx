@@ -6,7 +6,7 @@ import TargetingCards from "./TargetingCards";
 import TargetZone, { type DroppedCard } from "./TargetZone";
 import type { SavedLead, LeadStatus, OutreachEntry } from "./useLeadsCRUD";
 import type { Lead } from "./LeadCard";
-import type { GTMTreeData } from "@/components/academy/gtm-types";
+import type { GTMTreeData } from "./gtm-types";
 
 interface PageAnalyzed {
   url: string;
