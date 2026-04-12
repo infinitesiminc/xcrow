@@ -236,6 +236,7 @@ export default function LeadsTableSection({
                 </button>
               </TableHead>
               <TableHead className="text-xs w-[100px]">Contact</TableHead>
+              <TableHead className="text-xs w-[130px]">Location</TableHead>
               <TableHead className="text-xs w-[100px]">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("status")}>
                   Status <SortIcon col="status" />
@@ -290,6 +291,14 @@ export default function LeadsTableSection({
                       </a>
                     )}
                   </div>
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground truncate max-w-[130px]">
+                  {lead.address ? (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{lead.address}</span>
+                    </span>
+                  ) : "—"}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[lead.status]}`}>
