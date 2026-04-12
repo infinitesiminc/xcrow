@@ -1,169 +1,18 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { Bot, User, Loader2, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { parseSSEStream } from "@/lib/sse-parser";
 import Navbar from "@/components/Navbar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LeadGenSidebar, type SidebarSection } from "@/components/leadgen/LeadGenSidebar";
 import ResearchSection, { useResearchStream, parseReportText, type ParsedPersona } from "@/components/leadgen/ResearchSection";
 import PersonasSection from "@/components/leadgen/PersonasSection";
 import LeadsTableSection from "@/components/leadgen/LeadsTableSection";
-import OutreachSection from "@/components/leadgen/OutreachSection";
 import { useLeadsCRUD, type SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import { useWorkspaces } from "@/hooks/use-workspaces";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ReactMarkdown from "react-markdown";
 import { FloatingChat } from "@/components/leadgen/FloatingChat";
+import { PipelineChat, type PipelineChatContext, type PipelineChatActions } from "@/components/leadgen/PipelineChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
-
-/* ── Chat ── */
-interface ChatMessage { role: "user" | "assistant"; content: string; pills?: string[]; }
-
-function parsePills(text: string): { cleanText: string; pills: string[] } {
-  const match = text.match(/\[\[([^\]]+)\]\]\s*$/);
-  if (!match) return { cleanText: text, pills: [] };
-  const pills = match[1].split("|").map(s => s.trim()).filter(Boolean);
-  return { cleanText: text.slice(0, match.index).trim(), pills };
-}
-
-function PipelineChat({ leadCount }: { leadCount: number }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([{
-        role: "assistant",
-        content: leadCount > 0
-          ? `You have **${leadCount} leads**. I can help find more, draft outreach, or analyze your pipeline.`
-          : `Let's build your lead pipeline. Enter a company URL on the left to start ICP research.`,
-      }]);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
-
-  const sendMessage = async (text: string) => {
-    if (!text || isStreaming) return;
-    setMessages(prev => [...prev, { role: "user", content: text }]);
-    setInput("");
-    setIsStreaming(true);
-    let buf = "";
-    const upsert = (chunk: string) => {
-      buf += chunk;
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant" && prev.length > 1 && prev[prev.length - 2]?.role === "user") {
-          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: buf } : m);
-        }
-        return [...prev, { role: "assistant", content: buf }];
-      });
-    };
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const { data: { session } } = await supabase.auth.getSession();
-      const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
-        body: JSON.stringify({
-          website: "xcrow.com",
-          messages: [
-            { role: "system", content: "You are the Xcrow Lead Gen assistant. Help find leads, draft outreach, analyze pipeline. Be concise." },
-            ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
-            { role: "user", content: text },
-          ],
-        }),
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const reader = resp.body?.getReader();
-      if (!reader) throw new Error("No body");
-      await parseSSEStream(reader, { onTextDelta: upsert, onLeads: () => {}, onDone: () => {} });
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") {
-          const { cleanText, pills } = parsePills(last.content);
-          if (pills.length > 0) return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: cleanText, pills } : m);
-        }
-        return prev;
-      });
-    } catch { upsert("\n\n⚠️ Something went wrong."); }
-    finally { setIsStreaming(false); inputRef.current?.focus(); }
-  };
-
-  const handleSend = () => sendMessage(input.trim());
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2 shrink-0">
-        <Bot className="w-4 h-4 text-primary" />
-        <span className="text-sm font-medium">Assistant</span>
-      </div>
-      <ScrollArea className="flex-1 px-4 py-3">
-        <div className="space-y-4">
-          {messages.map((msg, i) => (
-            <div key={i}>
-              <div className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : ""}`}>
-                {msg.role === "assistant" && (
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bot className="w-4 h-4 text-primary" />
-                  </div>
-                )}
-                <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
-                  {msg.role === "assistant" ? (
-                    <div className="prose prose-sm max-w-none [&>p]:my-1 [&>p]:text-secondary-foreground [&_strong]:text-secondary-foreground"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
-                  ) : <p className="whitespace-pre-wrap">{msg.content}</p>}
-                </div>
-                {msg.role === "user" && (
-                  <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
-                    <User className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                )}
-              </div>
-              {msg.role === "assistant" && msg.pills && msg.pills.length > 0 && !isStreaming && i === messages.length - 1 && (
-                <div className="flex flex-wrap gap-1.5 mt-2 ml-9">
-                  {msg.pills.map(pill => (
-                    <button
-                      key={pill}
-                      onClick={() => sendMessage(pill)}
-                      className="text-[11px] px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
-                    >
-                      {pill}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
-            <div className="flex gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><Bot className="w-4 h-4 text-primary" /></div>
-              <div className="bg-muted/60 rounded-lg px-3.5 py-2.5"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
-            </div>
-          )}
-          <div ref={scrollRef} />
-        </div>
-      </ScrollArea>
-      <div className="border-t border-border p-3 shrink-0">
-        <div className="flex gap-2">
-          <Textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Ask anything..." className="min-h-[42px] max-h-[120px] resize-none text-sm" rows={1} />
-          <Button size="icon" onClick={handleSend} disabled={!input.trim() || isStreaming} className="shrink-0 h-[42px] w-[42px]">
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ══════════════════════════════════════════════════════════
    Main LeadGen Page
