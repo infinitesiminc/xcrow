@@ -14,6 +14,7 @@ import apolloComplexUi from "@/assets/apollo-complex-ui.png";
 import {
   Globe, ArrowRight,
   CheckCircle2, XCircle,
+  Shield, Lock, Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import CompanyMarquee from "@/components/CompanyMarquee";
