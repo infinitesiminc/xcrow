@@ -77,7 +77,7 @@ export function parseReportText(text: string): ParsedReport {
             continue;
           }
 
-          const bulletMatch = line.match(/^[-*]\s+(.+)/);
+          const bulletMatch = line.trim().match(/^[-*]\s+(.+)/);
           if (bulletMatch) {
             const val = bulletMatch[1].replace(/\*\*/g, "").trim();
             // Skip values that look like section headers
