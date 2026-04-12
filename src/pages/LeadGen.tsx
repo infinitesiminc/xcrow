@@ -335,7 +335,33 @@ export default function LeadGen() {
             </div>
 
             <FloatingChat>
-              <PipelineChat leadCount={leads.length} />
+              <PipelineChat
+                context={{
+                  workspaceKey,
+                  activeSection,
+                  researchStatus: research.running ? "running" : research.isComplete ? "complete" : "not_started",
+                  personaCount: research.report?.personas.length || 0,
+                  personaNames: research.report?.personas.map(p => p.title) || [],
+                  leadCount: leads.length,
+                  leadsWithoutEmail: leads.filter(l => !l.email).length,
+                }}
+                actions={{
+                  onNavigate: (section) => setActiveSection(section as SidebarSection),
+                  onFindLeads: (personaTitle) => {
+                    const persona = research.report?.personas.find(p => p.title === personaTitle);
+                    if (persona) handleFindLeads(persona);
+                  },
+                  onDraftEmail: (leadName) => {
+                    const lead = leads.find(l => l.name.toLowerCase().includes(leadName.toLowerCase()));
+                    if (lead) setDraftLead(lead);
+                  },
+                  onExportCSV: exportCSV,
+                  onStartResearch: (domain) => {
+                    setDomain(domain);
+                    research.start(domain);
+                  },
+                }}
+              />
             </FloatingChat>
 
             <DraftEmailModal
