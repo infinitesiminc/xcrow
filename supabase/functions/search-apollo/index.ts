@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     return respond({ error: "Unauthorized" }, 401);
   }
   const userId = userData.user.id;
-  const { data: isAdmin } = await _sb.rpc("is_superadmin", { _user_id: claimsData.claims.sub });
+  const { data: isAdmin } = await _sb.rpc("is_superadmin", { _user_id: userId });
   if (!isAdmin) {
     return respond({ error: "Forbidden" }, 403);
   }
