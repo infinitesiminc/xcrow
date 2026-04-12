@@ -100,8 +100,6 @@ Deno.serve(async (req) => {
   if (!isAdmin) {
     return respond({ error: "Forbidden" }, 403);
   }
-
-  try {
     const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
     if (!APOLLO_API_KEY) throw new Error("APOLLO_API_KEY not configured");
 
