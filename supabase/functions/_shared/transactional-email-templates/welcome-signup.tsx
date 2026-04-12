@@ -34,8 +34,8 @@ const WelcomeSignupEmail = ({
     </Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={logoBanner}>
-          <Text style={logoText}>🐦‍⬛ {SITE_NAME}</Text>
+        <Section style={logoSection}>
+          <Img src={LOGO} alt="Xcrow" width="40" height="40" style={logoImgStyle} />
         </Section>
 
         <Heading style={h1}>
