@@ -28,7 +28,7 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
 const LeadGen = lazy(() => import("./pages/LeadGen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
-const Texas = lazy(() => import("./pages/Texas.tsx"));
+
 
 const queryClient = new QueryClient();
 
