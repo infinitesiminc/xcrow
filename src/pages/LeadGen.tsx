@@ -50,71 +50,10 @@ function PipelineChat({ leadCount }: { leadCount: number }) {
 
   useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const sendMessage = async (text: string) => {
     if (!text || isStreaming) return;
     setMessages(prev => [...prev, { role: "user", content: text }]);
     setInput("");
-    setIsStreaming(true);
-    let buf = "";
-    const upsert = (chunk: string) => {
-      buf += chunk;
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant" && prev.length > 1 && prev[prev.length - 2]?.role === "user") {
-          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: buf } : m);
-        }
-        return [...prev, { role: "assistant", content: buf }];
-      });
-    };
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const { data: { session } } = await supabase.auth.getSession();
-      const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
-        body: JSON.stringify({
-          website: "xcrow.com",
-          messages: [
-            { role: "system", content: "You are the Xcrow Lead Gen assistant. Help find leads, draft outreach, analyze pipeline. Be concise." },
-            ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
-            { role: "user", content: text },
-          ],
-        }),
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const reader = resp.body?.getReader();
-      if (!reader) throw new Error("No body");
-      await parseSSEStream(reader, { onTextDelta: upsert, onLeads: () => {}, onDone: () => {} });
-      // Parse pills from final message
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") {
-          const { cleanText, pills } = parsePills(last.content);
-          if (pills.length > 0) {
-            return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: cleanText, pills } : m);
-          }
-        }
-        return prev;
-      });
-    } catch { upsert("\n\n⚠️ Something went wrong."); }
-    finally { setIsStreaming(false); inputRef.current?.focus(); }
-  };
-
-  const handlePillClick = (pill: string) => {
-    setInput(pill);
-    setTimeout(() => {
-      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-      setMessages(prev => [...prev, { role: "user", content: pill }]);
-      setInput("");
-      // Trigger send with the pill text
-      handleSendWithText(pill);
-    }, 0);
-  };
-
-  const handleSendWithText = async (text: string) => {
-    if (!text || isStreaming) return;
     setIsStreaming(true);
     let buf = "";
     const upsert = (chunk: string) => {
@@ -158,6 +97,8 @@ function PipelineChat({ leadCount }: { leadCount: number }) {
     } catch { upsert("\n\n⚠️ Something went wrong."); }
     finally { setIsStreaming(false); inputRef.current?.focus(); }
   };
+
+  const handleSend = () => sendMessage(input.trim());
 
   return (
     <div className="flex flex-col h-full">
