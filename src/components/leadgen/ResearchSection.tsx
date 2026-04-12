@@ -257,7 +257,7 @@ export function useResearchStream() {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
-      const resp = await fetch(`${supabaseUrl}/functions/v1/perplexity-research`, {
+      const resp = await fetch(`${supabaseUrl}/functions/v1/icp-research`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
         body: JSON.stringify({ domain: domain.trim().toLowerCase(), companyContext }),
