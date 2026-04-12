@@ -1262,137 +1262,6 @@ export type Database = {
           },
         ]
       }
-      school_courses: {
-        Row: {
-          ai_content_flag: boolean | null
-          created_at: string
-          curriculum_id: string
-          degree_type: string | null
-          department: string | null
-          description: string | null
-          id: string
-          industry_sectors: Json | null
-          learning_outcomes: Json | null
-          program_name: string
-          school_id: string
-          skill_categories: Json | null
-          skills_extracted: Json | null
-          source_url: string | null
-          tools_taught: Json | null
-        }
-        Insert: {
-          ai_content_flag?: boolean | null
-          created_at?: string
-          curriculum_id: string
-          degree_type?: string | null
-          department?: string | null
-          description?: string | null
-          id?: string
-          industry_sectors?: Json | null
-          learning_outcomes?: Json | null
-          program_name: string
-          school_id: string
-          skill_categories?: Json | null
-          skills_extracted?: Json | null
-          source_url?: string | null
-          tools_taught?: Json | null
-        }
-        Update: {
-          ai_content_flag?: boolean | null
-          created_at?: string
-          curriculum_id?: string
-          degree_type?: string | null
-          department?: string | null
-          description?: string | null
-          id?: string
-          industry_sectors?: Json | null
-          learning_outcomes?: Json | null
-          program_name?: string
-          school_id?: string
-          skill_categories?: Json | null
-          skills_extracted?: Json | null
-          source_url?: string | null
-          tools_taught?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "school_courses_curriculum_id_fkey"
-            columns: ["curriculum_id"]
-            isOneToOne: false
-            referencedRelation: "school_curricula"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      school_curricula: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          error_message: string | null
-          id: string
-          initiated_by: string | null
-          programs_found: number
-          programs_parsed: number
-          school_id: string
-          source_url: string
-          status: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          initiated_by?: string | null
-          programs_found?: number
-          programs_parsed?: number
-          school_id: string
-          source_url: string
-          status?: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          initiated_by?: string | null
-          programs_found?: number
-          programs_parsed?: number
-          school_id?: string
-          source_url?: string
-          status?: string
-        }
-        Relationships: []
-      }
-      school_seats: {
-        Row: {
-          activated_at: string | null
-          id: string
-          invite_email: string | null
-          provisioned_at: string
-          school_id: string
-          status: string
-          user_id: string | null
-        }
-        Insert: {
-          activated_at?: string | null
-          id?: string
-          invite_email?: string | null
-          provisioned_at?: string
-          school_id: string
-          status?: string
-          user_id?: string | null
-        }
-        Update: {
-          activated_at?: string | null
-          id?: string
-          invite_email?: string | null
-          provisioned_at?: string
-          school_id?: string
-          status?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       sim_checkpoints: {
         Row: {
           company: string | null
@@ -2363,45 +2232,6 @@ export type Database = {
         }[]
       }
       get_public_profile: { Args: { _username: string }; Returns: Json }
-      get_school_analytics: {
-        Args: { _school_id: string }
-        Returns: {
-          avg_score: number
-          display_name: string
-          total_sims: number
-          total_xp: number
-          user_id: string
-        }[]
-      }
-      get_school_dashboard_stats: {
-        Args: never
-        Returns: {
-          carnegie_class: string
-          carnegie_count: number
-          pipeline_count: number
-          pipeline_stage: string
-          state: string
-          state_count: number
-          total_customers: number
-          total_enrollment: number
-          total_hbcus: number
-          total_schools: number
-          total_scraped: number
-        }[]
-      }
-      get_school_students: {
-        Args: { _school_id: string }
-        Returns: {
-          activated_at: string
-          display_name: string
-          email: string
-          invite_email: string
-          provisioned_at: string
-          seat_id: string
-          status: string
-          user_id: string
-        }[]
-      }
       get_skill_drop_matches: {
         Args: { _limit?: number; _skill_id: string }
         Returns: {
@@ -2455,14 +2285,9 @@ export type Database = {
         Returns: undefined
       }
       has_active_grant: { Args: { _user_id: string }; Returns: boolean }
-      has_school_seat: { Args: { _user_id: string }; Returns: boolean }
       increment_usage: {
         Args: { _type: string; _user_id: string }
         Returns: Json
-      }
-      is_school_admin: {
-        Args: { _school_id: string; _user_id: string }
-        Returns: boolean
       }
       is_superadmin: { Args: { _user_id: string }; Returns: boolean }
       is_workspace_admin: {
