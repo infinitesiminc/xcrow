@@ -443,6 +443,11 @@ export default function LeadGen() {
               <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
                 <SidebarTrigger className="mr-3" />
                 <span className="text-sm font-medium capitalize">{activeSection}</span>
+                {workspaceKey !== "default" && (
+                  <span className="ml-2 text-xs text-muted-foreground font-mono">
+                    — {workspaceKey}
+                  </span>
+                )}
               </header>
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="max-w-5xl mx-auto">
