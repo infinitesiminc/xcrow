@@ -147,7 +147,7 @@ export default function LeadGen() {
       </Helmet>
       <Navbar />
       <div className="pt-14">
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={false}>
           <div className="min-h-[calc(100vh-56px)] flex w-full">
             <LeadGenSidebar
               activeSection="research"
