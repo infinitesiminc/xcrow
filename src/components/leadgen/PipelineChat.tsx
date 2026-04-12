@@ -174,7 +174,7 @@ function ActionCardUI({ card, onExecute, onCancel }: {
 }
 
 /* ── Main Component ── */
-export function PipelineChat({ context, actions }: PipelineChatProps) {
+export function PipelineChat({ context, actions, pendingPersona, onPersonaConsumed }: PipelineChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
