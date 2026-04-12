@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import type { ParsedPersona } from "@/components/leadgen/ResearchSection";
