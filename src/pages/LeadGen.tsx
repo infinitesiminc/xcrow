@@ -6,8 +6,7 @@ import Navbar from "@/components/Navbar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LeadGenSidebar } from "@/components/leadgen/LeadGenSidebar";
 import ResearchSection, { useResearchStream, parseReportText, type ParsedPersona } from "@/components/leadgen/ResearchSection";
-import { ResearchSummaryCard } from "@/components/leadgen/ResearchSummaryCard";
-import PersonasSection from "@/components/leadgen/PersonasSection";
+import { ResearchBar } from "@/components/leadgen/ResearchBar";
 import LeadsTableSection from "@/components/leadgen/LeadsTableSection";
 import { useLeadsCRUD, type SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import { useWorkspaces } from "@/hooks/use-workspaces";
@@ -137,7 +136,7 @@ export default function LeadGen() {
 
   // Determine what to show inline for research
   const showResearchInput = research.isInitial || research.running || (!!research.error && !research.running);
-  const showResearchSummary = research.isComplete && !!research.report;
+  
 
   return (
     <>
@@ -230,13 +229,11 @@ export default function LeadGen() {
                       />
                     )}
 
-                    {showResearchSummary && (
-                      <ResearchSummaryCard report={research.report!} elapsed={research.elapsed} />
-                    )}
-
                     {research.isComplete && research.report && (
-                      <PersonasSection
+                      <ResearchBar
                         report={research.report}
+                        elapsed={research.elapsed}
+                        workspaceKey={workspaceKey}
                         leadCountByPersona={leadCountByPersona}
                         onFindLeads={handleFindLeadsChat}
                         loadingPersona={loadingPersona}
