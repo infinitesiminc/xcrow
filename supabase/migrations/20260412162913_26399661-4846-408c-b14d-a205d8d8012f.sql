@@ -1,0 +1,1 @@
+ALTER TABLE public.saved_leads ADD COLUMN IF NOT EXISTS apollo_id TEXT;

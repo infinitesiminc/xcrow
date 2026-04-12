@@ -288,6 +288,7 @@ export default function LeadGen() {
           linkedin: p.linkedin,
           phone: p.phone,
           photo_url: p.photo_url,
+          apollo_id: p.apollo_id,
           source: "apollo",
           persona_tag: persona.title,
           reason: `Matched persona: ${persona.title}`,

@@ -153,6 +153,7 @@ Deno.serve(async (req) => {
       const pagination = apolloData.pagination || {};
 
       const mapped = people.map((p: any) => ({
+        apollo_id: p.id || null,
         name: p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown",
         title: p.title || null,
         company: p.organization?.name || p.organization_name || null,
