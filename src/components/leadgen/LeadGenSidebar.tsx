@@ -3,6 +3,7 @@ import { Search, Users, TableProperties, Mail, Settings, Globe, Plus, Building2,
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import type { UserWorkspace } from "@/hooks/use-workspaces";
 import {
   Sidebar,
@@ -60,6 +61,9 @@ export function LeadGenSidebar({
 }: LeadGenSidebarProps) {
   const navigate = useNavigate();
 
+  const activeWorkspace = workspaces.find(w => w.website_key === activeWorkspaceKey);
+  const displayDomain = activeWorkspaceKey || websiteUrl?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
   const getBadge = (id: SidebarSection) => {
     if (id === "personas" && personaCount > 0) return personaCount;
     if (id === "leads" && leadCount > 0) return leadCount;
@@ -69,19 +73,34 @@ export function LeadGenSidebar({
 
   return (
     <Sidebar collapsible="icon">
+      {/* Active workspace header */}
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-1">
-          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Globe className="w-3.5 h-3.5 text-primary" />
+        <div className="flex items-center gap-2.5 px-1">
+          <div className={cn(
+            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+            displayDomain ? "bg-primary/10 ring-1 ring-primary/20" : "bg-muted"
+          )}>
+            {activeWorkspace?.logo_url ? (
+              <img src={activeWorkspace.logo_url} alt="" className="w-5 h-5 rounded object-contain" />
+            ) : displayDomain ? (
+              <Globe className="w-4 h-4 text-primary" />
+            ) : (
+              <Globe className="w-4 h-4 text-muted-foreground" />
+            )}
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="text-xs font-semibold text-sidebar-foreground truncate">
-              Lead Gen
-            </p>
-            {websiteUrl && (
-              <p className="text-[10px] text-muted-foreground truncate">
-                {websiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-              </p>
+            {displayDomain ? (
+              <>
+                <p className="text-sm font-semibold text-sidebar-foreground truncate">
+                  {activeWorkspace?.display_name || displayDomain}
+                </p>
+                <p className="text-[10px] text-primary/70 font-mono truncate">Active workspace</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-sidebar-foreground">Lead Gen</p>
+                <p className="text-[10px] text-muted-foreground">No workspace selected</p>
+              </>
             )}
           </div>
         </div>
@@ -123,56 +142,58 @@ export function LeadGenSidebar({
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
             <span>Workspaces</span>
+            <button
+              onClick={onNewResearch}
+              className="p-0.5 rounded hover:bg-sidebar-accent text-muted-foreground hover:text-foreground transition-colors group-data-[collapsible=icon]:hidden"
+              title="Start new research"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2 h-8 text-xs"
-                onClick={onNewResearch}
-              >
-                <Plus className="w-3 h-3" />
-                New Research
-              </Button>
-            </div>
-            <ScrollArea className="max-h-[200px]">
+            <ScrollArea className="max-h-[240px]">
               <SidebarMenu>
-                {workspaces.map((ws) => (
-                  <SidebarMenuItem key={ws.website_key}>
-                    <div className="flex items-center group/ws">
-                      <SidebarMenuButton
-                        isActive={activeWorkspaceKey === ws.website_key}
-                        onClick={() => onSelectWorkspace?.(ws.website_key)}
-                        tooltip={ws.display_name || ws.website_key}
-                        className="flex-1"
-                      >
-                        {ws.logo_url ? (
-                          <img src={ws.logo_url} alt="" className="w-4 h-4 rounded object-contain" />
-                        ) : (
-                          <Building2 className="w-4 h-4 text-muted-foreground" />
-                        )}
-                        <span className="truncate text-xs">{ws.display_name || ws.website_key}</span>
-                      </SidebarMenuButton>
-                      <div className="hidden group-hover/ws:flex items-center gap-0.5 pr-1 group-data-[collapsible=icon]:hidden">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onRerunWorkspace?.(ws.website_key); }}
-                          className="p-1 rounded hover:bg-sidebar-accent text-muted-foreground hover:text-foreground"
-                          title="Re-run research"
+                {workspaces.map((ws) => {
+                  const isActive = activeWorkspaceKey === ws.website_key;
+                  return (
+                    <SidebarMenuItem key={ws.website_key}>
+                      <div className="flex items-center group/ws">
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          onClick={() => onSelectWorkspace?.(ws.website_key)}
+                          tooltip={ws.display_name || ws.website_key}
+                          className="flex-1"
                         >
-                          <RotateCcw className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onDeleteWorkspace?.(ws.website_key); }}
-                          className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                          title="Delete workspace"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                          {ws.logo_url ? (
+                            <img src={ws.logo_url} alt="" className="w-4 h-4 rounded object-contain" />
+                          ) : (
+                            <Building2 className={cn("w-4 h-4", isActive ? "text-primary" : "text-muted-foreground")} />
+                          )}
+                          <span className="truncate text-xs">{ws.display_name || ws.website_key}</span>
+                          {isActive && (
+                            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                          )}
+                        </SidebarMenuButton>
+                        <div className="hidden group-hover/ws:flex items-center gap-0.5 pr-1 group-data-[collapsible=icon]:hidden">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onRerunWorkspace?.(ws.website_key); }}
+                            className="p-1 rounded hover:bg-sidebar-accent text-muted-foreground hover:text-foreground"
+                            title="Re-run research"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onDeleteWorkspace?.(ws.website_key); }}
+                            className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                            title="Delete workspace"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </SidebarMenuItem>
-                ))}
+                    </SidebarMenuItem>
+                  );
+                })}
                 {workspaces.length === 0 && (
                   <p className="text-[10px] text-muted-foreground px-3 py-2 group-data-[collapsible=icon]:hidden">
                     No workspaces yet
