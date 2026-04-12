@@ -38,26 +38,31 @@ export function DraftEmailModal({ lead, open, onOpenChange, userId, workspaceKey
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
 
-  // Load existing draft when modal opens
+  // Load existing draft for current tone when modal opens or tone changes
   useEffect(() => {
     if (!open || !lead?.id || !userId) {
       if (!open) { setSubject(""); setBody(""); setHasGenerated(false); }
       return;
     }
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase
         .from("draft_emails")
         .select("subject, body")
         .eq("lead_id", lead.id)
-        .eq("user_id", userId)
+        .eq("user_id", userId) as any)
+        .eq("tone", tone)
         .maybeSingle();
       if (data) {
         setSubject(data.subject || "");
         setBody(data.body || "");
         setHasGenerated(true);
+      } else {
+        setSubject("");
+        setBody("");
+        setHasGenerated(false);
       }
     })();
-  }, [open, lead?.id, userId]);
+  }, [open, lead?.id, userId, tone]);
 
   const handleGenerate = useCallback(async () => {
     if (!lead) return;
@@ -98,14 +103,15 @@ export function DraftEmailModal({ lead, open, onOpenChange, userId, workspaceKey
 
       // Persist draft
       if (userId && workspaceKey) {
-        await supabase.from("draft_emails").upsert({
+        await (supabase.from("draft_emails") as any).upsert({
           user_id: userId,
           lead_id: lead.id,
           recipient_email: lead.email || "",
           subject: draft.subject || "",
           body: draft.body || "",
           workspace_key: workspaceKey,
-        }, { onConflict: "user_id,lead_id" });
+          tone,
+        }, { onConflict: "user_id,lead_id,tone" });
       }
     } catch (e) {
       console.error(e);
@@ -124,15 +130,16 @@ export function DraftEmailModal({ lead, open, onOpenChange, userId, workspaceKey
   // Save edits on blur
   const handleSave = useCallback(async () => {
     if (!lead?.id || !userId || !workspaceKey) return;
-    await supabase.from("draft_emails").upsert({
+    await (supabase.from("draft_emails") as any).upsert({
       user_id: userId,
       lead_id: lead.id,
       recipient_email: lead.email || "",
       subject,
       body,
       workspace_key: workspaceKey,
-    }, { onConflict: "user_id,lead_id" });
-  }, [lead?.id, userId, workspaceKey, subject, body]);
+      tone,
+    }, { onConflict: "user_id,lead_id,tone" });
+  }, [lead?.id, userId, workspaceKey, subject, body, tone]);
 
   if (!lead) return null;
 

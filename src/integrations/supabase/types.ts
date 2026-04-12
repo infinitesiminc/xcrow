@@ -358,6 +358,7 @@ export type Database = {
           lead_id: string | null
           recipient_email: string
           subject: string
+          tone: string
           updated_at: string
           user_id: string
           workspace_key: string
@@ -369,6 +370,7 @@ export type Database = {
           lead_id?: string | null
           recipient_email: string
           subject?: string
+          tone?: string
           updated_at?: string
           user_id: string
           workspace_key?: string
@@ -380,6 +382,7 @@ export type Database = {
           lead_id?: string | null
           recipient_email?: string
           subject?: string
+          tone?: string
           updated_at?: string
           user_id?: string
           workspace_key?: string
