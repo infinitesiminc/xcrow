@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Bot, User, Loader2, Send, Navigation, Users, Download, Search, Mail, Play } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import { Button } from "@/components/ui/button";
