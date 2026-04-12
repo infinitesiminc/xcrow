@@ -476,6 +476,32 @@ export default function ResearchSection({ domain, onDomainChange, onStart, phase
             </div>
           )}
 
+          {/* Competitors */}
+          {report.competitors.length > 0 && (
+            <div className="rounded-lg border border-border/40 bg-card p-4 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Swords className="w-4 h-4 text-primary" />
+                Competitive Landscape ({report.competitors.length})
+              </div>
+              <div className="grid gap-2">
+                {report.competitors.map((c, i) => (
+                  <div key={i} className="flex items-start gap-3 rounded-md bg-muted/30 px-3 py-2">
+                    <span className="text-xs font-mono text-primary mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {c.name}
+                        {c.domain && <span className="text-xs text-muted-foreground ml-1.5 font-mono">({c.domain})</span>}
+                      </p>
+                      {c.differentiator && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{c.differentiator}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Prospect domains */}
           {report.prospectDomains.length > 0 && (
             <div className="rounded-lg border border-border/40 bg-card p-4 space-y-2">
