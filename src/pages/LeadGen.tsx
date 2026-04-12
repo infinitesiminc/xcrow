@@ -1,43 +1,32 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { LeadGenSidebar, type SidebarSection } from "@/components/leadgen/LeadGenSidebar";
+import { LeadGenSidebar } from "@/components/leadgen/LeadGenSidebar";
 import ResearchSection, { useResearchStream, parseReportText, type ParsedPersona } from "@/components/leadgen/ResearchSection";
+import { ResearchSummaryCard } from "@/components/leadgen/ResearchSummaryCard";
 import PersonasSection from "@/components/leadgen/PersonasSection";
 import LeadsTableSection from "@/components/leadgen/LeadsTableSection";
 import { useLeadsCRUD, type SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import { useWorkspaces } from "@/hooks/use-workspaces";
-import { FloatingChat, type FloatingChatHandle } from "@/components/leadgen/FloatingChat";
+import { DockedChat } from "@/components/leadgen/DockedChat";
 import { PipelineChat, type PersonaPrefill } from "@/components/leadgen/PipelineChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
 
-/* ══════════════════════════════════════════════════════════
-   Main LeadGen Page
-   ══════════════════════════════════════════════════════════ */
 export default function LeadGen() {
   const { user } = useAuth();
-  const [activeSection, setActiveSection] = useState<SidebarSection>("research");
   const [domain, setDomain] = useState("");
   const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
   const [pendingPersona, setPendingPersona] = useState<PersonaPrefill | null>(null);
-  const chatRef = useRef<FloatingChatHandle>(null);
 
-  // Research
   const research = useResearchStream();
-
-  // Workspace key derived from domain
   const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
   const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
-
-  // Leads CRUD
   const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV, refetch } = useLeadsCRUD(user?.id, workspaceKey);
 
-  // Lead count by persona
   const leadCountByPersona = useMemo(() => {
     const map: Record<string, number> = {};
     for (const l of leads) {
@@ -46,7 +35,6 @@ export default function LeadGen() {
     return map;
   }, [leads]);
 
-  // Build ICP context string from research report for chat injection
   const icpContext = useMemo(() => {
     if (!research.report) return undefined;
     const r = research.report;
@@ -66,7 +54,7 @@ export default function LeadGen() {
     return lines.join("\n");
   }, [research.report]);
 
-  // On mount: resume only the latest still-valid in-flight job
+  // On mount: resume latest in-flight job
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -76,37 +64,26 @@ export default function LeadGen() {
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
-
       if (data?.domain && ["pending", "processing"].includes(data.status)) {
         setDomain(data.domain);
-        const resumed = await research.resumeIfRunning(user.id, data.domain);
-        if (resumed) setActiveSection("research");
+        await research.resumeIfRunning(user.id, data.domain);
       }
     })();
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-navigate to personas when research completes & create workspace
+  // Auto-create workspace when research completes
   useEffect(() => {
-    if (research.isComplete && research.report && activeSection === "research") {
-      setActiveSection("personas");
-      if (domain.trim()) {
-        upsertWorkspace(workspaceKey, domain.trim());
-      }
+    if (research.isComplete && research.report && domain.trim()) {
+      upsertWorkspace(workspaceKey, domain.trim());
     }
   }, [research.isComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Restore workspace
   const handleSelectWorkspace = useCallback(async (key: string) => {
     if (!user) return;
     setDomain(key);
     touchWorkspace(key);
-
     const resumed = await research.resumeIfRunning(user.id, key);
-    if (resumed) {
-      setActiveSection("research");
-      return;
-    }
-
+    if (resumed) return;
     const { data } = await (supabase.from("research_jobs") as any)
       .select("report_text, domain")
       .eq("user_id", user.id)
@@ -115,20 +92,16 @@ export default function LeadGen() {
       .order("completed_at", { ascending: false })
       .limit(1)
       .single();
-
     if (data?.report_text) {
       research.restore(parseReportText(data.report_text));
-      setActiveSection("personas");
     } else {
       research.forceReset();
-      setActiveSection("research");
     }
   }, [user, touchWorkspace, research]);
 
   const handleNewResearch = useCallback(() => {
     setDomain("");
     research.forceReset();
-    setActiveSection("research");
   }, [research]);
 
   const handleDeleteWorkspace = useCallback(async (key: string) => {
@@ -136,18 +109,15 @@ export default function LeadGen() {
     if (workspaceKey === key) {
       setDomain("");
       research.forceReset();
-      setActiveSection("research");
     }
   }, [deleteWorkspace, workspaceKey, research]);
 
   const handleRerunWorkspace = useCallback((key: string) => {
     setDomain(key);
     research.forceReset();
-    setActiveSection("research");
     setTimeout(() => research.start(key), 100);
   }, [research]);
 
-  // ── Chat-first Find Leads: opens chat with persona context ──
   const handleFindLeadsChat = useCallback((persona: ParsedPersona) => {
     setPendingPersona({
       personaTitle: persona.title,
@@ -155,8 +125,6 @@ export default function LeadGen() {
       painPoints: persona.painPoints,
       buyingTriggers: persona.buyingTriggers,
     });
-    // Open the floating chat
-    chatRef.current?.open();
   }, []);
 
   const handleDraftEmail = useCallback((lead: SavedLead) => {
@@ -167,46 +135,9 @@ export default function LeadGen() {
     if (domain.trim()) research.start(domain.trim());
   }, [domain, research]);
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case "research":
-        return (
-          <ResearchSection
-            domain={domain}
-            onDomainChange={setDomain}
-            onStart={handleStartResearch}
-            phases={research.phases}
-            elapsed={research.elapsed}
-            running={research.running}
-            error={research.error}
-            isComplete={research.isComplete}
-            isInitial={research.isInitial}
-            report={research.report}
-          />
-        );
-      case "personas":
-        return (
-          <PersonasSection
-            report={research.report}
-            leadCountByPersona={leadCountByPersona}
-            onFindLeads={handleFindLeadsChat}
-            loadingPersona={loadingPersona}
-          />
-        );
-      case "leads":
-        return (
-          <LeadsTableSection
-            leads={leads}
-            outreach={outreach}
-            onUpdateStatus={updateLeadStatus}
-            onDeleteLead={deleteLead}
-            onExportCSV={exportCSV}
-            onDraftEmail={handleDraftEmail}
-            userId={user?.id}
-          />
-        );
-    }
-  };
+  // Determine what to show inline for research
+  const showResearchInput = research.isInitial || research.running || (!!research.error && !research.running);
+  const showResearchSummary = research.isComplete && !!research.report;
 
   return (
     <>
@@ -219,8 +150,8 @@ export default function LeadGen() {
         <SidebarProvider>
           <div className="min-h-[calc(100vh-56px)] flex w-full">
             <LeadGenSidebar
-              activeSection={activeSection}
-              onSelectSection={setActiveSection}
+              activeSection="research"
+              onSelectSection={() => {}}
               websiteUrl={domain || undefined}
               personaCount={research.report?.personas.length || 0}
               leadCount={leads.length}
@@ -234,55 +165,98 @@ export default function LeadGen() {
               onRerunWorkspace={handleRerunWorkspace}
             />
 
+            {/* Main scrollable dashboard */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
               <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
                 <SidebarTrigger className="mr-3" />
-                <span className="text-sm font-medium capitalize">{activeSection}</span>
+                <span className="text-sm font-medium">Dashboard</span>
                 {workspaceKey !== "default" && (
-                  <span className="ml-2 text-xs text-muted-foreground font-mono">
-                    — {workspaceKey}
-                  </span>
+                  <span className="ml-2 text-xs text-muted-foreground font-mono">— {workspaceKey}</span>
                 )}
               </header>
-              <div className="flex-1 overflow-y-auto p-6">
-                <div className="max-w-5xl mx-auto">
-                  {renderSection()}
+              <div className="flex-1 flex min-h-0">
+                <div className="flex-1 overflow-y-auto p-6">
+                  <div className="max-w-4xl mx-auto space-y-6">
+                    {/* Research: input/streaming or collapsible summary */}
+                    {showResearchInput && (
+                      <ResearchSection
+                        domain={domain}
+                        onDomainChange={setDomain}
+                        onStart={handleStartResearch}
+                        phases={research.phases}
+                        elapsed={research.elapsed}
+                        running={research.running}
+                        error={research.error}
+                        isComplete={research.isComplete}
+                        isInitial={research.isInitial}
+                        report={research.report}
+                      />
+                    )}
+
+                    {showResearchSummary && (
+                      <ResearchSummaryCard report={research.report!} elapsed={research.elapsed} />
+                    )}
+
+                    {/* Personas: inline horizontal cards */}
+                    {research.isComplete && research.report && (
+                      <PersonasSection
+                        report={research.report}
+                        leadCountByPersona={leadCountByPersona}
+                        onFindLeads={handleFindLeadsChat}
+                        loadingPersona={loadingPersona}
+                      />
+                    )}
+
+                    {/* Leads table: always visible when research complete */}
+                    {research.isComplete && (
+                      <LeadsTableSection
+                        leads={leads}
+                        outreach={outreach}
+                        onUpdateStatus={updateLeadStatus}
+                        onDeleteLead={deleteLead}
+                        onExportCSV={exportCSV}
+                        onDraftEmail={handleDraftEmail}
+                        userId={user?.id}
+                      />
+                    )}
+                  </div>
                 </div>
+
+                {/* Docked chat panel */}
+                <DockedChat>
+                  <PipelineChat
+                    context={{
+                      workspaceKey,
+                      activeSection: "research",
+                      researchStatus: research.running ? "running" : research.isComplete ? "complete" : "not_started",
+                      personaCount: research.report?.personas.length || 0,
+                      personaNames: research.report?.personas.map(p => p.title) || [],
+                      leadCount: leads.length,
+                      leadsWithoutEmail: leads.filter(l => !l.email).length,
+                      icpContext,
+                    }}
+                    actions={{
+                      onNavigate: () => {},
+                      onFindLeads: (personaTitle) => {
+                        const persona = research.report?.personas.find(p => p.title === personaTitle);
+                        if (persona) handleFindLeadsChat(persona);
+                      },
+                      onDraftEmail: (leadName) => {
+                        const lead = leads.find(l => l.name.toLowerCase().includes(leadName.toLowerCase()));
+                        if (lead) setDraftLead(lead);
+                      },
+                      onExportCSV: exportCSV,
+                      onStartResearch: (d) => {
+                        setDomain(d);
+                        research.start(d);
+                      },
+                    }}
+                    pendingPersona={pendingPersona}
+                    onPersonaConsumed={() => setPendingPersona(null)}
+                  />
+                </DockedChat>
               </div>
             </div>
-
-            <FloatingChat ref={chatRef}>
-              <PipelineChat
-                context={{
-                  workspaceKey,
-                  activeSection,
-                  researchStatus: research.running ? "running" : research.isComplete ? "complete" : "not_started",
-                  personaCount: research.report?.personas.length || 0,
-                  personaNames: research.report?.personas.map(p => p.title) || [],
-                  leadCount: leads.length,
-                  leadsWithoutEmail: leads.filter(l => !l.email).length,
-                  icpContext,
-                }}
-                actions={{
-                  onNavigate: (section) => setActiveSection(section as SidebarSection),
-                  onFindLeads: (personaTitle) => {
-                    const persona = research.report?.personas.find(p => p.title === personaTitle);
-                    if (persona) handleFindLeadsChat(persona);
-                  },
-                  onDraftEmail: (leadName) => {
-                    const lead = leads.find(l => l.name.toLowerCase().includes(leadName.toLowerCase()));
-                    if (lead) setDraftLead(lead);
-                  },
-                  onExportCSV: exportCSV,
-                  onStartResearch: (domain) => {
-                    setDomain(domain);
-                    research.start(domain);
-                  },
-                }}
-                pendingPersona={pendingPersona}
-                onPersonaConsumed={() => setPendingPersona(null)}
-              />
-            </FloatingChat>
 
             <DraftEmailModal
               lead={draftLead}

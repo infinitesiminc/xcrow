@@ -133,9 +133,9 @@ export default function LeadsTableSection({
 
   if (leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 pt-16">
-        <TableProperties className="w-10 h-10 text-muted-foreground/30" />
-        <p className="text-sm text-muted-foreground font-mono">No leads yet. Use Personas to find leads.</p>
+      <div className="flex flex-col items-center justify-center gap-3 py-8 rounded-lg border border-dashed border-border/40">
+        <TableProperties className="w-8 h-8 text-muted-foreground/30" />
+        <p className="text-sm text-muted-foreground font-mono">No leads yet — use the AI Co-pilot to find leads</p>
       </div>
     );
   }

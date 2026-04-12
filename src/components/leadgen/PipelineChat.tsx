@@ -71,71 +71,41 @@ function parsePills(text: string): { cleanText: string; pills: string[] } {
 type ChipConfig = { label: string; icon: typeof Search };
 
 function getContextChips(ctx: PipelineChatContext): ChipConfig[] {
-  const { activeSection, researchStatus, leadCount, personaCount } = ctx;
+  const { researchStatus, leadCount, personaCount } = ctx;
+  const chips: ChipConfig[] = [];
 
-  if (activeSection === "research") {
-    if (researchStatus === "complete") {
-      return [
-        { label: "Summarize findings", icon: Search },
-        { label: "What verticals look best?", icon: Navigation },
-      ];
-    }
-    return [
-      { label: "What does this tool do?", icon: Search },
-    ];
-  }
-
-  if (activeSection === "personas") {
-    const chips: ChipConfig[] = [];
+  if (researchStatus === "complete") {
+    chips.push({ label: "Summarize findings", icon: Search });
     if (personaCount > 0) {
       chips.push({ label: "Find leads for all personas", icon: Users });
-      chips.push({ label: "Which persona has highest ROI?", icon: Search });
     }
-    return chips;
-  }
-
-  if (activeSection === "leads") {
-    const chips: ChipConfig[] = [];
     if (leadCount > 0) {
-      chips.push({ label: "Draft emails for top 5", icon: Mail });
       chips.push({ label: "Export leads", icon: Download });
-      chips.push({ label: "Find more like these", icon: Search });
     }
-    return chips;
+  } else if (researchStatus === "not_started") {
+    chips.push({ label: "What does this tool do?", icon: Search });
   }
 
-  return [];
+  return chips;
 }
 
 function getGreeting(ctx: PipelineChatContext): string {
-  const { activeSection, researchStatus, leadCount, personaCount, workspaceKey } = ctx;
+  const { researchStatus, leadCount, personaCount, workspaceKey } = ctx;
   const domain = workspaceKey !== "default" ? workspaceKey : "";
 
-  if (activeSection === "research") {
-    if (researchStatus === "complete") {
-      return `Research for **${domain}** is complete. I can summarize findings, suggest verticals, or help you explore personas.`;
-    }
-    if (researchStatus === "running") {
-      return `Research is running for **${domain}**. I'll be ready to help once it completes.`;
-    }
-    return domain
-      ? `Ready to analyze **${domain}**. Start research or ask me anything about your ICP strategy.`
-      : `Enter a company URL on the left to start, or ask me how this tool works.`;
+  if (researchStatus === "complete") {
+    const parts = [`Research for **${domain}** is complete.`];
+    if (personaCount > 0) parts.push(`${personaCount} personas identified.`);
+    if (leadCount > 0) parts.push(`${leadCount} leads in pipeline.`);
+    parts.push("I can find leads, draft outreach, or help you explore your ICP.");
+    return parts.join(" ");
   }
-
-  if (activeSection === "personas") {
-    return personaCount > 0
-      ? `You have **${personaCount} personas** identified. I can find leads for any persona or help you prioritize.`
-      : `No personas found yet. Run research first to identify buyer personas.`;
+  if (researchStatus === "running") {
+    return `Research is running for **${domain}**. I'll be ready to help once it completes.`;
   }
-
-  if (activeSection === "leads") {
-    return leadCount > 0
-      ? `You have **${leadCount} leads** in your pipeline. I can draft outreach, find more leads, or export your data.`
-      : `No leads yet. Go to Personas and click "Find Leads" to start building your pipeline.`;
-  }
-
-  return `How can I help you today?`;
+  return domain
+    ? `Ready to analyze **${domain}**. Start research or ask me anything about your ICP strategy.`
+    : `Enter a company URL to start, or ask me how this tool works.`;
 }
 
 /* ── Action Card Component ── */
