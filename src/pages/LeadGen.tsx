@@ -334,7 +334,7 @@ export default function LeadGen() {
   }, [user, loadingPersona, research.report, upsertLeads]);
 
   const handleDraftEmail = useCallback((lead: SavedLead) => {
-    setActiveSection("outreach");
+    setDraftLead(lead);
   }, []);
 
   const handleEnrichLeads = useCallback(async (leadIds: string[]) => {
