@@ -38,7 +38,7 @@ export function DraftEmailModal({ lead, open, onOpenChange, userId, workspaceKey
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
 
-  // Load existing draft when modal opens
+  // Load existing draft for current tone when modal opens or tone changes
   useEffect(() => {
     if (!open || !lead?.id || !userId) {
       if (!open) { setSubject(""); setBody(""); setHasGenerated(false); }
@@ -50,14 +50,19 @@ export function DraftEmailModal({ lead, open, onOpenChange, userId, workspaceKey
         .select("subject, body")
         .eq("lead_id", lead.id)
         .eq("user_id", userId)
+        .eq("tone" as any, tone)
         .maybeSingle();
       if (data) {
         setSubject(data.subject || "");
         setBody(data.body || "");
         setHasGenerated(true);
+      } else {
+        setSubject("");
+        setBody("");
+        setHasGenerated(false);
       }
     })();
-  }, [open, lead?.id, userId]);
+  }, [open, lead?.id, userId, tone]);
 
   const handleGenerate = useCallback(async () => {
     if (!lead) return;
