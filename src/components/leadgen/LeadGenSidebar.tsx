@@ -66,7 +66,7 @@ export function LeadGenSidebar({
   const getBadge = (id: SidebarSection) => {
     if (id === "personas" && personaCount > 0) return personaCount;
     if (id === "leads" && leadCount > 0) return leadCount;
-    if (id === "outreach" && outreachCount > 0) return outreachCount;
+    
     return null;
   };
 
