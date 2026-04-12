@@ -121,6 +121,36 @@ Deno.serve(async (req) => {
       import_results = false,
     } = body;
 
+    // ── Backfill locations action ──
+    if (body.action === "backfill_locations" && Array.isArray(body.leads)) {
+      const results: { id: string; address: string | null; error?: string }[] = [];
+      for (const lead of body.leads as { id: string; email?: string }[]) {
+        if (!lead.email) { results.push({ id: lead.id, address: null, error: "no_email" }); continue; }
+        try {
+          const matchRes = await fetch("https://api.apollo.io/api/v1/people/match", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Api-Key": APOLLO_API_KEY },
+            body: JSON.stringify({ email: lead.email, reveal_personal_emails: false }),
+          });
+          if (matchRes.ok) {
+            const matchData = await matchRes.json();
+            const person = matchData.person;
+            const address = person ? [person.city, person.state, person.country].filter(Boolean).join(", ") || null : null;
+            if (address) {
+              await _sb.from("saved_leads").update({ address }).eq("id", lead.id);
+            }
+            results.push({ id: lead.id, address });
+          } else {
+            results.push({ id: lead.id, address: null, error: `apollo_${matchRes.status}` });
+          }
+          await new Promise((r) => setTimeout(r, 250));
+        } catch (err) {
+          results.push({ id: lead.id, address: null, error: String(err) });
+        }
+      }
+      return respond({ ok: true, results });
+    }
+
     // Auto-detect search mode
     const mode = search_mode || (person_titles?.length ? "people" : "companies");
 
