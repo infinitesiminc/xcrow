@@ -205,6 +205,12 @@ export default function LeadsTableSection({
           <Badge variant="secondary" className="text-[10px] shrink-0">
             {filtered.length}{filtered.length !== leads.length ? ` / ${leads.length}` : ""}
           </Badge>
+          {onEnrichLeads && missingContactCount > 0 && (
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={handleEnrich} disabled={enriching}>
+              <RefreshCw className={`w-3 h-3 ${enriching ? "animate-spin" : ""}`} />
+              {enriching ? "Enriching…" : `Backfill (${selectedIds.size > 0 ? selectedIds.size : missingContactCount})`}
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={onExportCSV}>
             <Download className="w-3 h-3" /> CSV
           </Button>
