@@ -29,11 +29,11 @@ function CompanyChip({ name, onClick, active }: {
           : "border-border bg-background/80 hover:border-primary/40 hover:bg-primary/5"
       }`}
     >
-      <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center bg-muted">
+      <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-muted">
         {showLogo ? (
-          <img src={logoUrl!} alt={name} className="w-5 h-5 object-contain grayscale opacity-70" onError={() => setLogoFailed(true)} />
+          <img src={logoUrl!} alt={name} className="w-10 h-10 object-contain grayscale opacity-70" onError={() => setLogoFailed(true)} />
         ) : (
-          <span className="text-[10px] font-bold text-muted-foreground">
+          <span className="text-xs font-bold text-muted-foreground">
             {name.slice(0, 2).toUpperCase()}
           </span>
         )}
