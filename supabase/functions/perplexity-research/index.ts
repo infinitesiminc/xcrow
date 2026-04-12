@@ -6,16 +6,98 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-/**
- * perplexity-research — Background job pattern (non-streaming)
- *
- * 1. Creates a research_jobs row, returns job_id immediately
- * 2. Calls Perplexity NON-streaming (single response) in background
- * 3. Writes result to DB — client polls for completion
- *
- * Non-streaming eliminates CPU time issues: Perplexity does all work,
- * we just await the response (I/O wait, not CPU).
- */
+const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
+
+/* ── Scraping helpers ─────────────────────────────────────────── */
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function scrapePage(url: string): Promise<{ text: string; title: string }> {
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": BROWSER_UA, Accept: "text/html,application/xhtml+xml" },
+      redirect: "follow",
+    });
+    if (!res.ok) return { text: "", title: "" };
+    const html = await res.text();
+    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : "";
+    const mainMatch =
+      html.match(/<main[\s\S]*?<\/main>/i) ||
+      html.match(/<article[\s\S]*?<\/article>/i) ||
+      html.match(/<body[\s\S]*?<\/body>/i);
+    const text = htmlToText(mainMatch ? mainMatch[0] : html);
+    return { text: text.slice(0, 8000), title };
+  } catch {
+    return { text: "", title: "" };
+  }
+}
+
+function extractLinks(html: string, baseUrl: string): string[] {
+  const links: string[] = [];
+  const re = /href=["']([^"']+)["']/gi;
+  let match;
+  while ((match = re.exec(html)) !== null) {
+    try {
+      const resolved = new URL(match[1], baseUrl).href;
+      if (new URL(resolved).hostname === new URL(baseUrl).hostname) links.push(resolved);
+    } catch { /* skip */ }
+  }
+  return [...new Set(links)];
+}
+
+const ICP_PAGE_PATTERNS = [
+  /\/(about|company|who-we-are)/i,
+  /\/(solutions?|products?|services?|offerings?|platform)/i,
+  /\/(pricing|plans)/i,
+  /\/(customers?|case-stud|success-stor|testimonials?|clients?)/i,
+  /\/(industries?|verticals?|sectors?|markets?)/i,
+  /\/(partners?|integrations?|ecosystem)/i,
+  /\/(for-|use-cases?)/i,
+];
+
+function scoreUrl(url: string): number {
+  let score = 0;
+  for (const p of ICP_PAGE_PATTERNS) if (p.test(url)) score += 10;
+  if (/\/(blog|news|press|careers|jobs|legal|privacy|terms|cookie|sitemap|feed|wp-)/i.test(url)) score -= 20;
+  try {
+    if (new URL(url).pathname.split("/").filter(Boolean).length > 3) score -= 5;
+  } catch { /* skip */ }
+  return score;
+}
+
+function pickBestPages(allUrls: string[], max: number): string[] {
+  const scored = allUrls
+    .map((u) => ({ url: u, score: scoreUrl(u) }))
+    .filter((u) => u.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const picked: string[] = [];
+  const seenCats = new Set<string>();
+  for (const { url } of scored) {
+    try {
+      const cat = new URL(url).pathname.split("/").filter(Boolean)[0]?.toLowerCase() || "root";
+      if (!seenCats.has(cat)) { seenCats.add(cat); picked.push(url); }
+    } catch { /* skip */ }
+    if (picked.length >= max) break;
+  }
+  return picked;
+}
+
+/* ── Background research job ──────────────────────────────────── */
 
 async function runResearch(jobId: string, domain: string, companyContext?: string) {
   const supabaseAdmin = createClient(
@@ -23,32 +105,93 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
-  if (!PERPLEXITY_API_KEY) {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
     await supabaseAdmin.from("research_jobs").update({
       status: "failed",
-      error: "PERPLEXITY_API_KEY not configured",
+      error: "AI not configured",
       completed_at: new Date().toISOString(),
     }).eq("id", jobId);
     return;
   }
 
   try {
-    // Mark as actively processing
+    // Phase 1: Scrape homepage
     await supabaseAdmin.from("research_jobs").update({
       current_phase: "PHASE_01",
       progress: 10,
     }).eq("id", jobId);
 
-    const systemPrompt = `You are a B2B go-to-market research analyst. Analyze a company's website and produce a precise, actionable ICP report for outbound sales.
+    let formattedUrl = domain.trim();
+    if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
+
+    console.log("Scraping homepage:", formattedUrl);
+    let homeHtml = "";
+    let homepageText = "";
+    try {
+      const homeRes = await fetch(formattedUrl, {
+        headers: { "User-Agent": BROWSER_UA, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+        redirect: "follow",
+      });
+      if (homeRes.ok) {
+        homeHtml = await homeRes.text();
+        homepageText = htmlToText(homeHtml).slice(0, 5000);
+      } else {
+        await homeRes.text();
+      }
+    } catch (e) {
+      console.warn("Homepage fetch failed:", e);
+    }
+
+    const homeTitle = homeHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || "";
+    const domainName = new URL(formattedUrl).hostname.replace("www.", "");
+    if (!homepageText || homepageText.length < 50) {
+      homepageText = `Company website: ${domainName}. (Content could not be scraped.)`;
+    }
+
+    // Phase 2: Scrape ICP-relevant subpages
+    await supabaseAdmin.from("research_jobs").update({
+      current_phase: "PHASE_02",
+      progress: 30,
+    }).eq("id", jobId);
+
+    const allLinks = extractLinks(homeHtml, formattedUrl);
+    const bestPages = pickBestPages(allLinks, 5);
+    console.log("Scraping subpages:", bestPages);
+
+    const pageResults = await Promise.all(
+      bestPages.map(async (pageUrl) => {
+        const { text, title } = await scrapePage(pageUrl);
+        const path = new URL(pageUrl).pathname;
+        return { path, content: text.slice(0, 3000), ok: !!text, title };
+      })
+    );
+
+    // Phase 3: AI analysis
+    await supabaseAdmin.from("research_jobs").update({
+      current_phase: "PHASE_03",
+      progress: 50,
+    }).eq("id", jobId);
+
+    const combinedContent = [
+      `## Homepage (${homeTitle})\n${homepageText}`,
+      ...pageResults.filter((p) => p.content).map((p) => `## ${p.path}\n${p.content}`),
+    ].join("\n\n---\n\n");
+
+    const pagesScraped = 1 + pageResults.filter((p) => p.content).length;
+    console.log(`Combined content from ${pagesScraped} pages (${combinedContent.length} chars)`);
+
+    const systemPrompt = `You are a B2B go-to-market research analyst. Analyze scraped website content and produce a precise, actionable ICP report for outbound sales.
 
 Rules:
-- Be specific: real company names, real job titles, real revenue figures
-- No filler, no hedging — every claim grounded in evidence
-- Focus 60% of depth on ICP & Buyer Personas`;
+- Be specific: real company names, real job titles, real revenue figures where possible
+- No filler, no hedging — every claim grounded in evidence from the scraped pages
+- Focus 60% of depth on ICP & Buyer Personas
+- For each persona, include a "Search titles" list of 3-5 exact job titles searchable on LinkedIn/Apollo`;
 
-    const userPrompt = `Deep research on: ${domain}
+    const userPrompt = `Deep analysis of: ${domainName}
 ${companyContext ? `\nContext: ${companyContext}` : ""}
+Pages scraped: ${pagesScraped}
 
 Use these EXACT markdown headers:
 
@@ -66,24 +209,27 @@ For EACH segment (identify 2-4):
 - **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")
 
 ## Competitive Landscape
-Direct competitors (name, domain, differentiation). Where does ${domain} win vs lose?
+Direct competitors (name, domain, differentiation). Where does ${domainName} win vs lose?
 
 ## Prospecting Targets
 5-10 specific companies that fit the ICPs above. For each:
 - Company name and domain
 - Which ICP segment they match
 - Why they'd buy (specific rationale)
-- Decision-maker title to target`;
+- Decision-maker title to target
 
-    // NON-streaming call — Perplexity does all work, we just wait
-    const resp = await fetch("https://api.perplexity.ai/chat/completions", {
+--- SCRAPED CONTENT ---
+
+${combinedContent.slice(0, 20000)}`;
+
+    const aiRes = await fetch(AI_URL, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${PERPLEXITY_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "sonar-deep-research",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -91,20 +237,21 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
       }),
     });
 
-    if (!resp.ok) {
-      const errText = await resp.text();
-      console.error(`Perplexity error ${resp.status}: ${errText}`);
+    if (!aiRes.ok) {
+      const errText = await aiRes.text();
+      console.error(`AI error ${aiRes.status}: ${errText}`);
       await supabaseAdmin.from("research_jobs").update({
         status: "failed",
-        error: `Perplexity API error: ${resp.status}`,
+        error: `AI error: ${aiRes.status}`,
         completed_at: new Date().toISOString(),
       }).eq("id", jobId);
       return;
     }
 
-    const data = await resp.json();
-    const reportText = data.choices?.[0]?.message?.content || "";
+    const aiData = await aiRes.json();
+    const reportText = aiData.choices?.[0]?.message?.content || "";
 
+    // Phase 4: Complete
     await supabaseAdmin.from("research_jobs").update({
       status: "complete",
       progress: 100,
@@ -113,6 +260,7 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
       completed_at: new Date().toISOString(),
     }).eq("id", jobId);
 
+    console.log("Research complete, report length:", reportText.length);
   } catch (err) {
     console.error("Research pipeline error:", err);
     await supabaseAdmin.from("research_jobs").update({
@@ -122,6 +270,8 @@ Direct competitors (name, domain, differentiation). Where does ${domain} win vs 
     }).eq("id", jobId);
   }
 }
+
+/* ── HTTP handler ─────────────────────────────────────────────── */
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -175,7 +325,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Fire and forget — non-streaming Perplexity call in background
+  // Fire and forget
   (globalThis as any).EdgeRuntime.waitUntil(
     runResearch(job.id, body.domain, body.companyContext)
   );
