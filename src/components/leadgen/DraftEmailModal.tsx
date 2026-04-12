@@ -45,12 +45,12 @@ export function DraftEmailModal({ lead, open, onOpenChange, userId, workspaceKey
       return;
     }
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase
         .from("draft_emails")
         .select("subject, body")
         .eq("lead_id", lead.id)
-        .eq("user_id", userId)
-        .eq("tone" as any, tone)
+        .eq("user_id", userId) as any)
+        .eq("tone", tone)
         .maybeSingle();
       if (data) {
         setSubject(data.subject || "");
