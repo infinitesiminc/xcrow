@@ -156,7 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile(null);
         setPlan("free");
         setSubscriptionEnd(null);
-        setSchoolName(null);
+        
       }
     });
 
