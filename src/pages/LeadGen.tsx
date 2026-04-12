@@ -136,7 +136,7 @@ export default function LeadGen() {
 
   // Determine what to show inline for research
   const showResearchInput = research.isInitial || research.running || (!!research.error && !research.running);
-  const showResearchSummary = research.isComplete && !!research.report;
+  
 
   return (
     <>
