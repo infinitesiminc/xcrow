@@ -174,7 +174,7 @@ export default function LeadGen() {
                   <span className="ml-2 text-xs text-muted-foreground font-mono">— {workspaceKey}</span>
                 )}
               </header>
-              <div className="flex-1 flex min-h-0">
+              <div className="flex-1 flex min-h-0 overflow-hidden">
                 {/* Docked chat panel — LEFT */}
                 <DockedChat>
                   <PipelineChat
