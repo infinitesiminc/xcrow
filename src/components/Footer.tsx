@@ -4,6 +4,7 @@ import logoCrow from "@/assets/logo-crow.png";
 
 const PRODUCT = [
   { label: "Lead Gen", to: "/leadgen" },
+  { label: "Contact", to: "/contact" },
 ];
 
 const LEGAL = [
@@ -35,7 +36,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => (
             AI-powered B2B lead generation.<br />
             Paste a URL. Get qualified leads.
           </p>
-          <a href="mailto:hello@xcrow.ai" className="block text-sm text-primary hover:underline mt-3">hello@xcrow.ai</a>
+          <a href="mailto:jackson@xcrow.ai" className="block text-sm text-primary hover:underline mt-3">jackson@xcrow.ai</a>
         </div>
         <div>
           <ColHeader>Product</ColHeader>
