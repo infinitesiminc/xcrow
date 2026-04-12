@@ -253,26 +253,23 @@ export default function LeadsTableSection({
                   className="translate-y-[1px]"
                 />
               </TableHead>
-              <TableHead className="text-xs w-[180px]">
+              <TableHead className="text-xs">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("name")}>
                   Name <SortIcon col="name" />
                 </button>
               </TableHead>
-              <TableHead className="text-xs w-[140px]">Title</TableHead>
-              <TableHead className="text-xs w-[130px]">
+              <TableHead className="text-xs">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("company")}>
                   Company <SortIcon col="company" />
                 </button>
               </TableHead>
               <TableHead className="text-xs w-[100px]">Contact</TableHead>
-              <TableHead className="text-xs w-[120px]">Location</TableHead>
-              <TableHead className="text-xs w-[120px]">Persona</TableHead>
-              <TableHead className="text-xs w-[80px]">
+              <TableHead className="text-xs w-[100px]">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("status")}>
                   Status <SortIcon col="status" />
                 </button>
               </TableHead>
-              <TableHead className="text-xs w-[80px] text-right">Actions</TableHead>
+              <TableHead className="text-xs w-[70px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -294,10 +291,14 @@ export default function LeadsTableSection({
                     <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-[10px] font-semibold text-primary">
                       {lead.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium truncate">{lead.name}</span>
+                    <div className="min-w-0">
+                      <span className="text-sm font-medium truncate block">{lead.name}</span>
+                      {lead.title && (
+                        <span className="text-[11px] text-muted-foreground truncate block">{lead.title}</span>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground truncate">{lead.title || "—"}</TableCell>
                 <TableCell className="text-xs text-muted-foreground truncate">{lead.company || "—"}</TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <div className="flex items-center gap-1">
@@ -317,14 +318,6 @@ export default function LeadsTableSection({
                       </a>
                     )}
                   </div>
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground truncate">
-                  {lead.address ? (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{lead.address}</span>
-                    </span>
-                  ) : "—"}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[lead.status]}`}>
