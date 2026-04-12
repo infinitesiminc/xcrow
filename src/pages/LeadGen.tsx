@@ -142,6 +142,7 @@ export default function LeadGen() {
   const [activeSection, setActiveSection] = useState<SidebarSection>("research");
   const [domain, setDomain] = useState("");
   const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
+  const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
 
   // Research
   const research = useResearchStream();
