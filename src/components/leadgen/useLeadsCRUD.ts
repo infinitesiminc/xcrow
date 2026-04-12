@@ -146,6 +146,7 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
         niche_tag: l.niche_tag || null,
         rating: l.score != null ? l.score : null,
         persona_tag: l.persona_tag || null,
+        apollo_id: (l as any).apollo_id || null,
       }));
 
       for (const row of rows) {
