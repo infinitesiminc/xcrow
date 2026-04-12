@@ -87,6 +87,17 @@ function PipelineChat({ leadCount }: { leadCount: number }) {
       const reader = resp.body?.getReader();
       if (!reader) throw new Error("No body");
       await parseSSEStream(reader, { onTextDelta: upsert, onLeads: () => {}, onDone: () => {} });
+      // Parse pills from final message
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant") {
+          const { cleanText, pills } = parsePills(last.content);
+          if (pills.length > 0) {
+            return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: cleanText, pills } : m);
+          }
+        }
+        return prev;
+      });
     } catch { upsert("\n\n⚠️ Something went wrong."); }
     finally { setIsStreaming(false); inputRef.current?.focus(); }
   };
