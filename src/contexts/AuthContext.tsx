@@ -16,10 +16,6 @@ interface UserProfile {
   company: string | null;
   onboardingCompleted: boolean;
   linkedinUrl: string | null;
-  schoolName: string | null;
-  careerStage: string | null;
-  cvUrl: string | null;
-  programName: string | null;
   avatarId: string | null;
 }
 
@@ -31,9 +27,6 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   plan: PlanTier;
   subscriptionEnd: string | null;
-  schoolName: string | null;
-  schoolId: string | null;
-  isSchoolAdmin: boolean;
   isPro: boolean;
   isLauncherPro: boolean;
   refreshProfile: () => Promise<void>;
@@ -50,9 +43,6 @@ const AuthContext = createContext<AuthContextType>({
   isSuperAdmin: false,
   plan: "free",
   subscriptionEnd: null,
-  schoolName: null,
-  schoolId: null,
-  isSchoolAdmin: false,
   isPro: false,
   isLauncherPro: false,
   refreshProfile: async () => {},
