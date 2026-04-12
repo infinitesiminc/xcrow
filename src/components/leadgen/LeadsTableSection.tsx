@@ -41,12 +41,11 @@ interface LeadsTableSectionProps {
   onDeleteLead: (id: string) => void;
   onExportCSV: () => void;
   onDraftEmail?: (lead: SavedLead) => void;
-  onEnrichLeads?: (leadIds: string[]) => Promise<void>;
   userId?: string;
 }
 
 export default function LeadsTableSection({
-  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, onEnrichLeads, userId,
+  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, userId,
 }: LeadsTableSectionProps) {
   // Filters
   const [search, setSearch] = useState("");
@@ -62,28 +61,7 @@ export default function LeadsTableSection({
 
   // Detail drawer
   const [drawerLead, setDrawerLead] = useState<SavedLead | null>(null);
-  const [enriching, setEnriching] = useState(false);
-
-  // Count leads missing contact info
-  const missingContactCount = useMemo(() => {
-    return leads.filter(l => !l.email && !l.linkedin && !l.phone).length;
-  }, [leads]);
-
-  const handleEnrich = useCallback(async () => {
-    if (!onEnrichLeads || enriching) return;
-    // Enrich selected leads, or all leads missing contacts
-    const targetIds = selectedIds.size > 0
-      ? Array.from(selectedIds)
-      : leads.filter(l => !l.email || !l.linkedin || !l.phone).map(l => l.id);
-    if (targetIds.length === 0) return;
-    setEnriching(true);
-    try {
-      await onEnrichLeads(targetIds.slice(0, 50));
-    } finally {
-      setEnriching(false);
-      setSelectedIds(new Set());
-    }
-  }, [onEnrichLeads, enriching, selectedIds, leads]);
+  // (Enrichment removed — leads arrive fully revealed)
 
   const personaTags = useMemo(() => {
     const tags = new Set<string>();
@@ -205,12 +183,6 @@ export default function LeadsTableSection({
           <Badge variant="secondary" className="text-[10px] shrink-0">
             {filtered.length}{filtered.length !== leads.length ? ` / ${leads.length}` : ""}
           </Badge>
-          {onEnrichLeads && missingContactCount > 0 && (
-            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={handleEnrich} disabled={enriching}>
-              <RefreshCw className={`w-3 h-3 ${enriching ? "animate-spin" : ""}`} />
-              {enriching ? "Enriching…" : `Backfill (${selectedIds.size > 0 ? selectedIds.size : missingContactCount})`}
-            </Button>
-          )}
           <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={onExportCSV}>
             <Download className="w-3 h-3" /> CSV
           </Button>
