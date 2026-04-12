@@ -293,6 +293,34 @@ export default function LeadGen() {
           reason: `Matched persona: ${persona.title}`,
         }));
         await upsertLeads(newLeads);
+
+        // Auto-enrich: reveal contact details using Apollo credits
+        await refetch();
+        const { data: savedLeads } = await supabase
+          .from("saved_leads")
+          .select("id, email, linkedin, phone")
+          .eq("user_id", user.id)
+          .eq("workspace_key", workspaceKey)
+          .eq("persona_tag", persona.title);
+
+        const needsEnrich = (savedLeads || [])
+          .filter((l: any) => !l.email || !l.linkedin || !l.phone)
+          .map((l: any) => l.id);
+
+        if (needsEnrich.length > 0) {
+          console.log(`Auto-enriching ${needsEnrich.length} leads...`);
+          const { data: { session: s2 } } = await supabase.auth.getSession();
+          await fetch(`${supabaseUrl}/functions/v1/enrich-leads`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${s2?.access_token ?? supabaseKey}`,
+              "apikey": supabaseKey,
+            },
+            body: JSON.stringify({ lead_ids: needsEnrich }),
+          });
+          await refetch();
+        }
       }
     } catch (e) {
       console.error("Apollo search failed:", e);
