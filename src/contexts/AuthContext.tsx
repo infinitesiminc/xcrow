@@ -61,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [plan, setPlan] = useState<PlanTier>("free");
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [isLauncherPro, setIsLauncherPro] = useState(false);
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
