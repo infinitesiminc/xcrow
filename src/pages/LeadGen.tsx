@@ -21,7 +21,14 @@ import { FloatingChat } from "@/components/leadgen/FloatingChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
 
 /* ── Chat ── */
-interface ChatMessage { role: "user" | "assistant"; content: string; }
+interface ChatMessage { role: "user" | "assistant"; content: string; pills?: string[]; }
+
+function parsePills(text: string): { cleanText: string; pills: string[] } {
+  const match = text.match(/\[\[([^\]]+)\]\]\s*$/);
+  if (!match) return { cleanText: text, pills: [] };
+  const pills = match[1].split("|").map(s => s.trim()).filter(Boolean);
+  return { cleanText: text.slice(0, match.index).trim(), pills };
+}
 
 function PipelineChat({ leadCount }: { leadCount: number }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
