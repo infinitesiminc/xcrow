@@ -1,7 +1,11 @@
+import sequoiaArcLogo from '@/assets/sequoia-arc.png';
+
 const BRANDFETCH_CLIENT_ID = '1idUR9TThSYgPVCpELC';
 
 // Logos that need a local asset instead of brandfetch
-const LOCAL_LOGO_MAP: Record<string, string> = {};
+const LOCAL_LOGO_MAP: Record<string, string> = {
+  'sequoia arc': sequoiaArcLogo,
+};
 
 const DOMAIN_MAP: Record<string, string> = {
   meta: 'meta.com',
