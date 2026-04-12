@@ -150,7 +150,7 @@ export default function LeadGen() {
   const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
 
   // Leads CRUD
-  const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV } = useLeadsCRUD(user?.id, workspaceKey);
+  const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV, refetch } = useLeadsCRUD(user?.id, workspaceKey);
 
   // Lead count by persona
   const leadCountByPersona = useMemo(() => {
@@ -302,9 +302,36 @@ export default function LeadGen() {
   }, [user, loadingPersona, research.report, upsertLeads]);
 
   const handleDraftEmail = useCallback((lead: SavedLead) => {
-    // Navigate to outreach section — future: open compose modal
     setActiveSection("outreach");
   }, []);
+
+  const handleEnrichLeads = useCallback(async (leadIds: string[]) => {
+    if (!user) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-leads`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+        "apikey": supabaseKey,
+      },
+      body: JSON.stringify({ lead_ids: leadIds }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      console.error("Enrich failed:", err);
+      return;
+    }
+
+    const result = await resp.json();
+    console.log("Enrich result:", result);
+    // Refresh leads to show updated data
+    await refetch();
+  }, [user, refetch]);
 
   const handleStartResearch = useCallback(() => {
     if (domain.trim()) research.start(domain.trim());
@@ -345,6 +372,7 @@ export default function LeadGen() {
             onDeleteLead={deleteLead}
             onExportCSV={exportCSV}
             onDraftEmail={handleDraftEmail}
+            onEnrichLeads={handleEnrichLeads}
             userId={user?.id}
           />
         );
