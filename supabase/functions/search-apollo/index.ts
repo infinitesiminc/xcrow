@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
   try {
   // Auth guard - superadmin only
   const authHeader = req.headers.get("Authorization");
-  console.log("Auth header present:", !!authHeader);
+  if (!authHeader?.startsWith("Bearer ")) {
   if (!authHeader?.startsWith("Bearer ")) {
     return respond({ error: "Unauthorized" }, 401);
   }
