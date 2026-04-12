@@ -150,7 +150,7 @@ export default function LeadGen() {
   const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
 
   // Leads CRUD
-  const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV } = useLeadsCRUD(user?.id, workspaceKey);
+  const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV, refetch } = useLeadsCRUD(user?.id, workspaceKey);
 
   // Lead count by persona
   const leadCountByPersona = useMemo(() => {
