@@ -32,6 +32,7 @@ export function parseReportText(text: string): ParsedReport {
   let companySummary = "";
   const personas: ParsedPersona[] = [];
   const prospectDomains: string[] = [];
+  const competitors: ParsedCompetitor[] = [];
 
   for (const section of sections) {
     const headerMatch = section.match(/^## (.+)/);
@@ -119,9 +120,41 @@ export function parseReportText(text: string): ParsedReport {
         if (!d.includes("example.") && d.length > 4) prospectDomains.push(d);
       }
     }
+
+    if (header.includes("compet") || header.includes("landscape")) {
+      // Parse competitor entries — look for ### headers or bold names with domains
+      const compBlocks = section.split(/(?=^### )/m);
+      for (const block of compBlocks) {
+        const nameMatch = block.match(/^### (.+)/);
+        if (nameMatch) {
+          const name = nameMatch[1].replace(/\*\*/g, "").trim();
+          const domainMatch = block.match(/(?:domain|website|url)?[:\s]*([a-z0-9][-a-z0-9]*\.[a-z]{2,}(?:\.[a-z]{2,})?)/i);
+          // Extract first bullet or sentence as differentiator
+          const diffMatch = block.match(/[-*]\s+(.{10,120})/);
+          competitors.push({
+            name,
+            domain: domainMatch?.[1]?.toLowerCase(),
+            differentiator: diffMatch?.[1]?.replace(/\*\*/g, "").trim(),
+          });
+        } else {
+          // Try bold names: **CompanyName** (domain.com) — description
+          const boldMatches = block.matchAll(/\*\*([^*]+)\*\*[^a-z]*(?:\(?([a-z0-9][-a-z0-9]*\.[a-z]{2,})\)?)?[:\s—-]*([^\n]{10,120})?/gi);
+          for (const bm of boldMatches) {
+            const name = bm[1].trim();
+            if (name.length > 2 && !name.toLowerCase().includes("where") && !name.toLowerCase().includes("direct")) {
+              competitors.push({
+                name,
+                domain: bm[2]?.toLowerCase(),
+                differentiator: bm[3]?.trim(),
+              });
+            }
+          }
+        }
+      }
+    }
   }
 
-  return { companySummary, personas, prospectDomains: [...new Set(prospectDomains)], rawText: text };
+  return { companySummary, personas, prospectDomains: [...new Set(prospectDomains)], competitors: competitors.slice(0, 8), rawText: text };
 }
 
 /* ── Research hook ── */
