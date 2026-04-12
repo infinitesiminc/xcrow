@@ -203,6 +203,9 @@ export default function LeadGen() {
                         setDomain(d);
                         research.start(d);
                       },
+                      onLeadsFound: (newLeads) => {
+                        upsertLeads(newLeads);
+                      },
                     }}
                     pendingPersona={pendingPersona}
                     onPersonaConsumed={() => setPendingPersona(null)}
