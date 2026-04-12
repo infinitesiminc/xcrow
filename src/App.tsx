@@ -30,6 +30,9 @@ const LeadGen = lazy(() => import("./pages/LeadGen.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
+const Pricing = lazy(() => import("./pages/Pricing.tsx"));
+const UseCases = lazy(() => import("./pages/UseCases.tsx"));
+const Comparison = lazy(() => import("./pages/Comparison.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -70,14 +73,15 @@ const App = () => (
               <Route path="/leadgen/*" element={<Navigate to="/leadgen" replace />} />
               {/* Legacy redirects */}
               <Route path="/contact" element={<Contact />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/use-cases/:slug" element={<UseCases />} />
+              <Route path="/use-cases" element={<Navigate to="/" replace />} />
+              <Route path="/vs/:slug" element={<Comparison />} />
+              <Route path="/vs" element={<Navigate to="/" replace />} />
               <Route path="/about" element={<Navigate to="/" replace />} />
-              <Route path="/pricing" element={<Navigate to="/" replace />} />
-              <Route path="/demo" element={<Navigate to="/" replace />} />
+              <Route path="/demo" element={<Navigate to="/contact" replace />} />
               <Route path="/blog" element={<Navigate to="/" replace />} />
               <Route path="/blog/*" element={<Navigate to="/" replace />} />
-              <Route path="/use-cases" element={<Navigate to="/" replace />} />
-              <Route path="/use-cases/*" element={<Navigate to="/" replace />} />
-              <Route path="/vs/*" element={<Navigate to="/" replace />} />
               <Route path="/how-it-works" element={<Navigate to="/" replace />} />
               <Route path="/admin" element={<AuthGate><Admin /></AuthGate>} />
               <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
