@@ -1,6 +1,7 @@
 export const STRIPE_PRICES = {
   LEADHUNTER_STARTER: "price_1TJEd9GqMIbud5Hacsn2vL1J",
   LEADHUNTER_PRO: "price_1TJEdhGqMIbud5HafoNoNRoA",
+  LEAD_TOPUP_50: "price_1TLSOkGqMIbud5HaA1K1Z5yO",
   // Legacy prices (kept for existing subscribers)
   CHAMPION_MONTHLY: "price_1TEvG0GqMIbud5Ha8h085MFj",
   LAUNCHER_PRO_MONTHLY: "price_1TGBpxGqMIbud5HalJIv0Uos",
@@ -13,6 +14,7 @@ export const STRIPE_PRICES = {
 export const STRIPE_PRODUCTS = {
   LEADHUNTER_STARTER: "prod_UHoFCxG2DlFSQp",
   LEADHUNTER_PRO: "prod_UHoG8d9iiTKPJe",
+  LEAD_TOPUP_50: "prod_UK6bDx5XCNm0i6",
   // Legacy products
   CHAMPION: "prod_UDLxu72XQjm88j",
   LAUNCHER_PRO: "prod_UEfAjOLyjvupBA",
@@ -54,4 +56,12 @@ export const LEAD_LIMITS: Record<PlanTier, number> = {
 export const FREE_LIMITS = {
   simulations_per_month: 3,
   analyses_per_month: 3,
+} as const;
+
+/** Top-up pack config */
+export const TOPUP_PACK = {
+  leads: 50,
+  price: 10, // USD
+  priceId: STRIPE_PRICES.LEAD_TOPUP_50,
+  productId: STRIPE_PRODUCTS.LEAD_TOPUP_50,
 } as const;

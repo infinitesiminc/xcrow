@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound,
   User, Lock, AlertOctagon, ArrowLeft, LogOut,
-  CreditCard, Crown, ExternalLink,
+  CreditCard, Crown, ExternalLink, Zap,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -55,6 +55,7 @@ export default function Settings() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [topupLoading, setTopupLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -159,6 +160,18 @@ export default function Settings() {
       toast({ title: "Error", description: "Could not open subscription portal.", variant: "destructive" });
     }
     setPortalLoading(false);
+  };
+
+  const handleBuyTopup = async () => {
+    setTopupLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("purchase-topup");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch {
+      toast({ title: "Error", description: "Could not start top-up purchase.", variant: "destructive" });
+    }
+    setTopupLoading(false);
   };
 
   if (authLoading) return null;
@@ -317,15 +330,45 @@ export default function Settings() {
                   </div>
 
                   {isPro ? (
-                    <Button variant="outline" size="sm" onClick={handleManageSubscription} disabled={portalLoading}>
-                      {portalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
-                      Manage subscription
-                    </Button>
+                    <div className="space-y-3">
+                      <Button variant="outline" size="sm" onClick={handleManageSubscription} disabled={portalLoading}>
+                        {portalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
+                        Manage subscription
+                      </Button>
+
+                      <Separator />
+
+                      <div>
+                        <p className="text-sm font-medium text-foreground mb-1">Need more leads?</p>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Buy a top-up pack: <span className="font-semibold text-foreground">50 leads for $10</span> — added on top of your monthly quota.
+                        </p>
+                        <Button variant="outline" size="sm" onClick={handleBuyTopup} disabled={topupLoading}>
+                          {topupLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
+                          Buy Lead Top-Up
+                        </Button>
+                      </div>
+                    </div>
                   ) : (
-                    <Button size="sm" onClick={() => window.open("https://xcrow.ai/#pricing", "_blank")}>
-                      <Crown className="mr-2 h-4 w-4" />
-                      Upgrade to Champion
-                    </Button>
+                    <div className="space-y-3">
+                      <Button size="sm" onClick={() => window.open("https://xcrow.ai/#pricing", "_blank")}>
+                        <Crown className="mr-2 h-4 w-4" />
+                        Upgrade to Champion
+                      </Button>
+
+                      <Separator />
+
+                      <div>
+                        <p className="text-sm font-medium text-foreground mb-1">Need more leads?</p>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Buy a top-up pack: <span className="font-semibold text-foreground">50 leads for $10</span> — no subscription required.
+                        </p>
+                        <Button variant="outline" size="sm" onClick={handleBuyTopup} disabled={topupLoading}>
+                          {topupLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
+                          Buy Lead Top-Up
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
