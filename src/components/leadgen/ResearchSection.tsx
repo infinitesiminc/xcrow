@@ -63,9 +63,9 @@ export function parseReportText(text: string): ParsedReport {
         let currentSection = "";
         for (const line of lines) {
           const l = line.trim().toLowerCase();
-          if (l.includes("search title")) currentSection = "title";
-          else if (l.includes("pain") || l.includes("challenge") || l.includes("disqualif")) currentSection = "pain";
-          else if (l.includes("trigger") || l.includes("buying")) currentSection = "trigger";
+          if (l.includes("search title")) { currentSection = "title"; continue; }
+          else if (l.includes("pain") || l.includes("challenge") || l.includes("disqualif")) { currentSection = "pain"; continue; }
+          else if (l.includes("trigger") || l.includes("buying")) { currentSection = "trigger"; continue; }
           else if (l.includes("primary buyer") || l.includes("secondary buyer") || l.includes("decision-maker") || l.includes("decision maker")) {
             // Extract inline title from "**Primary buyer**: VP of Sales, ..."
             const inlineMatch = line.match(/\*\*(?:Primary|Secondary)\s+(?:buyer|decision[\s-]?maker)\*\*:\s*(.+)/i);
@@ -80,6 +80,8 @@ export function parseReportText(text: string): ParsedReport {
           const bulletMatch = line.match(/^[-*]\s+(.+)/);
           if (bulletMatch) {
             const val = bulletMatch[1].replace(/\*\*/g, "").trim();
+            // Skip values that look like section headers
+            if (/^(search\s+titles?|pain\s+points?|buying\s+triggers?|key\s+challenges?)[:\s]*$/i.test(val)) continue;
             if (currentSection === "pain") painPoints.push(val);
             else if (currentSection === "trigger") buyingTriggers.push(val);
             else if (currentSection === "title") {
