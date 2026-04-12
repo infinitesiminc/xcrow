@@ -109,20 +109,35 @@ function PipelineChat({ leadCount }: { leadCount: number }) {
       <ScrollArea className="flex-1 px-4 py-3">
         <div className="space-y-4">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : ""}`}>
-              {msg.role === "assistant" && (
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="w-4 h-4 text-primary" />
+            <div key={i}>
+              <div className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : ""}`}>
+                {msg.role === "assistant" && (
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Bot className="w-4 h-4 text-primary" />
+                  </div>
+                )}
+                <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                  {msg.role === "assistant" ? (
+                    <div className="prose prose-sm max-w-none [&>p]:my-1 [&>p]:text-secondary-foreground [&_strong]:text-secondary-foreground"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                  ) : <p className="whitespace-pre-wrap">{msg.content}</p>}
                 </div>
-              )}
-              <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
-                {msg.role === "assistant" ? (
-                  <div className="prose prose-sm max-w-none [&>p]:my-1 [&>p]:text-secondary-foreground [&_strong]:text-secondary-foreground"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
-                ) : <p className="whitespace-pre-wrap">{msg.content}</p>}
+                {msg.role === "user" && (
+                  <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <User className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                )}
               </div>
-              {msg.role === "user" && (
-                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
-                  <User className="w-4 h-4 text-primary-foreground" />
+              {msg.role === "assistant" && msg.pills && msg.pills.length > 0 && !isStreaming && i === messages.length - 1 && (
+                <div className="flex flex-wrap gap-1.5 mt-2 ml-9">
+                  {msg.pills.map(pill => (
+                    <button
+                      key={pill}
+                      onClick={() => sendMessage(pill)}
+                      className="text-[11px] px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                    >
+                      {pill}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
