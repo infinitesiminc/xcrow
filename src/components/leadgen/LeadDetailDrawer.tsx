@@ -102,10 +102,11 @@ export function LeadDetailDrawer({
             {/* Avatar */}
             <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
               {photoUrl ? (
-                <img src={photoUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-              ) : (
-                <User className="w-6 h-6 text-primary" />
-              )}
+                <img src={photoUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
+              ) : null}
+              <span className={`text-lg font-semibold text-primary ${photoUrl ? 'hidden' : ''}`}>
+                {lead.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+              </span>
             </div>
             <div className="flex-1 min-w-0">
               <SheetTitle className="text-lg text-left">{lead.name}</SheetTitle>
