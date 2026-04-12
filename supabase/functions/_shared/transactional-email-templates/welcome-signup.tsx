@@ -4,9 +4,10 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "xcrow"
+const SITE_NAME = "Xcrow"
 const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
 const LOGO = `${STORAGE}/email-assets/xcrow-logo.png`
+const APP_URL = 'https://xcrow.lovable.app'
 
 interface WelcomeSignupProps {
   displayName?: string
@@ -39,7 +40,7 @@ const WelcomeSignupEmail = ({
         </Section>
 
         <Heading style={h1}>
-          {displayName ? `Welcome, ${displayName}!` : 'Welcome to xcrow!'}
+          {displayName ? `Welcome, ${displayName}!` : `Welcome to ${SITE_NAME}!`}
         </Heading>
 
         <Text style={text}>
@@ -80,7 +81,7 @@ const WelcomeSignupEmail = ({
           </Section>
         )}
 
-        <Button style={button} href="https://xcrow.ai/leadgen">
+        <Button style={button} href={`${APP_URL}/leadgen`}>
           Continue Hunting Leads →
         </Button>
 
@@ -100,7 +101,7 @@ export const template = {
   subject: (data: Record<string, any>) =>
     data.websiteUrl
       ? `Your ${data.websiteUrl} workspace is ready — ${data.leadsFound || 0} leads found`
-      : `Welcome to xcrow — your lead gen machine is ready`,
+      : `Welcome to ${SITE_NAME} — your lead gen machine is ready`,
   displayName: 'Welcome signup',
   previewData: {
     displayName: 'Jackson',
@@ -131,7 +132,7 @@ const workspaceCard = {
 const cardLabel = {
   fontSize: '10px',
   fontWeight: '700' as const,
-  color: 'hsl(262, 83%, 58%)',
+  color: 'hsl(270, 70%, 55%)',
   letterSpacing: '0.1em',
   margin: '0 0 4px',
   textTransform: 'uppercase' as const,
@@ -151,10 +152,10 @@ const cardDetail = {
 
 const statsRow = { margin: '8px 0 0' }
 const statItem = { fontSize: '14px', color: '#333', margin: '4px 0' }
-const statNumber = { fontWeight: '700' as const, color: 'hsl(262, 83%, 58%)' }
+const statNumber = { fontWeight: '700' as const, color: 'hsl(270, 70%, 55%)' }
 
 const button = {
-  backgroundColor: 'hsl(262, 83%, 58%)',
+  backgroundColor: 'hsl(270, 70%, 55%)',
   color: '#ffffff',
   borderRadius: '0.75rem',
   padding: '14px 28px',

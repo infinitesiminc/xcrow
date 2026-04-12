@@ -1,10 +1,12 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Button, Hr,
+  Body, Container, Head, Heading, Html, Preview, Text, Button, Hr, Section, Img,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "xcrow"
+const SITE_NAME = "Xcrow"
+const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
+const LOGO = `${STORAGE}/email-assets/xcrow-logo.png`
 
 interface LeadOutreachProps {
   recipientName?: string
@@ -33,6 +35,10 @@ const LeadOutreachEmail = ({
     </Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoSection}>
+          <Img src={LOGO} alt="Xcrow" width="40" height="40" style={logoStyle} />
+        </Section>
+
         {recipientName ? (
           <Heading style={h1}>Hi {recipientName},</Heading>
         ) : (
@@ -85,10 +91,12 @@ export const template = {
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
 const container = { padding: '32px 28px', maxWidth: '520px', margin: '0 auto' }
+const logoSection = { textAlign: 'center' as const, marginBottom: '24px' }
+const logoStyle = { margin: '0 auto', borderRadius: '10px' }
 const h1 = { fontSize: '20px', fontWeight: '600' as const, color: '#1a1a2e', margin: '0 0 20px' }
 const text = { fontSize: '14px', color: '#55575d', lineHeight: '1.6', margin: '0 0 12px' }
 const button = {
-  backgroundColor: 'hsl(262, 83%, 58%)',
+  backgroundColor: 'hsl(270, 70%, 55%)',
   color: '#ffffff',
   borderRadius: '0.75rem',
   padding: '12px 24px',
