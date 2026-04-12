@@ -1056,6 +1056,7 @@ export type Database = {
       saved_leads: {
         Row: {
           address: string | null
+          apollo_id: string | null
           company: string | null
           created_at: string
           email: string | null
@@ -1083,6 +1084,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          apollo_id?: string | null
           company?: string | null
           created_at?: string
           email?: string | null
@@ -1110,6 +1112,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          apollo_id?: string | null
           company?: string | null
           created_at?: string
           email?: string | null
