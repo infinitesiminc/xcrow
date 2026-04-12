@@ -36,7 +36,7 @@ const NAV_ITEMS = [
 type SectionKey = typeof NAV_ITEMS[number]["key"];
 
 export default function Settings() {
-  const { user, loading: authLoading, signOut, profile, refreshProfile, plan, subscriptionEnd, schoolName, isPro } = useAuth();
+  const { user, loading: authLoading, signOut, profile, refreshProfile, plan, subscriptionEnd, isPro } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -315,7 +315,7 @@ export default function Settings() {
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-foreground">
-                          {plan === "school" ? `School · ${schoolName || "Institution"}` : plan === "pro" ? "Champion" : "Free"}
+                          {plan === "pro" ? "Pro" : "Free"}
                         </p>
                         <Badge variant="outline" className={`text-[10px] ${isPro ? "bg-primary/15 text-primary border-primary/30" : "bg-muted/30 text-muted-foreground border-border/50"}`}>
                           {isPro ? "Active" : "Current"}

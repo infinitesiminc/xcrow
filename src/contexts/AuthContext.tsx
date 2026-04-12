@@ -16,10 +16,6 @@ interface UserProfile {
   company: string | null;
   onboardingCompleted: boolean;
   linkedinUrl: string | null;
-  schoolName: string | null;
-  careerStage: string | null;
-  cvUrl: string | null;
-  programName: string | null;
   avatarId: string | null;
 }
 
@@ -31,9 +27,6 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   plan: PlanTier;
   subscriptionEnd: string | null;
-  schoolName: string | null;
-  schoolId: string | null;
-  isSchoolAdmin: boolean;
   isPro: boolean;
   isLauncherPro: boolean;
   refreshProfile: () => Promise<void>;
@@ -50,9 +43,6 @@ const AuthContext = createContext<AuthContextType>({
   isSuperAdmin: false,
   plan: "free",
   subscriptionEnd: null,
-  schoolName: null,
-  schoolId: null,
-  isSchoolAdmin: false,
   isPro: false,
   isLauncherPro: false,
   refreshProfile: async () => {},
@@ -72,13 +62,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [plan, setPlan] = useState<PlanTier>("free");
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
-  const [schoolName, setSchoolName] = useState<string | null>(null);
-  const [schoolId, setSchoolId] = useState<string | null>(null);
-  const [isSchoolAdmin, setIsSchoolAdmin] = useState(false);
   const [isLauncherPro, setIsLauncherPro] = useState(false);
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
-  const isPro = plan === "pro" || plan === "school" || isSuperAdmin;
+  const isPro = plan === "pro" || isSuperAdmin;
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -97,10 +84,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         company: row.company ?? null,
         onboardingCompleted: row.onboarding_completed ?? false,
         linkedinUrl: row.linkedin_url ?? null,
-        schoolName: row.school_name ?? null,
-        careerStage: row.career_stage ?? 'professional',
-        cvUrl: row.cv_url ?? null,
-        programName: row.program_name ?? null,
         avatarId: row.avatar_id ?? null,
       });
     }
@@ -110,27 +93,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) {
       setPlan("free");
       setSubscriptionEnd(null);
-      setSchoolName(null);
       return;
     }
 
     try {
-      // Check school seat first (B2B)
-      const { data: seatData } = await supabase.rpc("has_school_seat" as any, { _user_id: user.id });
-      if (seatData === true) {
-        // Get school name
-        const { data: seatRow } = await (supabase.from("school_seats" as any) as any)
-          .select("school_id, school_accounts(name, expires_at)")
-          .eq("user_id", user.id)
-          .eq("status", "active")
-          .limit(1)
-          .single();
-        setPlan("school");
-        setSchoolName(seatRow?.school_accounts?.name ?? "School");
-        setSubscriptionEnd(seatRow?.school_accounts?.expires_at ?? null);
-        return;
-      }
-
       // Check admin/referral grants
       const { data: grantData } = await supabase.rpc("has_active_grant" as any, { _user_id: user.id });
       if (grantData === true) {
@@ -165,7 +131,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setPlan("free");
       setSubscriptionEnd(null);
-      setSchoolName(null);
     } catch {
       setPlan("free");
     }
@@ -191,7 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile(null);
         setPlan("free");
         setSubscriptionEnd(null);
-        setSchoolName(null);
+        
       }
     });
 
@@ -215,32 +180,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
-  // Check school admin status
-  useEffect(() => {
-    if (!user) {
-      setSchoolId(null);
-      setIsSchoolAdmin(false);
-      return;
-    }
-    (async () => {
-      try {
-        const { data } = await supabase.rpc("is_superadmin" as any, { _user_id: user.id });
-        // School admin check removed — school_admins table doesn't exist
-        setSchoolId(null);
-        setIsSchoolAdmin(false);
-      } catch {
-        setSchoolId(null);
-        setIsSchoolAdmin(false);
-      }
-    })();
-  }, [user]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
     setPlan("free");
     setSubscriptionEnd(null);
-    setSchoolName(null);
     navigate("/", { replace: true });
   };
 
@@ -251,7 +196,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user, session, loading, profile, isSuperAdmin,
-      plan, subscriptionEnd, schoolName, schoolId, isSchoolAdmin, isPro, isLauncherPro,
+      plan, subscriptionEnd, isPro, isLauncherPro,
       refreshProfile, refreshSubscription, signOut, openAuthModal,
     }}>
       {children}

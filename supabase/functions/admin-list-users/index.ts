@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     // Get all profiles
     const { data: profiles } = await adminClient
       .from("profiles")
-      .select("id, display_name, company, job_title, created_at, onboarding_completed, career_stage")
+      .select("id, display_name, company, job_title, created_at, onboarding_completed")
       .order("created_at", { ascending: false });
 
     // Get all auth users for emails
@@ -48,7 +48,6 @@ Deno.serve(async (req) => {
       job_title: p.job_title || "",
       created_at: p.created_at,
       onboarding_completed: p.onboarding_completed,
-      career_stage: p.career_stage || "",
     }));
 
     return new Response(JSON.stringify(result), {
