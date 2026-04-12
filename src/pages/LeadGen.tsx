@@ -301,6 +301,11 @@ export default function LeadGen() {
     }
   }, [user, loadingPersona, research.report, upsertLeads]);
 
+  const handleDraftEmail = useCallback((lead: SavedLead) => {
+    // Navigate to outreach section — future: open compose modal
+    setActiveSection("outreach");
+  }, []);
+
   const handleStartResearch = useCallback(() => {
     if (domain.trim()) research.start(domain.trim());
   }, [domain, research]);
@@ -335,9 +340,12 @@ export default function LeadGen() {
         return (
           <LeadsTableSection
             leads={leads}
+            outreach={outreach}
             onUpdateStatus={updateLeadStatus}
             onDeleteLead={deleteLead}
             onExportCSV={exportCSV}
+            onDraftEmail={handleDraftEmail}
+            userId={user?.id}
           />
         );
       case "outreach":
