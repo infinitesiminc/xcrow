@@ -37,7 +37,7 @@ export default function PersonasSection({ report, leadCountByPersona, onFindLead
           <Badge variant="secondary" className="text-[10px]">{report.personas.length}</Badge>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {report.personas.map((persona) => {
             const count = leadCountByPersona[persona.title] || 0;
             const isLoading = loadingPersona === persona.title;

@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Search, Users, TableProperties, Settings, Globe, Plus, Building2, RotateCcw, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Settings, Globe, Plus, Building2, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -37,20 +36,8 @@ interface LeadGenSidebarProps {
   onRerunWorkspace?: (key: string) => void;
 }
 
-const NAV_ITEMS: { id: SidebarSection; label: string; icon: typeof Search; }[] = [
-  { id: "research", label: "Research", icon: Search },
-  { id: "personas", label: "Personas", icon: Users },
-  { id: "leads", label: "Leads", icon: TableProperties },
-];
-
 export function LeadGenSidebar({
-  activeSection,
-  onSelectSection,
   websiteUrl,
-  personaCount = 0,
-  leadCount = 0,
-  outreachCount = 0,
-  researchComplete,
   workspaces = [],
   activeWorkspaceKey,
   onSelectWorkspace,
@@ -59,20 +46,11 @@ export function LeadGenSidebar({
   onRerunWorkspace,
 }: LeadGenSidebarProps) {
   const navigate = useNavigate();
-
   const activeWorkspace = workspaces.find(w => w.website_key === activeWorkspaceKey);
   const displayDomain = activeWorkspaceKey || websiteUrl?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-  const getBadge = (id: SidebarSection) => {
-    if (id === "personas" && personaCount > 0) return personaCount;
-    if (id === "leads" && leadCount > 0) return leadCount;
-    
-    return null;
-  };
-
   return (
     <Sidebar collapsible="icon">
-      {/* Active workspace header */}
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2.5 px-1">
           <div className={cn(
@@ -106,7 +84,6 @@ export function LeadGenSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Workspaces — top section */}
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
             <span>Workspaces</span>
@@ -119,7 +96,7 @@ export function LeadGenSidebar({
             </button>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <ScrollArea className="max-h-[240px]">
+            <ScrollArea className="max-h-[400px]">
               <SidebarMenu>
                 {workspaces.map((ws) => {
                   const isActive = activeWorkspaceKey === ws.website_key;
@@ -169,39 +146,6 @@ export function LeadGenSidebar({
                 )}
               </SidebarMenu>
             </ScrollArea>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* Pipeline */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Pipeline</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {NAV_ITEMS.map((item) => {
-                const badge = getBadge(item.id);
-                const disabled = !researchComplete && item.id !== "research";
-                return (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      isActive={activeSection === item.id}
-                      onClick={() => !disabled && onSelectSection(item.id)}
-                      tooltip={item.label}
-                      className={disabled ? "opacity-40 pointer-events-none" : ""}
-                    >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                      {badge != null && (
-                        <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4">
-                          {badge}
-                        </Badge>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
