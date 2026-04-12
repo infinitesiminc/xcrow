@@ -70,6 +70,7 @@ export function brandfetchUrl(domain: string): string {
 export function brandfetchFromName(name: string | null): string | null {
   if (!name) return null;
   const raw = name.toLowerCase().trim();
+  if (LOCAL_LOGO_MAP[raw]) return LOCAL_LOGO_MAP[raw];
   const domain = DOMAIN_MAP[raw] || `${raw.replace(/\s+/g, '')}.com`;
   return brandfetchUrl(domain);
 }
