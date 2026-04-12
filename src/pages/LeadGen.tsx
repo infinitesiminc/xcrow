@@ -318,6 +318,7 @@ export default function LeadGen() {
             error={research.error}
             isComplete={research.isComplete}
             isInitial={research.isInitial}
+            report={research.report}
           />
         );
       case "personas":

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Zap } from "lucide-react";
+import { Zap, Building2, Users, Target, Swords } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ICPResearchStream, { type ResearchPhase } from "@/components/enterprise/ICPResearchStream";
 
@@ -326,9 +326,10 @@ interface ResearchSectionProps {
   error: string | null;
   isComplete: boolean;
   isInitial: boolean;
+  report?: ParsedReport | null;
 }
 
-export default function ResearchSection({ domain, onDomainChange, onStart, phases, elapsed, running, error, isComplete, isInitial }: ResearchSectionProps) {
+export default function ResearchSection({ domain, onDomainChange, onStart, phases, elapsed, running, error, isComplete, isInitial, report }: ResearchSectionProps) {
   return (
     <div className="space-y-6">
       {/* URL Input */}
@@ -390,8 +391,72 @@ export default function ResearchSection({ domain, onDomainChange, onStart, phase
         </div>
       )}
 
-      {/* Complete banner */}
-      {isComplete && (
+      {/* Complete — show summary */}
+      {isComplete && report && (
+        <div className="space-y-4">
+          <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 flex items-center gap-3">
+            <div className="size-2 rounded-full bg-primary" />
+            <span className="text-sm font-medium text-primary">Research complete</span>
+            <span className="text-xs text-muted-foreground ml-auto font-mono">{formatTime(elapsed)}</span>
+          </div>
+
+          {/* Company Overview */}
+          {report.companySummary && (
+            <div className="rounded-lg border border-border/40 bg-card p-4 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Building2 className="w-4 h-4 text-primary" />
+                Company Overview
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">{report.companySummary}</p>
+            </div>
+          )}
+
+          {/* Personas summary */}
+          {report.personas.length > 0 && (
+            <div className="rounded-lg border border-border/40 bg-card p-4 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Users className="w-4 h-4 text-primary" />
+                ICP Segments ({report.personas.length})
+              </div>
+              <div className="grid gap-2">
+                {report.personas.map((p, i) => (
+                  <div key={i} className="flex items-start gap-3 rounded-md bg-muted/30 px-3 py-2">
+                    <span className="text-xs font-mono text-primary mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{p.title}</p>
+                      {p.titles.length > 0 && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          Targets: {p.titles.slice(0, 3).join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Prospect domains */}
+          {report.prospectDomains.length > 0 && (
+            <div className="rounded-lg border border-border/40 bg-card p-4 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Target className="w-4 h-4 text-primary" />
+                Prospecting Targets ({report.prospectDomains.length})
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {report.prospectDomains.map((d, i) => (
+                  <span key={i} className="px-2 py-0.5 rounded-full bg-muted/50 text-xs font-mono text-muted-foreground border border-border/30">
+                    {d}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Complete but no report yet */}
+      {isComplete && !report && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 flex items-center gap-3">
           <div className="size-2 rounded-full bg-primary" />
           <span className="text-sm font-medium text-primary">Research complete</span>
