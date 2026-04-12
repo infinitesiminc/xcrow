@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   TableProperties, Download, ExternalLink, Mail, Trash2,
   Search, ArrowUpDown, ArrowUp, ArrowDown, Linkedin, Phone,
-  ChevronDown, CheckCheck, Sparkles, RefreshCw,
+  ChevronDown, CheckCheck, Sparkles, RefreshCw, MapPin,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -265,6 +265,7 @@ export default function LeadsTableSection({
                 </button>
               </TableHead>
               <TableHead className="text-xs w-[100px]">Contact</TableHead>
+              <TableHead className="text-xs w-[120px]">Location</TableHead>
               <TableHead className="text-xs w-[120px]">Persona</TableHead>
               <TableHead className="text-xs w-[80px]">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("status")}>
@@ -312,12 +313,13 @@ export default function LeadsTableSection({
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
-                  {lead.persona_tag && (
-                    <Badge variant="outline" className="text-[10px] font-normal max-w-[110px] truncate">
-                      {cleanPersonaTag(lead.persona_tag)}
-                    </Badge>
-                  )}
+                <TableCell className="text-xs text-muted-foreground truncate">
+                  {lead.address ? (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{lead.address}</span>
+                    </span>
+                  ) : "—"}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[lead.status]}`}>

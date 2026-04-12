@@ -289,6 +289,7 @@ export default function LeadGen() {
           phone: p.phone,
           photo_url: p.photo_url,
           apollo_id: p.apollo_id,
+          address: p.address,
           source: "apollo",
           persona_tag: persona.title,
           reason: `Matched persona: ${persona.title}`,
