@@ -13,6 +13,6 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /school
+Disallow: /leadgen
 
 Sitemap: https://xcrow.ai/sitemap.xml

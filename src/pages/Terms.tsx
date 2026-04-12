@@ -1,13 +1,15 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 export default function Terms() {
   return (
     <>
+      <SEOHead title="Terms & Conditions" description="Xcrow terms of service for our AI-powered B2B lead generation platform." path="/terms" />
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 py-20 prose prose-invert prose-sm">
         <h1 className="text-3xl font-bold mb-2">Terms & Conditions</h1>
-        <p className="text-muted-foreground text-sm mb-8">Last updated: March 19, 2026</p>
+        <p className="text-muted-foreground text-sm mb-8">Last updated: April 12, 2026</p>
 
         <h2>1. Acceptance of Terms</h2>
         <p>
@@ -16,7 +18,7 @@ export default function Terms() {
 
         <h2>2. Description of Service</h2>
         <p>
-          Xcrow.ai provides AI-powered career readiness tools including role analysis, skill mapping, AI simulations, and workforce analytics. Features may vary by plan and are subject to change.
+          Xcrow.ai provides an AI-powered B2B lead generation platform that helps businesses discover qualified prospects, find decision-maker contact information, and generate personalized outreach. Features may vary by plan and are subject to change.
         </p>
 
         <h2>3. Account Registration</h2>
@@ -27,36 +29,37 @@ export default function Terms() {
         <h2>4. Acceptable Use</h2>
         <p>You agree not to:</p>
         <ul>
-          <li>Use the Platform for any unlawful purpose.</li>
+          <li>Use the Platform for any unlawful purpose, including sending unsolicited bulk email in violation of CAN-SPAM, GDPR, or other applicable regulations.</li>
           <li>Attempt to reverse-engineer, scrape, or extract data from the Platform beyond your authorized use.</li>
           <li>Interfere with or disrupt the Platform's infrastructure.</li>
           <li>Share your account credentials with others.</li>
           <li>Misrepresent your identity or affiliation.</li>
+          <li>Use lead data obtained through Xcrow to build competing databases or services.</li>
         </ul>
 
         <h2>5. Intellectual Property</h2>
         <p>
-          All content, features, and functionality on the Platform — including text, graphics, logos, simulations, and AI-generated outputs — are owned by Xcrow.ai or its licensors and are protected by intellectual property laws.
+          All content, features, and functionality on the Platform — including text, graphics, logos, AI models, and generated outputs — are owned by Xcrow.ai or its licensors and are protected by intellectual property laws.
         </p>
 
-        <h2>6. Subscriptions & Payments</h2>
+        <h2>6. Lead Data & Compliance</h2>
         <p>
-          Paid plans are billed in advance on a recurring basis. You may cancel at any time, and your access will continue until the end of your current billing period. Refunds are provided at our discretion.
+          Xcrow provides publicly available business contact information to aid your outreach efforts. You are solely responsible for ensuring your use of this data complies with all applicable laws and regulations, including CAN-SPAM, GDPR, CCPA, and any other relevant data protection legislation.
         </p>
 
-        <h2>7. Institutional Accounts</h2>
+        <h2>7. Subscriptions & Payments</h2>
         <p>
-          Schools and employers that purchase seats on behalf of users agree to these terms on behalf of their end users. Institutional administrators are responsible for managing user access within their organization.
+          Paid plans are billed in advance on a recurring basis. You may cancel at any time, and your access will continue until the end of your current billing period. Refunds are provided at our discretion. Credit top-ups are non-refundable once purchased.
         </p>
 
         <h2>8. Disclaimer of Warranties</h2>
         <p>
-          The Platform is provided "as is" without warranties of any kind. We do not guarantee that AI-generated insights, scores, or recommendations are error-free or suitable for any particular career decision.
+          The Platform is provided "as is" without warranties of any kind. We do not guarantee that AI-generated leads, contact information, or outreach drafts are error-free, complete, or suitable for any particular purpose.
         </p>
 
         <h2>9. Limitation of Liability</h2>
         <p>
-          To the maximum extent permitted by law, Xcrow.ai shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform.
+          To the maximum extent permitted by law, Xcrow.ai shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform, including but not limited to lost revenue, data loss, or business interruption.
         </p>
 
         <h2>10. Termination</h2>
@@ -77,7 +80,7 @@ export default function Terms() {
         <h2>13. Contact</h2>
         <p>
           Questions about these terms? Contact us at{" "}
-          <a href="mailto:legal@Xcrow.ai" className="text-primary hover:underline">legal@Xcrow.ai</a>.
+          <a href="mailto:legal@xcrow.ai" className="text-primary hover:underline">legal@xcrow.ai</a>.
         </p>
       </main>
       <Footer />
