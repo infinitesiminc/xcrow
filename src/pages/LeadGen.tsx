@@ -335,9 +335,12 @@ export default function LeadGen() {
         return (
           <LeadsTableSection
             leads={leads}
+            outreach={outreach}
             onUpdateStatus={updateLeadStatus}
             onDeleteLead={deleteLead}
             onExportCSV={exportCSV}
+            onDraftEmail={onDraftEmail}
+            userId={user?.id}
           />
         );
       case "outreach":
