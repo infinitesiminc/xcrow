@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Fetch leads belonging to this user - include apollo_id
     const { data: leads, error: fetchErr } = await sb
       .from("saved_leads")
-      .select("id, name, title, company, email, linkedin, phone, apollo_id")
+      .select("id, name, title, company, email, linkedin, phone, apollo_id, address")
       .eq("user_id", user.id)
       .in("id", lead_ids);
 
@@ -125,6 +125,9 @@ Deno.serve(async (req) => {
           updates.phone = person.phone_number || person.sanitized_phone;
         }
         if (!lead.title && person.title) updates.title = person.title;
+        // Backfill location
+        const location = [person.city, person.state, person.country].filter(Boolean).join(", ");
+        if (!lead.address && location) updates.address = location;
         // Store apollo_id if we didn't have it
         if (!lead.apollo_id && person.id) updates.apollo_id = person.id;
 

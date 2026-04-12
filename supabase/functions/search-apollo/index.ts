@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
         linkedin: p.linkedin_url || null,
         phone: p.phone_number || p.sanitized_phone || null,
         photo_url: p.photo_url || null,
+        address: [p.city, p.state, p.country].filter(Boolean).join(", ") || null,
         source: "apollo",
       }));
 
