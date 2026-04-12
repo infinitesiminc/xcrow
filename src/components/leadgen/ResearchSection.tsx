@@ -23,6 +23,7 @@ export interface ParsedReport {
   personas: ParsedPersona[];
   prospectDomains: string[];
   competitors: ParsedCompetitor[];
+  industryKeywords: string[];
   rawText: string;
 }
 
@@ -163,7 +164,41 @@ export function parseReportText(text: string): ParsedReport {
     }
   }
 
-  return { companySummary, personas, prospectDomains: [...new Set(prospectDomains)], competitors: competitors.slice(0, 8), rawText: text };
+  // Extract industry keywords from company summary for Apollo q_keywords filtering
+  const industryKeywords = extractIndustryKeywords(companySummary, personas);
+
+  return { companySummary, personas, prospectDomains: [...new Set(prospectDomains)], competitors: competitors.slice(0, 8), industryKeywords, rawText: text };
+}
+
+/** Extract 2-4 industry keywords from the company summary and persona context */
+function extractIndustryKeywords(summary: string, personas: ParsedPersona[]): string[] {
+  // Common industry terms to look for in the summary
+  const industryPatterns = [
+    /\b(aerospace|defense|military|drone|UAS|UAV|autonomous)\b/gi,
+    /\b(healthcare|pharma|biotech|medical|clinical)\b/gi,
+    /\b(fintech|banking|insurance|financial services)\b/gi,
+    /\b(SaaS|software|cloud|cybersecurity|AI|machine learning)\b/gi,
+    /\b(manufacturing|industrial|automotive|logistics)\b/gi,
+    /\b(energy|oil|gas|solar|renewable|cleantech)\b/gi,
+    /\b(real estate|proptech|construction)\b/gi,
+    /\b(retail|ecommerce|e-commerce|CPG|consumer)\b/gi,
+    /\b(education|edtech|learning)\b/gi,
+    /\b(agriculture|agtech|farming)\b/gi,
+    /\b(telecom|telecommunications|5G)\b/gi,
+    /\b(government|public sector|federal|DoD)\b/gi,
+  ];
+
+  const found = new Set<string>();
+  const text = summary + " " + personas.map(p => p.title).join(" ");
+  
+  for (const pattern of industryPatterns) {
+    const matches = text.match(pattern);
+    if (matches) {
+      for (const m of matches) found.add(m.toLowerCase());
+    }
+  }
+
+  return [...found].slice(0, 4);
 }
 
 /* ── Research hook ── */

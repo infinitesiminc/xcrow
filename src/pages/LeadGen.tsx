@@ -152,32 +152,69 @@ export default function LeadGen() {
     // Prospect domains from the research report for domain-constrained search
     const prospectDomains = research.report?.prospectDomains?.slice(0, 10) || [];
 
-    // Generic industry fallbacks that always return results
+    // Industry keywords from the research for q_keywords filtering
+    const industryKeywords = research.report?.industryKeywords || [];
+    const keywordsStr = industryKeywords.join(" ");
+
+    // Generic decision-maker titles
     const genericTitles = ["VP of Sales", "Director of Business Development", "Chief Revenue Officer", "VP of Operations", "Head of Partnerships"];
 
-    // Build search stages — each progressively broader
+    // Build search stages — each progressively broader but ALWAYS industry-constrained
     const stages: Array<{ label: string; body: Record<string, unknown> }> = [];
 
-    // Stage 1: Persona-specific titles (if we have clean ones)
+    // Stage 1: Persona-specific titles + industry keywords
     if (cleanTitles.length > 0) {
       stages.push({
         label: "Searching with persona titles…",
-        body: { search_mode: "people", person_titles: cleanTitles, person_seniorities: ["director", "vp", "c_suite", "owner"], organization_locations: ["United States"], per_page: 10 },
+        body: {
+          search_mode: "people",
+          person_titles: cleanTitles,
+          person_seniorities: ["director", "vp", "c_suite", "owner"],
+          organization_locations: ["United States"],
+          ...(keywordsStr ? { q_keywords: keywordsStr } : {}),
+          per_page: 10,
+        },
       });
     }
 
-    // Stage 2: If we have prospect domains from research, search decision-makers AT those companies
+    // Stage 2: Decision-makers AT prospect companies identified in research
     if (prospectDomains.length > 0) {
       stages.push({
         label: "Searching target companies…",
-        body: { search_mode: "people", organization_domains: prospectDomains, person_seniorities: ["director", "vp", "c_suite", "owner"], per_page: 10 },
+        body: {
+          search_mode: "people",
+          q_organization_domains: prospectDomains,
+          person_seniorities: ["director", "vp", "c_suite", "owner"],
+          per_page: 10,
+        },
       });
     }
 
-    // Stage 3: Generic decision-maker titles (guaranteed results)
+    // Stage 3: Generic titles but STILL industry-constrained
+    if (keywordsStr) {
+      stages.push({
+        label: "Broadening industry search…",
+        body: {
+          search_mode: "people",
+          person_titles: genericTitles,
+          person_seniorities: ["director", "vp", "c_suite", "owner"],
+          organization_locations: ["United States"],
+          q_keywords: keywordsStr,
+          per_page: 10,
+        },
+      });
+    }
+
+    // Stage 4: Last resort — generic titles, no industry filter (guaranteed results but less relevant)
     stages.push({
-      label: "Broadening search…",
-      body: { search_mode: "people", person_titles: genericTitles, person_seniorities: ["director", "vp", "c_suite", "owner"], organization_locations: ["United States"], per_page: 10 },
+      label: "Expanding search…",
+      body: {
+        search_mode: "people",
+        person_titles: genericTitles,
+        person_seniorities: ["director", "vp", "c_suite", "owner"],
+        organization_locations: ["United States"],
+        per_page: 10,
+      },
     });
 
     let allPeople: any[] = [];

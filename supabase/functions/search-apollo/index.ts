@@ -108,6 +108,7 @@ Deno.serve(async (req) => {
       person_titles,
       person_seniorities,
       q_organization_domains,
+      q_keywords,
       // Company search filters
       organization_locations = ["United States"],
       organization_num_employees_ranges,
@@ -136,6 +137,7 @@ Deno.serve(async (req) => {
         apolloBody.q_organization_domains = domains.join("\n");
       }
       if (organization_locations?.length) apolloBody.organization_locations = organization_locations;
+      if (q_keywords) apolloBody.q_keywords = q_keywords;
 
       console.log("Apollo people search:", JSON.stringify(apolloBody));
 
