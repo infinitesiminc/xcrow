@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Search, Loader2, CheckCircle2 } from "lucide-react";
+import { Users, MessageCircle, Loader2, CheckCircle2 } from "lucide-react";
 import type { ParsedPersona, ParsedReport } from "./ResearchSection";
 
 interface PersonasSectionProps {
@@ -24,7 +23,6 @@ export default function PersonasSection({ report, leadCountByPersona, onFindLead
 
   return (
     <div className="space-y-6">
-      {/* Company Summary */}
       {report.companySummary && (
         <div className="rounded-lg border border-border/40 bg-card/50 p-4">
           <h3 className="text-sm font-semibold text-foreground mb-2">Company Overview</h3>
@@ -32,7 +30,6 @@ export default function PersonasSection({ report, leadCountByPersona, onFindLead
         </div>
       )}
 
-      {/* Persona Cards */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Users className="w-4 h-4 text-primary" />
@@ -96,9 +93,9 @@ export default function PersonasSection({ report, leadCountByPersona, onFindLead
                     {isLoading ? (
                       <><Loader2 className="w-3 h-3 animate-spin" /> Searching...</>
                     ) : count > 0 ? (
-                      <><Search className="w-3 h-3" /> Find More</>
+                      <><MessageCircle className="w-3 h-3" /> Find More</>
                     ) : (
-                      <><Search className="w-3 h-3" /> Find Leads</>
+                      <><MessageCircle className="w-3 h-3" /> Find Leads</>
                     )}
                   </Button>
                 </CardContent>
