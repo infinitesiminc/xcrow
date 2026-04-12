@@ -292,6 +292,14 @@ export default function LeadsTableSection({
                     )}
                   </div>
                 </TableCell>
+                <TableCell className="text-xs text-muted-foreground truncate max-w-[130px]">
+                  {lead.address ? (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{lead.address}</span>
+                    </span>
+                  ) : "—"}
+                </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[lead.status]}`}>
                     {lead.status}
