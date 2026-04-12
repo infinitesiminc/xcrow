@@ -49,8 +49,10 @@ export default function Navbar({ workspaces, activeWorkspaceKey, onSwitchWorkspa
 
   const navItems = [
     { label: "Lead Gen", path: "/leadgen", icon: Compass },
-    { label: "How It Works", path: "/how-it-works", icon: undefined },
-    { label: "Pricing", path: "/pricing", icon: undefined },
+    ...(!user ? [
+      { label: "How It Works", path: "/how-it-works", icon: undefined },
+      { label: "Pricing", path: "/pricing", icon: undefined },
+    ] : []),
     ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
   ];
 
