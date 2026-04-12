@@ -28,15 +28,6 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
 const LeadGen = lazy(() => import("./pages/LeadGen.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
-const CompetitorComparison = lazy(() => import("./pages/CompetitorComparison.tsx"));
-const Pricing = lazy(() => import("./pages/Pricing.tsx"));
-const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
-const UseCasesIndex = lazy(() => import("./pages/UseCasesIndex.tsx"));
-const UseCasePage = lazy(() => import("./pages/UseCasePage.tsx"));
-const BlogIndex = lazy(() => import("./pages/BlogIndex.tsx"));
-const BlogPostPage = lazy(() => import("./pages/BlogPostPage.tsx"));
-const About = lazy(() => import("./pages/About.tsx"));
-const Demo = lazy(() => import("./pages/Demo.tsx"));
 const Texas = lazy(() => import("./pages/Texas.tsx"));
 
 const queryClient = new QueryClient();
@@ -71,20 +62,21 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
-              <Route path="/contact" element={<Navigate to="/about" replace />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/vs/:slug" element={<CompetitorComparison />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/use-cases" element={<UseCasesIndex />} />
-              <Route path="/use-cases/:slug" element={<UseCasePage />} />
-              <Route path="/blog" element={<BlogIndex />} />
-              <Route path="/blog/:slug" element={<BlogPostPage />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/demo" element={<Demo />} />
               <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
               <Route path="/leadgen" element={<AuthGate><LeadGen /></AuthGate>} />
               <Route path="/leadgen/*" element={<Navigate to="/leadgen" replace />} />
+              {/* Legacy redirects */}
+              <Route path="/contact" element={<Navigate to="/" replace />} />
+              <Route path="/about" element={<Navigate to="/" replace />} />
+              <Route path="/pricing" element={<Navigate to="/" replace />} />
+              <Route path="/demo" element={<Navigate to="/" replace />} />
+              <Route path="/blog" element={<Navigate to="/" replace />} />
+              <Route path="/blog/*" element={<Navigate to="/" replace />} />
+              <Route path="/use-cases" element={<Navigate to="/" replace />} />
+              <Route path="/use-cases/*" element={<Navigate to="/" replace />} />
+              <Route path="/vs/*" element={<Navigate to="/" replace />} />
+              <Route path="/how-it-works" element={<Navigate to="/" replace />} />
               <Route path="/admin" element={<Navigate to="/leadgen" replace />} />
               <Route path="/admin/*" element={<Navigate to="/leadgen" replace />} />
               <Route path="/enterprise/*" element={<Navigate to="/leadgen" replace />} />
