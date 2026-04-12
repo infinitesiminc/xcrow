@@ -98,7 +98,7 @@ function PipelineChat({ leadCount }: { leadCount: number }) {
                   <Bot className="w-4 h-4 text-primary" />
                 </div>
               )}
-              <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted/60 text-foreground"}`}>
+              <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
                 {msg.role === "assistant" ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
                 ) : <p className="whitespace-pre-wrap">{msg.content}</p>}
