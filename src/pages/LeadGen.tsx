@@ -139,13 +139,22 @@ export default function LeadGen() {
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const { data: { session } } = await supabase.auth.getSession();
 
-      // Don't over-constrain with domains — titles + seniority is enough for discovery
+      // Filter out overly-specific titles that Apollo can't match
+      const usableTitles = persona.titles
+        .filter(t => t.length <= 40 && !t.includes("/") && !t.includes("(") && !t.includes(" - "))
+        .slice(0, 5);
+      
+      // If all titles were filtered out, use generic decision-maker titles
+      const searchTitles = usableTitles.length > 0
+        ? usableTitles
+        : ["VP of Sales", "Director of Business Development", "Chief Revenue Officer", "VP of Operations", "Director of Procurement"];
+
       const resp = await fetch(`${supabaseUrl}/functions/v1/search-apollo`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
         body: JSON.stringify({
           search_mode: "people",
-          person_titles: persona.titles.slice(0, 5),
+          person_titles: searchTitles,
           person_seniorities: ["director", "vp", "c_suite", "owner"],
           organization_locations: ["United States"],
           per_page: 10,
