@@ -68,10 +68,10 @@ export function LeadGenSidebar({
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             {displayDomain ? (
               <>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Lead Gen for</p>
                 <p className="text-base font-bold text-sidebar-foreground truncate leading-tight">
                   {activeWorkspace?.display_name || displayDomain}
                 </p>
-                <p className="text-[10px] text-primary/70 font-mono truncate">Active workspace</p>
               </>
             ) : (
               <>
