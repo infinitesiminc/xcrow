@@ -204,6 +204,24 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Handle persona prefill: auto-send a discovery message when triggered from persona card
+  const pendingPersonaRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!pendingPersona || isStreaming) return;
+    // Prevent re-triggering for the same persona
+    if (pendingPersonaRef.current === pendingPersona.personaTitle) return;
+    pendingPersonaRef.current = pendingPersona.personaTitle;
+
+    const prefillMsg = `I want to find leads for the "${pendingPersona.personaTitle}" segment. Help me refine the search criteria before we start.`;
+    
+    // Reset messages and send the prefill
+    setMessages([{ role: "assistant", content: getGreeting(context) }]);
+    setTimeout(() => {
+      sendMessage(prefillMsg);
+      onPersonaConsumed?.();
+    }, 300);
+  }, [pendingPersona?.personaTitle]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleAction = useCallback((card: ActionCard) => {
     switch (card.type) {
       case "navigate":
