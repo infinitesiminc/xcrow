@@ -1,5 +1,8 @@
 const BRANDFETCH_CLIENT_ID = '1idUR9TThSYgPVCpELC';
 
+// Logos that need a local asset instead of brandfetch
+const LOCAL_LOGO_MAP: Record<string, string> = {};
+
 const DOMAIN_MAP: Record<string, string> = {
   meta: 'meta.com',
   microsoft: 'microsoft.com',
@@ -24,6 +27,23 @@ const DOMAIN_MAP: Record<string, string> = {
   stripe: 'stripe.com',
   spotify: 'spotify.com',
   deloitte: 'deloitte.com',
+  // Accelerators & incubators
+  'y combinator': 'ycombinator.com',
+  techstars: 'techstars.com',
+  '500 global': '500.co',
+  antler: 'antler.co',
+  'sequoia arc': 'sequoiacap.com',
+  'a16z start': 'a16z.com',
+  'plug and play': 'plugandplaytechcenter.com',
+  'on deck': 'beondeck.com',
+  seedcamp: 'seedcamp.com',
+  'entrepreneur first': 'joinef.com',
+  sosv: 'sosv.com',
+  'founders factory': 'foundersfactory.com',
+  'indie bio': 'indiebio.co',
+  masschallenge: 'masschallenge.org',
+  launch: 'launch.co',
+  alchemist: 'alchemistaccelerator.com',
   // Universities
   ucla: 'ucla.edu',
   mit: 'mit.edu',
