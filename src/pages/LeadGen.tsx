@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
@@ -129,49 +130,94 @@ export default function LeadGen() {
     setTimeout(() => research.start(key), 100);
   }, [research]);
 
-  // Find leads for a persona via Apollo
+  // ── Bulletproof Find Leads: multi-stage progressive search ──
   const handleFindLeads = useCallback(async (persona: ParsedPersona) => {
     if (!user || loadingPersona) return;
     setLoadingPersona(persona.title);
 
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const { data: { session } } = await supabase.auth.getSession();
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const { data: { session } } = await supabase.auth.getSession();
+    const authHeaders = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+      "apikey": supabaseKey,
+    };
 
-      // Filter out overly-specific titles that Apollo can't match
-      const usableTitles = persona.titles
-        .filter(t => t.length <= 40 && !t.includes("/") && !t.includes("(") && !t.includes(" - "))
-        .slice(0, 5);
-      
-      // If all titles were filtered out, use generic decision-maker titles
-      const searchTitles = usableTitles.length > 0
-        ? usableTitles
-        : ["VP of Sales", "Director of Business Development", "Chief Revenue Officer", "VP of Operations", "Director of Procurement"];
+    // Sanitize titles: drop overly-specific ones Apollo can't match
+    const cleanTitles = persona.titles
+      .filter(t => t.length >= 5 && t.length <= 40 && !t.includes("/") && !t.includes("(") && !t.includes(" - "))
+      .slice(0, 5);
 
-      const resp = await fetch(`${supabaseUrl}/functions/v1/search-apollo`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
-        body: JSON.stringify({
-          search_mode: "people",
-          person_titles: searchTitles,
-          person_seniorities: ["director", "vp", "c_suite", "owner"],
-          organization_locations: ["United States"],
-          per_page: 10,
-        }),
+    // Prospect domains from the research report for domain-constrained search
+    const prospectDomains = research.report?.prospectDomains?.slice(0, 10) || [];
+
+    // Generic industry fallbacks that always return results
+    const genericTitles = ["VP of Sales", "Director of Business Development", "Chief Revenue Officer", "VP of Operations", "Head of Partnerships"];
+
+    // Build search stages — each progressively broader
+    const stages: Array<{ label: string; body: Record<string, unknown> }> = [];
+
+    // Stage 1: Persona-specific titles (if we have clean ones)
+    if (cleanTitles.length > 0) {
+      stages.push({
+        label: "Searching with persona titles…",
+        body: { search_mode: "people", person_titles: cleanTitles, person_seniorities: ["director", "vp", "c_suite", "owner"], organization_locations: ["United States"], per_page: 10 },
       });
+    }
 
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        console.error("Apollo search error:", errData);
-        throw new Error(`HTTP ${resp.status}: ${errData.error || "Unknown"}`);
+    // Stage 2: If we have prospect domains from research, search decision-makers AT those companies
+    if (prospectDomains.length > 0) {
+      stages.push({
+        label: "Searching target companies…",
+        body: { search_mode: "people", organization_domains: prospectDomains, person_seniorities: ["director", "vp", "c_suite", "owner"], per_page: 10 },
+      });
+    }
+
+    // Stage 3: Generic decision-maker titles (guaranteed results)
+    stages.push({
+      label: "Broadening search…",
+      body: { search_mode: "people", person_titles: genericTitles, person_seniorities: ["director", "vp", "c_suite", "owner"], organization_locations: ["United States"], per_page: 10 },
+    });
+
+    let allPeople: any[] = [];
+
+    try {
+      for (const stage of stages) {
+        if (allPeople.length >= 5) break; // We have enough
+
+        toast.info(stage.label, { id: "find-leads-progress", duration: 8000 });
+
+        try {
+          const resp = await fetch(`${supabaseUrl}/functions/v1/search-apollo`, {
+            method: "POST",
+            headers: authHeaders,
+            body: JSON.stringify(stage.body),
+          });
+
+          if (!resp.ok) {
+            console.warn(`Apollo stage failed (${resp.status}), trying next…`);
+            continue;
+          }
+
+          const data = await resp.json();
+          const people = data.people || [];
+          console.log(`Apollo stage "${stage.label}" returned ${people.length} people`);
+
+          if (people.length > 0) {
+            // Deduplicate by apollo_id or email
+            const existingIds = new Set(allPeople.map(p => p.apollo_id || p.email));
+            const fresh = people.filter((p: any) => !existingIds.has(p.apollo_id || p.email));
+            allPeople.push(...fresh);
+          }
+        } catch (stageErr) {
+          console.warn("Apollo stage error:", stageErr);
+          continue; // Never let a single stage kill the whole flow
+        }
       }
-      const data = await resp.json();
-      const people = data.people || [];
-      console.log(`Apollo returned ${people.length} people for persona "${persona.title}"`);
 
-      if (people.length > 0) {
-        const newLeads = people.map((p: any) => ({
+      if (allPeople.length > 0) {
+        const newLeads = allPeople.map((p: any) => ({
           name: p.name,
           title: p.title,
           company: p.company,
@@ -186,11 +232,14 @@ export default function LeadGen() {
           reason: `Matched persona: ${persona.title}`,
         }));
         await upsertLeads(newLeads);
-
         await refetch();
+        toast.success(`Found ${allPeople.length} leads`, { id: "find-leads-progress" });
+      } else {
+        toast.error("No leads found — try adjusting your research or running a new analysis.", { id: "find-leads-progress" });
       }
     } catch (e) {
       console.error("Apollo search failed:", e);
+      toast.error("Lead search failed. Please try again.", { id: "find-leads-progress" });
     } finally {
       setLoadingPersona(null);
     }
