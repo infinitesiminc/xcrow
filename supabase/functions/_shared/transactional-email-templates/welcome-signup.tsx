@@ -5,6 +5,8 @@ import {
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = "xcrow"
+const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
+const LOGO = `${STORAGE}/email-assets/xcrow-logo.png`
 
 interface WelcomeSignupProps {
   displayName?: string
