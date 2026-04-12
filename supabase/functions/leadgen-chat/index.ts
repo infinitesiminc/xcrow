@@ -392,7 +392,7 @@ function apolloPeopleToLeads(
       email: p.email || null,
       website: p.organization?.website_url || null,
       photo_url: p.photo_url || null,
-      source: "Apollo People Search",
+      source: "professional network",
     });
   }
   return leads;
