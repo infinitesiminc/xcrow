@@ -290,7 +290,12 @@ export default function LeadsTableSection({
                   />
                 </TableCell>
                 <TableCell className="py-2.5">
-                  <span className="text-sm font-medium truncate block">{lead.name}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-[10px] font-semibold text-primary">
+                      {lead.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium truncate">{lead.name}</span>
+                  </div>
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground truncate">{lead.title || "—"}</TableCell>
                 <TableCell className="text-xs text-muted-foreground truncate">{lead.company || "—"}</TableCell>
