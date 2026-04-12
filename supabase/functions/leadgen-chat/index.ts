@@ -616,6 +616,11 @@ Deno.serve(async (req) => {
       if (context.leadCount != null) lines.push(`- Leads in pipeline: ${context.leadCount}`);
       if (context.leadsWithoutEmail != null) lines.push(`- Leads without email: ${context.leadsWithoutEmail}`);
       lines.push("[END WORKSPACE STATE]");
+      if (context.icpContext) {
+        lines.push("\n[ICP CONTEXT]");
+        lines.push(context.icpContext);
+        lines.push("[END ICP CONTEXT]");
+      }
       contextBlock = lines.join("\n");
     }
 
