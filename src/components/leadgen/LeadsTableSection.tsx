@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   TableProperties, Download, ExternalLink, Mail, Trash2,
   Search, ArrowUpDown, ArrowUp, ArrowDown, Linkedin, Phone,
-  ChevronDown, CheckCheck, Sparkles,
+  ChevronDown, CheckCheck, Sparkles, RefreshCw,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -41,11 +41,12 @@ interface LeadsTableSectionProps {
   onDeleteLead: (id: string) => void;
   onExportCSV: () => void;
   onDraftEmail?: (lead: SavedLead) => void;
+  onEnrichLeads?: (leadIds: string[]) => Promise<void>;
   userId?: string;
 }
 
 export default function LeadsTableSection({
-  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, userId,
+  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, onEnrichLeads, userId,
 }: LeadsTableSectionProps) {
   // Filters
   const [search, setSearch] = useState("");
