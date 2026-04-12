@@ -12,10 +12,17 @@ export interface ParsedPersona {
   titles: string[];       // for Apollo search
 }
 
+export interface ParsedCompetitor {
+  name: string;
+  domain?: string;
+  differentiator?: string;
+}
+
 export interface ParsedReport {
   companySummary: string;
   personas: ParsedPersona[];
   prospectDomains: string[];
+  competitors: ParsedCompetitor[];
   rawText: string;
 }
 
@@ -25,6 +32,7 @@ export function parseReportText(text: string): ParsedReport {
   let companySummary = "";
   const personas: ParsedPersona[] = [];
   const prospectDomains: string[] = [];
+  const competitors: ParsedCompetitor[] = [];
 
   for (const section of sections) {
     const headerMatch = section.match(/^## (.+)/);
@@ -112,9 +120,41 @@ export function parseReportText(text: string): ParsedReport {
         if (!d.includes("example.") && d.length > 4) prospectDomains.push(d);
       }
     }
+
+    if (header.includes("compet") || header.includes("landscape")) {
+      // Parse competitor entries — look for ### headers or bold names with domains
+      const compBlocks = section.split(/(?=^### )/m);
+      for (const block of compBlocks) {
+        const nameMatch = block.match(/^### (.+)/);
+        if (nameMatch) {
+          const name = nameMatch[1].replace(/\*\*/g, "").trim();
+          const domainMatch = block.match(/(?:domain|website|url)?[:\s]*([a-z0-9][-a-z0-9]*\.[a-z]{2,}(?:\.[a-z]{2,})?)/i);
+          // Extract first bullet or sentence as differentiator
+          const diffMatch = block.match(/[-*]\s+(.{10,120})/);
+          competitors.push({
+            name,
+            domain: domainMatch?.[1]?.toLowerCase(),
+            differentiator: diffMatch?.[1]?.replace(/\*\*/g, "").trim(),
+          });
+        } else {
+          // Try bold names: **CompanyName** (domain.com) — description
+          const boldMatches = block.matchAll(/\*\*([^*]+)\*\*[^a-z]*(?:\(?([a-z0-9][-a-z0-9]*\.[a-z]{2,})\)?)?[:\s—-]*([^\n]{10,120})?/gi);
+          for (const bm of boldMatches) {
+            const name = bm[1].trim();
+            if (name.length > 2 && !name.toLowerCase().includes("where") && !name.toLowerCase().includes("direct")) {
+              competitors.push({
+                name,
+                domain: bm[2]?.toLowerCase(),
+                differentiator: bm[3]?.trim(),
+              });
+            }
+          }
+        }
+      }
+    }
   }
 
-  return { companySummary, personas, prospectDomains: [...new Set(prospectDomains)], rawText: text };
+  return { companySummary, personas, prospectDomains: [...new Set(prospectDomains)], competitors: competitors.slice(0, 8), rawText: text };
 }
 
 /* ── Research hook ── */
@@ -428,6 +468,32 @@ export default function ResearchSection({ domain, onDomainChange, onStart, phase
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
                           Targets: {p.titles.slice(0, 3).join(", ")}
                         </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Competitors */}
+          {report.competitors.length > 0 && (
+            <div className="rounded-lg border border-border/40 bg-card p-4 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Swords className="w-4 h-4 text-primary" />
+                Competitive Landscape ({report.competitors.length})
+              </div>
+              <div className="grid gap-2">
+                {report.competitors.map((c, i) => (
+                  <div key={i} className="flex items-start gap-3 rounded-md bg-muted/30 px-3 py-2">
+                    <span className="text-xs font-mono text-primary mt-0.5">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {c.name}
+                        {c.domain && <span className="text-xs text-muted-foreground ml-1.5 font-mono">({c.domain})</span>}
+                      </p>
+                      {c.differentiator && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{c.differentiator}</p>
                       )}
                     </div>
                   </div>

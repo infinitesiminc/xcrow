@@ -187,7 +187,8 @@ Rules:
 - Be specific: real company names, real job titles, real revenue figures where possible
 - No filler, no hedging — every claim grounded in evidence from the scraped pages
 - Focus 60% of depth on ICP & Buyer Personas
-- For each persona, include a "Search titles" list of 3-5 exact job titles searchable on LinkedIn/Apollo`;
+- For each persona, include a "Search titles" list of 3-5 exact job titles searchable on LinkedIn/Apollo
+- Use competitive intelligence to sharpen ICPs: identify gaps competitors leave, and tailor personas/triggers to exploit those gaps`;
 
     const userPrompt = `Deep analysis of: ${domainName}
 ${companyContext ? `\nContext: ${companyContext}` : ""}
@@ -198,24 +199,34 @@ Use these EXACT markdown headers:
 ## Company Overview
 What they sell, business model, pricing if discoverable, estimated revenue/headcount.
 
+## Competitive Landscape
+For each direct competitor (identify 3-6):
+### [Competitor Name]
+- **Domain**: competitor's website
+- **Positioning**: how they position vs ${domainName}
+- **Where ${domainName} wins**: specific advantages
+- **Where ${domainName} loses**: specific weaknesses
+- **Switching triggers**: what would make their customers switch to ${domainName}
+
+IMPORTANT: Put Competitive Landscape BEFORE ICP Segments so competitor insights can inform persona targeting.
+
 ## ICP Segments and Buyer Personas
 For EACH segment (identify 2-4):
 ### [Segment Name]
 - **Company fit**: industry, employee range, revenue range, tech stack signals, geography
 - **Primary buyer**: exact title, department, seniority, pain points this product solves
 - **Secondary buyer**: same detail
-- **Buying triggers**: events that create urgency
+- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")
+- **Competitive angle**: why ${domainName} beats alternatives for THIS specific segment
 - **Disqualifiers**: what makes a company NOT a fit
 - **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")
-
-## Competitive Landscape
-Direct competitors (name, domain, differentiation). Where does ${domainName} win vs lose?
 
 ## Prospecting Targets
 5-10 specific companies that fit the ICPs above. For each:
 - Company name and domain
 - Which ICP segment they match
 - Why they'd buy (specific rationale)
+- Current solution they likely use (competitor name if known)
 - Decision-maker title to target
 
 --- SCRAPED CONTENT ---
