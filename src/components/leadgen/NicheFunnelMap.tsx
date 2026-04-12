@@ -6,7 +6,6 @@ import {
   ChevronRight,
   ChevronDown,
   Search,
-  UserCheck,
   BarChart3,
   Mail,
   Download,
@@ -30,12 +29,10 @@ interface NicheFunnelMapProps {
   activeNiche: string | null;
   onSelectNiche: (niche: string | null) => void;
   onFindLeads?: (niche: string) => void;
-  onEnrichLeads?: (niche: string) => void;
   onScoreLeads?: (niche: string) => void;
   onDraftAll?: (niche: string) => void;
   onExportNiche?: (niche: string) => void;
   isFinding?: boolean;
-  isEnriching?: boolean;
 }
 
 interface TreeNode {
@@ -66,12 +63,10 @@ function TreeRow({
   onSelect,
   activeNiche,
   onFindLeads,
-  onEnrichLeads,
   onScoreLeads,
   onDraftAll,
   onExportNiche,
   isFinding,
-  isEnriching,
   expandedSet,
   onToggleExpand,
   onSelectNiche,
@@ -84,12 +79,10 @@ function TreeRow({
   onSelect: () => void;
   activeNiche: string | null;
   onFindLeads?: (niche: string) => void;
-  onEnrichLeads?: (niche: string) => void;
   onScoreLeads?: (niche: string) => void;
   onDraftAll?: (niche: string) => void;
   onExportNiche?: (niche: string) => void;
   isFinding?: boolean;
-  isEnriching?: boolean;
   expandedSet: Set<string>;
   onToggleExpand: (label: string) => void;
   onSelectNiche: (niche: string | null) => void;
@@ -173,10 +166,6 @@ function TreeRow({
               {isFinding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
               Find
             </Button>
-            <Button variant="outline" size="sm" className="h-6 text-xs gap-1 px-2" onClick={() => onEnrichLeads?.(node.label)} disabled={isEnriching || total === 0}>
-              {isEnriching ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3 h-3" />}
-              Enrich
-            </Button>
             <Button variant="outline" size="sm" className="h-6 text-xs gap-1 px-2" onClick={() => onScoreLeads?.(node.label)} disabled={total === 0}>
               <BarChart3 className="w-3 h-3" /> Score
             </Button>
@@ -204,12 +193,10 @@ function TreeRow({
               onSelect={() => onSelectNiche(activeNiche === child.label ? null : child.label)}
               activeNiche={activeNiche}
               onFindLeads={onFindLeads}
-              onEnrichLeads={onEnrichLeads}
               onScoreLeads={onScoreLeads}
               onDraftAll={onDraftAll}
               onExportNiche={onExportNiche}
               isFinding={isFinding}
-              isEnriching={isEnriching}
               expandedSet={expandedSet}
               onToggleExpand={onToggleExpand}
               onSelectNiche={onSelectNiche}
@@ -226,12 +213,10 @@ export function NicheFunnelMap({
   activeNiche,
   onSelectNiche,
   onFindLeads,
-  onEnrichLeads,
   onScoreLeads,
   onDraftAll,
   onExportNiche,
   isFinding,
-  isEnriching,
 }: NicheFunnelMapProps) {
   // Build lead count map
   const leadCountMap = useMemo(() => {
@@ -379,12 +364,10 @@ export function NicheFunnelMap({
               onSelect={() => onSelectNiche(activeNiche === node.label ? null : node.label)}
               activeNiche={activeNiche}
               onFindLeads={onFindLeads}
-              onEnrichLeads={onEnrichLeads}
               onScoreLeads={onScoreLeads}
               onDraftAll={onDraftAll}
               onExportNiche={onExportNiche}
               isFinding={isFinding}
-              isEnriching={isEnriching}
               expandedSet={expandedSet}
               onToggleExpand={toggleExpand}
               onSelectNiche={onSelectNiche}

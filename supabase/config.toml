@@ -73,9 +73,7 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.draft-outreach]
     verify_jwt = false
-  [functions.scan-la-garages]
-    verify_jwt = false
-  [functions.perplexity-research]
+  [functions.icp-research]
     verify_jwt = false
   [functions.leadgen-scout]
     verify_jwt = false

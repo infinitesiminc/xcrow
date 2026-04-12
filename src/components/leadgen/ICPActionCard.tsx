@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, UserCheck, BarChart3, Mail, Download, Loader2, Target } from "lucide-react";
+import { Search, BarChart3, Mail, Download, Loader2, Target } from "lucide-react";
 
 export interface ICPCriteria {
   industry?: string;
@@ -19,12 +19,10 @@ interface ICPActionCardProps {
   leadCount: number;
   icpCriteria?: ICPCriteria;
   onFindLeads: () => void;
-  onEnrich: () => void;
   onScore: () => void;
   onDraftAll: () => void;
   onExport: () => void;
   isFinding?: boolean;
-  isEnriching?: boolean;
 }
 
 export function ICPActionCard({
@@ -33,12 +31,10 @@ export function ICPActionCard({
   leadCount,
   icpCriteria,
   onFindLeads,
-  onEnrich,
   onScore,
   onDraftAll,
   onExport,
   isFinding,
-  isEnriching,
 }: ICPActionCardProps) {
   const hasCriteria = icpCriteria && Object.values(icpCriteria).some((v) => v && (Array.isArray(v) ? v.length > 0 : true));
 
@@ -98,16 +94,6 @@ export function ICPActionCard({
           >
             {isFinding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
             Find More Leads
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1.5 w-full justify-start"
-            onClick={onEnrich}
-            disabled={isEnriching || leadCount === 0}
-          >
-            {isEnriching ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3 h-3" />}
-            Enrich Contacts
           </Button>
           <Button
             variant="outline"
