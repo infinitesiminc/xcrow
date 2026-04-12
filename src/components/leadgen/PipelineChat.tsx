@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Bot, User, Loader2, Send, Navigation, Users, Download, Search, Mail, Play } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSSEStream } from "@/lib/sse-parser";
 import { Button } from "@/components/ui/button";
@@ -101,11 +102,9 @@ function getGreeting(ctx: PipelineChatContext): string {
     return parts.join(" ");
   }
   if (researchStatus === "running") {
-    return `Research is running for **${domain}**. I'll be ready to help once it completes.`;
+    return `⏳ Research is running for **${domain}**… I'll unlock once the analysis is complete.`;
   }
-  return domain
-    ? `Ready to analyze **${domain}**. Start research or ask me anything about your ICP strategy.`
-    : `Enter a company URL to start, or ask me how this tool works.`;
+  return `Enter a company URL and run research first — I'll be ready to help once the analysis is complete.`;
 }
 
 /* ── Action Card Component ── */
@@ -290,7 +289,7 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
     }
   }, [isStreaming, messages, context]);
 
-  const handleSend = () => sendMessage(input.trim());
+  const handleSend = () => { if (context.researchStatus === "complete") sendMessage(input.trim()); };
   const contextChips = getContextChips(context);
 
   return (
@@ -396,30 +395,37 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
       )}
 
       <div className="border-t border-border p-3 shrink-0">
-        <div className="flex gap-2">
-          <Textarea
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Ask anything..."
-            className="min-h-[42px] max-h-[120px] resize-none text-sm"
-            rows={1}
-          />
-          <Button
-            size="icon"
-            onClick={handleSend}
-            disabled={!input.trim() || isStreaming}
-            className="shrink-0 h-[42px] w-[42px]"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
+        {context.researchStatus !== "complete" ? (
+          <div className="flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground">
+            <Loader2 className={cn("w-3.5 h-3.5", context.researchStatus === "running" && "animate-spin")} />
+            <span>{context.researchStatus === "running" ? "Waiting for research to complete…" : "Run research to unlock the co-pilot"}</span>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Textarea
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Ask anything..."
+              className="min-h-[42px] max-h-[120px] resize-none text-sm"
+              rows={1}
+            />
+            <Button
+              size="icon"
+              onClick={handleSend}
+              disabled={!input.trim() || isStreaming}
+              className="shrink-0 h-[42px] w-[42px]"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
