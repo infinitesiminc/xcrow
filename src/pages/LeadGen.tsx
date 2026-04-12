@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
+import { FloatingChat } from "@/components/leadgen/FloatingChat";
 
 /* ── Chat ── */
 interface ChatMessage { role: "user" | "assistant"; content: string; }
@@ -370,25 +371,21 @@ export default function LeadGen() {
               onRerunWorkspace={handleRerunWorkspace}
             />
 
-            <div className="flex-1 flex min-w-0">
-              {/* Main panel */}
-              <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
-                  <SidebarTrigger className="mr-3" />
-                  <span className="text-sm font-medium capitalize">{activeSection}</span>
-                </header>
-                <div className="flex-1 overflow-y-auto p-6">
-                  <div className="max-w-4xl mx-auto">
-                    {renderSection()}
-                  </div>
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+              <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
+                <SidebarTrigger className="mr-3" />
+                <span className="text-sm font-medium capitalize">{activeSection}</span>
+              </header>
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="max-w-5xl mx-auto">
+                  {renderSection()}
                 </div>
               </div>
-
-              {/* Chat panel */}
-              <div className="w-[380px] shrink-0 border-l border-border flex flex-col overflow-hidden hidden lg:flex">
-                <PipelineChat leadCount={leads.length} />
-              </div>
             </div>
+
+            <FloatingChat>
+              <PipelineChat leadCount={leads.length} />
+            </FloatingChat>
           </div>
         </SidebarProvider>
       </div>
