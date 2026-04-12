@@ -1,38 +1,56 @@
 
 
-# Homepage Messaging Pivot: Startup Founders Without Sales Teams
+## Plan: Consolidate LeadGen into Single-Screen Dashboard + Docked Chat
 
-## Current Problem
-The messaging assumes the reader knows what an SDR is, what Apollo filters are, and has context on enterprise sales tools. A startup founder without a sales team doesn't relate to any of this. They don't have an SDR to replace — they've never had one.
+### What changes
 
-## New Messaging Direction
+Replace the current tab-switching layout (Research → Personas → Leads as separate views) with a single scrollable dashboard showing all content simultaneously, with a permanently docked chat panel on the right.
 
-**Core insight**: These founders are doing sales themselves (badly), or not doing it at all. They don't need a "cheaper Apollo" — they need their **first sales engine**.
+### Layout structure
 
-### Key Changes
+```text
+┌─────────────┬──────────────────────────────┬──────────────────┐
+│  Sidebar    │  Main Dashboard (scrollable) │  Docked Chat     │
+│  (workspaces│                              │  (always visible) │
+│   + nav)    │  ┌─ Company Summary ───────┐ │                  │
+│             │  │ Maquoketa Research...    │ │  AI Co-pilot     │
+│             │  └─────────────────────────┘ │                  │
+│             │  ┌─ Personas (cards row) ──┐ │  [messages]      │
+│             │  │ Special Ops │ ISR & Sur │ │                  │
+│             │  └─────────────────────────┘ │                  │
+│             │  ┌─ Leads Table ───────────┐ │                  │
+│             │  │ Name │ Title │ Company  │ │  [input box]     │
+│             │  └─────────────────────────┘ │                  │
+└─────────────┴──────────────────────────────┴──────────────────┘
+```
 
-| Section | Current | Proposed |
-|---|---|---|
-| **Eyebrow** | "THE $49 SALES TEAM" | "YOUR FIRST SALES TEAM" |
-| **Headline** | "Paste a URL. Skip the SDR." | "Paste a URL. Get Your First Customers." |
-| **Subheadline** | "Other tools give you a database..." | "You're building a product, not a sales team. Paste your website and we'll find the people who need what you're building." |
-| **Tagline under CTA** | "Free to start · No credit card · No sales expertise needed" | "No sales experience needed · Free to start · Works in 10 seconds" |
-| **Stats row** | "$49 vs $120+ on LinkedIn" | "$49/mo — Your entire outbound" / "0 sales hires needed" / "10s to your first lead" |
-| **Social proof** | "Trusted by GTM teams targeting these companies" | "Founders use Xcrow to land their first 10 customers" |
-| **How It Works** | Generic lead gen steps | Founder-centric: "Paste your website" → "AI builds your sales playbook" → "Start closing deals" |
-| **Apollo comparison** | SDR/GTM-heavy language | Reframe: "Apollo is built for sales teams. You don't have one. That's the point." |
-| **LinkedIn comparison** | InMail pricing comparison | Reframe: "You don't have time for LinkedIn. You have a product to ship." |
-| **Bottom CTA** | "Your Competitor Is Still Building Apollo Filters" | "Your competitors are hiring SDRs. You just need a URL." |
-| **SEO title** | "The $49 Sales Team" | "Xcrow — Your First Sales Hire is a URL" |
+### Files to modify
 
-### Files to Modify
-- `src/pages/Index.tsx` — All copy changes above
-- `src/components/SEOHead.tsx` — Only if default meta description needs updating (it's passed as props, so just the Index call)
+1. **`src/pages/LeadGen.tsx`** — Remove `activeSection` tab switching and `renderSection()`. Render all three sections (research/personas/leads) vertically in a single scrollable column. Replace `FloatingChat` with a docked right panel (`w-80 border-l`) that is always visible on desktop, collapsible on mobile.
+
+2. **`src/components/leadgen/ResearchSection.tsx`** — Make it work inline: when research is complete, collapse to a compact summary card (company name + status). When not started or running, show the domain input + streaming phases as today.
+
+3. **`src/components/leadgen/PersonasSection.tsx`** — Render as a horizontal card row instead of a grid, more compact for inline display. "Find Leads" button still opens chat-first discovery.
+
+4. **`src/components/leadgen/LeadsTableSection.tsx`** — Render inline below personas. Show empty state with prompt to use chat when no leads exist.
+
+5. **`src/components/leadgen/FloatingChat.tsx`** — Remove floating bubble/overlay. Convert to a simple docked panel component that takes full height of the right column. On mobile, switch to a bottom sheet or full-screen overlay triggered by a FAB.
+
+6. **`src/components/leadgen/LeadGenSidebar.tsx`** — Simplify: remove Pipeline nav items (Research/Personas/Leads) since they're no longer separate views. Keep only workspace list + settings. Optionally add anchor-scroll links.
+
+### Key behaviors
+
+- **Research phase**: Domain input + streaming phases visible in main column. Chat docked on right shows welcome message.
+- **Research complete**: Summary card collapses, personas appear below, chat auto-greets with context.
+- **Find Leads**: Button on persona card opens discovery conversation in docked chat. Results appear in leads table below in real-time.
+- **Mobile**: Chat becomes a floating overlay (current behavior). Dashboard stacks vertically.
+- **No section switching needed** — everything scrolls naturally, chat provides the interactive layer.
 
 ### What stays the same
-- Page structure, layout, animations, and components unchanged
-- CTA input form and logic unchanged
-- Trust strip unchanged
-- Comparison section structure unchanged (just copy updates)
-- Footer, Navbar unchanged
+
+- Workspace management in sidebar
+- Chat-first discovery flow and system prompt
+- All edge functions unchanged
+- DraftEmailModal unchanged
+- LeadsCRUD hook unchanged
 
