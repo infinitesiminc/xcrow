@@ -14,6 +14,7 @@ import apolloComplexUi from "@/assets/apollo-complex-ui.png";
 import {
   Globe, ArrowRight,
   CheckCircle2, XCircle,
+  Shield, Lock, Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import CompanyMarquee from "@/components/CompanyMarquee";
@@ -197,10 +198,75 @@ export default function Index() {
         <section className="border-y border-border/40 bg-muted/20 py-8">
           <motion.div {...fadeInView()} className="max-w-5xl mx-auto px-4">
             <p className="text-center text-xs text-muted-foreground/60 tracking-[0.2em] uppercase font-medium mb-5">
-              Works with any B2B company
+              Trusted by GTM teams targeting these companies
             </p>
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
+        </section>
+
+        {/* ═══ How It Works ═══ */}
+        <section className="py-20 sm:py-28">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <motion.div {...fadeInView()} className="text-center mb-14">
+              <p className="text-primary text-sm font-semibold tracking-[0.15em] uppercase mb-4">
+                How It Works
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
+                Three Steps. <span className="text-primary">Zero Complexity.</span>
+              </h2>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  step: "01",
+                  title: "Paste a URL",
+                  desc: "Enter any company website. Our AI instantly analyzes their business, market, and ideal buyer profile.",
+                },
+                {
+                  step: "02",
+                  title: "AI Finds Your Market",
+                  desc: "We identify niches, buyer personas, and decision-makers that match — scored by relevance and fit.",
+                },
+                {
+                  step: "03",
+                  title: "Get Outreach-Ready Leads",
+                  desc: "Receive verified emails, personalized drafts, and a pipeline ready to close. Export or send directly.",
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.step}
+                  {...fadeInView(i * 0.1)}
+                  className="relative bg-card border border-border rounded-2xl p-8 text-center"
+                >
+                  <p className="text-5xl font-extrabold text-primary/10 mb-4">{item.step}</p>
+                  <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ Trust Strip ═══ */}
+        <section className="border-y border-border/40 bg-muted/20 py-10">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+              {[
+                { icon: Lock, label: "Encrypted in Transit & at Rest", sub: "TLS 1.3 + AES-256" },
+                { icon: Shield, label: "GDPR & CAN-SPAM Compliant", sub: "Built-in compliance controls" },
+                { icon: Database, label: "Your Data Stays Yours", sub: "We never sell or share lead data" },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div key={label} className="flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground">{sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
 

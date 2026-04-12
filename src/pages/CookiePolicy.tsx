@@ -1,13 +1,15 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 export default function CookiePolicy() {
   return (
     <>
+      <SEOHead title="Cookie Policy" description="How Xcrow uses cookies on our B2B lead generation platform." path="/cookies" />
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 py-20 prose prose-invert prose-sm">
         <h1 className="text-3xl font-bold mb-2">Cookie Policy</h1>
-        <p className="text-muted-foreground text-sm mb-8">Last updated: March 19, 2026</p>
+        <p className="text-muted-foreground text-sm mb-8">Last updated: April 12, 2026</p>
 
         <h2>1. What Are Cookies</h2>
         <p>
@@ -37,7 +39,7 @@ export default function CookiePolicy() {
 
         <h3>Functional Cookies</h3>
         <p>
-          Remember your preferences such as theme settings, language, and recently viewed roles.
+          Remember your preferences such as theme settings and workspace configurations.
         </p>
 
         <h2>3. Third-Party Cookies</h2>
@@ -70,7 +72,7 @@ export default function CookiePolicy() {
         <h2>6. Contact</h2>
         <p>
           If you have questions about our use of cookies, contact us at{" "}
-          <a href="mailto:privacy@Xcrow.ai" className="text-primary hover:underline">privacy@Xcrow.ai</a>.
+          <a href="mailto:privacy@xcrow.ai" className="text-primary hover:underline">privacy@xcrow.ai</a>.
         </p>
       </main>
       <Footer />

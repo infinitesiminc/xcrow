@@ -1,35 +1,15 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
+import logoCrow from "@/assets/logo-crow.png";
 
 const PRODUCT = [
   { label: "Lead Gen", to: "/leadgen" },
-  { label: "How It Works", to: "/how-it-works" },
-  { label: "Pricing", to: "/pricing" },
-  { label: "Blog", to: "/blog" },
-  { label: "Demo", to: "/demo" },
-];
-
-const USE_CASES = [
-  { label: "SaaS", to: "/use-cases/saas" },
-  { label: "Agencies", to: "/use-cases/agencies" },
-  { label: "Recruiting", to: "/use-cases/recruiting" },
-  { label: "Consulting", to: "/use-cases/consulting" },
-  { label: "E-commerce", to: "/use-cases/ecommerce" },
-];
-
-const COMPARE = [
-  { label: "vs Apollo", to: "/vs/apollo" },
-  { label: "vs Clay", to: "/vs/clay" },
-  { label: "vs ZoomInfo", to: "/vs/zoominfo" },
-  { label: "vs LinkedIn", to: "/vs/linkedin" },
 ];
 
 const LEGAL = [
   { label: "Privacy", to: "/privacy" },
   { label: "Terms", to: "/terms" },
   { label: "Cookies", to: "/cookies" },
-  
-  { label: "About", to: "/about" },
 ];
 
 const ColHeader = ({ children }: { children: string }) => (
@@ -45,27 +25,30 @@ const ColLink = ({ to, children }: { to: string; children: string }) => (
 const Footer = forwardRef<HTMLElement>((_, ref) => (
   <footer ref={ref} className="mt-auto bg-background border-t border-border">
     <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 mb-10">
+        <div>
+          <div className="flex items-center gap-1.5 mb-4">
+            <img src={logoCrow} alt="Xcrow" className="h-6 w-6 object-contain" />
+            <span className="text-base font-bold text-foreground tracking-tight">Xcrow</span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            AI-powered B2B lead generation.<br />
+            Paste a URL. Get qualified leads.
+          </p>
+          <a href="mailto:hello@xcrow.ai" className="block text-sm text-primary hover:underline mt-3">hello@xcrow.ai</a>
+        </div>
         <div>
           <ColHeader>Product</ColHeader>
           {PRODUCT.map((l) => <ColLink key={l.to} to={l.to}>{l.label}</ColLink>)}
         </div>
         <div>
-          <ColHeader>Use Cases</ColHeader>
-          {USE_CASES.map((l) => <ColLink key={l.to} to={l.to}>{l.label}</ColLink>)}
-        </div>
-        <div>
-          <ColHeader>Compare</ColHeader>
-          {COMPARE.map((l) => <ColLink key={l.to} to={l.to}>{l.label}</ColLink>)}
-        </div>
-        <div>
-          <ColHeader>Company</ColHeader>
+          <ColHeader>Legal</ColHeader>
           {LEGAL.map((l) => <ColLink key={l.to} to={l.to}>{l.label}</ColLink>)}
         </div>
       </div>
       <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Xcrow. All rights reserved.</p>
-        <p className="text-xs text-muted-foreground">The #1 Outbound Lead Gen</p>
+        <p className="text-xs text-muted-foreground">AI-Powered Outbound Lead Generation</p>
       </div>
     </div>
   </footer>

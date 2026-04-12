@@ -1,13 +1,15 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 export default function PrivacyPolicy() {
   return (
     <>
+      <SEOHead title="Privacy Policy" description="How Xcrow handles your data — our privacy practices for B2B lead generation." path="/privacy" />
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 py-20 prose prose-invert prose-sm">
         <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-muted-foreground text-sm mb-8">Last updated: March 19, 2026</p>
+        <p className="text-muted-foreground text-sm mb-8">Last updated: April 12, 2026</p>
 
         <h2>1. Information We Collect</h2>
         <p>
@@ -15,17 +17,17 @@ export default function PrivacyPolicy() {
         </p>
         <ul>
           <li><strong>Account Information:</strong> Name, email address, and profile details you provide during registration.</li>
-          <li><strong>Usage Data:</strong> Pages visited, features used, simulation results, and interaction patterns.</li>
+          <li><strong>Usage Data:</strong> Pages visited, features used, lead searches performed, and interaction patterns.</li>
           <li><strong>Device Data:</strong> Browser type, operating system, IP address, and device identifiers.</li>
-          <li><strong>Educational Data:</strong> Job titles, skills, career stage, and school affiliation you provide.</li>
+          <li><strong>Business Data:</strong> Company domains you search, workspace configurations, and lead pipeline activity.</li>
         </ul>
 
         <h2>2. How We Use Your Information</h2>
         <p>We use the information we collect to:</p>
         <ul>
-          <li>Provide, maintain, and improve our services.</li>
-          <li>Personalize your experience, including AI simulations and skill recommendations.</li>
-          <li>Communicate with you about updates, features, and promotional offers.</li>
+          <li>Provide, maintain, and improve our lead generation services.</li>
+          <li>Personalize your experience, including AI-powered lead discovery and outreach recommendations.</li>
+          <li>Communicate with you about updates, features, and relevant offers.</li>
           <li>Analyze usage patterns to improve our platform.</li>
           <li>Comply with legal obligations.</li>
         </ul>
@@ -35,8 +37,8 @@ export default function PrivacyPolicy() {
           We do not sell your personal data. We may share information with:
         </p>
         <ul>
-          <li><strong>Service Providers:</strong> Third parties that help us operate our platform (hosting, analytics, email).</li>
-          <li><strong>Institutional Partners:</strong> If you access Xcrow.ai through a school or employer, aggregated (non-identifiable) performance data may be shared with your institution's administrators.</li>
+          <li><strong>Service Providers:</strong> Third parties that help us operate our platform (hosting, analytics, email delivery, payment processing).</li>
+          <li><strong>Data Partners:</strong> We use third-party data providers to enrich lead information. Your search queries may be sent to these providers to return results.</li>
           <li><strong>Legal Requirements:</strong> When required by law or to protect our rights.</li>
         </ul>
 
@@ -47,7 +49,7 @@ export default function PrivacyPolicy() {
 
         <h2>5. Security</h2>
         <p>
-          We implement industry-standard security measures including encryption in transit and at rest, access controls, and regular security audits.
+          We implement industry-standard security measures including encryption in transit and at rest, access controls, and regular security audits to protect your data.
         </p>
 
         <h2>6. Your Rights</h2>
@@ -61,7 +63,7 @@ export default function PrivacyPolicy() {
 
         <h2>7. Children's Privacy</h2>
         <p>
-          Xcrow.ai is not intended for users under the age of 16. We do not knowingly collect personal information from children.
+          Xcrow.ai is a business-to-business platform not intended for users under the age of 18. We do not knowingly collect personal information from minors.
         </p>
 
         <h2>8. Changes to This Policy</h2>
@@ -72,7 +74,7 @@ export default function PrivacyPolicy() {
         <h2>9. Contact Us</h2>
         <p>
           If you have questions about this Privacy Policy, please contact us at{" "}
-          <a href="mailto:privacy@Xcrow.ai" className="text-primary hover:underline">privacy@Xcrow.ai</a>.
+          <a href="mailto:privacy@xcrow.ai" className="text-primary hover:underline">privacy@xcrow.ai</a>.
         </p>
       </main>
       <Footer />
