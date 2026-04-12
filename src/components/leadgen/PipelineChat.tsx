@@ -290,7 +290,7 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
     }
   }, [isStreaming, messages, context]);
 
-  const handleSend = () => sendMessage(input.trim());
+  const handleSend = () => { if (context.researchStatus === "complete") sendMessage(input.trim()); };
   const contextChips = getContextChips(context);
 
   return (
