@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import { FloatingChat } from "@/components/leadgen/FloatingChat";
+import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
 
 /* ── Chat ── */
 interface ChatMessage { role: "user" | "assistant"; content: string; }
