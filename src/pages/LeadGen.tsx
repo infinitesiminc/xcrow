@@ -301,6 +301,11 @@ export default function LeadGen() {
     }
   }, [user, loadingPersona, research.report, upsertLeads]);
 
+  const handleDraftEmail = useCallback((lead: SavedLead) => {
+    // Navigate to outreach section — future: open compose modal
+    setActiveSection("outreach");
+  }, []);
+
   const handleStartResearch = useCallback(() => {
     if (domain.trim()) research.start(domain.trim());
   }, [domain, research]);
