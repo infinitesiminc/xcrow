@@ -146,9 +146,9 @@ export default function LeadGen() {
         <meta name="description" content="Enter a company URL and get deep AI research — market position, buyer personas, competitors, and pipeline targets." />
       </Helmet>
       <Navbar />
-      <div className="pt-14 h-screen overflow-hidden">
+      <div className="h-[calc(100vh-56px)] overflow-hidden">
         <SidebarProvider defaultOpen={false}>
-          <div className="h-[calc(100vh-56px)] flex w-full overflow-hidden">
+          <div className="h-full flex w-full overflow-hidden">
             <LeadGenSidebar
               activeSection="research"
               onSelectSection={() => {}}
