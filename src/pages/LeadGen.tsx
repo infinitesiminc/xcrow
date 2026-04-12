@@ -408,8 +408,6 @@ export default function LeadGen() {
             userId={user?.id}
           />
         );
-      case "outreach":
-        return <OutreachSection outreach={outreach} />;
     }
   };
 

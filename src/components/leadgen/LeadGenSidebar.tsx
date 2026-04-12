@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Search, Users, TableProperties, Mail, Settings, Globe, Plus, Building2, RotateCcw, Trash2 } from "lucide-react";
+import { Search, Users, TableProperties, Settings, Globe, Plus, Building2, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,7 +19,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
-export type SidebarSection = "research" | "personas" | "leads" | "outreach";
+export type SidebarSection = "research" | "personas" | "leads";
 
 interface LeadGenSidebarProps {
   activeSection: SidebarSection;
@@ -41,7 +41,6 @@ const NAV_ITEMS: { id: SidebarSection; label: string; icon: typeof Search; }[] =
   { id: "research", label: "Research", icon: Search },
   { id: "personas", label: "Personas", icon: Users },
   { id: "leads", label: "Leads", icon: TableProperties },
-  { id: "outreach", label: "Outreach", icon: Mail },
 ];
 
 export function LeadGenSidebar({
@@ -67,7 +66,7 @@ export function LeadGenSidebar({
   const getBadge = (id: SidebarSection) => {
     if (id === "personas" && personaCount > 0) return personaCount;
     if (id === "leads" && leadCount > 0) return leadCount;
-    if (id === "outreach" && outreachCount > 0) return outreachCount;
+    
     return null;
   };
 
