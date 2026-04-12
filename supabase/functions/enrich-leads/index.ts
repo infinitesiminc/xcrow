@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
       return respond({ error: "Provide 1-50 lead_ids" }, 400);
     }
 
-    // Fetch leads belonging to this user
+    // Fetch leads belonging to this user - include apollo_id
     const { data: leads, error: fetchErr } = await sb
       .from("saved_leads")
-      .select("id, name, title, company, email, linkedin, phone")
+      .select("id, name, title, company, email, linkedin, phone, apollo_id")
       .eq("user_id", user.id)
       .in("id", lead_ids);
 
@@ -59,35 +59,54 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Use Apollo people/match to find this person
       try {
-        const matchBody: Record<string, unknown> = {};
-        if (lead.name) {
-          const parts = lead.name.trim().split(/\s+/);
-          matchBody.first_name = parts[0];
-          if (parts.length > 1) matchBody.last_name = parts.slice(1).join(" ");
-        }
-        if (lead.company) matchBody.organization_name = lead.company;
-        if (lead.title) matchBody.title = lead.title;
+        let person: any = null;
 
-        const matchRes = await fetch("https://api.apollo.io/api/v1/people/match", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Api-Key": APOLLO_API_KEY,
-          },
-          body: JSON.stringify(matchBody),
-        });
-
-        if (!matchRes.ok) {
-          console.warn(`Apollo match failed for ${lead.name}: ${matchRes.status}`);
-          failed++;
-          results.push({ id: lead.id, status: "apollo_error" });
-          continue;
+        // Strategy 1: If we have an Apollo ID, use it directly for a precise match
+        if (lead.apollo_id) {
+          const matchRes = await fetch("https://api.apollo.io/api/v1/people/match", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Api-Key": APOLLO_API_KEY,
+            },
+            body: JSON.stringify({ id: lead.apollo_id, reveal_personal_emails: true }),
+          });
+          if (matchRes.ok) {
+            const matchData = await matchRes.json();
+            person = matchData.person;
+          } else {
+            console.warn(`Apollo match by ID failed for ${lead.apollo_id}: ${matchRes.status}`);
+          }
         }
 
-        const matchData = await matchRes.json();
-        const person = matchData.person;
+        // Strategy 2: Fallback to name/company match if no Apollo ID or ID match failed
+        if (!person) {
+          const matchBody: Record<string, unknown> = {};
+          if (lead.name) {
+            const parts = lead.name.trim().split(/\s+/);
+            matchBody.first_name = parts[0];
+            if (parts.length > 1) matchBody.last_name = parts.slice(1).join(" ");
+          }
+          if (lead.company) matchBody.organization_name = lead.company;
+          if (lead.title) matchBody.title = lead.title;
+
+          // Only attempt if we have enough info
+          if (matchBody.first_name && (matchBody.last_name || matchBody.organization_name)) {
+            const matchRes = await fetch("https://api.apollo.io/api/v1/people/match", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Api-Key": APOLLO_API_KEY,
+              },
+              body: JSON.stringify({ ...matchBody, reveal_personal_emails: true }),
+            });
+            if (matchRes.ok) {
+              const matchData = await matchRes.json();
+              person = matchData.person;
+            }
+          }
+        }
 
         if (!person) {
           failed++;
@@ -96,13 +115,18 @@ Deno.serve(async (req) => {
         }
 
         const updates: Record<string, unknown> = {};
+        // Always update name to full name if we only had first name
+        if (person.name && person.name !== lead.name && lead.name && !lead.name.includes(" ")) {
+          updates.name = person.name;
+        }
         if (!lead.email && person.email) updates.email = person.email;
         if (!lead.linkedin && person.linkedin_url) updates.linkedin = person.linkedin_url;
         if (!lead.phone && (person.phone_number || person.sanitized_phone)) {
           updates.phone = person.phone_number || person.sanitized_phone;
         }
-        // Also backfill title if missing
         if (!lead.title && person.title) updates.title = person.title;
+        // Store apollo_id if we didn't have it
+        if (!lead.apollo_id && person.id) updates.apollo_id = person.id;
 
         if (Object.keys(updates).length === 0) {
           skipped++;
@@ -126,7 +150,7 @@ Deno.serve(async (req) => {
         results.push({ id: lead.id, status: "error" });
       }
 
-      // Rate limiting - Apollo recommends ~1 req/sec
+      // Rate limiting
       await new Promise((r) => setTimeout(r, 300));
     }
 
