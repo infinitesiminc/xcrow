@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import { FloatingChat } from "@/components/leadgen/FloatingChat";
+import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
 
 /* ── Chat ── */
 interface ChatMessage { role: "user" | "assistant"; content: string; }
@@ -141,6 +142,7 @@ export default function LeadGen() {
   const [activeSection, setActiveSection] = useState<SidebarSection>("research");
   const [domain, setDomain] = useState("");
   const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
+  const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
 
   // Research
   const research = useResearchStream();
@@ -332,7 +334,7 @@ export default function LeadGen() {
   }, [user, loadingPersona, research.report, upsertLeads]);
 
   const handleDraftEmail = useCallback((lead: SavedLead) => {
-    setActiveSection("outreach");
+    setDraftLead(lead);
   }, []);
 
   const handleEnrichLeads = useCallback(async (leadIds: string[]) => {
@@ -452,6 +454,14 @@ export default function LeadGen() {
             <FloatingChat>
               <PipelineChat leadCount={leads.length} />
             </FloatingChat>
+
+            <DraftEmailModal
+              lead={draftLead}
+              open={!!draftLead}
+              onOpenChange={open => { if (!open) setDraftLead(null); }}
+              userId={user?.id}
+              workspaceKey={workspaceKey !== "default" ? workspaceKey : undefined}
+            />
           </div>
         </SidebarProvider>
       </div>
