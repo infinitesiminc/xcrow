@@ -62,6 +62,28 @@ export default function LeadsTableSection({
 
   // Detail drawer
   const [drawerLead, setDrawerLead] = useState<SavedLead | null>(null);
+  const [enriching, setEnriching] = useState(false);
+
+  // Count leads missing contact info
+  const missingContactCount = useMemo(() => {
+    return leads.filter(l => !l.email && !l.linkedin && !l.phone).length;
+  }, [leads]);
+
+  const handleEnrich = useCallback(async () => {
+    if (!onEnrichLeads || enriching) return;
+    // Enrich selected leads, or all leads missing contacts
+    const targetIds = selectedIds.size > 0
+      ? Array.from(selectedIds)
+      : leads.filter(l => !l.email || !l.linkedin || !l.phone).map(l => l.id);
+    if (targetIds.length === 0) return;
+    setEnriching(true);
+    try {
+      await onEnrichLeads(targetIds.slice(0, 50));
+    } finally {
+      setEnriching(false);
+      setSelectedIds(new Set());
+    }
+  }, [onEnrichLeads, enriching, selectedIds, leads]);
 
   const personaTags = useMemo(() => {
     const tags = new Set<string>();
