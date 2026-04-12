@@ -43,6 +43,7 @@ export interface PipelineChatActions {
   onDraftEmail: (leadName: string) => void;
   onExportCSV: () => void;
   onStartResearch: (domain: string) => void;
+  onLeadsFound: (leads: any[]) => void;
 }
 
 /** Pending persona prefill to auto-trigger chat */
@@ -266,7 +267,7 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
 
       await parseSSEStream(reader, {
         onTextDelta: upsert,
-        onLeads: () => {},
+        onLeads: (leads) => actions.onLeadsFound(leads),
         onDone: () => {},
       });
 
