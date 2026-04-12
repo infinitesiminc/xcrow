@@ -305,7 +305,7 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
         )}
       </div>
 
-      <ScrollArea className="flex-1 px-4 py-3" style={{ overscrollBehavior: "contain" }}>
+      <div className="flex-1 overflow-y-auto px-4 py-3" style={{ overscrollBehavior: "contain" }}>
         <div className="space-y-4">
           {messages.map((msg, i) => (
             <div key={i}>
@@ -377,7 +377,7 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
           )}
           <div ref={scrollRef} />
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Context chips */}
       {!isStreaming && contextChips.length > 0 && messages.length <= 2 && (
