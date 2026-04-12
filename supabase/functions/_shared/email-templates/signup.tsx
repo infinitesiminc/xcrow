@@ -20,19 +20,11 @@ import {
 const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
 const LOGO = `${STORAGE}/email-assets/xcrow-logo.png`
 
-interface WorkspaceInsight {
-  company_name?: string
-  company_summary?: string
-  products?: { name: string; description: string }[]
-  top_niches?: string[]
-}
-
 interface SignupEmailProps {
   siteName: string
   siteUrl: string
   recipient: string
   confirmationUrl: string
-  workspace?: WorkspaceInsight | null
 }
 
 export const SignupEmail = ({
