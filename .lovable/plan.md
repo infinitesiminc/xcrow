@@ -1,101 +1,111 @@
 
 
-# Rethinking the AI Assistant for Maximum Utility
+# Public Pages Audit — Enterprise GTM Lead Gen Brand
 
-## Problem
+## Current State Summary
 
-The current floating chat is **disconnected from the workflow**. It:
-- Hardcodes `website: "xcrow.com"` regardless of the user's actual workspace
-- Has no awareness of which section the user is on (Research / Personas / Leads)
-- Cannot take actions — it only talks
-- Duplicates the guided flow that the UI already handles (enter domain → research → personas → find leads)
-- Is a generic chatbot when users need a **contextual co-pilot**
+Xcrow has **7 public pages** (Home, Auth, Privacy, Terms, Cookies, Unsubscribe, 404) and a **Footer/Navbar** shared across them. Here's what needs fixing:
 
-## Design Principle
+---
 
-The assistant should be a **context-aware action bar** — it knows where you are, what you've done, and can do things for you.
+## Critical Issues
 
-## Proposed Redesign
+### 1. Outdated Copy — Still References Old Product (Career/Education Platform)
+- **Terms.tsx** (Section 2): Says "AI-powered career readiness tools including role analysis, skill mapping, AI simulations, and workforce analytics"
+- **Terms.tsx** (Section 7): References "Schools and employers" purchasing seats
+- **Privacy Policy** (Section 1): Mentions "Educational Data: Job titles, skills, career stage, and school affiliation"
+- **Auth.tsx**: Says "Track your practice progress" (sign-up subtitle) and "Sign in to view your dashboard" — both remnants of an education product
+- **robots.txt**: Still disallows `/school`
 
-### 1. Make the assistant workspace-aware
+**These are brand-destroying for an enterprise B2B lead gen tool.**
 
-Pass the current workspace key, active section, research report, and leads into `PipelineChat`. The system prompt dynamically includes:
-- Current workspace domain
-- Research status (not started / running / complete)
-- Number of leads, personas found
-- Active section the user is viewing
+### 2. Dead Footer Links
+The Footer links to **16 pages that don't exist** — they all redirect to `/`:
+- How It Works, Pricing, Blog, Demo (Product column)
+- SaaS, Agencies, Recruiting, Consulting, E-commerce (Use Cases column)  
+- vs Apollo, vs Clay, vs ZoomInfo, vs LinkedIn (Compare column)
+- About (Company column)
 
-### 2. Section-specific smart prompts
+Enterprise buyers clicking these get silently redirected home. This kills credibility.
 
-Instead of a generic greeting, show **contextual action chips** based on where the user is:
+### 3. Sitemap References Ghost Pages
+`sitemap.xml` lists 27 URLs including blog posts, use cases, comparison pages, and contact — none of which exist. Google will crawl these and find redirects, hurting SEO.
 
-| Section | Chips shown |
-|---------|------------|
-| Research (empty) | "What does this tool do?" / "Paste a URL for me" |
-| Research (complete) | "Summarize findings" / "What verticals look best?" |
-| Personas | "Find leads for all personas" / "Which persona has highest ROI?" |
-| Leads | "Draft emails for top 5" / "Export leads" / "Find more like these" |
+### 4. SEO Domain Mismatch
+- `SEOHead.tsx` uses `xcrow.ai` as canonical URL
+- Welcome email uses `xcrow.lovable.app`
+- Need to decide which is the production domain and standardize
 
-### 3. Give the assistant real actions (tool calls)
+### 5. Missing Enterprise Trust Signals on Landing Page
+- No "How It Works" section (3-step visual)
+- No social proof beyond company logo marquee (no testimonials, case studies, or metrics)
+- No security/compliance mention (SOC2, GDPR, data handling)
+- No pricing section on the landing page itself
 
-Connect the chat to actual functions it can trigger on behalf of the user:
-- **Navigate**: Switch the active section (`setActiveSection`)
-- **Find leads**: Trigger `handleFindLeads` for a specific persona
-- **Draft email**: Open the draft modal for a specific lead
-- **Export**: Trigger CSV export
-- **Start research**: Kick off research for a domain
+### 6. Auth Page — Not Enterprise-Grade
+- Generic copy ("Track your practice progress")
+- No branding (no logo on the auth page)
+- No link to terms/privacy during signup (compliance risk)
 
-The edge function already supports tool calls (`run_lead_search`, `generate_leads`, etc.) — the frontend just needs to wire the callbacks.
+### 7. 404 Page — Bare Minimum
+- No branding, no navigation, no search suggestion
 
-### 4. Replace generic system prompt with live context
+---
 
-Instead of `"You are the Xcrow Lead Gen assistant"`, inject:
+## Implementation Plan
 
-```
-You are the user's lead gen co-pilot.
+### Step 1: Fix Legal Pages (Terms, Privacy, Cookies)
+Rewrite all three to accurately describe Xcrow as an **enterprise B2B lead generation platform**:
+- Terms: Remove career/education/school references. Describe the service as AI-powered lead discovery and outreach. Remove "Institutional Accounts" section.
+- Privacy: Replace "Educational Data" with "Business Data: company domain, job titles, lead contact information." Update data usage to reflect lead gen context.
+- Cookies: Minor — mostly fine, just update any stale references.
 
-CURRENT STATE:
-- Workspace: {workspaceKey}
-- Section: {activeSection}
-- Research: {complete/running/not started}
-- Personas found: {count} — {list}
-- Leads in pipeline: {count}
-- Leads without email: {count needing enrichment}
+### Step 2: Fix Auth Page
+- Add Xcrow logo at top
+- Update copy: "Create your account" / "Start generating leads"
+- Add terms/privacy agreement checkbox or link below sign-up button
+- Remove stale "practice progress" language
 
-You can take these actions:
-- navigate_to(section) — switch view
-- find_leads(persona_title) — search Apollo
-- draft_email(lead_name) — open email composer
-- export_csv() — download leads
-- start_research(domain) — begin ICP analysis
-```
+### Step 3: Clean Up Footer
+Remove all dead links. Simplify to only pages that actually exist:
+- **Product**: Lead Gen
+- **Company**: Privacy, Terms, Cookies
+- Add contact email (e.g., hello@xcrow.ai)
 
-### 5. Simplify the UI — inline action confirmations
+### Step 4: Fix robots.txt and sitemap.xml
+- **robots.txt**: Remove `/school` disallow. Keep `/admin`.
+- **sitemap.xml**: Strip all non-existent URLs. Keep only: `/`, `/privacy`, `/terms`, `/cookies`, `/auth`
 
-When the assistant proposes an action, render it as a confirmation card (not just text):
+### Step 5: Fix Navbar
+- Remove "How It Works" and "Pricing" nav items for logged-out users (they redirect to `/` anyway)
 
-```
-┌─────────────────────────────┐
-│ 🔍 Find leads for "VP Ops"  │
-│ in Healthcare vertical       │
-│                              │
-│  [Do it]    [Adjust]         │
-└─────────────────────────────┘
-```
+### Step 6: Upgrade Landing Page
+- Add a **"How It Works"** 3-step section (Paste URL → AI Analyzes → Get Leads)
+- Add a **trust/security strip** (data encryption, GDPR-compliant, no data sharing)
+- Add enterprise-grade language: "Trusted by GTM teams" instead of "Works with any B2B company"
 
-## Files to Change
+### Step 7: Upgrade 404 Page
+- Add logo, Navbar, and a proper "page not found" design with a CTA back to home
 
+### Step 8: SEO Cleanup
+- Standardize canonical URLs in SEOHead to match actual production domain
+- Add `og:type`, `twitter:card` meta tags
+
+---
+
+## Files to Modify
 | File | Change |
-|------|--------|
-| `src/pages/LeadGen.tsx` | Pass workspace context, callbacks, and section state into `PipelineChat`; handle action messages from chat |
-| `src/components/leadgen/FloatingChat.tsx` | No structural change needed |
-| `supabase/functions/leadgen-chat/index.ts` | Add action tools the assistant can call; update system prompt to accept dynamic context |
-| `src/pages/LeadGen.tsx` (PipelineChat) | Rewrite to use contextual chips, dynamic system prompt, and action card rendering |
+|---|---|
+| `src/pages/Terms.tsx` | Full rewrite for B2B lead gen |
+| `src/pages/PrivacyPolicy.tsx` | Full rewrite for B2B lead gen |
+| `src/pages/Auth.tsx` | Add logo, fix copy, add legal links |
+| `src/pages/NotFound.tsx` | Add branding and navigation |
+| `src/pages/Index.tsx` | Add "How It Works" + trust section |
+| `src/components/Footer.tsx` | Remove dead links, simplify |
+| `src/components/Navbar.tsx` | Remove dead nav items |
+| `src/components/SEOHead.tsx` | Add missing meta tags |
+| `public/robots.txt` | Remove `/school` |
+| `public/sitemap.xml` | Strip non-existent URLs |
 
-## What This Achieves
-
-- The assistant becomes a **shortcut layer** — users can type "find leads for healthcare" instead of navigating to Personas → clicking Find Leads
-- It provides **proactive suggestions** based on actual state ("You have 12 leads without emails — want me to enrich them?")
-- It reduces clicks for power users while still being educational for beginners
-- Every interaction drives toward the user's goal: **getting outreach-ready leads**
+**Estimated scope**: 10 files, mostly copy/content changes with some structural additions to the landing page.
 
