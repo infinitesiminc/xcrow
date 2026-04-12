@@ -201,13 +201,17 @@ function UsersSection() {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="rounded-xl border border-border/50 overflow-hidden">
+        <div className="rounded-xl border border-border/50 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead className="hidden sm:table-cell">Company</TableHead>
-                <TableHead className="hidden md:table-cell">Joined</TableHead>
+                <TableHead className="hidden md:table-cell">Plan</TableHead>
+                <TableHead className="hidden md:table-cell text-right">Credits</TableHead>
+                <TableHead className="hidden lg:table-cell text-right">Leads</TableHead>
+                <TableHead className="hidden lg:table-cell">Last Active</TableHead>
+                <TableHead className="hidden sm:table-cell">Joined</TableHead>
                 <TableHead className="w-[60px]" />
               </TableRow>
             </TableHeader>
@@ -220,7 +224,17 @@ function UsersSection() {
                     {u.job_title && <p className="text-xs text-muted-foreground">{u.job_title}</p>}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{u.company || "—"}</TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                  <TableCell className="hidden md:table-cell">
+                    <Badge variant={u.plan === "free" ? "secondary" : "default"} className="text-xs capitalize">
+                      {u.plan}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-sm text-right font-mono text-muted-foreground">{u.credit_balance}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-sm text-right font-mono text-muted-foreground">{u.lead_count}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                    {u.last_sign_in ? new Date(u.last_sign_in).toLocaleDateString() : "—"}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
                     {new Date(u.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
@@ -235,7 +249,7 @@ function UsersSection() {
               ))}
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                     No users found.
                   </TableCell>
                 </TableRow>
