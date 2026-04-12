@@ -27,6 +27,7 @@ const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
 const LeadGen = lazy(() => import("./pages/LeadGen.tsx"));
+const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 
 
@@ -77,8 +78,8 @@ const App = () => (
               <Route path="/use-cases/*" element={<Navigate to="/" replace />} />
               <Route path="/vs/*" element={<Navigate to="/" replace />} />
               <Route path="/how-it-works" element={<Navigate to="/" replace />} />
-              <Route path="/admin" element={<Navigate to="/leadgen" replace />} />
-              <Route path="/admin/*" element={<Navigate to="/leadgen" replace />} />
+              <Route path="/admin" element={<AuthGate><Admin /></AuthGate>} />
+              <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
               <Route path="/enterprise/*" element={<Navigate to="/leadgen" replace />} />
               <Route path="/flashparkingmap" element={<Navigate to="/leadgen" replace />} />
               <Route path="*" element={<NotFound />} />
