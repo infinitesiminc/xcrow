@@ -27,8 +27,8 @@ const MARQUEE_ROWS = [
 ];
 
 const STATS = [
-  { value: "$49", label: "vs. $120+ on LinkedIn" },
-  { value: "500", label: "Leads with emails" },
+  { value: "$49/mo", label: "Your entire outbound" },
+  { value: "0", label: "Sales hires needed" },
   { value: "10s", label: "To your first lead" },
 ];
 
@@ -91,8 +91,8 @@ export default function Index() {
   return (
     <>
       <SEOHead
-        title="Xcrow — The $49 Sales Team"
-        description="Paste a URL. Get 5 ready-to-email decision-makers in 10 seconds. Apollo charges $99 for complexity. LinkedIn charges $120 for 50 InMails. We charge $49 for 500 leads with emails."
+        title="Xcrow — Your First Sales Hire is a URL"
+        description="You're building a product, not a sales team. Paste your website and get outreach-ready leads in 10 seconds. No sales experience needed."
         path="/"
       />
 
@@ -118,7 +118,7 @@ export default function Index() {
                 {...fadeUp(0)}
                 className="text-primary text-sm font-semibold tracking-[0.2em] uppercase mb-6"
               >
-                THE $49 SALES TEAM
+                YOUR FIRST SALES TEAM
               </motion.p>
 
               {/* Headline */}
@@ -128,7 +128,7 @@ export default function Index() {
               >
                 Paste a URL.
                 <br />
-                <span className="text-primary">Skip the SDR.</span>
+                <span className="text-primary">Get Your First Customers.</span>
               </motion.h1>
 
               {/* Subheadline */}
@@ -136,9 +136,9 @@ export default function Index() {
                 {...fadeUp(0.2)}
                 className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
               >
-                Other tools give you a database and say <span className="text-foreground font-semibold">"figure it out."</span>
+                You're building a product, not a sales team.
                 <br />
-                We give you <span className="text-primary font-semibold">5 ready-to-email decision-makers in 10 seconds.</span>
+                Paste your website and we'll find <span className="text-primary font-semibold">the people who need what you're building.</span>
               </motion.p>
 
               {/* CTA Input */}
@@ -173,7 +173,7 @@ export default function Index() {
               </motion.form>
 
               <motion.p {...fadeUp(0.4)} className="text-sm text-muted-foreground/50 mt-5">
-                Free to start · No credit card · No sales expertise needed
+                No sales experience needed · Free to start · Works in 10 seconds
               </motion.p>
             </div>
 
@@ -198,7 +198,7 @@ export default function Index() {
         <section className="border-y border-border/40 bg-muted/20 py-8">
           <motion.div {...fadeInView()} className="max-w-5xl mx-auto px-4">
             <p className="text-center text-xs text-muted-foreground/60 tracking-[0.2em] uppercase font-medium mb-5">
-              Trusted by GTM teams targeting these companies
+              Founders use Xcrow to land their first 10 customers
             </p>
             <CompanyMarquee rows={MARQUEE_ROWS} />
           </motion.div>
@@ -220,18 +220,18 @@ export default function Index() {
               {[
                 {
                   step: "01",
-                  title: "Paste a URL",
-                  desc: "Enter any company website. Our AI instantly analyzes their business, market, and ideal buyer profile.",
+                  title: "Paste Your Website",
+                  desc: "Enter your own URL. Our AI analyzes what you sell and who needs it — so you don't have to figure it out.",
                 },
                 {
                   step: "02",
-                  title: "AI Finds Your Market",
-                  desc: "We identify niches, buyer personas, and decision-makers that match — scored by relevance and fit.",
+                  title: "AI Builds Your Sales Playbook",
+                  desc: "We map niches, buyer personas, and decision-makers automatically. No sales expertise required.",
                 },
                 {
                   step: "03",
-                  title: "Get Outreach-Ready Leads",
-                  desc: "Receive verified emails, personalized drafts, and a pipeline ready to close. Export or send directly.",
+                  title: "Start Closing Deals",
+                  desc: "Get verified emails and AI-drafted outreach ready to send. Your first pipeline in under a minute.",
                 },
               ].map((item, i) => (
                 <motion.div
@@ -277,11 +277,11 @@ export default function Index() {
                 Xcrow vs. Apollo
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                240 Million Contacts.<br /><span className="text-primary">Good Luck Finding 5 That Matter.</span>
+                Apollo Is Built for Sales Teams.<br /><span className="text-primary">You Don't Have One. That's the Point.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                Apollo gives you a database the size of a phonebook and charges you $99/mo to search it yourself.
-                We give you the <span className="text-foreground font-semibold">right people, ready to email, in 10 seconds</span>.
+                Apollo gives you 240M contacts and 15 filters — then expects you to know what to do.
+                You're a founder, not an SDR. <span className="text-foreground font-semibold">Just paste a URL.</span>
               </p>
             </motion.div>
 
@@ -306,9 +306,9 @@ export default function Index() {
                 </div>
                  <ul className="space-y-2 text-sm text-muted-foreground pl-1">
                   <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> $99/mo and you still do all the work</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> 15+ filters you need GTM training to use</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No fit scoring — just raw contact dumps</li>
-                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Need an SDR just to operate the tool</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> 15+ filters designed for full-time sales reps</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> No fit scoring — just a raw phonebook</li>
+                  <li className="flex items-center gap-2"><XCircle className="w-4 h-4 text-destructive/60 shrink-0" /> Built for teams you haven't hired yet</li>
                 </ul>
               </div>
 
@@ -331,9 +331,9 @@ export default function Index() {
                 </div>
                 <ul className="space-y-2 text-sm text-foreground pl-1">
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Paste a URL. That's the whole process.</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI finds your market, you don't</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Every lead scored + email drafted</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> $49/mo. No SDR salary required.</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> AI finds your market — no expertise needed</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> Every lead scored + email drafted for you</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> $49/mo. Your first sales hire is a URL.</li>
                 </ul>
               </div>
             </motion.div>
@@ -348,11 +348,11 @@ export default function Index() {
                 Xcrow vs. LinkedIn Sales Navigator
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase">
-                $120/mo for 50 InMails.<br /><span className="text-primary">$49/mo for 500 Leads With Emails.</span>
+                You Don't Have Time for LinkedIn.<br /><span className="text-primary">You Have a Product to Ship.</span>
               </h2>
               <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-                LinkedIn charges you <span className="text-foreground font-semibold">$2.40 per InMail</span> that might get ignored.
-                We give you <span className="text-primary font-semibold">direct email addresses</span> you own forever.
+                LinkedIn wants you to spend hours sending InMails at <span className="text-foreground font-semibold">$2.40 each</span>.
+                You're a founder — <span className="text-primary font-semibold">your time is worth more than that.</span>
               </p>
             </motion.div>
 
@@ -430,12 +430,12 @@ export default function Index() {
                 Still reading?
               </p>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight uppercase mb-5">
-                Your Competitor Is Still
+                Your Competitors Are Hiring SDRs.
                 <br />
-                <span className="text-primary">Building Apollo Filters.</span>
+                <span className="text-primary">You Just Need a URL.</span>
               </h2>
               <p className="text-muted-foreground mb-10 max-w-md mx-auto text-lg">
-                You could have leads by now. Paste a URL and find out.
+                Skip the job posts, the ramp time, and the $80K salary. Paste a URL and start selling today.
               </p>
               <Button
                 size="lg"
