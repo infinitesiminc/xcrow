@@ -63,7 +63,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/texas" element={<AuthGate><Texas /></AuthGate>} />
+              <Route path="/texas" element={<Navigate to="/" replace />} />
               <Route path="/leadgen" element={<AuthGate><LeadGen /></AuthGate>} />
               <Route path="/leadgen/*" element={<Navigate to="/leadgen" replace />} />
               {/* Legacy redirects */}
