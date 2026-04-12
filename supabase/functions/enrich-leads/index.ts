@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Fetch leads belonging to this user - include apollo_id
     const { data: leads, error: fetchErr } = await sb
       .from("saved_leads")
-      .select("id, name, title, company, email, linkedin, phone, apollo_id")
+      .select("id, name, title, company, email, linkedin, phone, apollo_id, address")
       .eq("user_id", user.id)
       .in("id", lead_ids);
 
