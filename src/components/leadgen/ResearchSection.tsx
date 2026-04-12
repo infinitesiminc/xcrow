@@ -12,10 +12,17 @@ export interface ParsedPersona {
   titles: string[];       // for Apollo search
 }
 
+export interface ParsedCompetitor {
+  name: string;
+  domain?: string;
+  differentiator?: string;
+}
+
 export interface ParsedReport {
   companySummary: string;
   personas: ParsedPersona[];
   prospectDomains: string[];
+  competitors: ParsedCompetitor[];
   rawText: string;
 }
 
