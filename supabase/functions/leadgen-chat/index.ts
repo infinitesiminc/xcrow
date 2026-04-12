@@ -584,7 +584,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, strict_domain } = await req.json();
+    const { messages, strict_domain, context } = await req.json();
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages array required" }), {
         status: 400,
@@ -594,6 +594,21 @@ Deno.serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    // Build dynamic context block from frontend state
+    let contextBlock = "";
+    if (context && typeof context === "object") {
+      const lines: string[] = ["[CURRENT WORKSPACE STATE]"];
+      if (context.workspaceKey) lines.push(`- Workspace: ${context.workspaceKey}`);
+      if (context.activeSection) lines.push(`- Active section: ${context.activeSection}`);
+      if (context.researchStatus) lines.push(`- Research status: ${context.researchStatus}`);
+      if (context.personaCount != null) lines.push(`- Personas found: ${context.personaCount}`);
+      if (context.personaNames?.length) lines.push(`- Persona names: ${context.personaNames.join(", ")}`);
+      if (context.leadCount != null) lines.push(`- Leads in pipeline: ${context.leadCount}`);
+      if (context.leadsWithoutEmail != null) lines.push(`- Leads without email: ${context.leadsWithoutEmail}`);
+      lines.push("[END WORKSPACE STATE]");
+      contextBlock = lines.join("\n");
+    }
 
     // Check if any user message contains a URL — scrape it and inject context
     const enrichedMessages = [...messages];
@@ -617,6 +632,11 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Combine system prompt with dynamic context
+    const fullSystemPrompt = contextBlock
+      ? `${SYSTEM_PROMPT}\n\n${contextBlock}`
+      : SYSTEM_PROMPT;
+
     // Call AI with streaming
     const aiRes = await fetch(AI_URL, {
       method: "POST",
@@ -626,7 +646,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...enrichedMessages],
+        messages: [{ role: "system", content: fullSystemPrompt }, ...enrichedMessages],
         tools: TOOLS,
         stream: true,
       }),

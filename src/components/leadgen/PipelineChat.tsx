@@ -1,0 +1,428 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Bot, User, Loader2, Send, Navigation, Users, Download, Search, Mail, Play } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { parseSSEStream } from "@/lib/sse-parser";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ReactMarkdown from "react-markdown";
+import type { SavedLead } from "@/components/leadgen/useLeadsCRUD";
+import type { ParsedPersona } from "@/components/leadgen/ResearchSection";
+
+/* ── Types ── */
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  pills?: string[];
+  actionCard?: ActionCard;
+}
+
+interface ActionCard {
+  type: "navigate" | "find_leads" | "draft_email" | "export" | "start_research" | "enrich";
+  label: string;
+  description: string;
+  params?: Record<string, string>;
+}
+
+export interface PipelineChatContext {
+  workspaceKey: string;
+  activeSection: string;
+  researchStatus: "not_started" | "running" | "complete";
+  personaCount: number;
+  personaNames: string[];
+  leadCount: number;
+  leadsWithoutEmail: number;
+}
+
+export interface PipelineChatActions {
+  onNavigate: (section: string) => void;
+  onFindLeads: (personaTitle: string) => void;
+  onDraftEmail: (leadName: string) => void;
+  onExportCSV: () => void;
+  onStartResearch: (domain: string) => void;
+}
+
+interface PipelineChatProps {
+  context: PipelineChatContext;
+  actions: PipelineChatActions;
+}
+
+/* ── Helpers ── */
+function parsePills(text: string): { cleanText: string; pills: string[] } {
+  const match = text.match(/\[\[([^\]]+)\]\]\s*$/);
+  if (!match) return { cleanText: text, pills: [] };
+  const pills = match[1].split("|").map(s => s.trim()).filter(Boolean);
+  return { cleanText: text.slice(0, match.index).trim(), pills };
+}
+
+type ChipConfig = { label: string; icon: typeof Search };
+
+function getContextChips(ctx: PipelineChatContext): ChipConfig[] {
+  const { activeSection, researchStatus, leadCount, personaCount } = ctx;
+
+  if (activeSection === "research") {
+    if (researchStatus === "complete") {
+      return [
+        { label: "Summarize findings", icon: Search },
+        { label: "What verticals look best?", icon: Navigation },
+      ];
+    }
+    return [
+      { label: "What does this tool do?", icon: Search },
+    ];
+  }
+
+  if (activeSection === "personas") {
+    const chips: ChipConfig[] = [];
+    if (personaCount > 0) {
+      chips.push({ label: "Find leads for all personas", icon: Users });
+      chips.push({ label: "Which persona has highest ROI?", icon: Search });
+    }
+    return chips;
+  }
+
+  if (activeSection === "leads") {
+    const chips: ChipConfig[] = [];
+    if (leadCount > 0) {
+      chips.push({ label: "Draft emails for top 5", icon: Mail });
+      chips.push({ label: "Export leads", icon: Download });
+      chips.push({ label: "Find more like these", icon: Search });
+    }
+    return chips;
+  }
+
+  return [];
+}
+
+function getGreeting(ctx: PipelineChatContext): string {
+  const { activeSection, researchStatus, leadCount, personaCount, workspaceKey } = ctx;
+  const domain = workspaceKey !== "default" ? workspaceKey : "";
+
+  if (activeSection === "research") {
+    if (researchStatus === "complete") {
+      return `Research for **${domain}** is complete. I can summarize findings, suggest verticals, or help you explore personas.`;
+    }
+    if (researchStatus === "running") {
+      return `Research is running for **${domain}**. I'll be ready to help once it completes.`;
+    }
+    return domain
+      ? `Ready to analyze **${domain}**. Start research or ask me anything about your ICP strategy.`
+      : `Enter a company URL on the left to start, or ask me how this tool works.`;
+  }
+
+  if (activeSection === "personas") {
+    return personaCount > 0
+      ? `You have **${personaCount} personas** identified. I can find leads for any persona or help you prioritize.`
+      : `No personas found yet. Run research first to identify buyer personas.`;
+  }
+
+  if (activeSection === "leads") {
+    return leadCount > 0
+      ? `You have **${leadCount} leads** in your pipeline. I can draft outreach, find more leads, or export your data.`
+      : `No leads yet. Go to Personas and click "Find Leads" to start building your pipeline.`;
+  }
+
+  return `How can I help you today?`;
+}
+
+/* ── Action Card Component ── */
+function ActionCardUI({ card, onExecute, onCancel }: {
+  card: ActionCard;
+  onExecute: () => void;
+  onCancel: () => void;
+}) {
+  const iconMap: Record<string, typeof Search> = {
+    navigate: Navigation,
+    find_leads: Users,
+    draft_email: Mail,
+    export: Download,
+    start_research: Play,
+    enrich: Search,
+  };
+  const Icon = iconMap[card.type] || Search;
+
+  return (
+    <div className="ml-9 mt-2 rounded-lg border border-primary/20 bg-primary/5 p-3 max-w-[85%]">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className="w-4 h-4 text-primary" />
+        <span className="text-sm font-medium text-foreground">{card.label}</span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-2">{card.description}</p>
+      <div className="flex gap-2">
+        <Button size="sm" variant="default" className="h-7 text-xs" onClick={onExecute}>
+          Do it
+        </Button>
+        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onCancel}>
+          Skip
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Component ── */
+export function PipelineChat({ context, actions }: PipelineChatProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const prevContextRef = useRef<string>("");
+
+  // Reset greeting when context changes meaningfully
+  useEffect(() => {
+    const key = `${context.activeSection}-${context.researchStatus}-${context.leadCount}-${context.personaCount}`;
+    if (prevContextRef.current !== key) {
+      prevContextRef.current = key;
+      if (messages.length <= 1) {
+        setMessages([{ role: "assistant", content: getGreeting(context) }]);
+      }
+    }
+  }, [context.activeSection, context.researchStatus, context.leadCount, context.personaCount]);
+
+  // Initialize on mount
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{ role: "assistant", content: getGreeting(context) }]);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleAction = useCallback((card: ActionCard) => {
+    switch (card.type) {
+      case "navigate":
+        if (card.params?.section) actions.onNavigate(card.params.section);
+        break;
+      case "find_leads":
+        if (card.params?.persona) actions.onFindLeads(card.params.persona);
+        break;
+      case "draft_email":
+        if (card.params?.lead) actions.onDraftEmail(card.params.lead);
+        break;
+      case "export":
+        actions.onExportCSV();
+        break;
+      case "start_research":
+        if (card.params?.domain) actions.onStartResearch(card.params.domain);
+        break;
+    }
+  }, [actions]);
+
+  const sendMessage = useCallback(async (text: string) => {
+    if (!text || isStreaming) return;
+    setMessages(prev => [...prev, { role: "user", content: text }]);
+    setInput("");
+    setIsStreaming(true);
+    let buf = "";
+
+    const upsert = (chunk: string) => {
+      buf += chunk;
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant" && prev.length > 1 && prev[prev.length - 2]?.role === "user") {
+          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: buf } : m);
+        }
+        return [...prev, { role: "assistant", content: buf }];
+      });
+    };
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const resp = await fetch(`${supabaseUrl}/functions/v1/leadgen-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
+          "apikey": supabaseKey,
+        },
+        body: JSON.stringify({
+          website: context.workspaceKey !== "default" ? context.workspaceKey : "",
+          context: {
+            workspaceKey: context.workspaceKey,
+            activeSection: context.activeSection,
+            researchStatus: context.researchStatus,
+            personaCount: context.personaCount,
+            personaNames: context.personaNames,
+            leadCount: context.leadCount,
+            leadsWithoutEmail: context.leadsWithoutEmail,
+          },
+          messages: [
+            {
+              role: "system",
+              content: `You are the user's lead gen co-pilot. Help find leads, draft outreach, analyze pipeline. Be concise and action-oriented.`,
+            },
+            ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
+            { role: "user", content: text },
+          ],
+        }),
+      });
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const reader = resp.body?.getReader();
+      if (!reader) throw new Error("No body");
+
+      await parseSSEStream(reader, {
+        onTextDelta: upsert,
+        onLeads: () => {},
+        onDone: () => {},
+      });
+
+      // Parse pills from final message
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant") {
+          const { cleanText, pills } = parsePills(last.content);
+          if (pills.length > 0) {
+            return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: cleanText, pills } : m);
+          }
+        }
+        return prev;
+      });
+    } catch {
+      upsert("\n\n⚠️ Something went wrong.");
+    } finally {
+      setIsStreaming(false);
+      inputRef.current?.focus();
+    }
+  }, [isStreaming, messages, context]);
+
+  const handleSend = () => sendMessage(input.trim());
+  const contextChips = getContextChips(context);
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-4 py-3 border-b border-border flex items-center gap-2 shrink-0">
+        <Bot className="w-4 h-4 text-primary" />
+        <span className="text-sm font-medium">Co-pilot</span>
+        {context.workspaceKey !== "default" && (
+          <span className="text-[10px] text-muted-foreground font-mono ml-auto truncate max-w-[120px]">
+            {context.workspaceKey}
+          </span>
+        )}
+      </div>
+
+      <ScrollArea className="flex-1 px-4 py-3">
+        <div className="space-y-4">
+          {messages.map((msg, i) => (
+            <div key={i}>
+              <div className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : ""}`}>
+                {msg.role === "assistant" && (
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Bot className="w-4 h-4 text-primary" />
+                  </div>
+                )}
+                <div className={`rounded-lg px-3.5 py-2.5 max-w-[85%] text-sm ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground"
+                }`}>
+                  {msg.role === "assistant" ? (
+                    <div className="prose prose-sm max-w-none [&>p]:my-1 [&>p]:text-secondary-foreground [&_strong]:text-secondary-foreground">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  )}
+                </div>
+                {msg.role === "user" && (
+                  <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <User className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                )}
+              </div>
+
+              {/* Pills */}
+              {msg.role === "assistant" && msg.pills && msg.pills.length > 0 && !isStreaming && i === messages.length - 1 && (
+                <div className="flex flex-wrap gap-1.5 mt-2 ml-9">
+                  {msg.pills.map(pill => (
+                    <button
+                      key={pill}
+                      onClick={() => sendMessage(pill)}
+                      className="text-[11px] px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                    >
+                      {pill}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Action Card */}
+              {msg.actionCard && i === messages.length - 1 && (
+                <ActionCardUI
+                  card={msg.actionCard}
+                  onExecute={() => handleAction(msg.actionCard!)}
+                  onCancel={() => {
+                    setMessages(prev => prev.map((m, idx) =>
+                      idx === i ? { ...m, actionCard: undefined } : m
+                    ));
+                  }}
+                />
+              )}
+            </div>
+          ))}
+
+          {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
+            <div className="flex gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Bot className="w-4 h-4 text-primary" />
+              </div>
+              <div className="bg-muted/60 rounded-lg px-3.5 py-2.5">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            </div>
+          )}
+          <div ref={scrollRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Context chips */}
+      {!isStreaming && contextChips.length > 0 && messages.length <= 2 && (
+        <div className="px-4 py-2 border-t border-border flex flex-wrap gap-1.5 shrink-0">
+          {contextChips.map(chip => (
+            <button
+              key={chip.label}
+              onClick={() => sendMessage(chip.label)}
+              className="text-[11px] px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-1"
+            >
+              <chip.icon className="w-3 h-3" />
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="border-t border-border p-3 shrink-0">
+        <div className="flex gap-2">
+          <Textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="Ask anything..."
+            className="min-h-[42px] max-h-[120px] resize-none text-sm"
+            rows={1}
+          />
+          <Button
+            size="icon"
+            onClick={handleSend}
+            disabled={!input.trim() || isStreaming}
+            className="shrink-0 h-[42px] w-[42px]"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
