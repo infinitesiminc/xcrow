@@ -125,6 +125,9 @@ Deno.serve(async (req) => {
           updates.phone = person.phone_number || person.sanitized_phone;
         }
         if (!lead.title && person.title) updates.title = person.title;
+        // Backfill location
+        const location = [person.city, person.state, person.country].filter(Boolean).join(", ");
+        if (!lead.address && location) updates.address = location;
         // Store apollo_id if we didn't have it
         if (!lead.apollo_id && person.id) updates.apollo_id = person.id;
 
