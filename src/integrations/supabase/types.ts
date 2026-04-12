@@ -808,6 +808,33 @@ export type Database = {
           },
         ]
       }
+      lead_topups: {
+        Row: {
+          id: string
+          leads_granted: number
+          leads_used: number
+          purchased_at: string
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          leads_granted?: number
+          leads_used?: number
+          purchased_at?: string
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          leads_granted?: number
+          leads_used?: number
+          purchased_at?: string
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       leadgen_niches: {
         Row: {
           created_at: string
