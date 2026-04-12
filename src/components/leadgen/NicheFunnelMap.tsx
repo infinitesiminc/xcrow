@@ -68,7 +68,6 @@ function TreeRow({
   onDraftAll,
   onExportNiche,
   isFinding,
-  isEnriching,
   expandedSet,
   onToggleExpand,
   onSelectNiche,
@@ -195,12 +194,10 @@ function TreeRow({
               onSelect={() => onSelectNiche(activeNiche === child.label ? null : child.label)}
               activeNiche={activeNiche}
               onFindLeads={onFindLeads}
-              onEnrichLeads={onEnrichLeads}
               onScoreLeads={onScoreLeads}
               onDraftAll={onDraftAll}
               onExportNiche={onExportNiche}
               isFinding={isFinding}
-              isEnriching={isEnriching}
               expandedSet={expandedSet}
               onToggleExpand={onToggleExpand}
               onSelectNiche={onSelectNiche}
@@ -217,12 +214,10 @@ export function NicheFunnelMap({
   activeNiche,
   onSelectNiche,
   onFindLeads,
-  onEnrichLeads,
   onScoreLeads,
   onDraftAll,
   onExportNiche,
   isFinding,
-  isEnriching,
 }: NicheFunnelMapProps) {
   // Build lead count map
   const leadCountMap = useMemo(() => {
@@ -370,12 +365,10 @@ export function NicheFunnelMap({
               onSelect={() => onSelectNiche(activeNiche === node.label ? null : node.label)}
               activeNiche={activeNiche}
               onFindLeads={onFindLeads}
-              onEnrichLeads={onEnrichLeads}
               onScoreLeads={onScoreLeads}
               onDraftAll={onDraftAll}
               onExportNiche={onExportNiche}
               isFinding={isFinding}
-              isEnriching={isEnriching}
               expandedSet={expandedSet}
               onToggleExpand={toggleExpand}
               onSelectNiche={onSelectNiche}
