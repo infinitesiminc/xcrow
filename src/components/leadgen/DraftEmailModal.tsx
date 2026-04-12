@@ -130,15 +130,16 @@ export function DraftEmailModal({ lead, open, onOpenChange, userId, workspaceKey
   // Save edits on blur
   const handleSave = useCallback(async () => {
     if (!lead?.id || !userId || !workspaceKey) return;
-    await supabase.from("draft_emails").upsert({
+    await (supabase.from("draft_emails") as any).upsert({
       user_id: userId,
       lead_id: lead.id,
       recipient_email: lead.email || "",
       subject,
       body,
       workspace_key: workspaceKey,
-    }, { onConflict: "user_id,lead_id" });
-  }, [lead?.id, userId, workspaceKey, subject, body]);
+      tone,
+    }, { onConflict: "user_id,lead_id,tone" });
+  }, [lead?.id, userId, workspaceKey, subject, body, tone]);
 
   if (!lead) return null;
 
