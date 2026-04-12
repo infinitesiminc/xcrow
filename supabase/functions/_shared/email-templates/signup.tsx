@@ -32,7 +32,6 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
-  workspace,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -54,41 +53,6 @@ export const SignupEmail = ({
             Confirm Email
           </Button>
         </Section>
-
-        {workspace?.company_name && (
-          <>
-            <Hr style={divider} />
-            <Heading style={h2}>Your Analysis is Ready 🎯</Heading>
-            <Text style={text}>
-              We analyzed <strong>{workspace.company_name}</strong> while you were signing up. Here's a preview of what's waiting for you:
-            </Text>
-            {workspace.company_summary && (
-              <Text style={summaryText}>{workspace.company_summary}</Text>
-            )}
-            {workspace.products && workspace.products.length > 0 && (
-              <Section style={insightBox}>
-                <Text style={insightLabel}>Products Identified</Text>
-                {workspace.products.slice(0, 3).map((p, i) => (
-                  <Text key={i} style={insightItem}>
-                    <strong>{p.name}</strong> — {p.description}
-                  </Text>
-                ))}
-              </Section>
-            )}
-            {workspace.top_niches && workspace.top_niches.length > 0 && (
-              <Section style={insightBox}>
-                <Text style={insightLabel}>Top Lead Niches</Text>
-                {workspace.top_niches.slice(0, 4).map((n, i) => (
-                  <Text key={i} style={insightItem}>• {n}</Text>
-                ))}
-              </Section>
-            )}
-            <Text style={ctaText}>
-              Confirm your email to unlock all your leads and start outreach.
-            </Text>
-          </>
-        )}
-
         <Hr style={divider} />
         <Text style={footer}>
           If you didn't create an account on Xcrow, you can safely ignore this email.
