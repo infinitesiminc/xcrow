@@ -29,6 +29,7 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const LeadGen = lazy(() => import("./pages/LeadGen.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
+const Contact = lazy(() => import("./pages/Contact.tsx"));
 
 
 const queryClient = new QueryClient();
@@ -68,7 +69,7 @@ const App = () => (
               <Route path="/leadgen" element={<AuthGate><LeadGen /></AuthGate>} />
               <Route path="/leadgen/*" element={<Navigate to="/leadgen" replace />} />
               {/* Legacy redirects */}
-              <Route path="/contact" element={<Navigate to="/" replace />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<Navigate to="/" replace />} />
               <Route path="/pricing" element={<Navigate to="/" replace />} />
               <Route path="/demo" element={<Navigate to="/" replace />} />

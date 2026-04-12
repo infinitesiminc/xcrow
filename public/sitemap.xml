@@ -2,6 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://xcrow.ai/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://xcrow.ai/auth</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://xcrow.ai/contact</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://xcrow.ai/privacy</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
   <url><loc>https://xcrow.ai/terms</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
   <url><loc>https://xcrow.ai/cookies</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
