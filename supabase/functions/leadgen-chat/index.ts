@@ -816,7 +816,7 @@ Deno.serve(async (req) => {
           if (nichesToEmit.length > 0) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "niches", niches: nichesToEmit })}\n\n`));
           }
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: "🔍 Searching for decision-makers matching your ICP...\n\n" } }] })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: "🔍 Searching my network for decision-makers matching your criteria...\n\n" } }] })}\n\n`));
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "leads", leads })}\n\n`));
 
           const summaryContent = leads.length > 0
