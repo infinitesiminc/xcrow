@@ -454,6 +454,14 @@ export default function LeadGen() {
             <FloatingChat>
               <PipelineChat leadCount={leads.length} />
             </FloatingChat>
+
+            <DraftEmailModal
+              lead={draftLead}
+              open={!!draftLead}
+              onOpenChange={open => { if (!open) setDraftLead(null); }}
+              userId={user?.id}
+              workspaceKey={workspaceKey !== "default" ? workspaceKey : undefined}
+            />
           </div>
         </SidebarProvider>
       </div>
