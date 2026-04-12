@@ -32,6 +32,8 @@ export interface PipelineChatContext {
   personaNames: string[];
   leadCount: number;
   leadsWithoutEmail: number;
+  /** ICP context injected from research report */
+  icpContext?: string;
 }
 
 export interface PipelineChatActions {
@@ -42,9 +44,20 @@ export interface PipelineChatActions {
   onStartResearch: (domain: string) => void;
 }
 
+/** Pending persona prefill to auto-trigger chat */
+export interface PersonaPrefill {
+  personaTitle: string;
+  titles: string[];
+  painPoints: string[];
+  buyingTriggers: string[];
+}
+
 interface PipelineChatProps {
   context: PipelineChatContext;
   actions: PipelineChatActions;
+  /** When set, auto-sends a persona-specific discovery message */
+  pendingPersona?: PersonaPrefill | null;
+  onPersonaConsumed?: () => void;
 }
 
 /* ── Helpers ── */
@@ -161,7 +174,7 @@ function ActionCardUI({ card, onExecute, onCancel }: {
 }
 
 /* ── Main Component ── */
-export function PipelineChat({ context, actions }: PipelineChatProps) {
+export function PipelineChat({ context, actions, pendingPersona, onPersonaConsumed }: PipelineChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -190,6 +203,24 @@ export function PipelineChat({ context, actions }: PipelineChatProps) {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Handle persona prefill: auto-send a discovery message when triggered from persona card
+  const pendingPersonaRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!pendingPersona || isStreaming) return;
+    // Prevent re-triggering for the same persona
+    if (pendingPersonaRef.current === pendingPersona.personaTitle) return;
+    pendingPersonaRef.current = pendingPersona.personaTitle;
+
+    const prefillMsg = `I want to find leads for the "${pendingPersona.personaTitle}" segment. Help me refine the search criteria before we start.`;
+    
+    // Reset messages and send the prefill
+    setMessages([{ role: "assistant", content: getGreeting(context) }]);
+    setTimeout(() => {
+      sendMessage(prefillMsg);
+      onPersonaConsumed?.();
+    }, 300);
+  }, [pendingPersona?.personaTitle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAction = useCallback((card: ActionCard) => {
     switch (card.type) {
@@ -251,12 +282,9 @@ export function PipelineChat({ context, actions }: PipelineChatProps) {
             personaNames: context.personaNames,
             leadCount: context.leadCount,
             leadsWithoutEmail: context.leadsWithoutEmail,
+            icpContext: context.icpContext || undefined,
           },
           messages: [
-            {
-              role: "system",
-              content: `You are the user's lead gen co-pilot. Help find leads, draft outreach, analyze pipeline. Be concise and action-oriented.`,
-            },
             ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
             { role: "user", content: text },
           ],

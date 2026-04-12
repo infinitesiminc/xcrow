@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +11,8 @@ import PersonasSection from "@/components/leadgen/PersonasSection";
 import LeadsTableSection from "@/components/leadgen/LeadsTableSection";
 import { useLeadsCRUD, type SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import { useWorkspaces } from "@/hooks/use-workspaces";
-import { FloatingChat } from "@/components/leadgen/FloatingChat";
-import { PipelineChat, type PipelineChatContext, type PipelineChatActions } from "@/components/leadgen/PipelineChat";
+import { FloatingChat, type FloatingChatHandle } from "@/components/leadgen/FloatingChat";
+import { PipelineChat, type PersonaPrefill } from "@/components/leadgen/PipelineChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
 
 /* ══════════════════════════════════════════════════════════
@@ -24,6 +24,8 @@ export default function LeadGen() {
   const [domain, setDomain] = useState("");
   const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
+  const [pendingPersona, setPendingPersona] = useState<PersonaPrefill | null>(null);
+  const chatRef = useRef<FloatingChatHandle>(null);
 
   // Research
   const research = useResearchStream();
@@ -43,6 +45,26 @@ export default function LeadGen() {
     }
     return map;
   }, [leads]);
+
+  // Build ICP context string from research report for chat injection
+  const icpContext = useMemo(() => {
+    if (!research.report) return undefined;
+    const r = research.report;
+    const lines: string[] = [];
+    if (r.companySummary) lines.push(`Company: ${r.companySummary}`);
+    if (r.personas.length > 0) {
+      lines.push("ICP Personas:");
+      for (const p of r.personas) {
+        lines.push(`- ${p.title}`);
+        if (p.titles.length > 0) lines.push(`  Search titles: ${p.titles.join(", ")}`);
+        if (p.painPoints.length > 0) lines.push(`  Pain points: ${p.painPoints.join("; ")}`);
+        if (p.buyingTriggers.length > 0) lines.push(`  Buying triggers: ${p.buyingTriggers.join("; ")}`);
+      }
+    }
+    if (r.prospectDomains.length > 0) lines.push(`Target domains: ${r.prospectDomains.slice(0, 10).join(", ")}`);
+    if (r.industryKeywords?.length) lines.push(`Industry keywords: ${r.industryKeywords.join(", ")}`);
+    return lines.join("\n");
+  }, [research.report]);
 
   // On mount: resume only the latest still-valid in-flight job
   useEffect(() => {
@@ -73,20 +95,18 @@ export default function LeadGen() {
     }
   }, [research.isComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Restore workspace: load cached report from research_jobs
+  // Restore workspace
   const handleSelectWorkspace = useCallback(async (key: string) => {
     if (!user) return;
     setDomain(key);
     touchWorkspace(key);
 
-    // First check if there's an active research job running for this domain
     const resumed = await research.resumeIfRunning(user.id, key);
     if (resumed) {
       setActiveSection("research");
       return;
     }
 
-    // Otherwise load cached completed report
     const { data } = await (supabase.from("research_jobs") as any)
       .select("report_text, domain")
       .eq("user_id", user.id)
@@ -105,14 +125,12 @@ export default function LeadGen() {
     }
   }, [user, touchWorkspace, research]);
 
-  // New research: clear state
   const handleNewResearch = useCallback(() => {
     setDomain("");
     research.forceReset();
     setActiveSection("research");
   }, [research]);
 
-  // Delete workspace
   const handleDeleteWorkspace = useCallback(async (key: string) => {
     await deleteWorkspace(key);
     if (workspaceKey === key) {
@@ -122,7 +140,6 @@ export default function LeadGen() {
     }
   }, [deleteWorkspace, workspaceKey, research]);
 
-  // Re-run research for a workspace
   const handleRerunWorkspace = useCallback((key: string) => {
     setDomain(key);
     research.forceReset();
@@ -130,163 +147,21 @@ export default function LeadGen() {
     setTimeout(() => research.start(key), 100);
   }, [research]);
 
-  // ── Bulletproof Find Leads: multi-stage progressive search ──
-  const handleFindLeads = useCallback(async (persona: ParsedPersona) => {
-    if (!user || loadingPersona) return;
-    setLoadingPersona(persona.title);
-
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    const { data: { session } } = await supabase.auth.getSession();
-    const authHeaders = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`,
-      "apikey": supabaseKey,
-    };
-
-    // Sanitize titles: drop overly-specific ones Apollo can't match
-    const cleanTitles = persona.titles
-      .filter(t => t.length >= 5 && t.length <= 40 && !t.includes("/") && !t.includes("(") && !t.includes(" - "))
-      .slice(0, 5);
-
-    // Prospect domains from the research report for domain-constrained search
-    const prospectDomains = research.report?.prospectDomains?.slice(0, 10) || [];
-
-    // Industry keywords from the research for q_keywords filtering
-    const industryKeywords = research.report?.industryKeywords || [];
-    const keywordsStr = industryKeywords.join(" ");
-
-    // Generic decision-maker titles
-    const genericTitles = ["VP of Sales", "Director of Business Development", "Chief Revenue Officer", "VP of Operations", "Head of Partnerships"];
-
-    // Build search stages — each progressively broader but ALWAYS industry-constrained
-    const stages: Array<{ label: string; body: Record<string, unknown> }> = [];
-
-    // Stage 1: Persona-specific titles + industry keywords
-    if (cleanTitles.length > 0) {
-      stages.push({
-        label: "Searching with persona titles…",
-        body: {
-          search_mode: "people",
-          person_titles: cleanTitles,
-          person_seniorities: ["director", "vp", "c_suite", "owner"],
-          organization_locations: ["United States"],
-          ...(keywordsStr ? { q_keywords: keywordsStr } : {}),
-          per_page: 10,
-        },
-      });
-    }
-
-    // Stage 2: Decision-makers AT prospect companies identified in research
-    if (prospectDomains.length > 0) {
-      stages.push({
-        label: "Searching target companies…",
-        body: {
-          search_mode: "people",
-          q_organization_domains: prospectDomains,
-          person_seniorities: ["director", "vp", "c_suite", "owner"],
-          per_page: 10,
-        },
-      });
-    }
-
-    // Stage 3: Generic titles but STILL industry-constrained
-    if (keywordsStr) {
-      stages.push({
-        label: "Broadening industry search…",
-        body: {
-          search_mode: "people",
-          person_titles: genericTitles,
-          person_seniorities: ["director", "vp", "c_suite", "owner"],
-          organization_locations: ["United States"],
-          q_keywords: keywordsStr,
-          per_page: 10,
-        },
-      });
-    }
-
-    // Stage 4: Last resort — generic titles, no industry filter (guaranteed results but less relevant)
-    stages.push({
-      label: "Expanding search…",
-      body: {
-        search_mode: "people",
-        person_titles: genericTitles,
-        person_seniorities: ["director", "vp", "c_suite", "owner"],
-        organization_locations: ["United States"],
-        per_page: 10,
-      },
+  // ── Chat-first Find Leads: opens chat with persona context ──
+  const handleFindLeadsChat = useCallback((persona: ParsedPersona) => {
+    setPendingPersona({
+      personaTitle: persona.title,
+      titles: persona.titles,
+      painPoints: persona.painPoints,
+      buyingTriggers: persona.buyingTriggers,
     });
-
-    let allPeople: any[] = [];
-
-    try {
-      for (const stage of stages) {
-        if (allPeople.length >= 5) break; // We have enough
-
-        toast.info(stage.label, { id: "find-leads-progress", duration: 8000 });
-
-        try {
-          const resp = await fetch(`${supabaseUrl}/functions/v1/search-apollo`, {
-            method: "POST",
-            headers: authHeaders,
-            body: JSON.stringify(stage.body),
-          });
-
-          if (!resp.ok) {
-            console.warn(`Apollo stage failed (${resp.status}), trying next…`);
-            continue;
-          }
-
-          const data = await resp.json();
-          const people = data.people || [];
-          console.log(`Apollo stage "${stage.label}" returned ${people.length} people`);
-
-          if (people.length > 0) {
-            // Deduplicate by apollo_id or email
-            const existingIds = new Set(allPeople.map(p => p.apollo_id || p.email));
-            const fresh = people.filter((p: any) => !existingIds.has(p.apollo_id || p.email));
-            allPeople.push(...fresh);
-          }
-        } catch (stageErr) {
-          console.warn("Apollo stage error:", stageErr);
-          continue; // Never let a single stage kill the whole flow
-        }
-      }
-
-      if (allPeople.length > 0) {
-        const newLeads = allPeople.map((p: any) => ({
-          name: p.name,
-          title: p.title,
-          company: p.company,
-          email: p.email,
-          linkedin: p.linkedin,
-          phone: p.phone,
-          photo_url: p.photo_url,
-          apollo_id: p.apollo_id,
-          address: p.address,
-          source: "apollo",
-          persona_tag: persona.title,
-          reason: `Matched persona: ${persona.title}`,
-        }));
-        await upsertLeads(newLeads);
-        await refetch();
-        toast.success(`Found ${allPeople.length} leads`, { id: "find-leads-progress" });
-      } else {
-        toast.error("No leads found — try adjusting your research or running a new analysis.", { id: "find-leads-progress" });
-      }
-    } catch (e) {
-      console.error("Apollo search failed:", e);
-      toast.error("Lead search failed. Please try again.", { id: "find-leads-progress" });
-    } finally {
-      setLoadingPersona(null);
-    }
-  }, [user, loadingPersona, research.report, upsertLeads, refetch, workspaceKey]);
+    // Open the floating chat
+    chatRef.current?.open();
+  }, []);
 
   const handleDraftEmail = useCallback((lead: SavedLead) => {
     setDraftLead(lead);
   }, []);
-
-  // Enrichment removed — leads arrive with full contact data from Apollo
 
   const handleStartResearch = useCallback(() => {
     if (domain.trim()) research.start(domain.trim());
@@ -314,7 +189,7 @@ export default function LeadGen() {
           <PersonasSection
             report={research.report}
             leadCountByPersona={leadCountByPersona}
-            onFindLeads={handleFindLeads}
+            onFindLeads={handleFindLeadsChat}
             loadingPersona={loadingPersona}
           />
         );
@@ -376,7 +251,7 @@ export default function LeadGen() {
               </div>
             </div>
 
-            <FloatingChat>
+            <FloatingChat ref={chatRef}>
               <PipelineChat
                 context={{
                   workspaceKey,
@@ -386,12 +261,13 @@ export default function LeadGen() {
                   personaNames: research.report?.personas.map(p => p.title) || [],
                   leadCount: leads.length,
                   leadsWithoutEmail: leads.filter(l => !l.email).length,
+                  icpContext,
                 }}
                 actions={{
                   onNavigate: (section) => setActiveSection(section as SidebarSection),
                   onFindLeads: (personaTitle) => {
                     const persona = research.report?.personas.find(p => p.title === personaTitle);
-                    if (persona) handleFindLeads(persona);
+                    if (persona) handleFindLeadsChat(persona);
                   },
                   onDraftEmail: (leadName) => {
                     const lead = leads.find(l => l.name.toLowerCase().includes(leadName.toLowerCase()));
@@ -403,6 +279,8 @@ export default function LeadGen() {
                     research.start(domain);
                   },
                 }}
+                pendingPersona={pendingPersona}
+                onPersonaConsumed={() => setPendingPersona(null)}
               />
             </FloatingChat>
 

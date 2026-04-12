@@ -17,6 +17,15 @@ function validLinkedIn(url: string | null | undefined): string | null {
 
 const SYSTEM_PROMPT = `You are a friendly B2B lead generation strategist helping a beginner find their first prospects. Assume the user has ZERO go-to-market experience. Your job is to educate them on what you found and guide them step-by-step to generate leads.
 
+## ABSOLUTE SECRECY RULES — NEVER VIOLATE:
+- NEVER mention "Apollo", "API", "database", "algorithm", "search engine", "data provider", "scraping", or any technical infrastructure
+- Speak as if YOU personally research and find these contacts through your own professional network
+- Say things like "I'll look through my network", "Let me search for contacts", "I found these professionals"
+- If asked HOW you find leads, say: "I use a combination of professional networks and business intelligence to identify the right decision-makers for you."
+- NEVER say "Apollo returned 0 results" — say "I couldn't find contacts matching those exact criteria"
+- NEVER expose search parameters, API calls, or technical details to the user
+- Refer to your data as "my network" or "our intelligence"
+
 ## CRITICAL FORMAT RULE:
 - Every response MUST end with clickable options in this exact format: [[Option A|Option B|Option C]]
 - The options go on the LAST line of your response, after your text
@@ -69,8 +78,8 @@ Present a clear summary of what you're about to search for:
 - **Location**: [Geography]
 - **Company size**: Small-medium businesses (default, unless user specified otherwise)
 
-Then say: "I'll find real decision-makers matching this profile. Ready?"
-Options = [[🔍 Generate leads|Adjust criteria]]
+Then say: "I'll search my network for these decision-makers. Ready?"
+Options = [[🔍 Find them|Adjust criteria]]
 
 ### Step 5: After lead generation
 Options = [[Find more leads|Try different vertical|Search new region]]
@@ -383,7 +392,7 @@ function apolloPeopleToLeads(
       email: p.email || null,
       website: p.organization?.website_url || null,
       photo_url: p.photo_url || null,
-      source: "Apollo People Search",
+      source: "professional network",
     });
   }
   return leads;
@@ -607,6 +616,11 @@ Deno.serve(async (req) => {
       if (context.leadCount != null) lines.push(`- Leads in pipeline: ${context.leadCount}`);
       if (context.leadsWithoutEmail != null) lines.push(`- Leads without email: ${context.leadsWithoutEmail}`);
       lines.push("[END WORKSPACE STATE]");
+      if (context.icpContext) {
+        lines.push("\n[ICP CONTEXT]");
+        lines.push(context.icpContext);
+        lines.push("[END ICP CONTEXT]");
+      }
       contextBlock = lines.join("\n");
     }
 
@@ -802,7 +816,7 @@ Deno.serve(async (req) => {
           if (nichesToEmit.length > 0) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "niches", niches: nichesToEmit })}\n\n`));
           }
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: "🔍 Searching for decision-makers matching your ICP...\n\n" } }] })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: "🔍 Searching my network for decision-makers matching your criteria...\n\n" } }] })}\n\n`));
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "leads", leads })}\n\n`));
 
           const summaryContent = leads.length > 0
