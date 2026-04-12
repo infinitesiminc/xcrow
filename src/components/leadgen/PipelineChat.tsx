@@ -32,6 +32,8 @@ export interface PipelineChatContext {
   personaNames: string[];
   leadCount: number;
   leadsWithoutEmail: number;
+  /** ICP context injected from research report */
+  icpContext?: string;
 }
 
 export interface PipelineChatActions {
@@ -42,9 +44,20 @@ export interface PipelineChatActions {
   onStartResearch: (domain: string) => void;
 }
 
+/** Pending persona prefill to auto-trigger chat */
+export interface PersonaPrefill {
+  personaTitle: string;
+  titles: string[];
+  painPoints: string[];
+  buyingTriggers: string[];
+}
+
 interface PipelineChatProps {
   context: PipelineChatContext;
   actions: PipelineChatActions;
+  /** When set, auto-sends a persona-specific discovery message */
+  pendingPersona?: PersonaPrefill | null;
+  onPersonaConsumed?: () => void;
 }
 
 /* ── Helpers ── */
