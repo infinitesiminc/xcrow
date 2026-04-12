@@ -229,13 +229,11 @@ export default function LeadGen() {
                       />
                     )}
 
-                    {showResearchSummary && (
-                      <ResearchSummaryCard report={research.report!} elapsed={research.elapsed} />
-                    )}
-
                     {research.isComplete && research.report && (
-                      <PersonasSection
+                      <ResearchBar
                         report={research.report}
+                        elapsed={research.elapsed}
+                        workspaceKey={workspaceKey}
                         leadCountByPersona={leadCountByPersona}
                         onFindLeads={handleFindLeadsChat}
                         loadingPersona={loadingPersona}
