@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import AuthModal from "@/components/AuthModal";
-import { PRO_PRODUCT_IDS, LAUNCHER_PRODUCT_IDS, type PlanTier } from "@/lib/stripe-config";
+import { PRO_PRODUCT_IDS, STARTER_PRODUCT_IDS, type PlanTier } from "@/lib/stripe-config";
 
 const SUPERADMIN_IDS = [
   "7be41055-be68-4cab-b63c-f3b0c483e6eb",
