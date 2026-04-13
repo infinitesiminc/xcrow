@@ -13,6 +13,7 @@ import { useWorkspaces } from "@/hooks/use-workspaces";
 import { DockedChat } from "@/components/leadgen/DockedChat";
 import { PipelineChat, type PersonaPrefill } from "@/components/leadgen/PipelineChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
+import ICPBuilderStep, { type ConfirmedPersona } from "@/components/leadgen/ICPBuilderStep";
 
 export default function LeadGen() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ export default function LeadGen() {
   const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
   const [pendingPersona, setPendingPersona] = useState<PersonaPrefill | null>(null);
+  const [icpConfirmed, setIcpConfirmed] = useState(false);
 
   const research = useResearchStream();
   const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
@@ -80,6 +82,7 @@ export default function LeadGen() {
   const handleSelectWorkspace = useCallback(async (key: string) => {
     if (!user) return;
     setDomain(key);
+    setIcpConfirmed(false);
     touchWorkspace(key);
     const resumed = await research.resumeIfRunning(user.id, key);
     if (resumed) return;
@@ -100,8 +103,17 @@ export default function LeadGen() {
 
   const handleNewResearch = useCallback(() => {
     setDomain("");
+    setIcpConfirmed(false);
     research.forceReset();
   }, [research]);
+
+  const handleICPConfirm = useCallback((confirmedPersonas: ConfirmedPersona[]) => {
+    setIcpConfirmed(true);
+    // Auto-trigger lead search for the first confirmed persona
+    if (confirmedPersonas.length > 0) {
+      handleFindLeadsChat(confirmedPersonas[0]);
+    }
+  }, []);
 
   const handleDeleteWorkspace = useCallback(async (key: string) => {
     await deleteWorkspace(key);
@@ -240,7 +252,16 @@ export default function LeadGen() {
                       />
                     )}
 
-                    {research.isComplete && research.report && (
+                    {research.isComplete && research.report && !icpConfirmed && leads.length === 0 && (
+                      <ICPBuilderStep
+                        report={research.report}
+                        workspaceKey={workspaceKey}
+                        onConfirm={handleICPConfirm}
+                        onFindLeads={handleFindLeadsChat}
+                      />
+                    )}
+
+                    {research.isComplete && research.report && (icpConfirmed || leads.length > 0) && (
                       <ResearchBar
                         report={research.report}
                         elapsed={research.elapsed}
@@ -251,7 +272,7 @@ export default function LeadGen() {
                       />
                     )}
 
-                    {research.isComplete && (
+                    {research.isComplete && (icpConfirmed || leads.length > 0) && (
                       <LeadsTableSection
                         leads={leads}
                         outreach={outreach}
