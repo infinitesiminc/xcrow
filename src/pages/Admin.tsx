@@ -278,6 +278,8 @@ function UsersSection() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UserDetailDrawer user={detailUser} open={!!detailUser} onOpenChange={o => !o && setDetailUser(null)} />
     </div>
   );
 }
