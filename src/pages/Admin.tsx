@@ -241,7 +241,7 @@ function UsersSection() {
                   </TableCell>
                   <TableCell>
                     <button
-                      onClick={() => setDeleteTarget(u)}
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(u); }}
                       className="p-1.5 rounded hover:bg-destructive/10 transition-colors"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
