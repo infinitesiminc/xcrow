@@ -321,7 +321,7 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
                 }`}>
                   {msg.role === "assistant" ? (
                     <div className="prose prose-sm max-w-none [&>p]:my-1 [&>p]:text-secondary-foreground [&_strong]:text-secondary-foreground">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown>{msg.content.replace(/```(?:json)?\s*\{[\s\S]*?\}\s*```/g, "").trim()}</ReactMarkdown>
                     </div>
                   ) : (
                     <p className="whitespace-pre-wrap">{msg.content}</p>
