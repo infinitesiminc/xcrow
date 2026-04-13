@@ -21,6 +21,7 @@ export default function LeadGen() {
   const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
   const [pendingPersona, setPendingPersona] = useState<PersonaPrefill | null>(null);
+  const [icpConfirmed, setIcpConfirmed] = useState(false);
 
   const research = useResearchStream();
   const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
