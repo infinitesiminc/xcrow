@@ -218,8 +218,8 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
 
   const exportCSV = useCallback(() => {
     if (leads.length === 0) return;
-    const headers = ["Name", "Title", "Company", "Email", "Phone", "LinkedIn", "Status"];
-    const rows = leads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.status]);
+    const headers = ["Name", "Title", "Company", "Email", "Phone", "LinkedIn", "Location", "Status"];
+    const rows = leads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.address || "", l.status]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
