@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
 
 const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "replied", "won", "lost"];
 
-type SortKey = "name" | "company" | "status" | "created_at";
+type SortKey = "name" | "company" | "status" | "created_at" | "seniority";
 type SortDir = "asc" | "desc";
 
 /** Strip "ICP Segment N:" prefix from persona tags */
@@ -41,11 +41,12 @@ interface LeadsTableSectionProps {
   onDeleteLead: (id: string) => void;
   onExportCSV: () => void;
   onDraftEmail?: (lead: SavedLead) => void;
+  onFindLookalikes?: (lead: SavedLead) => void;
   userId?: string;
 }
 
 export default function LeadsTableSection({
-  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, userId,
+  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, onFindLookalikes, userId,
 }: LeadsTableSectionProps) {
   // Filters
   const [search, setSearch] = useState("");
@@ -53,8 +54,8 @@ export default function LeadsTableSection({
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Sort
-  const [sortKey, setSortKey] = useState<SortKey>("created_at");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortKey, setSortKey] = useState<SortKey>("seniority");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   // Selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -92,6 +93,7 @@ export default function LeadsTableSection({
         case "company": cmp = (a.company || "").localeCompare(b.company || ""); break;
         case "status": cmp = a.status.localeCompare(b.status); break;
         case "created_at": cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
+        case "seniority": cmp = (a.seniority_rank ?? 99) - (b.seniority_rank ?? 99); break;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
