@@ -19,6 +19,7 @@ import {
   Loader2, Users, ToggleLeft, Settings, Mail, ArrowLeft, Search, Trash2, Crown, Shield,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { UserDetailDrawer } from "@/components/admin/UserDetailDrawer";
 
 type Section = "users" | "flags" | "config" | "emails";
 
@@ -148,6 +149,7 @@ function UsersSection() {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [detailUser, setDetailUser] = useState<AdminUser | null>(null);
   const { toast } = useToast();
 
   const fetchUsers = useCallback(async () => {
@@ -217,7 +219,7 @@ function UsersSection() {
             </TableHeader>
             <TableBody>
               {filtered.map(u => (
-                <TableRow key={u.user_id}>
+                <TableRow key={u.user_id} className="cursor-pointer hover:bg-muted/40" onClick={() => setDetailUser(u)}>
                   <TableCell>
                     <p className="text-sm font-medium text-foreground">{u.display_name}</p>
                     <p className="text-xs text-muted-foreground">{u.email}</p>
@@ -239,7 +241,7 @@ function UsersSection() {
                   </TableCell>
                   <TableCell>
                     <button
-                      onClick={() => setDeleteTarget(u)}
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(u); }}
                       className="p-1.5 rounded hover:bg-destructive/10 transition-colors"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
@@ -276,6 +278,8 @@ function UsersSection() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UserDetailDrawer user={detailUser} open={!!detailUser} onOpenChange={o => !o && setDetailUser(null)} />
     </div>
   );
 }
