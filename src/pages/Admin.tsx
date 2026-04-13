@@ -219,7 +219,7 @@ function UsersSection() {
             </TableHeader>
             <TableBody>
               {filtered.map(u => (
-                <TableRow key={u.user_id}>
+                <TableRow key={u.user_id} className="cursor-pointer hover:bg-muted/40" onClick={() => setDetailUser(u)}>
                   <TableCell>
                     <p className="text-sm font-medium text-foreground">{u.display_name}</p>
                     <p className="text-xs text-muted-foreground">{u.email}</p>
