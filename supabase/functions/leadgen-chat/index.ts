@@ -384,14 +384,18 @@ function apolloPeopleToLeads(
     const linkedinUrl = validLinkedIn(p.linkedin_url);
     if (!linkedinUrl) continue;
     seenNames.add(name.toLowerCase());
+    const loc = [p.city, p.state, p.country].filter(Boolean).join(", ");
     leads.push({
       name,
       title: p.title || null,
       company: p.organization?.name || p.organization_name || null,
       linkedin: linkedinUrl,
       email: p.email || null,
+      phone: p.phone_number || p.sanitized_phone || null,
       website: p.organization?.website_url || null,
       photo_url: p.photo_url || null,
+      address: loc || null,
+      apollo_id: p.id || null,
       source: "professional network",
     });
   }
