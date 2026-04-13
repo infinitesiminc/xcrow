@@ -238,7 +238,11 @@ export default function LeadsTableSection({
                 </button>
               </TableHead>
               <TableHead className="text-xs w-[100px]">Contact</TableHead>
-              <TableHead className="text-xs w-[130px]">Location</TableHead>
+              <TableHead className="text-xs w-[80px]">
+                <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("seniority")}>
+                  Rank <SortIcon col="seniority" />
+                </button>
+              </TableHead>
               <TableHead className="text-xs w-[100px]">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("status")}>
                   Status <SortIcon col="status" />
@@ -294,13 +298,22 @@ export default function LeadsTableSection({
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground truncate max-w-[130px]">
-                  {lead.address ? (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{lead.address}</span>
+                <TableCell>
+                  {lead.seniority_rank != null && lead.seniority_rank <= 4 ? (
+                    <span className="flex items-center gap-1" title={lead.decision_role || undefined}>
+                      {lead.seniority_rank <= 2 && <Crown className="w-3 h-3 text-amber-500" />}
+                      <Badge variant="outline" className={`text-[10px] ${
+                        lead.seniority_rank === 1 ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                        lead.seniority_rank === 2 ? "bg-primary/10 text-primary border-primary/20" :
+                        lead.seniority_rank === 3 ? "bg-blue-500/10 text-blue-600 border-blue-500/20" :
+                        "bg-muted text-muted-foreground border-border"
+                      }`}>
+                        {lead.seniority_rank === 1 ? "C-Suite" : lead.seniority_rank === 2 ? "SVP" : lead.seniority_rank === 3 ? "VP" : "Dir"}
+                      </Badge>
                     </span>
-                  ) : "—"}
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[lead.status]}`}>
