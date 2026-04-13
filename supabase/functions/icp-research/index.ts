@@ -125,6 +125,8 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
     let formattedUrl = domain.trim();
     if (!formattedUrl.startsWith("http")) formattedUrl = `https://${formattedUrl}`;
 
+    const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+
     console.log("Scraping homepage:", formattedUrl);
     let homeHtml = "";
     let homepageText = "";
@@ -143,8 +145,42 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
       console.warn("Homepage fetch failed:", e);
     }
 
-    const homeTitle = homeHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || "";
+    let homeTitle = homeHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || "";
     const domainName = new URL(formattedUrl).hostname.replace("www.", "");
+
+    // Fallback to Firecrawl if basic scrape returned too little content
+    if ((!homepageText || homepageText.length < 200) && FIRECRAWL_API_KEY) {
+      console.log("Basic scrape insufficient, falling back to Firecrawl for:", formattedUrl);
+      try {
+        const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url: formattedUrl,
+            formats: ["markdown", "html"],
+            onlyMainContent: false,
+          }),
+        });
+        const fcData = await fcRes.json();
+        const fcMarkdown = fcData?.data?.markdown || "";
+        const fcHtml = fcData?.data?.html || "";
+        const fcTitle = fcData?.data?.metadata?.title || "";
+        if (fcMarkdown && fcMarkdown.length > homepageText.length) {
+          homepageText = fcMarkdown.slice(0, 8000);
+          console.log(`Firecrawl returned ${fcMarkdown.length} chars of markdown`);
+        }
+        if (fcHtml && fcHtml.length > homeHtml.length) {
+          homeHtml = fcHtml;
+        }
+        if (fcTitle) homeTitle = fcTitle;
+      } catch (e) {
+        console.warn("Firecrawl fallback failed:", e);
+      }
+    }
+
     if (!homepageText || homepageText.length < 50) {
       homepageText = `Company website: ${domainName}. (Content could not be scraped.)`;
     }
