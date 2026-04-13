@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { classifySeniority } from "@/lib/seniority-classifier";
 import type { Lead } from "./LeadCard";
 
 export type LeadStatus = "new" | "contacted" | "replied" | "won" | "lost";
@@ -14,6 +15,8 @@ export interface SavedLead extends Lead {
   workspace_key?: string;
   rating?: number | null;
   score?: number;
+  seniority_rank?: number | null;
+  decision_role?: string | null;
 }
 
 export interface OutreachEntry {
@@ -126,28 +129,33 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
     async (newLeads: Lead[]) => {
       if (!userId || !workspaceKey || newLeads.length === 0) return;
 
-      const rows = newLeads.map((l) => ({
-        user_id: userId,
-        workspace_key: workspaceKey,
-        name: l.name,
-        title: l.title || null,
-        company: l.company || null,
-        email: l.email || null,
-        phone: l.phone || null,
-        linkedin: l.linkedin || null,
-        website: l.website || null,
-        address: l.address || null,
-        source: l.source || workspaceKey,
-        email_confidence: l.email_confidence != null ? String(l.email_confidence) : null,
-        summary: l.summary || null,
-        reason: l.reason || null,
-        photo_url: l.photo_url || null,
-        status: "new" as const,
-        niche_tag: l.niche_tag || null,
-        rating: l.score != null ? l.score : null,
-        persona_tag: l.persona_tag || null,
-        apollo_id: (l as any).apollo_id || null,
-      }));
+      const rows = newLeads.map((l) => {
+        const seniority = classifySeniority(l.title);
+        return {
+          user_id: userId,
+          workspace_key: workspaceKey,
+          name: l.name,
+          title: l.title || null,
+          company: l.company || null,
+          email: l.email || null,
+          phone: l.phone || null,
+          linkedin: l.linkedin || null,
+          website: l.website || null,
+          address: l.address || null,
+          source: l.source || workspaceKey,
+          email_confidence: l.email_confidence != null ? String(l.email_confidence) : null,
+          summary: l.summary || null,
+          reason: l.reason || null,
+          photo_url: l.photo_url || null,
+          status: "new" as const,
+          niche_tag: l.niche_tag || null,
+          rating: l.score != null ? l.score : null,
+          persona_tag: l.persona_tag || null,
+          apollo_id: (l as any).apollo_id || null,
+          seniority_rank: seniority.rank,
+          decision_role: seniority.decisionRole,
+        };
+      });
 
       for (const row of rows) {
         const { error } = await (supabase.from("saved_leads") as any).insert(row);
@@ -218,8 +226,8 @@ export function useLeadsCRUD(userId: string | undefined, workspaceKey?: string) 
 
   const exportCSV = useCallback(() => {
     if (leads.length === 0) return;
-    const headers = ["Name", "Title", "Company", "Email", "Phone", "LinkedIn", "Location", "Status"];
-    const rows = leads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.address || "", l.status]);
+    const headers = ["Name", "Title", "Company", "Email", "Phone", "LinkedIn", "Location", "Status", "Decision-Making Role", "Seniority Rank"];
+    const rows = leads.map((l) => [l.name, l.title || "", l.company || "", l.email || "", l.phone || "", l.linkedin || "", l.address || "", l.status, l.decision_role || "", l.seniority_rank != null ? String(l.seniority_rank) : ""]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
