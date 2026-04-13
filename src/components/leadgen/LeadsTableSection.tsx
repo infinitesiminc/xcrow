@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   TableProperties, Download, ExternalLink, Mail, Trash2,
   Search, ArrowUpDown, ArrowUp, ArrowDown, Linkedin, Phone,
-  ChevronDown, CheckCheck, Sparkles, MapPin,
+  ChevronDown, CheckCheck, Sparkles, MapPin, Users, Crown,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
