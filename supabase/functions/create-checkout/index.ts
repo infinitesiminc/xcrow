@@ -8,6 +8,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Active price IDs
+const PRICES = {
+  starter: "price_1TJEd9GqMIbud5Hacsn2vL1J",
+  pro: "price_1TJEdhGqMIbud5HafoNoNRoA",
+  topup: "price_1TLSOkGqMIbud5HaA1K1Z5yO",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,15 +34,21 @@ serve(async (req) => {
 
     let body: any = {};
     try { body = await req.json(); } catch {}
-    const priceId = body.priceId || "price_1TEvG0GqMIbud5Ha8h085MFj";
-    // Admin can pre-fill email for upgrade links
-    const targetEmail = body.prefillEmail || user.email;
+
+    // Accept a tier name ("starter" | "pro" | "topup") or a raw priceId
+    const tier = body.tier as string | undefined;
+    const priceId = tier && PRICES[tier as keyof typeof PRICES]
+      ? PRICES[tier as keyof typeof PRICES]
+      : body.priceId || PRICES.starter;
+
+    const isTopup = priceId === PRICES.topup;
+    const mode = isTopup ? "payment" : "subscription";
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    const customers = await stripe.customers.list({ email: targetEmail, limit: 1 });
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId: string | undefined;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
@@ -45,11 +58,15 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : targetEmail,
+      customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
-      success_url: `${origin}/map?checkout=success`,
+      mode,
+      success_url: `${origin}/leadgen?checkout=success`,
       cancel_url: `${origin}/pricing`,
+      metadata: {
+        user_id: user.id,
+        tier: tier || "unknown",
+      },
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
