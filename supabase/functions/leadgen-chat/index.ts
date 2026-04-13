@@ -558,7 +558,7 @@ async function executeLeadSearch(
         {
           role: "system",
           content: `You are scoring and enriching leads for relevance. Given an ICP and a list of Apollo results, return the top ${extractLimit} most relevant leads as JSON (no markdown fences):
-{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin url or null","email":"email or null","website":"company website or null","photo_url":"photo url or null","source":"Apollo People Search","summary":"1-2 sentence summary of who this person is","reason":"1-2 sentence explanation of why they match the ICP","score":85,"is_decision_maker":true}]}
+{"leads":[{"name":"Full Name","title":"Job Title","company":"Company Name","linkedin":"linkedin url or null","email":"email or null","phone":"phone or null","website":"company website or null","photo_url":"photo url or null","address":"city, state, country or null","apollo_id":"source id or null","source":"source label","summary":"1-2 sentence summary of who this person is","reason":"1-2 sentence explanation of why they match the ICP","score":85,"is_decision_maker":true}]}
 
 CRITICAL:
 - Rank by ICP fit — closest matches first
@@ -566,7 +566,7 @@ CRITICAL:
 - Every lead MUST have summary, reason, and score fields
 - "score" is 0-100 ICP fit score: 90+ = perfect match, 70-89 = strong, 50-69 = moderate, <50 = weak
 - Score based on: title seniority, company relevance to ICP, industry alignment, location match
-- Preserve ALL Apollo data exactly (linkedin, email, photo_url) — do NOT modify URLs`,
+- Preserve ALL source fields exactly, especially linkedin, email, phone, website, photo_url, address, apollo_id, and source`,
         },
         {
           role: "user",
@@ -577,10 +577,36 @@ CRITICAL:
   });
   const aiData = await aiRes.json();
   const aiText = aiData?.choices?.[0]?.message?.content || "";
+
+  const mergeApolloFields = (lead: any) => {
+    const normalizedLinkedin = validLinkedIn(lead.linkedin) ?? null;
+    const emailKey = typeof lead.email === "string" ? lead.email.toLowerCase() : null;
+    const nameCompanyKey = `${(lead.name || "").trim().toLowerCase()}::${(lead.company || "").trim().toLowerCase()}`;
+    const sourceLead =
+      (normalizedLinkedin ? apolloLeads.find((candidate) => candidate.linkedin === normalizedLinkedin) : undefined) ||
+      (emailKey ? apolloLeads.find((candidate) => candidate.email?.toLowerCase() === emailKey) : undefined) ||
+      apolloLeads.find(
+        (candidate) => `${(candidate.name || "").trim().toLowerCase()}::${(candidate.company || "").trim().toLowerCase()}` === nameCompanyKey,
+      );
+
+    return {
+      ...sourceLead,
+      ...lead,
+      linkedin: normalizedLinkedin ?? sourceLead?.linkedin ?? null,
+      email: lead.email ?? sourceLead?.email ?? null,
+      phone: lead.phone ?? sourceLead?.phone ?? null,
+      website: lead.website ?? sourceLead?.website ?? null,
+      photo_url: lead.photo_url ?? sourceLead?.photo_url ?? null,
+      address: lead.address ?? sourceLead?.address ?? null,
+      apollo_id: lead.apollo_id ?? sourceLead?.apollo_id ?? null,
+      source: lead.source ?? sourceLead?.source ?? "professional network",
+    };
+  };
+
   try {
     const cleaned = aiText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
-    return (parsed.leads || []).slice(0, extractLimit).map((l: any) => ({ ...l, linkedin: validLinkedIn(l.linkedin) }));
+    return (parsed.leads || []).slice(0, extractLimit).map(mergeApolloFields);
   } catch {
     console.error("AI scoring parse failed, returning raw Apollo results");
     return apolloLeads.slice(0, extractLimit).map((l) => ({
