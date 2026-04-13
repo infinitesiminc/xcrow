@@ -149,6 +149,7 @@ function UsersSection() {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [detailUser, setDetailUser] = useState<AdminUser | null>(null);
   const { toast } = useToast();
 
   const fetchUsers = useCallback(async () => {
