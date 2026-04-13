@@ -13,6 +13,7 @@ import { useWorkspaces } from "@/hooks/use-workspaces";
 import { DockedChat } from "@/components/leadgen/DockedChat";
 import { PipelineChat, type PersonaPrefill } from "@/components/leadgen/PipelineChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
+import ICPBuilderStep, { type ConfirmedPersona } from "@/components/leadgen/ICPBuilderStep";
 
 export default function LeadGen() {
   const { user } = useAuth();
