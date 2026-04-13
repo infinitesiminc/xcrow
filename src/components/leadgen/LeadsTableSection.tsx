@@ -354,6 +354,7 @@ export default function LeadsTableSection({
           if (drawerLead?.id === id) setDrawerLead({ ...drawerLead, status });
         }}
         onDraftEmail={lead => onDraftEmail?.(lead)}
+        onFindLookalikes={onFindLookalikes ? (lead) => onFindLookalikes(lead) : undefined}
         onDelete={id => {
           onDeleteLead(id);
           setDrawerLead(null);
