@@ -44,7 +44,7 @@ const AuthContext = createContext<AuthContextType>({
   plan: "free",
   subscriptionEnd: null,
   isPro: false,
-  isLauncherPro: false,
+  
   refreshProfile: async () => {},
   refreshSubscription: async () => {},
   signOut: async () => {},
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [plan, setPlan] = useState<PlanTier>("free");
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
-  const [isLauncherPro, setIsLauncherPro] = useState(false);
+  
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
   const isPro = plan === "pro" || isSuperAdmin;
@@ -198,7 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user, session, loading, profile, isSuperAdmin,
-      plan, subscriptionEnd, isPro, isLauncherPro,
+      plan, subscriptionEnd, isPro,
       refreshProfile, refreshSubscription, signOut, openAuthModal,
     }}>
       {children}
