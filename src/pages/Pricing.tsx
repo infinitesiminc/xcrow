@@ -1,12 +1,26 @@
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const TIERS = [
+interface Tier {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  cta: string;
+  features: string[];
+  highlight: boolean;
+  tier?: "starter" | "pro"; // maps to Stripe checkout tier
+}
+
+const TIERS: Tier[] = [
   {
     name: "Free",
     price: "$0",
@@ -14,7 +28,7 @@ const TIERS = [
     description: "Try Xcrow with no commitment.",
     cta: "Get Started",
     features: [
-      "15 leads per month",
+      "30 leads per month",
       "AI niche & persona discovery",
       "Basic lead scoring",
       "CSV export",
@@ -26,7 +40,8 @@ const TIERS = [
     price: "$29",
     period: "/mo",
     description: "For founders starting outbound.",
-    cta: "Start Free Trial",
+    cta: "Upgrade to Starter",
+    tier: "starter",
     features: [
       "150 leads per month",
       "Verified email addresses",
@@ -41,7 +56,8 @@ const TIERS = [
     price: "$49",
     period: "/mo",
     description: "Your entire outbound engine.",
-    cta: "Start Free Trial",
+    cta: "Upgrade to Pro",
+    tier: "pro",
     features: [
       "500 leads per month",
       "Everything in Starter",
@@ -55,12 +71,55 @@ const TIERS = [
 ];
 
 export default function Pricing() {
-  const { user, openAuthModal } = useAuth();
+  const { user, plan, openAuthModal } = useAuth();
   const navigate = useNavigate();
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
-  const handleCta = () => {
-    if (user) navigate("/leadgen");
-    else openAuthModal();
+  const handleCta = async (tier: Tier) => {
+    // Free tier — just go to app
+    if (!tier.tier) {
+      if (user) navigate("/leadgen");
+      else openAuthModal();
+      return;
+    }
+
+    // Paid tier — must be logged in
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+
+    // Already on this plan
+    if (
+      (tier.tier === "starter" && plan === "starter") ||
+      (tier.tier === "pro" && plan === "pro")
+    ) {
+      toast.info("You're already on this plan!");
+      return;
+    }
+
+    setLoadingTier(tier.tier);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { tier: tier.tier },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start checkout");
+    } finally {
+      setLoadingTier(null);
+    }
+  };
+
+  const isCurrentPlan = (tier: Tier) => {
+    if (!user) return false;
+    if (!tier.tier && plan === "free") return true;
+    if (tier.tier === "starter" && plan === "starter") return true;
+    if (tier.tier === "pro" && plan === "pro") return true;
+    return false;
   };
 
   return (
@@ -86,47 +145,63 @@ export default function Pricing() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {TIERS.map((tier) => (
-              <div
-                key={tier.name}
-                className={`rounded-2xl border p-8 flex flex-col ${
-                  tier.highlight
-                    ? "border-primary/40 bg-primary/[0.03] shadow-lg ring-1 ring-primary/20"
-                    : "border-border bg-card"
-                }`}
-              >
-                {tier.highlight && (
-                  <span className="text-xs font-bold text-primary uppercase tracking-[0.1em] mb-3">
-                    Most Popular
-                  </span>
-                )}
-                <h2 className="text-xl font-bold text-foreground">{tier.name}</h2>
-                <div className="flex items-baseline gap-1 mt-2 mb-1">
-                  <span className="text-4xl font-extrabold text-foreground">{tier.price}</span>
-                  <span className="text-sm text-muted-foreground">{tier.period}</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-6">{tier.description}</p>
-                <ul className="space-y-3 mb-8 flex-1">
-                  {tier.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-foreground">
-                      <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  onClick={handleCta}
-                  className="w-full font-semibold"
-                  variant={tier.highlight ? "default" : "outline"}
+            {TIERS.map((tier) => {
+              const current = isCurrentPlan(tier);
+              const loading = loadingTier === tier.tier;
+
+              return (
+                <div
+                  key={tier.name}
+                  className={`rounded-2xl border p-8 flex flex-col relative ${
+                    tier.highlight
+                      ? "border-primary/40 bg-primary/[0.03] shadow-lg ring-1 ring-primary/20"
+                      : "border-border bg-card"
+                  }`}
                 >
-                  {tier.cta}
-                </Button>
-              </div>
-            ))}
+                  {tier.highlight && (
+                    <span className="text-xs font-bold text-primary uppercase tracking-[0.1em] mb-3">
+                      Most Popular
+                    </span>
+                  )}
+                  {current && (
+                    <span className="absolute top-3 right-3 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      Your Plan
+                    </span>
+                  )}
+                  <h2 className="text-xl font-bold text-foreground">{tier.name}</h2>
+                  <div className="flex items-baseline gap-1 mt-2 mb-1">
+                    <span className="text-4xl font-extrabold text-foreground">{tier.price}</span>
+                    <span className="text-sm text-muted-foreground">{tier.period}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-6">{tier.description}</p>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {tier.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-foreground">
+                        <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    onClick={() => handleCta(tier)}
+                    className="w-full font-semibold"
+                    variant={tier.highlight ? "default" : "outline"}
+                    disabled={current || loading}
+                  >
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {current ? "Current Plan" : tier.cta}
+                  </Button>
+                </div>
+              );
+            })}
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-10">
-            Need more? <a href="mailto:jackson@xcrow.ai" className="text-primary hover:underline">Talk to us</a> about custom volume pricing.
+            Need more?{" "}
+            <a href="mailto:jackson@xcrow.ai" className="text-primary hover:underline">
+              Talk to us
+            </a>{" "}
+            about custom volume pricing.
           </p>
         </div>
       </main>

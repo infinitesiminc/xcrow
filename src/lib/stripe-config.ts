@@ -24,7 +24,7 @@ export type PlanTier = "free" | "starter" | "pro";
 
 /** Monthly lead limits per tier */
 export const LEAD_LIMITS: Record<PlanTier, number> = {
-  free: 15,
+  free: 30,
   starter: 150,
   pro: 500,
 } as const;
