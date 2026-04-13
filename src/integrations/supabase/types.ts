@@ -1089,6 +1089,7 @@ export type Database = {
           apollo_id: string | null
           company: string | null
           created_at: string
+          decision_role: string | null
           email: string | null
           email_confidence: string | null
           google_maps_url: string | null
@@ -1103,6 +1104,7 @@ export type Database = {
           rating: number | null
           reason: string | null
           reviews_count: number | null
+          seniority_rank: number | null
           source: string | null
           status: Database["public"]["Enums"]["lead_status"]
           summary: string | null
@@ -1117,6 +1119,7 @@ export type Database = {
           apollo_id?: string | null
           company?: string | null
           created_at?: string
+          decision_role?: string | null
           email?: string | null
           email_confidence?: string | null
           google_maps_url?: string | null
@@ -1131,6 +1134,7 @@ export type Database = {
           rating?: number | null
           reason?: string | null
           reviews_count?: number | null
+          seniority_rank?: number | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           summary?: string | null
@@ -1145,6 +1149,7 @@ export type Database = {
           apollo_id?: string | null
           company?: string | null
           created_at?: string
+          decision_role?: string | null
           email?: string | null
           email_confidence?: string | null
           google_maps_url?: string | null
@@ -1159,6 +1164,7 @@ export type Database = {
           rating?: number | null
           reason?: string | null
           reviews_count?: number | null
+          seniority_rank?: number | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           summary?: string | null
