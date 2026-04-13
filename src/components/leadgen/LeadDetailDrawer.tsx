@@ -211,11 +211,17 @@ export function LeadDetailDrawer({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {lead.email && (
                 <Button variant="default" size="sm" className="gap-1.5 text-xs flex-1" onClick={() => onDraftEmail(lead)}>
                   <Sparkles className="w-3.5 h-3.5" />
                   Draft Email
+                </Button>
+              )}
+              {onFindLookalikes && (
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs flex-1" onClick={() => { onFindLookalikes(lead); onOpenChange(false); }}>
+                  <Users className="w-3.5 h-3.5" />
+                  Find Lookalikes
                 </Button>
               )}
               {lead.linkedin && (
