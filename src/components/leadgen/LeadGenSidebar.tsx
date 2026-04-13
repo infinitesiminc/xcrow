@@ -155,6 +155,21 @@ export function LeadGenSidebar({
         <SidebarSeparator />
         <SidebarMenu>
           <SidebarMenuItem>
+            <WorkspaceManagerDrawer
+              workspaces={workspaces}
+              activeWorkspaceKey={activeWorkspaceKey}
+              onSelectWorkspace={onSelectWorkspace}
+              onDeleteWorkspace={onDeleteWorkspace}
+              onRerunWorkspace={onRerunWorkspace}
+              trigger={
+                <SidebarMenuButton tooltip="Manage Workspaces">
+                  <LayoutGrid className="w-4 h-4" />
+                  <span>Manage Workspaces</span>
+                </SidebarMenuButton>
+              }
+            />
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton onClick={() => navigate("/settings")} tooltip="Settings">
               <Settings className="w-4 h-4" />
               <span>Settings</span>
