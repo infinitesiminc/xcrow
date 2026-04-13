@@ -19,6 +19,7 @@ import {
   Loader2, Users, ToggleLeft, Settings, Mail, ArrowLeft, Search, Trash2, Crown, Shield,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { UserDetailDrawer } from "@/components/admin/UserDetailDrawer";
 
 type Section = "users" | "flags" | "config" | "emails";
 
