@@ -152,11 +152,13 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
   const prevContextRef = useRef<string>("");
 
   // Reset greeting when context changes meaningfully
+  // Update greeting only if no conversation has started yet
   useEffect(() => {
     const key = `${context.activeSection}-${context.researchStatus}-${context.leadCount}-${context.personaCount}`;
     if (prevContextRef.current !== key) {
       prevContextRef.current = key;
-      if (messages.length <= 1) {
+      // Only set greeting if chat is completely empty (first load)
+      if (messages.length === 0) {
         setMessages([{ role: "assistant", content: getGreeting(context) }]);
       }
     }
@@ -183,12 +185,9 @@ export function PipelineChat({ context, actions, pendingPersona, onPersonaConsum
 
     const prefillMsg = `I want to find leads for the "${pendingPersona.personaTitle}" segment. Help me refine the search criteria before we start.`;
     
-    // Reset messages and send the prefill
-    setMessages([{ role: "assistant", content: getGreeting(context) }]);
-    setTimeout(() => {
-      sendMessage(prefillMsg);
-      onPersonaConsumed?.();
-    }, 300);
+    // Append prefill without resetting history
+    sendMessage(prefillMsg);
+    onPersonaConsumed?.();
   }, [pendingPersona?.personaTitle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAction = useCallback((card: ActionCard) => {
