@@ -251,7 +251,16 @@ export default function LeadGen() {
                       />
                     )}
 
-                    {research.isComplete && research.report && (
+                    {research.isComplete && research.report && !icpConfirmed && leads.length === 0 && (
+                      <ICPBuilderStep
+                        report={research.report}
+                        workspaceKey={workspaceKey}
+                        onConfirm={handleICPConfirm}
+                        onFindLeads={handleFindLeadsChat}
+                      />
+                    )}
+
+                    {research.isComplete && research.report && (icpConfirmed || leads.length > 0) && (
                       <ResearchBar
                         report={research.report}
                         elapsed={research.elapsed}
@@ -262,7 +271,7 @@ export default function LeadGen() {
                       />
                     )}
 
-                    {research.isComplete && (
+                    {research.isComplete && (icpConfirmed || leads.length > 0) && (
                       <LeadsTableSection
                         leads={leads}
                         outreach={outreach}
