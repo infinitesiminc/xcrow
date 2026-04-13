@@ -28,7 +28,7 @@ interface AuthContextType {
   plan: PlanTier;
   subscriptionEnd: string | null;
   isPro: boolean;
-  isLauncherPro: boolean;
+  
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
   signOut: () => Promise<void>;
