@@ -143,6 +143,17 @@ export function LeadDetailDrawer({
 
         <ScrollArea className="flex-1 px-5">
           <div className="py-4 space-y-5">
+            {/* Decision-Making Role */}
+            {lead.decision_role && (
+              <div className="bg-amber-500/5 border border-amber-500/10 rounded-lg p-3 flex items-start gap-2.5">
+                <Crown className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-0.5">Decision-Maker Role</p>
+                  <p className="text-sm text-foreground">{lead.decision_role}</p>
+                </div>
+              </div>
+            )}
+
             {/* Reason / Summary */}
             {(lead.reason || lead.summary) && (
               <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
