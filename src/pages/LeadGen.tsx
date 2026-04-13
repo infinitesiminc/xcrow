@@ -102,8 +102,17 @@ export default function LeadGen() {
 
   const handleNewResearch = useCallback(() => {
     setDomain("");
+    setIcpConfirmed(false);
     research.forceReset();
   }, [research]);
+
+  const handleICPConfirm = useCallback((confirmedPersonas: ConfirmedPersona[]) => {
+    setIcpConfirmed(true);
+    // Auto-trigger lead search for the first confirmed persona
+    if (confirmedPersonas.length > 0) {
+      handleFindLeadsChat(confirmedPersonas[0]);
+    }
+  }, []);
 
   const handleDeleteWorkspace = useCallback(async (key: string) => {
     await deleteWorkspace(key);
