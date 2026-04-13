@@ -126,6 +126,17 @@ export default function LeadGen() {
     });
   }, []);
 
+  const handleFindLookalikes = useCallback((lead: SavedLead) => {
+    const title = lead.title || "VP";
+    const company = lead.company || "";
+    setPendingPersona({
+      personaTitle: `Lookalikes of ${lead.name}`,
+      titles: [title],
+      painPoints: [],
+      buyingTriggers: [`Find 20 people with similar title "${title}" at other companies (exclude ${company}). Search across competitor domains in the United States.`],
+    });
+  }, []);
+
   const handleDraftEmail = useCallback((lead: SavedLead) => {
     setDraftLead(lead);
   }, []);
@@ -248,6 +259,7 @@ export default function LeadGen() {
                         onDeleteLead={deleteLead}
                         onExportCSV={exportCSV}
                         onDraftEmail={handleDraftEmail}
+                        onFindLookalikes={handleFindLookalikes}
                         userId={user?.id}
                       />
                     )}

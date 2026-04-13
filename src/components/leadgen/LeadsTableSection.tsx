@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   TableProperties, Download, ExternalLink, Mail, Trash2,
   Search, ArrowUpDown, ArrowUp, ArrowDown, Linkedin, Phone,
-  ChevronDown, CheckCheck, Sparkles, MapPin,
+  ChevronDown, CheckCheck, Sparkles, MapPin, Users, Crown,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
 
 const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "replied", "won", "lost"];
 
-type SortKey = "name" | "company" | "status" | "created_at";
+type SortKey = "name" | "company" | "status" | "created_at" | "seniority";
 type SortDir = "asc" | "desc";
 
 /** Strip "ICP Segment N:" prefix from persona tags */
@@ -41,11 +41,12 @@ interface LeadsTableSectionProps {
   onDeleteLead: (id: string) => void;
   onExportCSV: () => void;
   onDraftEmail?: (lead: SavedLead) => void;
+  onFindLookalikes?: (lead: SavedLead) => void;
   userId?: string;
 }
 
 export default function LeadsTableSection({
-  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, userId,
+  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, onFindLookalikes, userId,
 }: LeadsTableSectionProps) {
   // Filters
   const [search, setSearch] = useState("");
@@ -53,8 +54,8 @@ export default function LeadsTableSection({
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Sort
-  const [sortKey, setSortKey] = useState<SortKey>("created_at");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortKey, setSortKey] = useState<SortKey>("seniority");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   // Selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -92,6 +93,7 @@ export default function LeadsTableSection({
         case "company": cmp = (a.company || "").localeCompare(b.company || ""); break;
         case "status": cmp = a.status.localeCompare(b.status); break;
         case "created_at": cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
+        case "seniority": cmp = (a.seniority_rank ?? 99) - (b.seniority_rank ?? 99); break;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -236,7 +238,11 @@ export default function LeadsTableSection({
                 </button>
               </TableHead>
               <TableHead className="text-xs w-[100px]">Contact</TableHead>
-              <TableHead className="text-xs w-[130px]">Location</TableHead>
+              <TableHead className="text-xs w-[80px]">
+                <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("seniority")}>
+                  Rank <SortIcon col="seniority" />
+                </button>
+              </TableHead>
               <TableHead className="text-xs w-[100px]">
                 <button className="flex items-center hover:text-foreground transition-colors" onClick={() => toggleSort("status")}>
                   Status <SortIcon col="status" />
@@ -292,13 +298,22 @@ export default function LeadsTableSection({
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground truncate max-w-[130px]">
-                  {lead.address ? (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{lead.address}</span>
+                <TableCell>
+                  {lead.seniority_rank != null && lead.seniority_rank <= 4 ? (
+                    <span className="flex items-center gap-1" title={lead.decision_role || undefined}>
+                      {lead.seniority_rank <= 2 && <Crown className="w-3 h-3 text-amber-500" />}
+                      <Badge variant="outline" className={`text-[10px] ${
+                        lead.seniority_rank === 1 ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                        lead.seniority_rank === 2 ? "bg-primary/10 text-primary border-primary/20" :
+                        lead.seniority_rank === 3 ? "bg-blue-500/10 text-blue-600 border-blue-500/20" :
+                        "bg-muted text-muted-foreground border-border"
+                      }`}>
+                        {lead.seniority_rank === 1 ? "C-Suite" : lead.seniority_rank === 2 ? "SVP" : lead.seniority_rank === 3 ? "VP" : "Dir"}
+                      </Badge>
                     </span>
-                  ) : "—"}
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[lead.status]}`}>
@@ -307,6 +322,11 @@ export default function LeadsTableSection({
                 </TableCell>
                 <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {onFindLookalikes && (
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onFindLookalikes(lead)} title="Find lookalikes">
+                        <Users className="w-3 h-3" />
+                      </Button>
+                    )}
                     {lead.email && onDraftEmail && (
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDraftEmail(lead)} title="Draft email">
                         <Sparkles className="w-3 h-3" />
@@ -334,6 +354,7 @@ export default function LeadsTableSection({
           if (drawerLead?.id === id) setDrawerLead({ ...drawerLead, status });
         }}
         onDraftEmail={lead => onDraftEmail?.(lead)}
+        onFindLookalikes={onFindLookalikes ? (lead) => onFindLookalikes(lead) : undefined}
         onDelete={id => {
           onDeleteLead(id);
           setDrawerLead(null);
