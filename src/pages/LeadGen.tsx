@@ -82,6 +82,7 @@ export default function LeadGen() {
   const handleSelectWorkspace = useCallback(async (key: string) => {
     if (!user) return;
     setDomain(key);
+    setIcpConfirmed(false);
     touchWorkspace(key);
     const resumed = await research.resumeIfRunning(user.id, key);
     if (resumed) return;
