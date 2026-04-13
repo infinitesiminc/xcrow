@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { Settings, Globe, Plus, Building2, RotateCcw, Trash2 } from "lucide-react";
+import { Settings, Globe, Plus, Building2, RotateCcw, Trash2, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { WorkspaceManagerDrawer } from "./WorkspaceManagerDrawer";
 import { cn } from "@/lib/utils";
 import type { UserWorkspace } from "@/hooks/use-workspaces";
 import {
