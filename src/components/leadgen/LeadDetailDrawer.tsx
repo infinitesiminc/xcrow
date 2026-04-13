@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Mail, Phone, Linkedin, Globe, MapPin, ExternalLink,
   Sparkles, Send, StickyNote, Clock, ChevronDown, Plus, Trash2, Loader2,
-  Building2, User, Star,
+  Building2, User, Star, Users, Crown,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -41,11 +41,12 @@ interface LeadDetailDrawerProps {
   onUpdateStatus: (id: string, status: LeadStatus) => void;
   onDraftEmail: (lead: SavedLead) => void;
   onDelete?: (id: string) => void;
+  onFindLookalikes?: (lead: SavedLead) => void;
   userId?: string;
 }
 
 export function LeadDetailDrawer({
-  lead, open, onOpenChange, outreach, onUpdateStatus, onDraftEmail, onDelete, userId,
+  lead, open, onOpenChange, outreach, onUpdateStatus, onDraftEmail, onDelete, onFindLookalikes, userId,
 }: LeadDetailDrawerProps) {
   const [notes, setNotes] = useState<LeadNote[]>([]);
   const [newNote, setNewNote] = useState("");
