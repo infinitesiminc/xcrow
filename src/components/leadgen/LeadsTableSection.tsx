@@ -322,6 +322,11 @@ export default function LeadsTableSection({
                 </TableCell>
                 <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {onFindLookalikes && (
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onFindLookalikes(lead)} title="Find lookalikes">
+                        <Users className="w-3 h-3" />
+                      </Button>
+                    )}
                     {lead.email && onDraftEmail && (
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDraftEmail(lead)} title="Draft email">
                         <Sparkles className="w-3 h-3" />
