@@ -12,7 +12,7 @@ interface DeepResearchInputProps {
   disabled?: boolean;
 }
 
-const MAX_URLS = 5;
+const MAX_URLS = 10;
 
 export function DeepResearchInput({
   enabled,
@@ -48,7 +48,7 @@ export function DeepResearchInput({
           <div className="min-w-0">
             <div className="text-xs font-medium text-foreground">Deep Research Mode</div>
             <div className="text-[10px] text-muted-foreground leading-tight">
-              Add customer case studies — AI will ground personas in proven wins
+              Each case study URL becomes its own ICP persona, grounded in a real win
             </div>
           </div>
         </div>
@@ -115,9 +115,9 @@ export function DeepResearchInput({
           )}
 
           <p className="text-[10px] text-muted-foreground/80 leading-relaxed">
-            {urls.length}/{MAX_URLS} added · Paste links to your customer success stories,
-            testimonials, or competitor case studies. AI will extract real buyer titles,
-            industries, and triggers from these wins.
+            {urls.length}/{MAX_URLS} added · One persona will be generated per URL. Paste
+            customer success stories, testimonials, or competitor case studies — AI extracts
+            the real buyer title, industry, and triggers from each win.
           </p>
         </div>
       )}
