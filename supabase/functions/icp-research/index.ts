@@ -99,7 +99,7 @@ function pickBestPages(allUrls: string[], max: number): string[] {
 
 /* ── Background research job ──────────────────────────────────── */
 
-async function runResearch(jobId: string, domain: string, companyContext?: string) {
+async function runResearch(jobId: string, domain: string, companyContext?: string, caseStudyUrls?: string[]) {
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -209,6 +209,33 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
       progress: 50,
     }).eq("id", jobId);
 
+    // Deep Research: scrape user-provided customer case study URLs
+    let caseStudyBlock = "";
+    const validCaseStudies = (caseStudyUrls || [])
+      .map((u) => (u || "").trim())
+      .filter((u) => /^https?:\/\//i.test(u))
+      .slice(0, 5);
+
+    if (validCaseStudies.length > 0) {
+      console.log(`Deep Research: scraping ${validCaseStudies.length} case studies`);
+      const caseResults = await Promise.all(
+        validCaseStudies.map(async (url) => {
+          const { text, title } = await scrapePage(url);
+          return { url, title, content: text.slice(0, 4000) };
+        })
+      );
+      const successful = caseResults.filter((c) => c.content);
+      if (successful.length > 0) {
+        caseStudyBlock = successful
+          .map(
+            (c, i) =>
+              `### Case Study ${i + 1}: ${c.title || c.url}\nSource: ${c.url}\n${c.content}`
+          )
+          .join("\n\n");
+        console.log(`Deep Research: ${successful.length}/${validCaseStudies.length} case studies scraped successfully`);
+      }
+    }
+
     const combinedContent = [
       `## Homepage (${homeTitle})\n${homepageText}`,
       ...pageResults.filter((p) => p.content).map((p) => `## ${p.path}\n${p.content}`),
@@ -217,6 +244,8 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
     const pagesScraped = 1 + pageResults.filter((p) => p.content).length;
     console.log(`Combined content from ${pagesScraped} pages (${combinedContent.length} chars)`);
 
+    const hasCaseStudies = caseStudyBlock.length > 0;
+
     const systemPrompt = `You are a B2B go-to-market research analyst. Analyze scraped website content and produce a precise, actionable ICP report for outbound sales.
 
 Rules:
@@ -224,11 +253,16 @@ Rules:
 - No filler, no hedging — every claim grounded in evidence from the scraped pages
 - Focus 60% of depth on ICP & Buyer Personas
 - For each persona, include a "Search titles" list of 3-5 exact job titles searchable on LinkedIn/Apollo
-- Use competitive intelligence to sharpen ICPs: identify gaps competitors leave, and tailor personas/triggers to exploit those gaps`;
+- Use competitive intelligence to sharpen ICPs: identify gaps competitors leave, and tailor personas/triggers to exploit those gaps${
+      hasCaseStudies
+        ? `
+- DEEP RESEARCH MODE ACTIVE: The user has provided real customer case studies (proven wins). These are the HIGHEST-SIGNAL inputs. Extract the actual buyer titles, company sizes, industries, pain points, and triggers MENTIONED in those case studies and use them as the PRIMARY basis for ICP segments. Quote case-study evidence directly when justifying personas.`
+        : ""
+    }`;
 
     const userPrompt = `Deep analysis of: ${domainName}
 ${companyContext ? `\nContext: ${companyContext}` : ""}
-Pages scraped: ${pagesScraped}
+Pages scraped: ${pagesScraped}${hasCaseStudies ? `\nProven customer case studies provided: ${validCaseStudies.length}` : ""}
 
 Use these EXACT markdown headers:
 
@@ -247,15 +281,15 @@ For each direct competitor (identify 3-6):
 IMPORTANT: Put Competitive Landscape BEFORE ICP Segments so competitor insights can inform persona targeting.
 
 ## ICP Segments and Buyer Personas
-For EACH segment (identify 2-4):
+${hasCaseStudies ? "Ground EVERY segment in the provided case studies — derive the segment from the actual customer profiles described. For EACH segment (identify 2-4):" : "For EACH segment (identify 2-4):"}
 ### [Segment Name]
 - **Company fit**: industry, employee range, revenue range, tech stack signals, geography
 - **Primary buyer**: exact title, department, seniority, pain points this product solves
 - **Secondary buyer**: same detail
-- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")
+- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")${hasCaseStudies ? `\n- **Proof from case study**: cite which provided case study supports this segment (e.g. "Case Study 2: Acme Corp signed after outgrowing Competitor X")` : ""}
 - **Competitive angle**: why ${domainName} beats alternatives for THIS specific segment
 - **Disqualifiers**: what makes a company NOT a fit
-- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")
+- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")${hasCaseStudies ? " — prioritize titles that appear verbatim in the case studies" : ""}
 
 ## Prospecting Targets
 5-10 specific companies that fit the ICPs above. For each:
@@ -264,10 +298,10 @@ For EACH segment (identify 2-4):
 - Why they'd buy (specific rationale)
 - Current solution they likely use (competitor name if known)
 - Decision-maker title to target
+${hasCaseStudies ? `\n--- PROVEN CUSTOMER CASE STUDIES (HIGHEST PRIORITY EVIDENCE) ---\n\n${caseStudyBlock}\n\n` : ""}
+--- SCRAPED COMPANY CONTENT ---
 
---- SCRAPED CONTENT ---
-
-${combinedContent.slice(0, 20000)}`;
+${combinedContent.slice(0, hasCaseStudies ? 14000 : 20000)}`;
 
     const aiRes = await fetch(AI_URL, {
       method: "POST",
@@ -345,7 +379,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  let body: { domain: string; companyContext?: string };
+  let body: { domain: string; companyContext?: string; caseStudyUrls?: string[] };
   try {
     body = await req.json();
     if (!body.domain) throw new Error("Missing domain");
@@ -374,7 +408,7 @@ Deno.serve(async (req) => {
 
   // Fire and forget
   (globalThis as any).EdgeRuntime.waitUntil(
-    runResearch(job.id, body.domain, body.companyContext)
+    runResearch(job.id, body.domain, body.companyContext, body.caseStudyUrls)
   );
 
   return new Response(JSON.stringify({ job_id: job.id }), {

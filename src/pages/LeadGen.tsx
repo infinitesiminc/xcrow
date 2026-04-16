@@ -22,6 +22,8 @@ export default function LeadGen() {
   const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
   const [pendingPersona, setPendingPersona] = useState<PersonaPrefill | null>(null);
   const [icpConfirmed, setIcpConfirmed] = useState(false);
+  const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
+  const [caseStudyUrls, setCaseStudyUrls] = useState<string[]>([]);
 
   const research = useResearchStream();
   const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
@@ -154,8 +156,11 @@ export default function LeadGen() {
   }, []);
 
   const handleStartResearch = useCallback(() => {
-    if (domain.trim()) research.start(domain.trim());
-  }, [domain, research]);
+    if (domain.trim()) {
+      const urls = deepResearchEnabled ? caseStudyUrls.filter(u => u.trim()) : undefined;
+      research.start(domain.trim(), undefined, urls);
+    }
+  }, [domain, research, deepResearchEnabled, caseStudyUrls]);
 
   // Determine what to show inline for research
   const showResearchInput = research.isInitial || research.running || (!!research.error && !research.running);
@@ -249,6 +254,10 @@ export default function LeadGen() {
                         isComplete={research.isComplete}
                         isInitial={research.isInitial}
                         report={research.report}
+                        deepResearchEnabled={deepResearchEnabled}
+                        onDeepResearchEnabledChange={setDeepResearchEnabled}
+                        caseStudyUrls={caseStudyUrls}
+                        onCaseStudyUrlsChange={setCaseStudyUrls}
                       />
                     )}
 

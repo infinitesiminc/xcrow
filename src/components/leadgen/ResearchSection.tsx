@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Zap, Building2, Users, Target, Swords } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ICPResearchStream, { type ResearchPhase } from "./ICPResearchStream";
+import { DeepResearchInput } from "./DeepResearchInput";
 
 /* ── Types ── */
 export interface ParsedPersona {
@@ -272,7 +273,7 @@ export function useResearchStream() {
     }, 3000);
   }, [updatePhasesFromElapsed]);
 
-  const start = useCallback(async (domain: string, companyContext?: string) => {
+  const start = useCallback(async (domain: string, companyContext?: string, caseStudyUrls?: string[]) => {
     if (runningRef.current) return;
     runningRef.current = true;
     setPhases([...INITIAL]);
@@ -294,7 +295,11 @@ export function useResearchStream() {
       const resp = await fetch(`${supabaseUrl}/functions/v1/icp-research`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token ?? supabaseKey}`, "apikey": supabaseKey },
-        body: JSON.stringify({ domain: domain.trim().toLowerCase(), companyContext }),
+        body: JSON.stringify({
+          domain: domain.trim().toLowerCase(),
+          companyContext,
+          caseStudyUrls: caseStudyUrls?.filter(u => u.trim()).slice(0, 5),
+        }),
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const { job_id } = await resp.json();
@@ -411,9 +416,14 @@ interface ResearchSectionProps {
   isComplete: boolean;
   isInitial: boolean;
   report?: ParsedReport | null;
+  /** Deep Research Mode controls */
+  deepResearchEnabled?: boolean;
+  onDeepResearchEnabledChange?: (v: boolean) => void;
+  caseStudyUrls?: string[];
+  onCaseStudyUrlsChange?: (urls: string[]) => void;
 }
 
-export default function ResearchSection({ domain, onDomainChange, onStart, phases, elapsed, running, error, isComplete, isInitial, report }: ResearchSectionProps) {
+export default function ResearchSection({ domain, onDomainChange, onStart, phases, elapsed, running, error, isComplete, isInitial, report, deepResearchEnabled, onDeepResearchEnabledChange, caseStudyUrls, onCaseStudyUrlsChange }: ResearchSectionProps) {
   return (
     <div className="space-y-6">
       {/* URL Input */}
@@ -425,6 +435,17 @@ export default function ResearchSection({ domain, onDomainChange, onStart, phase
               {running ? "Research Pipeline Active" : isComplete ? "Research Complete" : "ICP Research Pipeline"}
             </span>
           </div>
+          {onDeepResearchEnabledChange && onCaseStudyUrlsChange && (
+            <div className="mt-1 max-w-xl">
+              <DeepResearchInput
+                enabled={!!deepResearchEnabled}
+                onEnabledChange={onDeepResearchEnabledChange}
+                urls={caseStudyUrls || []}
+                onUrlsChange={onCaseStudyUrlsChange}
+                disabled={running}
+              />
+            </div>
+          )}
           <div className="flex gap-2 items-center">
             <input
               type="text"
