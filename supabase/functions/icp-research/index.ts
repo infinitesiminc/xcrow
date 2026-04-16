@@ -379,7 +379,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  let body: { domain: string; companyContext?: string };
+  let body: { domain: string; companyContext?: string; caseStudyUrls?: string[] };
   try {
     body = await req.json();
     if (!body.domain) throw new Error("Missing domain");
@@ -408,7 +408,7 @@ Deno.serve(async (req) => {
 
   // Fire and forget
   (globalThis as any).EdgeRuntime.waitUntil(
-    runResearch(job.id, body.domain, body.companyContext)
+    runResearch(job.id, body.domain, body.companyContext, body.caseStudyUrls)
   );
 
   return new Response(JSON.stringify({ job_id: job.id }), {
