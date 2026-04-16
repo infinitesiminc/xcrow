@@ -31,12 +31,15 @@ interface ICPBuilderStepProps {
   workspaceKey: string;
   onConfirm: (personas: ConfirmedPersona[]) => void;
   onFindLeads: (persona: ParsedPersona) => void;
+  /** When true, skip the "I'm just starting out / I know my buyers" gateway —
+   *  used in Deep Research mode where personas are already grounded in case-study URLs. */
+  skipGateway?: boolean;
 }
 
 type UserPath = null | "new_business" | "experienced";
 
-export default function ICPBuilderStep({ report, workspaceKey, onConfirm, onFindLeads }: ICPBuilderStepProps) {
-  const [path, setPath] = useState<UserPath>(null);
+export default function ICPBuilderStep({ report, workspaceKey, onConfirm, onFindLeads, skipGateway }: ICPBuilderStepProps) {
+  const [path, setPath] = useState<UserPath>(skipGateway ? "experienced" : null);
   const [personas, setPersonas] = useState<ConfirmedPersona[]>(() =>
     report.personas.map((p) => {
       const seniority = classifySeniority(p.titles[0] || p.title);
