@@ -214,7 +214,7 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
     const validCaseStudies = (caseStudyUrls || [])
       .map((u) => (u || "").trim())
       .filter((u) => /^https?:\/\//i.test(u))
-      .slice(0, 5);
+      .slice(0, 10);
 
     if (validCaseStudies.length > 0) {
       console.log(`Deep Research: scraping ${validCaseStudies.length} case studies`);
@@ -256,7 +256,9 @@ Rules:
 - Use competitive intelligence to sharpen ICPs: identify gaps competitors leave, and tailor personas/triggers to exploit those gaps${
       hasCaseStudies
         ? `
-- DEEP RESEARCH MODE ACTIVE: The user has provided real customer case studies (proven wins). These are the HIGHEST-SIGNAL inputs. Extract the actual buyer titles, company sizes, industries, pain points, and triggers MENTIONED in those case studies and use them as the PRIMARY basis for ICP segments. Quote case-study evidence directly when justifying personas.`
+- DEEP RESEARCH MODE ACTIVE: The user has provided ${validCaseStudies.length} real customer case studies (proven wins). These are the HIGHEST-SIGNAL inputs.
+- CRITICAL: Generate EXACTLY ONE ICP segment per case study (so ${validCaseStudies.length} segments total — no more, no less). Each segment must map 1:1 to a single case study and be named after the customer profile from that study (e.g. "Mid-Market Fintech CFOs (from Acme case study)").
+- Extract the actual buyer titles, company sizes, industries, pain points, and triggers MENTIONED in each case study. Quote case-study evidence directly when justifying every persona.`
         : ""
     }`;
 
@@ -281,15 +283,15 @@ For each direct competitor (identify 3-6):
 IMPORTANT: Put Competitive Landscape BEFORE ICP Segments so competitor insights can inform persona targeting.
 
 ## ICP Segments and Buyer Personas
-${hasCaseStudies ? "Ground EVERY segment in the provided case studies — derive the segment from the actual customer profiles described. For EACH segment (identify 2-4):" : "For EACH segment (identify 2-4):"}
-### [Segment Name]
+${hasCaseStudies ? `Produce EXACTLY ${validCaseStudies.length} segments — one per provided case study, in the same order. Each segment derives entirely from its matching case study:` : "For EACH segment (identify 2-4):"}
+### [Segment Name]${hasCaseStudies ? " (from Case Study N)" : ""}
 - **Company fit**: industry, employee range, revenue range, tech stack signals, geography
 - **Primary buyer**: exact title, department, seniority, pain points this product solves
 - **Secondary buyer**: same detail
-- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")${hasCaseStudies ? `\n- **Proof from case study**: cite which provided case study supports this segment (e.g. "Case Study 2: Acme Corp signed after outgrowing Competitor X")` : ""}
+- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")${hasCaseStudies ? `\n- **Proof from case study**: cite the exact case study this segment is derived from (e.g. "Case Study 2: Acme Corp signed after outgrowing Competitor X") — REQUIRED` : ""}
 - **Competitive angle**: why ${domainName} beats alternatives for THIS specific segment
 - **Disqualifiers**: what makes a company NOT a fit
-- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")${hasCaseStudies ? " — prioritize titles that appear verbatim in the case studies" : ""}
+- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")${hasCaseStudies ? " — prioritize titles that appear verbatim in the case study" : ""}
 
 ## Prospecting Targets
 5-10 specific companies that fit the ICPs above. For each:
