@@ -29,23 +29,40 @@ async function fetchPage(url: string): Promise<string | null> {
   }
 }
 
-function extractLinks(html: string, baseUrl: string): string[] {
-  const links = new Set<string>();
+function rootDomain(host: string): string {
+  const parts = host.split(".");
+  return parts.length >= 2 ? parts.slice(-2).join(".") : host;
+}
+
+function extractLinks(html: string, baseUrl: string): { sameHost: string[]; subdomains: string[] } {
+  const sameHost = new Set<string>();
+  const subdomains = new Set<string>();
   const base = new URL(baseUrl);
+  const baseRoot = rootDomain(base.hostname);
   const re = /href=["']([^"']+)["']/gi;
   let m;
   while ((m = re.exec(html)) !== null) {
     try {
       const u = new URL(m[1], baseUrl);
-      if (u.hostname === base.hostname) links.add(u.toString().split("#")[0]);
+      if (!/^https?:$/.test(u.protocol)) continue;
+      const clean = u.toString().split("#")[0];
+      if (u.hostname === base.hostname) {
+        sameHost.add(clean);
+      } else if (rootDomain(u.hostname) === baseRoot) {
+        // same root domain, different subdomain (e.g. blog.example.com, customers.example.com)
+        subdomains.add(`${u.protocol}//${u.hostname}`);
+      }
     } catch { /* skip */ }
   }
-  return [...links];
+  return { sameHost: [...sameHost], subdomains: [...subdomains] };
 }
 
 function pickRelevantUrls(links: string[]): string[] {
-  const matched = links.filter((l) => NETWORK_PATTERNS.some((re) => re.test(new URL(l).pathname)));
-  return [...new Set(matched)].slice(0, 10);
+  const matched = links.filter((l) => {
+    try { return NETWORK_PATTERNS.some((re) => re.test(new URL(l).pathname)); }
+    catch { return false; }
+  });
+  return [...new Set(matched)].slice(0, 12);
 }
 
 function htmlToText(html: string): string {
@@ -56,7 +73,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { workspaceKey } = await req.json();
+    const { workspaceKey, extraUrls } = await req.json();
     if (!workspaceKey) {
       return new Response(JSON.stringify({ error: "workspaceKey required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -86,12 +103,35 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Could not reach website" }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Step 2: discover relevant pages
-    const allLinks = extractLinks(homepageHtml, websiteUrl);
-    const relevantUrls = pickRelevantUrls(allLinks);
+    // Step 2: discover relevant pages on main host + same-root subdomains
+    const { sameHost, subdomains } = extractLinks(homepageHtml, websiteUrl);
+    const relevantUrls = pickRelevantUrls(sameHost);
 
-    // Step 3: scrape relevant pages (and homepage)
-    const pagesToScrape = [websiteUrl, ...relevantUrls].slice(0, 10);
+    // Step 2b: scan up to 3 discovered subdomains for relevant pages too
+    const subdomainUrls: string[] = [];
+    const subToScan = subdomains.slice(0, 3);
+    for (const sub of subToScan) {
+      const subHtml = await fetchPage(sub);
+      if (!subHtml) continue;
+      const { sameHost: subLinks } = extractLinks(subHtml, sub);
+      // include the subdomain root + its relevant pages
+      subdomainUrls.push(sub);
+      subdomainUrls.push(...pickRelevantUrls(subLinks).slice(0, 3));
+    }
+
+    // Step 2c: include user-supplied URLs (e.g. Deep Research case-study URLs)
+    const userUrls: string[] = Array.isArray(extraUrls)
+      ? extraUrls.filter((u: any) => typeof u === "string" && /^https?:\/\//i.test(u)).slice(0, 8)
+      : [];
+
+    // Step 3: scrape all selected pages (cap to keep latency sane)
+    const pagesToScrape = [
+      websiteUrl,
+      ...relevantUrls,
+      ...subdomainUrls,
+      ...userUrls,
+    ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 18);
+
     const pageContents: Array<{ url: string; text: string }> = [];
     for (const url of pagesToScrape) {
       const html = url === websiteUrl ? homepageHtml : await fetchPage(url);
@@ -99,13 +139,13 @@ Deno.serve(async (req) => {
     }
 
     // Step 4: AI extracts network entities
-    const aiPrompt = `You are analyzing a company's own website to extract their relationship network. Extract:
+    const aiPrompt = `You are analyzing a company's own website (including subdomains and provided case-study URLs) to extract their relationship network. Extract:
 - CUSTOMERS: companies they sell to (logos, case studies, testimonials)
 - INVESTORS: VCs, angels, funds that backed them
 - PARTNERS: integration partners, technology alliances
 - TEAM: notable executives, advisors, board members (name + title)
 
-Pages from ${websiteUrl}:
+Pages from ${websiteUrl} and related sources:
 ${pageContents.map((p, i) => `--- PAGE ${i + 1}: ${p.url} ---\n${p.text}`).join("\n\n")}
 
 Return ONLY entities clearly mentioned. Skip generic copy. Max 15 per category.`;

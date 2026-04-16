@@ -32,9 +32,11 @@ interface NetworkManagerProps {
   onOpenChange: (open: boolean) => void;
   workspaceKey: string;
   userId?: string;
+  /** Optional extra URLs (e.g. Deep Research case-study URLs) to include in AI scan. */
+  extraUrls?: string[];
 }
 
-export function NetworkManager({ open, onOpenChange, workspaceKey, userId }: NetworkManagerProps) {
+export function NetworkManager({ open, onOpenChange, workspaceKey, userId, extraUrls }: NetworkManagerProps) {
   const [rows, setRows] = useState<NetworkRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [discovering, setDiscovering] = useState(false);
@@ -76,7 +78,7 @@ export function NetworkManager({ open, onOpenChange, workspaceKey, userId }: Net
           "Authorization": `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
-        body: JSON.stringify({ workspaceKey }),
+        body: JSON.stringify({ workspaceKey, extraUrls: (extraUrls || []).filter(u => u && u.trim()) }),
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
@@ -88,7 +90,7 @@ export function NetworkManager({ open, onOpenChange, workspaceKey, userId }: Net
     } finally {
       setDiscovering(false);
     }
-  }, [workspaceKey, load]);
+  }, [workspaceKey, load, extraUrls]);
 
   const handleToggleAutoDiscover = useCallback(async (checked: boolean) => {
     setAutoDiscover(checked);

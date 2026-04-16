@@ -318,6 +318,7 @@ export default function LeadGen() {
               onOpenChange={setNetworkOpen}
               workspaceKey={workspaceKey}
               userId={user?.id}
+              extraUrls={deepResearchEnabled ? caseStudyUrls.filter(u => u.trim()) : undefined}
             />
 
             <WarmPathDrawer
