@@ -1,147 +1,85 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LeadGenSidebar } from "@/components/leadgen/LeadGenSidebar";
-import ResearchSection, { useResearchStream, parseReportText, type ParsedPersona } from "@/components/leadgen/ResearchSection";
-import { ResearchBar } from "@/components/leadgen/ResearchBar";
+import { parseReportText, type ParsedReport } from "@/components/leadgen/ResearchSection";
 import LeadsTableSection from "@/components/leadgen/LeadsTableSection";
 import { useLeadsCRUD, type SavedLead } from "@/components/leadgen/useLeadsCRUD";
 import { useWorkspaces } from "@/hooks/use-workspaces";
 import { DockedChat } from "@/components/leadgen/DockedChat";
 import { PipelineChat, type PersonaPrefill } from "@/components/leadgen/PipelineChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
-import ICPBuilderStep, { type ConfirmedPersona } from "@/components/leadgen/ICPBuilderStep";
 import { NetworkManager } from "@/components/leadgen/NetworkManager";
 import { WarmPathDrawer } from "@/components/leadgen/WarmPathDrawer";
 
 export default function LeadGen() {
   const { user } = useAuth();
   const [domain, setDomain] = useState("");
-  const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
   const [warmPathLead, setWarmPathLead] = useState<SavedLead | null>(null);
   const [networkOpen, setNetworkOpen] = useState(false);
   const [pendingPersona, setPendingPersona] = useState<PersonaPrefill | null>(null);
-  const [icpConfirmed, setIcpConfirmed] = useState(false);
-  const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
-  const [caseStudyUrls, setCaseStudyUrls] = useState<string[]>([]);
+  const [restoredReport, setRestoredReport] = useState<ParsedReport | null>(null);
 
-  const research = useResearchStream();
-  const workspaceKey = useMemo(() => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default", [domain]);
+  const workspaceKey = useMemo(
+    () => domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "") || "default",
+    [domain],
+  );
   const { workspaces, upsertWorkspace, touchWorkspace, deleteWorkspace } = useWorkspaces(user?.id);
-  const { leads, outreach, loading: leadsLoading, upsertLeads, updateLeadStatus, deleteLead, exportCSV, refetch } = useLeadsCRUD(user?.id, workspaceKey);
+  const { leads, outreach, upsertLeads, updateLeadStatus, deleteLead, exportCSV } = useLeadsCRUD(user?.id, workspaceKey);
 
-  const leadCountByPersona = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const l of leads) {
-      if (l.persona_tag) map[l.persona_tag] = (map[l.persona_tag] || 0) + 1;
-    }
-    return map;
-  }, [leads]);
-
-  const icpContext = useMemo(() => {
-    if (!research.report) return undefined;
-    const r = research.report;
-    const lines: string[] = [];
-    if (r.companySummary) lines.push(`Company: ${r.companySummary}`);
-    if (r.personas.length > 0) {
-      lines.push("ICP Personas:");
-      for (const p of r.personas) {
-        lines.push(`- ${p.title}`);
-        if (p.titles.length > 0) lines.push(`  Search titles: ${p.titles.join(", ")}`);
-        if (p.painPoints.length > 0) lines.push(`  Pain points: ${p.painPoints.join("; ")}`);
-        if (p.buyingTriggers.length > 0) lines.push(`  Buying triggers: ${p.buyingTriggers.join("; ")}`);
-      }
-    }
-    if (r.prospectDomains.length > 0) lines.push(`Target domains: ${r.prospectDomains.slice(0, 10).join(", ")}`);
-    if (r.industryKeywords?.length) lines.push(`Industry keywords: ${r.industryKeywords.join(", ")}`);
-    return lines.join("\n");
-  }, [research.report]);
-
-  // On mount: resume latest in-flight job
+  /* Restore latest workspace report on mount */
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data } = await (supabase.from("research_jobs") as any)
-        .select("domain, status")
+        .select("domain, status, report_text")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
-      if (data?.domain && ["pending", "processing"].includes(data.status)) {
+      if (data?.domain && data.status === "complete") {
         setDomain(data.domain);
-        await research.resumeIfRunning(user.id, data.domain);
+        if (data.report_text) setRestoredReport(parseReportText(data.report_text));
       }
     })();
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-create workspace when research completes
-  useEffect(() => {
-    if (research.isComplete && research.report && domain.trim()) {
-      upsertWorkspace(workspaceKey, domain.trim());
-    }
-  }, [research.isComplete]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleSelectWorkspace = useCallback(async (key: string) => {
     if (!user) return;
     setDomain(key);
-    setIcpConfirmed(false);
+    setRestoredReport(null);
     touchWorkspace(key);
-    const resumed = await research.resumeIfRunning(user.id, key);
-    if (resumed) return;
     const { data } = await (supabase.from("research_jobs") as any)
-      .select("report_text, domain")
+      .select("report_text")
       .eq("user_id", user.id)
       .eq("domain", key)
       .eq("status", "complete")
       .order("completed_at", { ascending: false })
       .limit(1)
       .single();
-    if (data?.report_text) {
-      research.restore(parseReportText(data.report_text));
-    } else {
-      research.forceReset();
-    }
-  }, [user, touchWorkspace, research]);
+    if (data?.report_text) setRestoredReport(parseReportText(data.report_text));
+  }, [user, touchWorkspace]);
 
   const handleNewResearch = useCallback(() => {
     setDomain("");
-    setIcpConfirmed(false);
-    research.forceReset();
-  }, [research]);
-
-  const handleICPConfirm = useCallback((confirmedPersonas: ConfirmedPersona[]) => {
-    setIcpConfirmed(true);
-    // Auto-trigger lead search for the first confirmed persona
-    if (confirmedPersonas.length > 0) {
-      handleFindLeadsChat(confirmedPersonas[0]);
-    }
+    setRestoredReport(null);
   }, []);
 
   const handleDeleteWorkspace = useCallback(async (key: string) => {
     await deleteWorkspace(key);
     if (workspaceKey === key) {
       setDomain("");
-      research.forceReset();
+      setRestoredReport(null);
     }
-  }, [deleteWorkspace, workspaceKey, research]);
+  }, [deleteWorkspace, workspaceKey]);
 
   const handleRerunWorkspace = useCallback((key: string) => {
     setDomain(key);
-    research.forceReset();
-    setTimeout(() => research.start(key), 100);
-  }, [research]);
-
-  const handleFindLeadsChat = useCallback((persona: ParsedPersona) => {
-    setPendingPersona({
-      personaTitle: persona.title,
-      titles: persona.titles,
-      painPoints: persona.painPoints,
-      buyingTriggers: persona.buyingTriggers,
-    });
+    setRestoredReport(null);
   }, []);
 
   const handleFindLookalikes = useCallback((lead: SavedLead) => {
@@ -151,7 +89,7 @@ export default function LeadGen() {
       personaTitle: `Lookalikes of ${lead.name}`,
       titles: [title],
       painPoints: [],
-      buyingTriggers: [`Find 20 people with similar title "${title}" at other companies (exclude ${company}). Search across competitor domains in the United States.`],
+      buyingTriggers: [`Find 20 people with similar title "${title}" at other companies (exclude ${company}).`],
     });
   }, []);
 
@@ -159,22 +97,13 @@ export default function LeadGen() {
     setDraftLead(lead);
   }, []);
 
-  const handleStartResearch = useCallback(() => {
-    if (domain.trim()) {
-      const urls = deepResearchEnabled ? caseStudyUrls.filter(u => u.trim()) : undefined;
-      research.start(domain.trim(), undefined, urls);
-    }
-  }, [domain, research, deepResearchEnabled, caseStudyUrls]);
-
-  // Determine what to show inline for research
-  const showResearchInput = research.isInitial || research.running || (!!research.error && !research.running);
-  
+  const showRightPanel = leads.length > 0;
 
   return (
     <>
       <Helmet>
         <title>Xcrow Lead Gen — AI Research Pipeline</title>
-        <meta name="description" content="Enter a company URL and get deep AI research — market position, buyer personas, competitors, and pipeline targets." />
+        <meta name="description" content="Chat with the Xcrow co-pilot to research a company, identify decision-makers, and source qualified leads end-to-end." />
       </Helmet>
       <Navbar />
       <div className="overflow-hidden">
@@ -184,10 +113,10 @@ export default function LeadGen() {
               activeSection="research"
               onSelectSection={() => {}}
               websiteUrl={domain || undefined}
-              personaCount={research.report?.personas.length || 0}
+              personaCount={restoredReport?.personas.length || 0}
               leadCount={leads.length}
               outreachCount={outreach.length}
-              researchComplete={research.isComplete}
+              researchComplete={!!restoredReport}
               workspaces={workspaces}
               activeWorkspaceKey={workspaceKey !== "default" ? workspaceKey : undefined}
               onSelectWorkspace={handleSelectWorkspace}
@@ -197,112 +126,55 @@ export default function LeadGen() {
               onOpenNetwork={() => setNetworkOpen(true)}
             />
 
-            {/* Main scrollable dashboard */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
               <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
                 <SidebarTrigger className="mr-3" />
-                <span className="text-sm font-medium">Dashboard</span>
+                <span className="text-sm font-medium">Lead Gen Co-pilot</span>
                 {workspaceKey !== "default" && (
                   <span className="ml-2 text-xs text-muted-foreground font-mono">— {workspaceKey}</span>
                 )}
               </header>
-              <div className="flex-1 flex min-h-0 overflow-hidden">
-                {/* Docked chat panel — LEFT */}
-                <DockedChat>
+
+              <DockedChat
+                chat={
                   <PipelineChat
                     context={{
                       workspaceKey,
-                      activeSection: "research",
-                      researchStatus: research.running ? "running" : research.isComplete ? "complete" : "not_started",
-                      personaCount: research.report?.personas.length || 0,
-                      personaNames: research.report?.personas.map(p => p.title) || [],
                       leadCount: leads.length,
-                      leadsWithoutEmail: leads.filter(l => !l.email).length,
-                      icpContext,
+                      initialReport: restoredReport,
                     }}
                     actions={{
-                      onNavigate: () => {},
-                      onFindLeads: (personaTitle) => {
-                        const persona = research.report?.personas.find(p => p.title === personaTitle);
-                        if (persona) handleFindLeadsChat(persona);
-                      },
-                      onDraftEmail: (leadName) => {
-                        const lead = leads.find(l => l.name.toLowerCase().includes(leadName.toLowerCase()));
-                        if (lead) setDraftLead(lead);
-                      },
-                      onExportCSV: exportCSV,
-                      onStartResearch: (d) => {
-                        setDomain(d);
-                        research.start(d);
-                      },
-                      onLeadsFound: (newLeads) => {
-                        upsertLeads(newLeads);
+                      onLeadsFound: (newLeads) => upsertLeads(newLeads),
+                      onDomainConfirmed: (d) => setDomain(d),
+                      onResearchComplete: (report, d) => {
+                        setRestoredReport(report);
+                        upsertWorkspace(d.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, ""), d);
                       },
                     }}
                     pendingPersona={pendingPersona}
                     onPersonaConsumed={() => setPendingPersona(null)}
                   />
-                </DockedChat>
-
-                {/* Main scrollable dashboard — RIGHT */}
-                <div className="flex-1 overflow-y-auto px-6 pt-6 pb-2" style={{ overscrollBehavior: "contain" }}>
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    {showResearchInput && (
-                      <ResearchSection
-                        domain={domain}
-                        onDomainChange={setDomain}
-                        onStart={handleStartResearch}
-                        phases={research.phases}
-                        elapsed={research.elapsed}
-                        running={research.running}
-                        error={research.error}
-                        isComplete={research.isComplete}
-                        isInitial={research.isInitial}
-                        report={research.report}
-                        deepResearchEnabled={deepResearchEnabled}
-                        onDeepResearchEnabledChange={setDeepResearchEnabled}
-                        caseStudyUrls={caseStudyUrls}
-                        onCaseStudyUrlsChange={setCaseStudyUrls}
-                      />
-                    )}
-
-                    {research.isComplete && research.report && !icpConfirmed && leads.length === 0 && (
-                      <ICPBuilderStep
-                        report={research.report}
-                        workspaceKey={workspaceKey}
-                        onConfirm={handleICPConfirm}
-                        onFindLeads={handleFindLeadsChat}
-                        skipGateway={deepResearchEnabled && caseStudyUrls.filter(u => u.trim()).length > 0}
-                      />
-                    )}
-
-                    {research.isComplete && research.report && (icpConfirmed || leads.length > 0) && (
-                      <ResearchBar
-                        report={research.report}
-                        elapsed={research.elapsed}
-                        workspaceKey={workspaceKey}
-                        leadCountByPersona={leadCountByPersona}
-                        onFindLeads={handleFindLeadsChat}
-                        loadingPersona={loadingPersona}
-                      />
-                    )}
-
-                    {research.isComplete && (icpConfirmed || leads.length > 0) && (
-                      <LeadsTableSection
-                        leads={leads}
-                        outreach={outreach}
-                        onUpdateStatus={updateLeadStatus}
-                        onDeleteLead={deleteLead}
-                        onExportCSV={exportCSV}
-                        onDraftEmail={handleDraftEmail}
-                        onFindLookalikes={handleFindLookalikes}
-                        onWarmPath={(l) => setWarmPathLead(l)}
-                        userId={user?.id}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
+                }
+                right={
+                  showRightPanel ? (
+                    <div className="px-6 pt-6 pb-2">
+                      <div className="max-w-4xl mx-auto">
+                        <LeadsTableSection
+                          leads={leads}
+                          outreach={outreach}
+                          onUpdateStatus={updateLeadStatus}
+                          onDeleteLead={deleteLead}
+                          onExportCSV={exportCSV}
+                          onDraftEmail={handleDraftEmail}
+                          onFindLookalikes={handleFindLookalikes}
+                          onWarmPath={(l) => setWarmPathLead(l)}
+                          userId={user?.id}
+                        />
+                      </div>
+                    </div>
+                  ) : undefined
+                }
+              />
             </div>
 
             <DraftEmailModal
@@ -318,7 +190,6 @@ export default function LeadGen() {
               onOpenChange={setNetworkOpen}
               workspaceKey={workspaceKey}
               userId={user?.id}
-              extraUrls={deepResearchEnabled ? caseStudyUrls.filter(u => u.trim()) : undefined}
             />
 
             <WarmPathDrawer
