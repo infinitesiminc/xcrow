@@ -294,9 +294,10 @@ Rules:
 - Use competitive intelligence to sharpen ICPs: identify gaps competitors leave, and tailor personas/triggers to exploit those gaps${
       hasCaseStudies
         ? `
-- DEEP RESEARCH MODE ACTIVE: The user has provided ${validCaseStudies.length} real customer case studies (proven wins). These are the HIGHEST-SIGNAL inputs.
-- CRITICAL: Generate EXACTLY ONE ICP segment per case study (so ${validCaseStudies.length} segments total — no more, no less). Each segment must map 1:1 to a single case study and be named after the customer profile from that study (e.g. "Mid-Market Fintech CFOs (from Acme case study)").
-- Extract the actual buyer titles, company sizes, industries, pain points, and triggers MENTIONED in each case study. Quote case-study evidence directly when justifying every persona.`
+- DEEP RESEARCH MODE ACTIVE: The user provided ${validCaseStudies.length} case-study/use-case URL(s). We crawled them and discovered ${totalCaseSegmentsScraped} distinct sub-pages/segments — each one represents a real customer profile, use-case, or vertical the company sells into.
+- CRITICAL: Generate ONE ICP segment per distinct customer-profile / use-case / vertical you can identify in the sources below. Aim for ${totalCaseSegmentsScraped} segments (or as many as the content clearly supports — never fewer than ${Math.min(totalCaseSegmentsScraped, 2)}). Do NOT collapse multiple distinct use-cases into one segment.
+- Name each segment after the specific use-case or customer profile (e.g. "Real-time Fraud Detection Teams", "Dynamic Pricing Platforms").
+- Extract actual buyer titles, company sizes, industries, pain points, and triggers from the source content. Quote source evidence directly.`
         : ""
     }`;
 
