@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   TableProperties, Download, ExternalLink, Mail, Trash2,
   Search, ArrowUpDown, ArrowUp, ArrowDown, Linkedin, Phone,
-  ChevronDown, CheckCheck, Sparkles, MapPin, Users, Crown,
+  ChevronDown, CheckCheck, Sparkles, MapPin, Users, Crown, Network,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -42,11 +42,12 @@ interface LeadsTableSectionProps {
   onExportCSV: () => void;
   onDraftEmail?: (lead: SavedLead) => void;
   onFindLookalikes?: (lead: SavedLead) => void;
+  onWarmPath?: (lead: SavedLead) => void;
   userId?: string;
 }
 
 export default function LeadsTableSection({
-  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, onFindLookalikes, userId,
+  leads, outreach = [], onUpdateStatus, onDeleteLead, onExportCSV, onDraftEmail, onFindLookalikes, onWarmPath, userId,
 }: LeadsTableSectionProps) {
   // Filters
   const [search, setSearch] = useState("");
@@ -322,6 +323,11 @@ export default function LeadsTableSection({
                 </TableCell>
                 <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {onWarmPath && (
+                      <Button size="icon" variant="ghost" className="h-7 w-7 hover:text-primary" onClick={() => onWarmPath(lead)} title="Find warm intro path">
+                        <Network className="w-3 h-3" />
+                      </Button>
+                    )}
                     {onFindLookalikes && (
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onFindLookalikes(lead)} title="Find lookalikes">
                         <Users className="w-3 h-3" />
