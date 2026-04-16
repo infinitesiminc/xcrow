@@ -216,23 +216,61 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
       .filter((u) => /^https?:\/\//i.test(u))
       .slice(0, 10);
 
+    let totalCaseSegmentsScraped = 0;
     if (validCaseStudies.length > 0) {
-      console.log(`Deep Research: scraping ${validCaseStudies.length} case studies`);
+      console.log(`Deep Research: deep-crawling ${validCaseStudies.length} case-study URLs`);
+
+      // For each user URL: scrape it, then follow same-host links that look like
+      // sub-segments / use-cases / customer pages so we capture every persona on
+      // an index-style page (e.g. /use-case → /use-case/fraud, /use-case/pricing, ...).
       const caseResults = await Promise.all(
-        validCaseStudies.map(async (url) => {
-          const { text, title } = await scrapePage(url);
-          return { url, title, content: text.slice(0, 4000) };
+        validCaseStudies.map(async (rootUrl) => {
+          const root = await scrapePage(rootUrl);
+          const segments: Array<{ url: string; title: string; content: string }> = [];
+          if (root.text) segments.push({ url: rootUrl, title: root.title, content: root.text.slice(0, 4000) });
+
+          // Discover sub-pages under the same path prefix (e.g. /use-case/*)
+          try {
+            const rawHtml = await fetch(rootUrl, { headers: { "User-Agent": BROWSER_UA } }).then((r) => r.ok ? r.text() : "");
+            if (rawHtml) {
+              const all = extractLinks(rawHtml, rootUrl);
+              const rootPath = new URL(rootUrl).pathname.replace(/\/$/, "");
+              const subPages = all
+                .filter((u) => {
+                  try {
+                    const p = new URL(u).pathname.replace(/\/$/, "");
+                    return p !== rootPath && p.startsWith(rootPath + "/") && p.split("/").length <= rootPath.split("/").length + 2;
+                  } catch { return false; }
+                })
+                .slice(0, 10); // cap sub-page crawl per root URL
+              const subResults = await Promise.all(
+                subPages.map(async (u) => {
+                  const r = await scrapePage(u);
+                  return r.text ? { url: u, title: r.title, content: r.text.slice(0, 3500) } : null;
+                })
+              );
+              for (const s of subResults) if (s) segments.push(s);
+            }
+          } catch (e) {
+            console.warn("Sub-page crawl failed for", rootUrl, e);
+          }
+
+          return { rootUrl, segments };
         })
       );
-      const successful = caseResults.filter((c) => c.content);
-      if (successful.length > 0) {
-        caseStudyBlock = successful
-          .map(
-            (c, i) =>
-              `### Case Study ${i + 1}: ${c.title || c.url}\nSource: ${c.url}\n${c.content}`
-          )
-          .join("\n\n");
-        console.log(`Deep Research: ${successful.length}/${validCaseStudies.length} case studies scraped successfully`);
+
+      const blocks: string[] = [];
+      for (const cr of caseResults) {
+        for (const seg of cr.segments) {
+          totalCaseSegmentsScraped++;
+          blocks.push(
+            `### Source ${totalCaseSegmentsScraped}: ${seg.title || seg.url}\nURL: ${seg.url}\nParent: ${cr.rootUrl}\n${seg.content}`
+          );
+        }
+      }
+      if (blocks.length > 0) {
+        caseStudyBlock = blocks.join("\n\n");
+        console.log(`Deep Research: scraped ${totalCaseSegmentsScraped} segments across ${validCaseStudies.length} root URLs`);
       }
     }
 
