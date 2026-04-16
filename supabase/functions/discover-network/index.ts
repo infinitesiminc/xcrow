@@ -29,23 +29,40 @@ async function fetchPage(url: string): Promise<string | null> {
   }
 }
 
-function extractLinks(html: string, baseUrl: string): string[] {
-  const links = new Set<string>();
+function rootDomain(host: string): string {
+  const parts = host.split(".");
+  return parts.length >= 2 ? parts.slice(-2).join(".") : host;
+}
+
+function extractLinks(html: string, baseUrl: string): { sameHost: string[]; subdomains: string[] } {
+  const sameHost = new Set<string>();
+  const subdomains = new Set<string>();
   const base = new URL(baseUrl);
+  const baseRoot = rootDomain(base.hostname);
   const re = /href=["']([^"']+)["']/gi;
   let m;
   while ((m = re.exec(html)) !== null) {
     try {
       const u = new URL(m[1], baseUrl);
-      if (u.hostname === base.hostname) links.add(u.toString().split("#")[0]);
+      if (!/^https?:$/.test(u.protocol)) continue;
+      const clean = u.toString().split("#")[0];
+      if (u.hostname === base.hostname) {
+        sameHost.add(clean);
+      } else if (rootDomain(u.hostname) === baseRoot) {
+        // same root domain, different subdomain (e.g. blog.example.com, customers.example.com)
+        subdomains.add(`${u.protocol}//${u.hostname}`);
+      }
     } catch { /* skip */ }
   }
-  return [...links];
+  return { sameHost: [...sameHost], subdomains: [...subdomains] };
 }
 
 function pickRelevantUrls(links: string[]): string[] {
-  const matched = links.filter((l) => NETWORK_PATTERNS.some((re) => re.test(new URL(l).pathname)));
-  return [...new Set(matched)].slice(0, 10);
+  const matched = links.filter((l) => {
+    try { return NETWORK_PATTERNS.some((re) => re.test(new URL(l).pathname)); }
+    catch { return false; }
+  });
+  return [...new Set(matched)].slice(0, 12);
 }
 
 function htmlToText(html: string): string {
