@@ -78,7 +78,7 @@ export function NetworkManager({ open, onOpenChange, workspaceKey, userId, extra
           "Authorization": `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
-        body: JSON.stringify({ workspaceKey }),
+        body: JSON.stringify({ workspaceKey, extraUrls: (extraUrls || []).filter(u => u && u.trim()) }),
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
@@ -90,7 +90,7 @@ export function NetworkManager({ open, onOpenChange, workspaceKey, userId, extra
     } finally {
       setDiscovering(false);
     }
-  }, [workspaceKey, load]);
+  }, [workspaceKey, load, extraUrls]);
 
   const handleToggleAutoDiscover = useCallback(async (checked: boolean) => {
     setAutoDiscover(checked);
