@@ -99,7 +99,7 @@ function pickBestPages(allUrls: string[], max: number): string[] {
 
 /* ── Background research job ──────────────────────────────────── */
 
-async function runResearch(jobId: string, domain: string, companyContext?: string) {
+async function runResearch(jobId: string, domain: string, companyContext?: string, caseStudyUrls?: string[]) {
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -208,6 +208,33 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
       current_phase: "PHASE_03",
       progress: 50,
     }).eq("id", jobId);
+
+    // Deep Research: scrape user-provided customer case study URLs
+    let caseStudyBlock = "";
+    const validCaseStudies = (caseStudyUrls || [])
+      .map((u) => (u || "").trim())
+      .filter((u) => /^https?:\/\//i.test(u))
+      .slice(0, 5);
+
+    if (validCaseStudies.length > 0) {
+      console.log(`Deep Research: scraping ${validCaseStudies.length} case studies`);
+      const caseResults = await Promise.all(
+        validCaseStudies.map(async (url) => {
+          const { text, title } = await scrapePage(url);
+          return { url, title, content: text.slice(0, 4000) };
+        })
+      );
+      const successful = caseResults.filter((c) => c.content);
+      if (successful.length > 0) {
+        caseStudyBlock = successful
+          .map(
+            (c, i) =>
+              `### Case Study ${i + 1}: ${c.title || c.url}\nSource: ${c.url}\n${c.content}`
+          )
+          .join("\n\n");
+        console.log(`Deep Research: ${successful.length}/${validCaseStudies.length} case studies scraped successfully`);
+      }
+    }
 
     const combinedContent = [
       `## Homepage (${homeTitle})\n${homepageText}`,
