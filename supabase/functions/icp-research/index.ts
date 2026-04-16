@@ -216,23 +216,61 @@ async function runResearch(jobId: string, domain: string, companyContext?: strin
       .filter((u) => /^https?:\/\//i.test(u))
       .slice(0, 10);
 
+    let totalCaseSegmentsScraped = 0;
     if (validCaseStudies.length > 0) {
-      console.log(`Deep Research: scraping ${validCaseStudies.length} case studies`);
+      console.log(`Deep Research: deep-crawling ${validCaseStudies.length} case-study URLs`);
+
+      // For each user URL: scrape it, then follow same-host links that look like
+      // sub-segments / use-cases / customer pages so we capture every persona on
+      // an index-style page (e.g. /use-case → /use-case/fraud, /use-case/pricing, ...).
       const caseResults = await Promise.all(
-        validCaseStudies.map(async (url) => {
-          const { text, title } = await scrapePage(url);
-          return { url, title, content: text.slice(0, 4000) };
+        validCaseStudies.map(async (rootUrl) => {
+          const root = await scrapePage(rootUrl);
+          const segments: Array<{ url: string; title: string; content: string }> = [];
+          if (root.text) segments.push({ url: rootUrl, title: root.title, content: root.text.slice(0, 4000) });
+
+          // Discover sub-pages under the same path prefix (e.g. /use-case/*)
+          try {
+            const rawHtml = await fetch(rootUrl, { headers: { "User-Agent": BROWSER_UA } }).then((r) => r.ok ? r.text() : "");
+            if (rawHtml) {
+              const all = extractLinks(rawHtml, rootUrl);
+              const rootPath = new URL(rootUrl).pathname.replace(/\/$/, "");
+              const subPages = all
+                .filter((u) => {
+                  try {
+                    const p = new URL(u).pathname.replace(/\/$/, "");
+                    return p !== rootPath && p.startsWith(rootPath + "/") && p.split("/").length <= rootPath.split("/").length + 2;
+                  } catch { return false; }
+                })
+                .slice(0, 10); // cap sub-page crawl per root URL
+              const subResults = await Promise.all(
+                subPages.map(async (u) => {
+                  const r = await scrapePage(u);
+                  return r.text ? { url: u, title: r.title, content: r.text.slice(0, 3500) } : null;
+                })
+              );
+              for (const s of subResults) if (s) segments.push(s);
+            }
+          } catch (e) {
+            console.warn("Sub-page crawl failed for", rootUrl, e);
+          }
+
+          return { rootUrl, segments };
         })
       );
-      const successful = caseResults.filter((c) => c.content);
-      if (successful.length > 0) {
-        caseStudyBlock = successful
-          .map(
-            (c, i) =>
-              `### Case Study ${i + 1}: ${c.title || c.url}\nSource: ${c.url}\n${c.content}`
-          )
-          .join("\n\n");
-        console.log(`Deep Research: ${successful.length}/${validCaseStudies.length} case studies scraped successfully`);
+
+      const blocks: string[] = [];
+      for (const cr of caseResults) {
+        for (const seg of cr.segments) {
+          totalCaseSegmentsScraped++;
+          blocks.push(
+            `### Source ${totalCaseSegmentsScraped}: ${seg.title || seg.url}\nURL: ${seg.url}\nParent: ${cr.rootUrl}\n${seg.content}`
+          );
+        }
+      }
+      if (blocks.length > 0) {
+        caseStudyBlock = blocks.join("\n\n");
+        console.log(`Deep Research: scraped ${totalCaseSegmentsScraped} segments across ${validCaseStudies.length} root URLs`);
       }
     }
 
@@ -256,9 +294,10 @@ Rules:
 - Use competitive intelligence to sharpen ICPs: identify gaps competitors leave, and tailor personas/triggers to exploit those gaps${
       hasCaseStudies
         ? `
-- DEEP RESEARCH MODE ACTIVE: The user has provided ${validCaseStudies.length} real customer case studies (proven wins). These are the HIGHEST-SIGNAL inputs.
-- CRITICAL: Generate EXACTLY ONE ICP segment per case study (so ${validCaseStudies.length} segments total — no more, no less). Each segment must map 1:1 to a single case study and be named after the customer profile from that study (e.g. "Mid-Market Fintech CFOs (from Acme case study)").
-- Extract the actual buyer titles, company sizes, industries, pain points, and triggers MENTIONED in each case study. Quote case-study evidence directly when justifying every persona.`
+- DEEP RESEARCH MODE ACTIVE: The user provided ${validCaseStudies.length} case-study/use-case URL(s). We crawled them and discovered ${totalCaseSegmentsScraped} distinct sub-pages/segments — each one represents a real customer profile, use-case, or vertical the company sells into.
+- CRITICAL: Generate ONE ICP segment per distinct customer-profile / use-case / vertical you can identify in the sources below. Aim for ${totalCaseSegmentsScraped} segments (or as many as the content clearly supports — never fewer than ${Math.min(totalCaseSegmentsScraped, 2)}). Do NOT collapse multiple distinct use-cases into one segment.
+- Name each segment after the specific use-case or customer profile (e.g. "Real-time Fraud Detection Teams", "Dynamic Pricing Platforms").
+- Extract actual buyer titles, company sizes, industries, pain points, and triggers from the source content. Quote source evidence directly.`
         : ""
     }`;
 
@@ -283,15 +322,15 @@ For each direct competitor (identify 3-6):
 IMPORTANT: Put Competitive Landscape BEFORE ICP Segments so competitor insights can inform persona targeting.
 
 ## ICP Segments and Buyer Personas
-${hasCaseStudies ? `Produce EXACTLY ${validCaseStudies.length} segments — one per provided case study, in the same order. Each segment derives entirely from its matching case study:` : "For EACH segment (identify 2-4):"}
-### [Segment Name]${hasCaseStudies ? " (from Case Study N)" : ""}
+${hasCaseStudies ? `Produce ONE segment per distinct customer profile / use-case / vertical you can identify in the crawled sources below — target ${totalCaseSegmentsScraped} segments (or as many as the content clearly supports). Each must be grounded in a specific source.` : "For EACH segment (identify 2-4):"}
+### [Segment Name]${hasCaseStudies ? " (from Source N)" : ""}
 - **Company fit**: industry, employee range, revenue range, tech stack signals, geography
 - **Primary buyer**: exact title, department, seniority, pain points this product solves
 - **Secondary buyer**: same detail
-- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")${hasCaseStudies ? `\n- **Proof from case study**: cite the exact case study this segment is derived from (e.g. "Case Study 2: Acme Corp signed after outgrowing Competitor X") — REQUIRED` : ""}
+- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")${hasCaseStudies ? `\n- **Source evidence**: cite the exact Source N (URL) this segment is derived from — REQUIRED` : ""}
 - **Competitive angle**: why ${domainName} beats alternatives for THIS specific segment
 - **Disqualifiers**: what makes a company NOT a fit
-- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")${hasCaseStudies ? " — prioritize titles that appear verbatim in the case study" : ""}
+- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")${hasCaseStudies ? " — prioritize titles that appear verbatim in the source" : ""}
 
 ## Prospecting Targets
 5-10 specific companies that fit the ICPs above. For each:
