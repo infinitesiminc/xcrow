@@ -322,15 +322,15 @@ For each direct competitor (identify 3-6):
 IMPORTANT: Put Competitive Landscape BEFORE ICP Segments so competitor insights can inform persona targeting.
 
 ## ICP Segments and Buyer Personas
-${hasCaseStudies ? `Produce EXACTLY ${validCaseStudies.length} segments — one per provided case study, in the same order. Each segment derives entirely from its matching case study:` : "For EACH segment (identify 2-4):"}
-### [Segment Name]${hasCaseStudies ? " (from Case Study N)" : ""}
+${hasCaseStudies ? `Produce ONE segment per distinct customer profile / use-case / vertical you can identify in the crawled sources below — target ${totalCaseSegmentsScraped} segments (or as many as the content clearly supports). Each must be grounded in a specific source.` : "For EACH segment (identify 2-4):"}
+### [Segment Name]${hasCaseStudies ? " (from Source N)" : ""}
 - **Company fit**: industry, employee range, revenue range, tech stack signals, geography
 - **Primary buyer**: exact title, department, seniority, pain points this product solves
 - **Secondary buyer**: same detail
-- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")${hasCaseStudies ? `\n- **Proof from case study**: cite the exact case study this segment is derived from (e.g. "Case Study 2: Acme Corp signed after outgrowing Competitor X") — REQUIRED` : ""}
+- **Buying triggers**: events that create urgency — INCLUDE competitor-driven triggers (e.g. "frustrated with [Competitor]'s pricing", "outgrowing [Competitor]'s capabilities")${hasCaseStudies ? `\n- **Source evidence**: cite the exact Source N (URL) this segment is derived from — REQUIRED` : ""}
 - **Competitive angle**: why ${domainName} beats alternatives for THIS specific segment
 - **Disqualifiers**: what makes a company NOT a fit
-- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")${hasCaseStudies ? " — prioritize titles that appear verbatim in the case study" : ""}
+- **Search titles**: list 3-5 exact job titles to search on LinkedIn/Apollo (e.g. "VP of Sales", "Director of Payments", "Head of Revenue Operations")${hasCaseStudies ? " — prioritize titles that appear verbatim in the source" : ""}
 
 ## Prospecting Targets
 5-10 specific companies that fit the ICPs above. For each:
