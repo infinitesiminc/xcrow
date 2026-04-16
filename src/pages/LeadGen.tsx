@@ -14,12 +14,16 @@ import { DockedChat } from "@/components/leadgen/DockedChat";
 import { PipelineChat, type PersonaPrefill } from "@/components/leadgen/PipelineChat";
 import { DraftEmailModal } from "@/components/leadgen/DraftEmailModal";
 import ICPBuilderStep, { type ConfirmedPersona } from "@/components/leadgen/ICPBuilderStep";
+import { NetworkManager } from "@/components/leadgen/NetworkManager";
+import { WarmPathDrawer } from "@/components/leadgen/WarmPathDrawer";
 
 export default function LeadGen() {
   const { user } = useAuth();
   const [domain, setDomain] = useState("");
   const [loadingPersona, setLoadingPersona] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState<SavedLead | null>(null);
+  const [warmPathLead, setWarmPathLead] = useState<SavedLead | null>(null);
+  const [networkOpen, setNetworkOpen] = useState(false);
   const [pendingPersona, setPendingPersona] = useState<PersonaPrefill | null>(null);
   const [icpConfirmed, setIcpConfirmed] = useState(false);
   const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
@@ -190,6 +194,7 @@ export default function LeadGen() {
               onNewResearch={handleNewResearch}
               onDeleteWorkspace={handleDeleteWorkspace}
               onRerunWorkspace={handleRerunWorkspace}
+              onOpenNetwork={() => setNetworkOpen(true)}
             />
 
             {/* Main scrollable dashboard */}
@@ -290,6 +295,7 @@ export default function LeadGen() {
                         onExportCSV={exportCSV}
                         onDraftEmail={handleDraftEmail}
                         onFindLookalikes={handleFindLookalikes}
+                        onWarmPath={(l) => setWarmPathLead(l)}
                         userId={user?.id}
                       />
                     )}
@@ -304,6 +310,24 @@ export default function LeadGen() {
               onOpenChange={open => { if (!open) setDraftLead(null); }}
               userId={user?.id}
               workspaceKey={workspaceKey !== "default" ? workspaceKey : undefined}
+            />
+
+            <NetworkManager
+              open={networkOpen}
+              onOpenChange={setNetworkOpen}
+              workspaceKey={workspaceKey}
+              userId={user?.id}
+            />
+
+            <WarmPathDrawer
+              lead={warmPathLead}
+              open={!!warmPathLead}
+              onOpenChange={open => { if (!open) setWarmPathLead(null); }}
+              workspaceKey={workspaceKey}
+              onUsePath={(lead) => {
+                setWarmPathLead(null);
+                setDraftLead(lead);
+              }}
             />
           </div>
         </SidebarProvider>

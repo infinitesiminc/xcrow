@@ -1830,6 +1830,45 @@ export type Database = {
           },
         ]
       }
+      user_network: {
+        Row: {
+          category: string
+          company: string | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          source: string
+          updated_at: string
+          user_id: string
+          workspace_key: string
+        }
+        Insert: {
+          category: string
+          company?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          source?: string
+          updated_at?: string
+          user_id: string
+          workspace_key?: string
+        }
+        Update: {
+          category?: string
+          company?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          source?: string
+          updated_at?: string
+          user_id?: string
+          workspace_key?: string
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           current_activity: string | null
@@ -2057,6 +2096,33 @@ export type Database = {
         }
         Relationships: []
       }
+      warm_paths: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          paths: Json
+          user_id: string
+          workspace_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          paths?: Json
+          user_id: string
+          workspace_key?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          paths?: Json
+          user_id?: string
+          workspace_key?: string
+        }
+        Relationships: []
+      }
       workspace_members: {
         Row: {
           id: string
@@ -2078,6 +2144,36 @@ export type Database = {
           role?: string
           user_id?: string
           workspace_id?: string
+        }
+        Relationships: []
+      }
+      workspace_settings: {
+        Row: {
+          auto_discover_network: boolean
+          created_at: string
+          id: string
+          last_discovered_at: string | null
+          updated_at: string
+          user_id: string
+          workspace_key: string
+        }
+        Insert: {
+          auto_discover_network?: boolean
+          created_at?: string
+          id?: string
+          last_discovered_at?: string | null
+          updated_at?: string
+          user_id: string
+          workspace_key?: string
+        }
+        Update: {
+          auto_discover_network?: boolean
+          created_at?: string
+          id?: string
+          last_discovered_at?: string | null
+          updated_at?: string
+          user_id?: string
+          workspace_key?: string
         }
         Relationships: []
       }
