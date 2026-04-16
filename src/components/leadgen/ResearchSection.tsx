@@ -435,6 +435,17 @@ export default function ResearchSection({ domain, onDomainChange, onStart, phase
               {running ? "Research Pipeline Active" : isComplete ? "Research Complete" : "ICP Research Pipeline"}
             </span>
           </div>
+          {onDeepResearchEnabledChange && onCaseStudyUrlsChange && (
+            <div className="mt-1 max-w-xl">
+              <DeepResearchInput
+                enabled={!!deepResearchEnabled}
+                onEnabledChange={onDeepResearchEnabledChange}
+                urls={caseStudyUrls || []}
+                onUrlsChange={onCaseStudyUrlsChange}
+                disabled={running}
+              />
+            </div>
+          )}
           <div className="flex gap-2 items-center">
             <input
               type="text"
