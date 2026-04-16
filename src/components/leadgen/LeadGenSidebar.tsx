@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Settings, Globe, Plus, Building2, RotateCcw, Trash2, LayoutGrid } from "lucide-react";
+import { Settings, Globe, Plus, Building2, RotateCcw, Trash2, LayoutGrid, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WorkspaceManagerDrawer } from "./WorkspaceManagerDrawer";
@@ -35,6 +35,7 @@ interface LeadGenSidebarProps {
   onNewResearch?: () => void;
   onDeleteWorkspace?: (key: string) => void;
   onRerunWorkspace?: (key: string) => void;
+  onOpenNetwork?: () => void;
 }
 
 export function LeadGenSidebar({
@@ -45,6 +46,7 @@ export function LeadGenSidebar({
   onNewResearch,
   onDeleteWorkspace,
   onRerunWorkspace,
+  onOpenNetwork,
 }: LeadGenSidebarProps) {
   const navigate = useNavigate();
   const activeWorkspace = workspaces.find(w => w.website_key === activeWorkspaceKey);
@@ -154,6 +156,14 @@ export function LeadGenSidebar({
       <SidebarFooter>
         <SidebarSeparator />
         <SidebarMenu>
+          {onOpenNetwork && (
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={onOpenNetwork} tooltip="Your Network">
+                <Network className="w-4 h-4" />
+                <span>Your Network</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <WorkspaceManagerDrawer
               workspaces={workspaces}
