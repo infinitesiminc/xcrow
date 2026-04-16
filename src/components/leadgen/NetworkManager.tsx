@@ -32,9 +32,11 @@ interface NetworkManagerProps {
   onOpenChange: (open: boolean) => void;
   workspaceKey: string;
   userId?: string;
+  /** Optional extra URLs (e.g. Deep Research case-study URLs) to include in AI scan. */
+  extraUrls?: string[];
 }
 
-export function NetworkManager({ open, onOpenChange, workspaceKey, userId }: NetworkManagerProps) {
+export function NetworkManager({ open, onOpenChange, workspaceKey, userId, extraUrls }: NetworkManagerProps) {
   const [rows, setRows] = useState<NetworkRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [discovering, setDiscovering] = useState(false);
