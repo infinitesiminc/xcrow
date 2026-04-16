@@ -272,6 +272,7 @@ export default function LeadGen() {
                         workspaceKey={workspaceKey}
                         onConfirm={handleICPConfirm}
                         onFindLeads={handleFindLeadsChat}
+                        skipGateway={deepResearchEnabled && caseStudyUrls.filter(u => u.trim()).length > 0}
                       />
                     )}
 
